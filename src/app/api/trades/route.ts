@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getActiveAccount } from "@/lib/active-account"
 
 export async function POST(request: Request) {
   try {
@@ -17,9 +18,7 @@ export async function POST(request: Request) {
     }
 
     // Retrieve default account
-    const account = await prisma.tradingAccount.findFirst({
-      where: { userId: session.user.id, isDefault: true },
-    })
+    const account = await getActiveAccount(session.user.id)
 
     if (!account) {
       return NextResponse.json({ error: "No trading account found." }, { status: 404 })

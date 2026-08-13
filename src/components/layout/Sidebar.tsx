@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
 
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { AccountSwitcher } from "@/components/layout/AccountSwitcher"
 
 type SidebarStats = {
   todayPnl: number
@@ -33,6 +34,7 @@ export function Sidebar() {
         { href: "/dashboard", label: "Dashboard", icon: IconDashboard },
         { href: "/accounts",  label: "Accounts",  icon: IconWallet },
         { href: "/calendar",  label: "Calendar",  icon: IconCalendar },
+        { href: "/stats",     label: "Statistics",icon: IconChart },
         { href: "/behavioral",label: "Behavioral", icon: IconBrain },
       ],
     },
@@ -77,6 +79,8 @@ export function Sidebar() {
         </div>
         <ThemeToggle />
       </div>
+
+      <AccountSwitcher />
 
       {/* Today's P&L Widget */}
       {stats !== null && (
@@ -215,6 +219,14 @@ function IconDashboard() {
       <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
       <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
       <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+    </svg>
+  )
+}
+
+function IconChart() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <path d="M2 14H14M3.5 10L6.5 6L9.5 9L13.5 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }

@@ -4,6 +4,7 @@ import { JournalForm } from "@/components/journal/JournalForm"
 import { TradeRow } from "@/components/trades/TradeRow"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { getActiveAccount } from "@/lib/active-account"
 
 export async function generateMetadata({ params }: { params: Promise<{ date: string }> }) {
   const { date } = await params
@@ -34,9 +35,7 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
   const nextDate = new Date(targetDate)
   nextDate.setDate(nextDate.getDate() + 1)
 
-  const account = await prisma.tradingAccount.findFirst({
-    where: { userId: session.user.id, isDefault: true },
-  })
+  const account = await getActiveAccount(session.user.id)
 
   const trades = await prisma.trade.findMany({
     where: {

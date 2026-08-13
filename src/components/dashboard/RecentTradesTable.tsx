@@ -1,6 +1,7 @@
 // components/dashboard/RecentTradesTable.tsx
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getActiveAccount } from "@/lib/active-account"
 
 export async function RecentTradesTable({
   dateRange
@@ -10,9 +11,7 @@ export async function RecentTradesTable({
   const session = await auth()
   if (!session?.user?.id) return null
 
-  const account = await prisma.tradingAccount.findFirst({
-    where: { userId: session.user.id, isDefault: true },
-  })
+  const account = await getActiveAccount(session.user.id)
 
   if (!account) return <EmptyTable />
 

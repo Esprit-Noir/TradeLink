@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { parseCSV } from "@/lib/parsers"
+import { getActiveAccount } from "@/lib/active-account"
 
 
 export async function POST(request: Request) {
@@ -22,9 +23,7 @@ export async function POST(request: Request) {
     const text = await file.text()
 
     // Retrieve default account
-    const account = await prisma.tradingAccount.findFirst({
-      where: { userId: session.user.id, isDefault: true },
-    })
+    const account = await getActiveAccount(session.user.id)
 
     if (!account) {
       return NextResponse.json({ error: "No trading account found." }, { status: 404 })

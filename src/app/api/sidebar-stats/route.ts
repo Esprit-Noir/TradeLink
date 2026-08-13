@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getActiveAccount } from "@/lib/active-account"
 
 export async function GET() {
   try {
@@ -9,9 +10,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const account = await prisma.tradingAccount.findFirst({
-      where: { userId: session.user.id, isDefault: true }
-    })
+    const account = await getActiveAccount(session.user.id)
 
     // Today's P&L
     const todayStart = new Date()

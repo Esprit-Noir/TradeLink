@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { analyzeBehavior } from "@/lib/behavioral"
 import { NextResponse } from "next/server"
+import { getActiveAccount } from "@/lib/active-account"
 
 export async function GET() {
   const session = await auth()
@@ -12,9 +13,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const account = await prisma.tradingAccount.findFirst({
-    where: { userId: session.user.id, isDefault: true },
-  })
+  const account = await getActiveAccount(session.user.id)
 
   if (!account) {
     return NextResponse.json({ disciplineScore: 100, patterns: [], summary: "No account found." })

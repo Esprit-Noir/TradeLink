@@ -4,6 +4,7 @@
 import { computeMetrics } from "@/lib/metrics"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import { getActiveAccount } from "@/lib/active-account"
 
 export async function KpiGrid({
   dateRange
@@ -14,9 +15,7 @@ export async function KpiGrid({
   if (!session?.user?.id) return null
 
   // Récupérer les trades du compte par défaut
-  const account = await prisma.tradingAccount.findFirst({
-    where: { userId: session.user.id, isDefault: true },
-  })
+  const account = await getActiveAccount(session.user.id)
 
   if (!account) {
     return (

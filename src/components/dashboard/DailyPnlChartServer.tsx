@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { DailyPnlChart } from "./DailyPnlChart"
+import { getActiveAccount } from "@/lib/active-account"
 
 export async function DailyPnlChartServer({
   dateRange
@@ -10,9 +11,7 @@ export async function DailyPnlChartServer({
   const session = await auth()
   if (!session?.user?.id) return null
 
-  const account = await prisma.tradingAccount.findFirst({
-    where: { userId: session.user.id, isDefault: true },
-  })
+  const account = await getActiveAccount(session.user.id)
 
   if (!account) return <DailyPnlChart trades={[]} />
 

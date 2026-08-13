@@ -8,6 +8,7 @@ import { TradeRow } from "@/components/trades/TradeRow"
 import { TradeDetailsDrawer } from "@/components/trades/TradeDetailsDrawer"
 
 import Link from "next/link"
+import { getActiveAccount } from "@/lib/active-account"
 
 export const metadata = {
   title: "All Trades",
@@ -23,9 +24,7 @@ export default async function TradesPage({
   const session = await auth()
   if (!session?.user?.id) return null
 
-  const account = await prisma.tradingAccount.findFirst({
-    where: { userId: session.user.id, isDefault: true },
-  })
+  const account = await getActiveAccount(session.user.id)
 
   let trades: any[] = []
   let totalTrades = 0

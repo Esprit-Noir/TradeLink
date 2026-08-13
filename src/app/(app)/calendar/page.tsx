@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { CalendarView } from "@/components/calendar/CalendarView"
+import { getActiveAccount } from "@/lib/active-account"
 
 export const metadata = {
   title: "P&L Calendar",
@@ -10,9 +11,7 @@ export default async function CalendarPage() {
   const session = await auth()
   if (!session?.user?.id) return null
 
-  const account = await prisma.tradingAccount.findFirst({
-    where: { userId: session.user.id, isDefault: true },
-  })
+  const account = await getActiveAccount(session.user.id)
 
   let trades: any[] = []
   if (account) {
