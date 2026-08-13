@@ -26,6 +26,7 @@ model User {
   behavioralSnapshots  BehavioralSnapshot[]
   propChallenges       PropChallenge[]
   setups               TradingSetup[]
+  dailyJournals        DailyJournal[]
 
   @@map("users")
 }
@@ -255,4 +256,23 @@ model PropChallengeEvent {
   challenge    PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@map("prop_challenge_events")
+}
+
+// ─── DAILY JOURNAL ───────────────────────────────────────────────────────────
+model DailyJournal {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  date            String   // Format: YYYY-MM-DD
+  mood            String?
+  macroContext    String?  @db.Text
+  sessionPlan     String?  @db.Text
+  endOfDaySummary String?  @db.Text
+  rating          Int?     // 1 to 5 stars
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_journals")
 }

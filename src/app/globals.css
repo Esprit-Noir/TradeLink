@@ -436,6 +436,9 @@
   vertical-align: middle;
 }
 
+.data-table.compact td { padding: 0.35rem 1rem; }
+.data-table.comfortable td { padding: 1.25rem 1rem; }
+
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tbody tr { transition: background 100ms ease; }
 .data-table tbody tr:hover { background: rgba(255, 255, 255, 0.025); }

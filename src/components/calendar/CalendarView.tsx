@@ -1,12 +1,26 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 
 export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> }) {
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [journalDates, setJournalDates] = useState<string[]>([])
+  const router = useRouter()
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
+
+  useEffect(() => {
+    // Fetch journal dates for the current month
+    const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
+    fetch(`/api/journal?month=${monthStr}`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.dates) setJournalDates(data.dates)
+      })
+      .catch(console.error)
+  }, [year, month])
 
   // Define first day of month and total days
   const firstDay = new Date(year, month, 1)
@@ -41,6 +55,7 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
     ].join('-')
 
     const pnl = dailyPnl[dateStr]
+    const hasJournal = journalDates.includes(dateStr)
     
     let bgColor = "var(--color-gray-900)"
     let borderColor = "var(--color-gray-800)"
@@ -64,6 +79,7 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
     days.push(
       <div 
         key={i} 
+        onClick={() => router.push(`/journal/${dateStr}`)}
         style={{
           background: bgColor,
           border: `1px solid ${borderColor}`,
@@ -74,26 +90,27 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
           flexDirection: "column",
           justifyContent: "space-between",
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
-          cursor: pnl !== undefined ? "pointer" : "default",
+          cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          if (pnl !== undefined) {
-            e.currentTarget.style.transform = "scale(1.05)"
-            e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.2)"
-            e.currentTarget.style.zIndex = "10"
-          }
+          e.currentTarget.style.transform = "scale(1.05)"
+          e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.2)"
+          e.currentTarget.style.zIndex = "10"
         }}
         onMouseLeave={(e) => {
-          if (pnl !== undefined) {
-            e.currentTarget.style.transform = "scale(1)"
-            e.currentTarget.style.boxShadow = "none"
-            e.currentTarget.style.zIndex = "1"
-          }
+          e.currentTarget.style.transform = "scale(1)"
+          e.currentTarget.style.boxShadow = "none"
+          e.currentTarget.style.zIndex = "1"
         }}
       >
-        <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-gray-500)", alignSelf: "flex-end" }}>
-          {i}
-        </span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <span style={{ fontSize: "1rem", opacity: hasJournal ? 1 : 0 }}>
+            {hasJournal && "📝"}
+          </span>
+          <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-gray-500)" }}>
+            {i}
+          </span>
+        </div>
         
         {pnl !== undefined && (
           <div style={{ textAlign: "center", marginTop: "auto" }}>
@@ -117,8 +134,8 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <h2 style={{ fontSize: "1.5rem", fontWeight: 600 }}>{monthNames[month]} {year}</h2>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button onClick={prevMonth} className="btn btn-outline">← Prev</button>
-          <button onClick={nextMonth} className="btn btn-outline">Next →</button>
+          <button onClick={prevMonth} className="btn btn-secondary">← Prev</button>
+          <button onClick={nextMonth} className="btn btn-secondary">Next →</button>
         </div>
       </div>
 
