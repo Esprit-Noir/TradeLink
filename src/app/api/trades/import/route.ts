@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { parseTrades } from "@/lib/parsers"
-import Papa from "papaparse"
+import { parseCSV } from "@/lib/parsers"
+
 
 export async function POST(request: Request) {
   try {
@@ -30,24 +30,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "No trading account found." }, { status: 404 })
     }
 
-    // Convert CSV to generic objects
-    const { data: rawRows, errors } = Papa.parse(text, { header: true, skipEmptyLines: true })
+    // Run custom parsers directly on the text
+    // The broker type in the parser uses lowercased keys, so we cast it. 
+    // Usually the frontend sends 'interactive_brokers', 'binance', or 'bybit'.
+    const parseResult = await parseCSV(text, broker as any)
 
-    if (errors.length > 0 && rawRows.length === 0) {
-      return NextResponse.json({ error: "Failed to parse CSV file." }, { status: 400 })
+    if (parseResult.errors.length > 0 && parseResult.trades.length === 0) {
+       return NextResponse.json({ error: "Failed to parse CSV file: " + parseResult.errors[0].message }, { status: 400 })
     }
 
-    // Run custom parsers
-    const parsedTrades = parseTrades(broker, rawRows)
+    const parsedTrades = parseResult.trades
 
     if (parsedTrades.length === 0) {
       return NextResponse.json({ error: "No valid trades found in the CSV." }, { status: 400 })
     }
 
+    const userId = session.user.id as string
+
     // Map to Prisma schema and calculate missing fields
     const tradesToInsert = parsedTrades.map((t) => {
-      const isLong = t.direction === "LONG"
-      let netPnl = t.realizedPnl
+      const isLong = t.side.toUpperCase() === "LONG"
+      let netPnl = t.netPnl
       
       // Basic P&L calculation if missing
       if (netPnl === undefined) {
@@ -60,11 +63,11 @@ export async function POST(request: Request) {
       }
 
       return {
-        userId: session.user.id,
+        userId,
         accountId: account.id,
         symbol: t.symbol,
-        instrumentType: t.market,
-        side: t.direction,
+        instrumentType: t.instrumentType || "CRYPTO", // Fallback
+        side: t.side.toUpperCase(),
         entryAt: t.entryAt,
         exitAt: t.exitAt || t.entryAt, // Default to entry if missing
         entryPrice: t.entryPrice,
@@ -72,7 +75,7 @@ export async function POST(request: Request) {
         quantity: t.quantity,
         netPnl,
         fees: t.fees || 0,
-        status: t.status,
+        status: "closed",
       }
     })
 

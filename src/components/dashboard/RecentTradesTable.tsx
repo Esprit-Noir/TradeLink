@@ -38,10 +38,10 @@ export async function RecentTradesTable() {
             <tr key={t.id}>
               <td>
                 <div style={{ fontWeight: 500, color: "var(--color-gray-200)" }}>
-                  {new Date(t.exitAt).toLocaleDateString()}
+                  {new Date(t.exitAt ?? t.entryAt).toLocaleDateString()}
                 </div>
                 <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-                  {new Date(t.exitAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(t.exitAt ?? t.entryAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </td>
               <td>
@@ -55,8 +55,8 @@ export async function RecentTradesTable() {
                   {t.side}
                 </span>
               </td>
-              <td>${t.entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
-              <td>${t.exitPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+              <td>${Number(t.entryPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
+              <td>${t.exitPrice ? Number(t.exitPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : "—"}</td>
               <td style={{ textAlign: "right" }}>
                 <span style={{ 
                   fontWeight: 600, 

@@ -61,7 +61,7 @@ export function EquityCurveChart() {
                 fontSize: 12,
                 color: "var(--color-gray-200)",
               }}
-              formatter={(value: number) => [`$${value.toLocaleString()}`, "Equity"]}
+              formatter={(value: any) => [`$${Number(value).toLocaleString()}`, "Equity"]}
             />
             <ReferenceLine y={data[0]?.equity ?? 0} stroke="var(--color-gray-700)" strokeDasharray="4 4" />
             <Line

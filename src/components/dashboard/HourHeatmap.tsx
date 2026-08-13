@@ -52,7 +52,7 @@ export function HourHeatmap() {
                 fontSize: 12,
                 color: "var(--color-gray-200)",
               }}
-              formatter={(value: number) => [`$${value.toFixed(2)}`, "P&L"]}
+              formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Net P&L"]}
             />
             <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
               {data.map((entry, index) => (

@@ -2,7 +2,7 @@
 // Interactive Brokers — Activity Statement CSV parser
 // Format : Trades section avec colonnes fixes
 
-import type { ParseResult, ParsedTrade } from "./index"
+import type { ParseResult } from "./index"
 
 // Colonnes attendues dans l'Activity Statement IB
 const REQUIRED_COLS = ["Symbol", "Date/Time", "Quantity", "T. Price", "Comm/Fee", "Realized P&L"]

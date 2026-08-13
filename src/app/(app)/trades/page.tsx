@@ -23,7 +23,7 @@ export default async function TradesPage({
     where: { userId: session.user.id, isDefault: true },
   })
 
-  let trades = []
+  let trades: any[] = []
   let totalTrades = 0
   
   const currentPage = Number(searchParams?.page) || 1
