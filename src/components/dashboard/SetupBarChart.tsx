@@ -8,7 +8,7 @@ export function SetupBarChart() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/metrics/charts")
+    fetch(`/api/metrics/charts${window.location.search}`)
       .then((r) => r.json())
       .then((d) => {
         setData(d.setupData || [])

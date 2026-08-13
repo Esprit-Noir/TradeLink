@@ -8,12 +8,47 @@ import { SetupBarChart } from "@/components/dashboard/SetupBarChart"
 import { HourHeatmap } from "@/components/dashboard/HourHeatmap"
 import { RecentTradesTable } from "@/components/dashboard/RecentTradesTable"
 import { KpiGridSkeleton } from "@/components/dashboard/KpiGridSkeleton"
+import { WinRateChartServer } from "@/components/dashboard/WinRateChartServer"
+import { DailyPnlChartServer } from "@/components/dashboard/DailyPnlChartServer"
+import { DashboardFilter } from "@/components/dashboard/DashboardFilter"
 
 export const metadata = {
   title: "Dashboard",
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ period?: string; from?: string; to?: string }>
+}) {
+  const searchParamsObj = await searchParams
+  const period = searchParamsObj?.period || "all"
+  
+  let fromDate: Date | undefined
+  let toDate: Date | undefined
+
+  if (period === "7d") {
+    fromDate = new Date()
+    fromDate.setDate(fromDate.getDate() - 7)
+  } else if (period === "30d") {
+    fromDate = new Date()
+    fromDate.setDate(fromDate.getDate() - 30)
+  } else if (period === "90d") {
+    fromDate = new Date()
+    fromDate.setDate(fromDate.getDate() - 90)
+  } else if (period === "ytd") {
+    fromDate = new Date(new Date().getFullYear(), 0, 1)
+  } else if (period === "custom") {
+    if (searchParamsObj?.from) fromDate = new Date(searchParamsObj.from)
+    if (searchParamsObj?.to) toDate = new Date(searchParamsObj.to)
+  }
+
+  // Set time limits properly
+  if (fromDate) fromDate.setHours(0, 0, 0, 0)
+  if (toDate) toDate.setHours(23, 59, 59, 999)
+
+  const dateRange = { from: fromDate, to: toDate }
+
   return (
     <div>
       {/* Header */}
@@ -22,35 +57,65 @@ export default function DashboardPage() {
           <h1 className="page-title">Dashboard</h1>
           <p className="page-subtitle">Your trading performance at a glance</p>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <select className="input select" style={{ width: "auto" }} id="period-filter">
-            <option value="30d">Last 30 days</option>
-            <option value="7d">Last 7 days</option>
-            <option value="90d">Last 90 days</option>
-            <option value="ytd">Year to date</option>
-            <option value="all">All time</option>
-          </select>
-        </div>
+        <Suspense fallback={<div className="skeleton" style={{ width: 120, height: 38 }} />}>
+          <DashboardFilter />
+        </Suspense>
       </div>
 
       {/* KPI Cards */}
       <Suspense fallback={<KpiGridSkeleton />}>
-        <KpiGrid />
+        <KpiGrid dateRange={dateRange} />
       </Suspense>
 
-      {/* Charts Row 1 */}
+      {/* Charts Row 1: Daily P&L and Win Rate */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
-        <Suspense fallback={<ChartSkeleton height={260} />}>
+        <div className="chart-card">
+          <div className="chart-title">Daily Net P&L</div>
+          <div style={{ height: 260 }}>
+            <Suspense fallback={<ChartSkeleton height={260} />}>
+              <DailyPnlChartServer dateRange={dateRange} />
+            </Suspense>
+          </div>
+        </div>
+        <div className="chart-card">
+          <div className="chart-title">Win Rate</div>
+          <div style={{ height: 260 }}>
+            <Suspense fallback={<ChartSkeleton height={260} />}>
+              <WinRateChartServer dateRange={dateRange} />
+            </Suspense>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Row 2: Equity Curve & Setups */}
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+        <Suspense fallback={
+          <div className="chart-card">
+            <div className="chart-title">Equity Curve</div>
+            <ChartSkeleton height={260} />
+          </div>
+        }>
           <EquityCurveChart />
         </Suspense>
-        <Suspense fallback={<ChartSkeleton height={260} />}>
+        
+        <Suspense fallback={
+          <div className="chart-card">
+            <div className="chart-title">Performance by Setup</div>
+            <ChartSkeleton height={260} />
+          </div>
+        }>
           <SetupBarChart />
         </Suspense>
       </div>
 
-      {/* Charts Row 2 */}
+      {/* Charts Row 3 */}
       <div style={{ marginBottom: "1rem" }}>
-        <Suspense fallback={<ChartSkeleton height={180} />}>
+        <Suspense fallback={
+          <div className="chart-card">
+            <div className="chart-title">Performance by Hour & Day</div>
+            <ChartSkeleton height={180} />
+          </div>
+        }>
           <HourHeatmap />
         </Suspense>
       </div>
@@ -59,7 +124,7 @@ export default function DashboardPage() {
       <div className="chart-card">
         <div className="chart-title">Recent Trades</div>
         <Suspense fallback={<TableSkeleton />}>
-          <RecentTradesTable />
+          <RecentTradesTable dateRange={dateRange} />
         </Suspense>
       </div>
     </div>

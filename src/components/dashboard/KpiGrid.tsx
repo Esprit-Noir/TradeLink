@@ -5,7 +5,11 @@ import { computeMetrics } from "@/lib/metrics"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 
-export async function KpiGrid() {
+export async function KpiGrid({
+  dateRange
+}: {
+  dateRange?: { from?: Date; to?: Date }
+}) {
   const session = await auth()
   if (!session?.user?.id) return null
 
@@ -27,8 +31,15 @@ export async function KpiGrid() {
     )
   }
 
+  const whereClause: any = { accountId: account.id, status: "closed" }
+  if (dateRange?.from || dateRange?.to) {
+    whereClause.entryAt = {}
+    if (dateRange.from) whereClause.entryAt.gte = dateRange.from
+    if (dateRange.to) whereClause.entryAt.lte = dateRange.to
+  }
+
   const trades = await prisma.trade.findMany({
-    where: { accountId: account.id, status: "closed" },
+    where: whereClause,
     orderBy: { entryAt: "desc" },
   })
 

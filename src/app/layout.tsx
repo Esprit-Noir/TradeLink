@@ -17,15 +17,19 @@ export const metadata: Metadata = {
   keywords: ["trading journal", "trade tracker", "trading analytics", "behavioral analysis", "prop firm"],
 }
 
+import { ThemeProvider } from "@/components/ThemeProvider"
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-gray-950 text-gray-100`}>
-        {children}
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

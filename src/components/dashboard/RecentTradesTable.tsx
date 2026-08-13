@@ -2,7 +2,11 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
-export async function RecentTradesTable() {
+export async function RecentTradesTable({
+  dateRange
+}: {
+  dateRange?: { from?: Date; to?: Date }
+}) {
   const session = await auth()
   if (!session?.user?.id) return null
 
@@ -12,10 +16,17 @@ export async function RecentTradesTable() {
 
   if (!account) return <EmptyTable />
 
+  const whereClause: any = { accountId: account.id, status: "closed" }
+  if (dateRange?.from || dateRange?.to) {
+    whereClause.entryAt = {}
+    if (dateRange.from) whereClause.entryAt.gte = dateRange.from
+    if (dateRange.to) whereClause.entryAt.lte = dateRange.to
+  }
+
   const trades = await prisma.trade.findMany({
-    where: { accountId: account.id, status: "closed" },
-    orderBy: { exitAt: "desc" },
-    take: 10,
+    where: whereClause,
+    orderBy: { entryAt: "desc" },
+    take: 5
   })
 
   if (trades.length === 0) return <EmptyTable />

@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { AddTradeModal } from "@/components/trades/AddTradeModal"
@@ -67,7 +68,9 @@ export default async function TradesPage({
         </div>
       </div>
 
-      <TradesFilter />
+      <Suspense fallback={<div className="skeleton" style={{ height: 80, marginBottom: "1.5rem" }} />}>
+        <TradesFilter />
+      </Suspense>
 
       <div className="table-wrapper">
         <table className="data-table">

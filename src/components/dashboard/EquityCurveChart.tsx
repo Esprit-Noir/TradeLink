@@ -14,9 +14,12 @@ export function EquityCurveChart() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch("/api/metrics/equity-curve")
+    fetch(`/api/metrics/equity-curve${window.location.search}`)
       .then((r) => r.json())
-      .then((d) => { setData(d.data ?? []); setLoading(false) })
+      .then((d) => {
+        setData(d.data || [])
+        setLoading(false)
+      })
       .catch(() => setLoading(false))
   }, [])
 
