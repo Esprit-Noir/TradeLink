@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma"
 import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { DeleteTradeButton } from "@/components/trades/DeleteTradeButton"
 import { TradesFilter } from "@/components/trades/TradesFilter"
+import { TradeRow } from "@/components/trades/TradeRow"
+import { TradeDetailsDrawer } from "@/components/trades/TradeDetailsDrawer"
 
 import Link from "next/link"
 
@@ -97,52 +99,21 @@ export default async function TradesPage({
                 </td>
               </tr>
             ) : (
-              trades.map((t) => (
-                <tr key={t.id}>
-                  <td>
-                    <div style={{ fontWeight: 500, color: "var(--color-gray-200)" }}>
-                      {new Date(t.entryAt).toLocaleDateString()}
-                    </div>
-                    <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
-                      {new Date(t.entryAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{ fontWeight: 600 }}>{t.symbol}</span>
-                      {t.screenshots && t.screenshots.length > 0 && (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--color-brand-500)" }}>
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      )}
-                    </div>
-                  </td>
-                  <td>
-                    <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
-                      {t.instrumentType}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${t.side === 'LONG' ? 'badge-profit' : 'badge-loss'}`}>
-                      {t.side}
-                    </span>
-                  </td>
-                  <td>{Number(t.quantity).toString()}</td>
-                  <td>${Number(t.entryPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
-                  <td>${t.exitPrice ? Number(t.exitPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : "—"}</td>
-                  <td style={{ textAlign: "right" }}>
-                    <span style={{ 
-                      fontWeight: 600, 
-                      color: Number(t.netPnl) > 0 ? "var(--color-profit)" : Number(t.netPnl) < 0 ? "var(--color-loss)" : "inherit" 
-                    }}>
-                      {Number(t.netPnl) > 0 ? "+" : ""}${Number(t.netPnl).toFixed(2)}
-                    </span>
-                  </td>
-                  <td style={{ textAlign: "right", width: "40px" }}>
-                    <DeleteTradeButton id={t.id} />
-                  </td>
-                </tr>
-              ))
+              trades.map((t) => {
+                const serializedTrade = {
+                  ...t,
+                  quantity: t.quantity ? Number(t.quantity) : 0,
+                  entryPrice: t.entryPrice ? Number(t.entryPrice) : 0,
+                  exitPrice: t.exitPrice ? Number(t.exitPrice) : null,
+                  grossPnl: t.grossPnl ? Number(t.grossPnl) : null,
+                  fees: t.fees ? Number(t.fees) : 0,
+                  netPnl: t.netPnl ? Number(t.netPnl) : null,
+                  netPnlUsd: t.netPnlUsd ? Number(t.netPnlUsd) : null,
+                  stopLoss: t.stopLoss ? Number(t.stopLoss) : null,
+                  riskAmount: t.riskAmount ? Number(t.riskAmount) : null,
+                }
+                return <TradeRow key={t.id} trade={serializedTrade} />
+              })
             )}
           </tbody>
         </table>
@@ -181,6 +152,10 @@ export default async function TradesPage({
           </div>
         </div>
       )}
+      
+      <Suspense fallback={null}>
+        <TradeDetailsDrawer />
+      </Suspense>
     </div>
   )
 }

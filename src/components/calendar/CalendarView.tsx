@@ -27,7 +27,7 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
   
   // Fill empty days for alignment
   for (let i = 0; i < startingDayOfWeek; i++) {
-    days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>)
+    days.push(<div key={`empty-${i}`} style={{ background: "transparent", border: "none" }}></div>)
   }
 
   // Fill actual days
@@ -43,39 +43,69 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
     const pnl = dailyPnl[dateStr]
     
     let bgColor = "var(--color-gray-900)"
+    let borderColor = "var(--color-gray-800)"
     let textColor = "var(--color-gray-400)"
 
+    // Heatmap / Color logic
     if (pnl !== undefined) {
       if (pnl > 0) {
-        bgColor = "var(--color-profit-muted)"
+        bgColor = "rgba(16, 185, 129, 0.1)" // emerald-500 muted
+        borderColor = "rgba(16, 185, 129, 0.3)"
         textColor = "var(--color-profit)"
       } else if (pnl < 0) {
-        bgColor = "var(--color-loss-muted)"
+        bgColor = "rgba(239, 68, 68, 0.1)" // red-500 muted
+        borderColor = "rgba(239, 68, 68, 0.3)"
         textColor = "var(--color-loss)"
       } else {
-        bgColor = "var(--color-gray-800)"
-        textColor = "var(--color-gray-200)"
+        textColor = "var(--color-gray-300)"
       }
     }
 
     days.push(
       <div 
-        key={dateStr} 
+        key={i} 
         style={{
           background: bgColor,
-          border: "1px solid var(--color-gray-800)",
+          border: `1px solid ${borderColor}`,
           borderRadius: "8px",
-          padding: "0.5rem",
           minHeight: "100px",
+          padding: "0.75rem",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between"
+          justifyContent: "space-between",
+          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          cursor: pnl !== undefined ? "pointer" : "default",
+        }}
+        onMouseEnter={(e) => {
+          if (pnl !== undefined) {
+            e.currentTarget.style.transform = "scale(1.05)"
+            e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.2)"
+            e.currentTarget.style.zIndex = "10"
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (pnl !== undefined) {
+            e.currentTarget.style.transform = "scale(1)"
+            e.currentTarget.style.boxShadow = "none"
+            e.currentTarget.style.zIndex = "1"
+          }
         }}
       >
-        <div style={{ fontWeight: 600, color: "var(--color-gray-300)" }}>{i}</div>
+        <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-gray-500)", alignSelf: "flex-end" }}>
+          {i}
+        </span>
+        
         {pnl !== undefined && (
-          <div style={{ color: textColor, fontWeight: 700, textAlign: "right", fontSize: "0.875rem" }}>
-            {pnl > 0 ? "+" : ""}${pnl.toFixed(2)}
+          <div style={{ textAlign: "center", marginTop: "auto" }}>
+            <span style={{ 
+              display: "block",
+              fontWeight: 700, 
+              fontSize: "1.1rem", 
+              color: textColor,
+              textShadow: "0 2px 10px rgba(0,0,0,0.5)"
+            }}>
+              {pnl > 0 ? "+" : ""}${Number(pnl).toFixed(2)}
+            </span>
           </div>
         )}
       </div>
@@ -84,12 +114,11 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>{monthNames[month]} {year}</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+        <h2 style={{ fontSize: "1.5rem", fontWeight: 600 }}>{monthNames[month]} {year}</h2>
         <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button className="btn btn-ghost btn-sm" onClick={prevMonth}>&larr; Prev</button>
-          <button className="btn btn-ghost btn-sm" onClick={() => setCurrentDate(new Date())}>Today</button>
-          <button className="btn btn-ghost btn-sm" onClick={nextMonth}>Next &rarr;</button>
+          <button onClick={prevMonth} className="btn btn-outline">← Prev</button>
+          <button onClick={nextMonth} className="btn btn-outline">Next →</button>
         </div>
       </div>
 
@@ -97,17 +126,20 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
         display: "grid", 
         gridTemplateColumns: "repeat(7, 1fr)", 
         gap: "0.5rem",
-        marginBottom: "0.5rem",
-        textAlign: "center",
-        fontWeight: 600,
-        color: "var(--color-gray-500)",
-        fontSize: "0.75rem",
-        textTransform: "uppercase"
+        marginBottom: "1rem"
       }}>
-        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+          <div key={day} style={{ textAlign: "center", fontWeight: 600, color: "var(--color-gray-500)", fontSize: "0.85rem", padding: "0.5rem 0" }}>
+            {day}
+          </div>
+        ))}
       </div>
-      
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem" }}>
+
+      <div style={{ 
+        display: "grid", 
+        gridTemplateColumns: "repeat(7, 1fr)", 
+        gap: "0.75rem" 
+      }}>
         {days}
       </div>
     </div>
