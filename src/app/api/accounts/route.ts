@@ -1,0 +1,95 @@
+import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const accounts = await prisma.tradingAccount.findMany({
+      where: { userId: session.user.id },
+      include: {
+        propChallenge: true,
+        trades: {
+          select: {
+            netPnl: true,
+            status: true
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    const accountsWithStats = accounts.map(acc => {
+      const closedTrades = acc.trades.filter(t => t.status === 'closed')
+      const totalPnl = closedTrades.reduce((sum, t) => sum + Number(t.netPnl || 0), 0)
+      
+      return {
+        id: acc.id,
+        name: acc.name,
+        broker: acc.broker,
+        type: acc.type,
+        baseCurrency: acc.baseCurrency,
+        initialBalance: acc.initialBalance ? Number(acc.initialBalance) : 0,
+        isDefault: acc.isDefault,
+        createdAt: acc.createdAt,
+        propChallenge: acc.propChallenge ? {
+          ...acc.propChallenge,
+          currentEquity: acc.propChallenge.currentEquity ? Number(acc.propChallenge.currentEquity) : 0,
+          initialBalance: acc.propChallenge.initialBalance ? Number(acc.propChallenge.initialBalance) : 0,
+        } : null,
+        stats: {
+          tradesCount: acc.trades.length,
+          totalPnl
+        }
+      }
+    })
+
+    return NextResponse.json(accountsWithStats)
+  } catch (error: any) {
+    console.error("Error fetching accounts:", error)
+    return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 })
+  }
+}
+
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { name, initialBalance, baseCurrency, type, broker } = body
+
+    if (!name) {
+      return NextResponse.json({ error: "Account name is required" }, { status: 400 })
+    }
+
+    // Check if it's the first account
+    const existingAccounts = await prisma.tradingAccount.count({
+      where: { userId: session.user.id }
+    })
+
+    const newAccount = await prisma.tradingAccount.create({
+      data: {
+        userId: session.user.id,
+        name,
+        type: type || "personal",
+        broker: broker || null,
+        initialBalance: initialBalance ? parseFloat(initialBalance) : 0,
+        baseCurrency: baseCurrency || "USD",
+        isDefault: existingAccounts === 0 // Make default if first account
+      }
+    })
+
+    return NextResponse.json(newAccount)
+  } catch (error: any) {
+    console.error("Error creating account:", error)
+    return NextResponse.json({ error: "Failed to create account" }, { status: 500 })
+  }
+}

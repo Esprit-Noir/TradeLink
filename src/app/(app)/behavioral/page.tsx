@@ -14,7 +14,7 @@ export default function BehavioralPage() {
         </div>
       </div>
       
-      <div style={{ maxWidth: 800 }}>
+      <div>
         <BehaviorScore />
       </div>
     </div>

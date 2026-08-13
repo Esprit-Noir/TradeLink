@@ -27,26 +27,7 @@ export async function GET() {
     select: { disciplineScore: true, computedAt: true }
   })
 
-  // Vérifier si un snapshot récent existe (< 1h)
-  const cached = await prisma.behavioralSnapshot.findFirst({
-    where: {
-      accountId: account.id,
-      computedAt: { gte: new Date(Date.now() - 60 * 60 * 1000) },
-    },
-    orderBy: { computedAt: "desc" },
-  })
-
-  if (cached) {
-    return NextResponse.json({
-      disciplineScore: cached.disciplineScore,
-      patterns: cached.patterns,
-      period: { start: cached.periodStart, end: cached.periodEnd },
-      summary: buildSummary(cached.disciplineScore),
-      history,
-    })
-  }
-
-  // Recalculer
+  // Recalculer toujours pour le MVP pour avoir les métriques dynamiques (tags, emotions)
   const trades = await prisma.trade.findMany({
     where: { accountId: account.id, status: "closed" },
     orderBy: { entryAt: "asc" },

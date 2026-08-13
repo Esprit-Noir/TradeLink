@@ -6,27 +6,34 @@ import { signOut } from "next-auth/react"
 
 import { ThemeToggle } from "@/components/ThemeToggle"
 
-const navigation = [
-  {
-    section: "Overview",
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: IconDashboard },
-      { href: "/calendar",  label: "Calendar",  icon: IconCalendar },
-      { href: "/behavioral",label: "Behavioral", icon: IconBrain },
-    ],
-  },
-  {
-    section: "Trades",
-    items: [
-      { href: "/trades",      label: "All Trades",  icon: IconList },
-
-      { href: "/import",      label: "Import CSV",  icon: IconUpload },
-    ],
-  },
-]
-
 export function Sidebar() {
   const pathname = usePathname()
+
+  const navigation = [
+    {
+      section: "Overview",
+      items: [
+        { href: "/dashboard", label: "Dashboard", icon: IconDashboard },
+        { href: "/accounts",  label: "Accounts",  icon: IconWallet },
+        { href: "/calendar",  label: "Calendar",  icon: IconCalendar },
+        { href: "/behavioral",label: "Behavioral", icon: IconBrain },
+      ],
+    },
+    {
+      section: "Trades",
+      items: [
+        { href: "/trades",      label: "All Trades",  icon: IconList },
+        { href: "/setups",      label: "Setups",      icon: IconLayers },
+        { href: "/import",      label: "Import CSV",  icon: IconUpload },
+      ],
+    },
+    {
+      section: "Challenges",
+      items: [
+        { href: "/challenges",  label: "Prop Firms",  icon: IconTarget },
+      ],
+    },
+  ]
 
   return (
     <aside className="sidebar">
@@ -125,6 +132,16 @@ function IconBrain() {
   )
 }
 
+function IconWallet() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
+      <path d="M14.5 11.5C14.5 12.3284 13.8284 13 13 13H3C2.17157 13 1.5 12.3284 1.5 11.5V4.5C1.5 3.67157 2.17157 3 3 3H13C13.8284 3 14.5 3.67157 14.5 4.5V11.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M11 8H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M14.5 6.5H1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
 function IconList() {
   return (
     <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
@@ -155,6 +172,26 @@ function IconSettings() {
     <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
       <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
       <path d="M8 1.5v1.3M8 13.2v1.3M1.5 8h1.3M13.2 8h1.3M3.3 3.3l.9.9M11.8 11.8l.9.9M3.3 12.7l.9-.9M11.8 4.2l.9-.9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IconTarget() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.3"/>
+      <circle cx="8" cy="8" r="1" fill="currentColor"/>
+    </svg>
+  )
+}
+
+function IconLayers() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <path d="M1.5 5.5L8 2l6.5 3.5L8 9l-6.5-3.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M1.5 8.5L8 12l6.5-3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M1.5 11.5L8 15l6.5-3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   )
 }

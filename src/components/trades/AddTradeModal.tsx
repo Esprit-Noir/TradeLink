@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 export function AddTradeModal() {
@@ -9,6 +9,13 @@ export function AddTradeModal() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [file, setFile] = useState<File | null>(null)
+  const [setups, setSetups] = useState<any[]>([])
+
+  useEffect(() => {
+    if (isOpen && setups.length === 0) {
+      fetch("/api/setups").then(r => r.json()).then(data => setSetups(data)).catch(console.error)
+    }
+  }, [isOpen, setups.length])
 
   const [formData, setFormData] = useState({
     symbol: "",
@@ -91,7 +98,6 @@ export function AddTradeModal() {
           position: "fixed",
           top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: "rgba(0, 0, 0, 0.7)",
-          backdropFilter: "blur(4px)",
           zIndex: 50,
           display: "flex",
           alignItems: "center",
@@ -193,8 +199,13 @@ export function AddTradeModal() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
                 <div className="form-group">
-                  <label className="label">Setup Tags (comma separated)</label>
-                  <input name="setupTags" value={formData.setupTags} onChange={handleChange} className="input" placeholder="e.g. Breakout, Pullback" />
+                  <label className="label">Setup</label>
+                  <select name="setupTags" value={formData.setupTags} onChange={handleChange} className="input select">
+                    <option value="">-- Auto-apply Default Setup --</option>
+                    {setups.map(s => (
+                      <option key={s.id} value={s.name}>{s.name} {s.isDefault ? "(Default)" : ""}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label className="label">Emotion Tags (comma separated)</label>

@@ -47,6 +47,12 @@ export async function POST(request: Request) {
 
     const userId = session.user.id as string
 
+    // Fetch default setup
+    const defaultSetup = await prisma.tradingSetup.findFirst({
+      where: { userId: session.user.id, isDefault: true }
+    })
+    const defaultSetupTags = defaultSetup ? [defaultSetup.name] : []
+
     // Map to Prisma schema and calculate missing fields
     const tradesToInsert = parsedTrades.map((t) => {
       const isLong = t.side.toUpperCase() === "LONG"
@@ -76,6 +82,7 @@ export async function POST(request: Request) {
         netPnl,
         fees: t.fees || 0,
         status: "closed",
+        setupTags: defaultSetupTags,
       }
     })
 

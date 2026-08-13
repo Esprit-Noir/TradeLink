@@ -46,16 +46,16 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
     let borderColor = "var(--color-gray-800)"
     let textColor = "var(--color-gray-400)"
 
-    // Heatmap / Color logic
+    // Flat Color logic (No Glassmorphism)
     if (pnl !== undefined) {
       if (pnl > 0) {
-        bgColor = "rgba(16, 185, 129, 0.1)" // emerald-500 muted
-        borderColor = "rgba(16, 185, 129, 0.3)"
-        textColor = "var(--color-profit)"
+        bgColor = "#064e3b" // solid dark green
+        borderColor = "#047857"
+        textColor = "#34d399" // light green for text
       } else if (pnl < 0) {
-        bgColor = "rgba(239, 68, 68, 0.1)" // red-500 muted
-        borderColor = "rgba(239, 68, 68, 0.3)"
-        textColor = "var(--color-loss)"
+        bgColor = "#7f1d1d" // solid dark red
+        borderColor = "#b91c1c"
+        textColor = "#f87171" // light red for text
       } else {
         textColor = "var(--color-gray-300)"
       }

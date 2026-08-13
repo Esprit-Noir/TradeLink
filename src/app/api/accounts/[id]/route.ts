@@ -1,0 +1,104 @@
+import { NextRequest, NextResponse } from "next/server"
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { id: accountId } = await params
+    const body = await request.json()
+    const { name, initialBalance, isDefault } = body
+
+    // Ensure account belongs to user
+    const account = await prisma.tradingAccount.findUnique({
+      where: { id: accountId }
+    })
+
+    if (!account || account.userId !== session.user.id) {
+      return NextResponse.json({ error: "Account not found" }, { status: 404 })
+    }
+
+    // If setting as default, unset others
+    if (isDefault) {
+      await prisma.tradingAccount.updateMany({
+        where: { userId: session.user.id },
+        data: { isDefault: false }
+      })
+    }
+
+    const dataToUpdate: any = {}
+    if (name !== undefined) dataToUpdate.name = name
+    if (initialBalance !== undefined) dataToUpdate.initialBalance = parseFloat(initialBalance)
+    if (isDefault !== undefined) dataToUpdate.isDefault = isDefault
+
+    const updatedAccount = await prisma.tradingAccount.update({
+      where: { id: accountId },
+      data: dataToUpdate
+    })
+
+    return NextResponse.json(updatedAccount)
+  } catch (error) {
+    console.error("Error updating account:", error)
+    return NextResponse.json({ error: "Failed to update account" }, { status: 500 })
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const { id: accountId } = await params
+
+    const account = await prisma.tradingAccount.findUnique({
+      where: { id: accountId }
+    })
+
+    if (!account || account.userId !== session.user.id) {
+      return NextResponse.json({ error: "Account not found" }, { status: 404 })
+    }
+
+    // Prevent deleting the last account
+    const count = await prisma.tradingAccount.count({
+      where: { userId: session.user.id }
+    })
+
+    if (count <= 1) {
+      return NextResponse.json({ error: "Cannot delete your only trading account." }, { status: 400 })
+    }
+
+    await prisma.tradingAccount.delete({
+      where: { id: accountId }
+    })
+
+    // If we deleted the default, set another one as default
+    if (account.isDefault) {
+      const firstRemaining = await prisma.tradingAccount.findFirst({
+        where: { userId: session.user.id }
+      })
+      if (firstRemaining) {
+        await prisma.tradingAccount.update({
+          where: { id: firstRemaining.id },
+          data: { isDefault: true }
+        })
+      }
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error("Error deleting account:", error)
+    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 })
+  }
+}

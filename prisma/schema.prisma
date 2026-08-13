@@ -23,8 +23,26 @@ model User {
 
   accounts             TradingAccount[]
   behavioralSnapshots  BehavioralSnapshot[]
+  propChallenges       PropChallenge[]
+  setups               TradingSetup[]
 
   @@map("users")
+}
+
+// ─── TRADING SETUPS ──────────────────────────────────────────────────────────
+model TradingSetup {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  name        String
+  description String?  @db.Text
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@map("trading_setups")
 }
 
 // ─── TRADING ACCOUNTS ────────────────────────────────────────────────────────
@@ -33,6 +51,7 @@ model TradingAccount {
   userId         String   @map("user_id")
   name           String
   broker         String?
+  type           String   @default("personal") // personal, demo, prop_firm
   baseCurrency   String   @default("USD") @map("base_currency")
   initialBalance Decimal? @map("initial_balance") @db.Decimal(15, 2)
   isDefault      Boolean  @default(false) @map("is_default")
@@ -41,6 +60,7 @@ model TradingAccount {
   user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   trades              Trade[]
   behavioralSnapshots BehavioralSnapshot[]
+  propChallenge       PropChallenge?
 
   @@map("trading_accounts")
 }
@@ -135,4 +155,103 @@ model BehavioralSnapshot {
 
   @@unique([accountId, periodStart, periodEnd])
   @@map("behavioral_snapshots")
+}
+
+// ─── PROP FIRM CHALLENGES ───────────────────────────────────────────────────
+
+model PropFirmTemplate {
+  id                    String   @id @default(cuid())
+  firmName              String   @map("firm_name") // FTMO, Topstep, FundedNext...
+  programName           String   @map("program_name") // "Normal", "Aggressive", "Swing"...
+  drawdownType          String   @map("drawdown_type") // static_balance, trailing_balance, trailing_equity
+  dailyDDPct            Decimal? @map("daily_dd_pct") @db.Decimal(5, 2)
+  maxDDPct              Decimal  @map("max_dd_pct") @db.Decimal(5, 2)
+  dailyResetTimezone    String   @default("UTC") @map("daily_reset_timezone")
+  profitTargetPhase1Pct Decimal? @map("profit_target_phase1_pct") @db.Decimal(5, 2)
+  profitTargetPhase2Pct Decimal? @map("profit_target_phase2_pct") @db.Decimal(5, 2)
+  minTradingDays        Int?     @map("min_trading_days")
+  maxTradingDays        Int?     @map("max_trading_days")
+  consistencyRulePct    Decimal? @map("consistency_rule_pct") @db.Decimal(5, 2)
+  weekendHoldingAllowed Boolean  @default(true) @map("weekend_holding_allowed")
+  newsTradingAllowed    Boolean  @default(true) @map("news_trading_allowed")
+  isActive              Boolean  @default(true) @map("is_active")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  challenges            PropChallenge[]
+
+  @@map("prop_firm_templates")
+}
+
+model PropChallenge {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  accountId        String   @unique @map("account_id") // 1:1 relation with TradingAccount
+  templateId       String   @map("template_id")
+
+  // Overrides
+  initialBalance   Decimal  @map("initial_balance") @db.Decimal(15, 2)
+  dailyDDPct       Decimal  @map("daily_dd_pct") @db.Decimal(5, 2)
+  maxDDPct         Decimal  @map("max_dd_pct") @db.Decimal(5, 2)
+  profitTargetPct  Decimal  @map("profit_target_pct") @db.Decimal(5, 2)
+  minTradingDays   Int?     @map("min_trading_days")
+  maxTradingDays   Int?     @map("max_trading_days")
+
+  phase            String   @default("phase_1") // phase_1, phase_2, funded, failed
+  status           String   @default("active")  // active, passed, failed, breached
+  startedAt        DateTime @map("started_at")
+  deadlineAt       DateTime? @map("deadline_at")
+  breachedAt       DateTime? @map("breached_at")
+  breachReason     String?  @map("breach_reason") // daily_dd, max_dd, consistency, time_limit
+  metadata         Json?
+
+  // Live calculated values
+  currentBalance   Decimal? @map("current_balance") @db.Decimal(15, 2)
+  currentEquity    Decimal? @map("current_equity") @db.Decimal(15, 2)
+  highestBalance   Decimal? @map("highest_balance") @db.Decimal(15, 2)
+  highestEquity    Decimal? @map("highest_equity") @db.Decimal(15, 2)
+  todayStartBalance Decimal? @map("today_start_balance") @db.Decimal(15, 2)
+  todayResetAt     DateTime? @map("today_reset_at")
+
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account          TradingAccount     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  template         PropFirmTemplate   @relation(fields: [templateId], references: [id])
+  
+  dailySnapshots   PropChallengeDailySnapshot[]
+  events           PropChallengeEvent[]
+
+  @@map("prop_challenges")
+}
+
+model PropChallengeDailySnapshot {
+  id             String   @id @default(cuid())
+  challengeId    String   @map("challenge_id")
+  date           DateTime @db.Date // YYYY-MM-DD
+  startBalance   Decimal  @map("start_balance") @db.Decimal(15, 2)
+  endBalance     Decimal  @map("end_balance") @db.Decimal(15, 2)
+  lowestEquity   Decimal  @map("lowest_equity") @db.Decimal(15, 2)
+  dailyPnl       Decimal  @map("daily_pnl") @db.Decimal(15, 2)
+  tradesCount    Int      @default(0) @map("trades_count")
+  dailyDDUsedPct Decimal? @map("daily_dd_used_pct") @db.Decimal(5, 2)
+
+  challenge      PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@unique([challengeId, date])
+  @@map("prop_challenge_daily_snapshots")
+}
+
+model PropChallengeEvent {
+  id           String   @id @default(cuid())
+  challengeId  String   @map("challenge_id")
+  eventType    String   @map("event_type") // alert_80pct, alert_90pct, phase_passed, breached, target_hit
+  severity     String   @map("severity")   // info, warning, critical
+  message      String?
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  challenge    PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@map("prop_challenge_events")
 }

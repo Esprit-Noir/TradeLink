@@ -28,7 +28,8 @@ export default async function CalendarPage() {
 
   // Aggregate P&L by day (YYYY-MM-DD)
   const dailyPnl = trades.reduce((acc, trade) => {
-    const dateStr = trade.exitAt.toISOString().split("T")[0]
+    if (!trade.exitAt) return acc // Guard: skip open trades
+    const dateStr = new Date(trade.exitAt).toISOString().split("T")[0]
     if (!acc[dateStr]) {
       acc[dateStr] = 0
     }

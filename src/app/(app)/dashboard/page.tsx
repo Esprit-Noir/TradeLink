@@ -11,6 +11,8 @@ import { KpiGridSkeleton } from "@/components/dashboard/KpiGridSkeleton"
 import { WinRateChartServer } from "@/components/dashboard/WinRateChartServer"
 import { DailyPnlChartServer } from "@/components/dashboard/DailyPnlChartServer"
 import { DashboardFilter } from "@/components/dashboard/DashboardFilter"
+import { auth } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
 
 export const metadata = {
   title: "Dashboard",
@@ -49,9 +51,25 @@ export default async function DashboardPage({
 
   const dateRange = { from: fromDate, to: toDate }
 
+  // Fetch challenge for active account if any
+  const session = await auth()
+  let challenge = null
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: { accounts: true }
+    })
+    const defaultAccount = user?.accounts.find(a => a.isDefault)
+    if (defaultAccount) {
+      challenge = await prisma.propChallenge.findUnique({
+        where: { accountId: defaultAccount.id },
+        include: { template: true }
+      })
+    }
+  }
+
   return (
     <div>
-      {/* Header */}
       <div className="page-header">
         <div>
           <h1 className="page-title">Dashboard</h1>

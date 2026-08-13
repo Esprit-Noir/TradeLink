@@ -15,11 +15,26 @@ export interface DetectedPattern {
   severity: "low" | "medium" | "high"
 }
 
+export interface EmotionCost {
+  tag: string
+  count: number
+  totalLoss: number
+}
+
+export interface SetupPerformance {
+  tag: string
+  count: number
+  winRate: number
+  netPnl: number
+}
+
 export interface BehavioralResult {
   disciplineScore: number  // 0–100
   patterns: DetectedPattern[]
   period: { start: Date; end: Date }
   summary: string
+  emotionCosts: EmotionCost[]
+  setupPerformance: SetupPerformance[]
 }
 
 // ─── Config paramétrable ─────────────────────────────────────────────────────
@@ -42,7 +57,14 @@ const CONFIG = {
 // ─── Point d'entrée principal ─────────────────────────────────────────────────
 export function analyzeBehavior(trades: Trade[]): BehavioralResult {
   if (trades.length === 0) {
-    return { disciplineScore: 100, patterns: [], period: { start: new Date(), end: new Date() }, summary: "No trades to analyze." }
+    return { 
+      disciplineScore: 100, 
+      patterns: [], 
+      period: { start: new Date(), end: new Date() }, 
+      summary: "No trades to analyze.",
+      emotionCosts: [],
+      setupPerformance: []
+    }
   }
 
   const sorted = [...trades].sort((a, b) => new Date(a.entryAt).getTime() - new Date(b.entryAt).getTime())
@@ -59,12 +81,67 @@ export function analyzeBehavior(trades: Trade[]): BehavioralResult {
 
   const disciplineScore = computeScore(patterns)
 
+  // Compute advanced metrics
+  const emotionCosts = computeEmotionCosts(sorted)
+  const setupPerformance = computeSetupPerformance(sorted)
+
   return {
     disciplineScore,
     patterns,
     period,
     summary: buildSummary(disciplineScore, patterns),
+    emotionCosts,
+    setupPerformance
   }
+}
+
+function computeEmotionCosts(trades: Trade[]): EmotionCost[] {
+  const costs: Record<string, { count: number; totalLoss: number }> = {}
+
+  for (const trade of trades) {
+    if (Number(trade.netPnl) >= 0) continue // Only look at losing trades for "cost"
+    if (!trade.emotionTags || !Array.isArray(trade.emotionTags)) continue
+    
+    // Some brokers/manual entry might save it as array of strings
+    const tags = trade.emotionTags as string[]
+    for (const tag of tags) {
+      if (!costs[tag]) costs[tag] = { count: 0, totalLoss: 0 }
+      costs[tag].count += 1
+      costs[tag].totalLoss += Math.abs(Number(trade.netPnl))
+    }
+  }
+
+  return Object.entries(costs)
+    .map(([tag, data]) => ({ tag, ...data }))
+    .sort((a, b) => b.totalLoss - a.totalLoss) // Sort by biggest loss
+}
+
+function computeSetupPerformance(trades: Trade[]): SetupPerformance[] {
+  const perf: Record<string, { count: number; wins: number; netPnl: number }> = {}
+
+  for (const trade of trades) {
+    if (!trade.setupTags || !Array.isArray(trade.setupTags)) continue
+    
+    const tags = trade.setupTags as string[]
+    const pnl = Number(trade.netPnl) || 0
+    const isWin = pnl > 0
+
+    for (const tag of tags) {
+      if (!perf[tag]) perf[tag] = { count: 0, wins: 0, netPnl: 0 }
+      perf[tag].count += 1
+      if (isWin) perf[tag].wins += 1
+      perf[tag].netPnl += pnl
+    }
+  }
+
+  return Object.entries(perf)
+    .map(([tag, data]) => ({
+      tag,
+      count: data.count,
+      winRate: Math.round((data.wins / data.count) * 100),
+      netPnl: Math.round(data.netPnl * 100) / 100
+    }))
+    .sort((a, b) => b.netPnl - a.netPnl) // Sort by best PnL
 }
 
 // ─── Revenge Trading ─────────────────────────────────────────────────────────

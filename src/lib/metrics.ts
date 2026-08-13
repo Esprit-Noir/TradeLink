@@ -109,20 +109,42 @@ export function computeMetrics(trades: Trade[], initialBalance = 0): Performance
 export function computeEquityCurve(trades: Trade[], initialBalance = 0): EquityPoint[] {
   const closed = trades
     .filter((t) => t.status === "closed" && t.netPnl !== null && t.exitAt)
-    .sort((a, b) => new Date(a.exitAt!).getTime() - new Date(b.exitAt!).getTime())
+
+  // S'il n'y a pas de trades, on retourne juste le solde initial aujourd'hui
+  if (closed.length === 0) {
+    return [{ date: new Date().toISOString().split("T")[0], equity: initialBalance, drawdown: 0 }]
+  }
+
+  // Grouper par jour
+  const byDay = groupByDay(closed)
+  // Trier les jours chronologiquement
+  const sortedDates = Object.keys(byDay).sort((a, b) => a.localeCompare(b))
 
   let equity = initialBalance
   let peak = initialBalance
-  const points: EquityPoint[] = [
-    { date: new Date(closed[0]?.exitAt ?? new Date()).toISOString().split("T")[0], equity, drawdown: 0 },
-  ]
+  const points: EquityPoint[] = []
 
-  for (const trade of closed) {
-    equity += Number(trade.netPnl)
-    peak = Math.max(peak, equity)
+  // Point de départ (la veille du premier trade)
+  const firstDate = new Date(sortedDates[0])
+  firstDate.setDate(firstDate.getDate() - 1)
+  points.push({
+    date: firstDate.toISOString().split("T")[0],
+    equity,
+    drawdown: 0
+  })
+
+  // Ajouter les points pour chaque jour de trading
+  for (const date of sortedDates) {
+    const dailyTrades = byDay[date]
+    const dailyPnl = dailyTrades.reduce((sum, t) => sum + Number(t.netPnl), 0)
+    
+    equity += dailyPnl
+    if (equity > peak) peak = equity
+    
     const drawdown = peak > 0 ? ((peak - equity) / peak) * 100 : 0
+    
     points.push({
-      date: new Date(trade.exitAt!).toISOString().split("T")[0],
+      date,
       equity: Math.round(equity * 100) / 100,
       drawdown: Math.round(drawdown * 100) / 100,
     })

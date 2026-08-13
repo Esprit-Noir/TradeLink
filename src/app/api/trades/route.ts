@@ -34,6 +34,16 @@ export async function POST(request: Request) {
     const diff = isLong ? exit - entry : entry - exit
     const netPnl = (diff * qty) - f
 
+    let finalSetupTags = setupTags ? setupTags.split(",").map((s: string) => s.trim()).filter(Boolean) : []
+    if (finalSetupTags.length === 0) {
+      const defaultSetup = await prisma.tradingSetup.findFirst({
+        where: { userId: session.user.id, isDefault: true }
+      })
+      if (defaultSetup) {
+        finalSetupTags = [defaultSetup.name]
+      }
+    }
+
     const trade = await prisma.trade.create({
       data: {
         userId: session.user.id,
@@ -49,7 +59,7 @@ export async function POST(request: Request) {
         fees: f,
         netPnl,
         status: "closed",
-        setupTags: setupTags ? setupTags.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
+        setupTags: finalSetupTags,
         emotionTags: emotionTags ? emotionTags.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
         notesPost: notesPost || null,
         screenshots: screenshotUrl ? {

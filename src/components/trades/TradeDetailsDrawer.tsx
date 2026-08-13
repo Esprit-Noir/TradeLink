@@ -2,8 +2,26 @@
 
 import { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 
-type Trade = any // Using any for brevity in this MVP, ideally type it
+type Trade = {
+  id: string
+  symbol: string
+  side: string
+  quantity: number
+  entryPrice: number
+  exitPrice: number | null
+  entryAt: string
+  exitAt: string | null
+  netPnl: number | null
+  fees: number
+  setupTags: string[]
+  emotionTags: string[]
+  notesPost: string | null
+  screenshots: { id: string; storageUrl: string; fileName: string | null }[]
+}
+
+type Setup = { id: string; name: string; isDefault: boolean }
 
 export function TradeDetailsDrawer() {
   const router = useRouter()
@@ -22,6 +40,14 @@ export function TradeDetailsDrawer() {
   const [editedEmotionTags, setEditedEmotionTags] = useState("")
   const [editedNotes, setEditedNotes] = useState("")
   const [saving, setSaving] = useState(false)
+  const [availableSetups, setAvailableSetups] = useState<Setup[]>([])
+
+  // Load setups for the edit dropdown
+  useEffect(() => {
+    if (editMode && availableSetups.length === 0) {
+      fetch("/api/setups").then(r => r.json()).then(d => setAvailableSetups(d)).catch(console.error)
+    }
+  }, [editMode, availableSetups.length])
 
   const isOpen = !!tradeId
 
@@ -94,7 +120,7 @@ export function TradeDetailsDrawer() {
     } catch (err: any) {
       console.error("Upload failed", err)
       setUploadError(err.message || "Failed to upload image")
-      alert(`Upload failed: ${err.message || "Unknown error"}`)
+      toast.error(`Upload failed: ${err.message || "Unknown error"}`)
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -126,7 +152,7 @@ export function TradeDetailsDrawer() {
       router.refresh()
     } catch (error) {
       console.error("Failed to save details", error)
-      alert("Failed to save changes. Please try again.")
+      toast.error("Failed to save changes. Please try again.")
     } finally {
       setSaving(false)
     }
@@ -141,7 +167,6 @@ export function TradeDetailsDrawer() {
         style={{
           position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
           backgroundColor: "rgba(0, 0, 0, 0.5)",
-          backdropFilter: "blur(4px)",
           zIndex: 40,
         }}
         onClick={closeDrawer}
@@ -254,15 +279,18 @@ export function TradeDetailsDrawer() {
                   <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                     <div>
                       <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem", color: "var(--color-gray-400)" }}>
-                        Setup Tags (comma separated)
+                        Setup
                       </label>
-                      <input 
-                        type="text" 
-                        className="input"
+                      <select
+                        className="input select"
                         value={editedSetupTags}
                         onChange={e => setEditedSetupTags(e.target.value)}
-                        placeholder="e.g. Breakout, Pullback"
-                      />
+                      >
+                        <option value="">-- No Setup --</option>
+                        {availableSetups.map(s => (
+                          <option key={s.id} value={s.name}>{s.name}{s.isDefault ? " (Default)" : ""}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem", color: "var(--color-gray-400)" }}>
@@ -295,7 +323,7 @@ export function TradeDetailsDrawer() {
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                       <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>Setup Tags</span>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                        {trade.setupTags && trade.setupTags.length > 0 ? trade.setupTags.map(tag => (
+                        {trade.setupTags && trade.setupTags.length > 0 ? trade.setupTags.map((tag: string) => (
                           <span key={tag} className="badge" style={{ background: "var(--color-gray-800)" }}>{tag}</span>
                         )) : <span style={{ fontSize: "0.85rem", color: "var(--color-gray-600)" }}>No setup tags</span>}
                       </div>
@@ -304,7 +332,7 @@ export function TradeDetailsDrawer() {
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                       <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>Emotion Tags</span>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                        {trade.emotionTags && trade.emotionTags.length > 0 ? trade.emotionTags.map(tag => (
+                        {trade.emotionTags && trade.emotionTags.length > 0 ? trade.emotionTags.map((tag: string) => (
                           <span key={tag} className="badge" style={{ background: "var(--color-gray-800)" }}>{tag}</span>
                         )) : <span style={{ fontSize: "0.85rem", color: "var(--color-gray-600)" }}>No emotion tags</span>}
                       </div>

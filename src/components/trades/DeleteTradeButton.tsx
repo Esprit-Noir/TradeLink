@@ -1,6 +1,8 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { Trash2 } from "lucide-react"
 
 export function DeleteTradeButton({ id }: { id: string }) {
   const router = useRouter()
@@ -14,7 +16,7 @@ export function DeleteTradeButton({ id }: { id: string }) {
       // Refresh the current route to fetch updated data from the server
       router.refresh()
     } catch (error) {
-      alert("Error deleting trade.")
+      toast.error("Error deleting trade.")
     }
   }
 

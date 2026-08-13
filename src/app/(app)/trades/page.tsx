@@ -18,7 +18,7 @@ const ITEMS_PER_PAGE = 20
 export default async function TradesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; symbol?: string; side?: string }>
+  searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; tradeId?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
@@ -34,7 +34,10 @@ export default async function TradesPage({
   const currentPage = Number(searchParamsObj?.page) || 1
   const skip = (currentPage - 1) * ITEMS_PER_PAGE
 
-  const whereClause: any = { accountId: account?.id }
+  // Always scope to the authenticated user for security
+  const whereClause: any = { userId: session.user.id }
+  if (account) whereClause.accountId = account.id
+  
   if (searchParamsObj?.symbol) {
     whereClause.symbol = { contains: searchParamsObj.symbol, mode: "insensitive" }
   }
@@ -42,19 +45,42 @@ export default async function TradesPage({
     whereClause.side = searchParamsObj.side
   }
 
-  if (account) {
-    totalTrades = await prisma.trade.count({
-      where: whereClause,
-    })
-    
-    trades = await prisma.trade.findMany({
-      where: whereClause,
-      orderBy: { entryAt: "desc" },
-      skip,
-      take: ITEMS_PER_PAGE,
-      include: { screenshots: true }
-    })
+  if (searchParamsObj?.result) {
+    if (searchParamsObj.result === "win") {
+      whereClause.netPnl = { gt: 0 }
+    } else if (searchParamsObj.result === "loss") {
+      whereClause.netPnl = { lt: 0 }
+    } else if (searchParamsObj.result === "be") {
+      whereClause.netPnl = { equals: 0 }
+    }
   }
+
+  if (searchParamsObj?.date) {
+    const now = new Date()
+    if (searchParamsObj.date === "today") {
+      whereClause.entryAt = { gte: new Date(now.setHours(0, 0, 0, 0)) }
+    } else if (searchParamsObj.date === "7d") {
+      const past = new Date()
+      past.setDate(past.getDate() - 7)
+      whereClause.entryAt = { gte: past }
+    } else if (searchParamsObj.date === "30d") {
+      const past = new Date()
+      past.setDate(past.getDate() - 30)
+      whereClause.entryAt = { gte: past }
+    } else if (searchParamsObj.date === "this_month") {
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      whereClause.entryAt = { gte: startOfMonth }
+    }
+  }
+
+  totalTrades = await prisma.trade.count({ where: whereClause })
+  trades = await prisma.trade.findMany({
+    where: whereClause,
+    orderBy: { entryAt: "desc" },
+    skip,
+    take: ITEMS_PER_PAGE,
+    include: { screenshots: true }
+  })
 
   const totalPages = Math.ceil(totalTrades / ITEMS_PER_PAGE)
 
@@ -119,7 +145,6 @@ export default async function TradesPage({
         </table>
       </div>
 
-      {/* Pagination UI */}
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem", padding: "0.5rem" }}>
           <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)" }}>
@@ -152,7 +177,7 @@ export default async function TradesPage({
           </div>
         </div>
       )}
-      
+
       <Suspense fallback={null}>
         <TradeDetailsDrawer />
       </Suspense>

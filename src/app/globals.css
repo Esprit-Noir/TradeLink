@@ -42,7 +42,7 @@
 
 :root {
   /* LIGHT MODE */
-  --gray-950: #f4f4f6; /* bg-main */
+  --gray-950: #ffffff; /* bg-main */
   --gray-900: #ffffff; /* bg-card */
   --gray-800: #e4e4e7; /* border-subtle */
   --gray-700: #d4d4d8; /* border-hover */
@@ -89,8 +89,6 @@
 /* ── Glassmorphism utility ──────────────────────────────── */
 .glass {
   background: rgba(26, 26, 31, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -479,7 +477,6 @@
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
   z-index: 40;
   animation: fadeIn 150ms ease;
 }

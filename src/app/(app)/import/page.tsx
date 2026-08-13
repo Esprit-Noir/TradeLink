@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
 export default function ImportPage() {
@@ -10,6 +10,17 @@ export default function ImportPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const [defaultSetupName, setDefaultSetupName] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch("/api/setups")
+      .then(r => r.json())
+      .then((setups: any[]) => {
+        const def = setups.find(s => s.isDefault)
+        if (def) setDefaultSetupName(def.name)
+      })
+      .catch(console.error)
+  }, [])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -147,6 +158,23 @@ export default function ImportPage() {
               )}
             </div>
           </div>
+
+          {defaultSetupName ? (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.9rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "var(--radius-card)", fontSize: "0.85rem", color: "var(--color-gray-400)" }}>
+              <span style={{ fontSize: "1.25rem", flexShrink: 0 }}>🏷️</span>
+              <span>
+                All imported trades will be tagged with your default setup: {" "}
+                <strong style={{ color: "var(--color-gray-200)" }}>"{defaultSetupName}"</strong>.
+                Change it in the {" "}
+                <a href="/setups" style={{ color: "var(--color-brand-500)", textDecoration: "underline" }}>Setups page</a>.
+              </span>
+            </div>
+          ) : (
+            <div style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem", padding: "0.9rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "var(--radius-card)", fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
+              <span style={{ fontSize: "1.25rem", flexShrink: 0 }}>⚠️</span>
+              <span>No default setup defined. Imported trades will have no setup tag. <a href="/setups" style={{ color: "var(--color-brand-500)", textDecoration: "underline" }}>Create one now</a>.</span>
+            </div>
+          )}
 
           <button 
             type="submit" 
