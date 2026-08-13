@@ -8,6 +8,7 @@ export function AddTradeModal() {
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [file, setFile] = useState<File | null>(null)
 
   const [formData, setFormData] = useState({
     symbol: "",
@@ -34,10 +35,27 @@ export function AddTradeModal() {
     setError("")
 
     try {
+      let screenshotUrl = ""
+
+      // Upload file if selected
+      if (file) {
+        const uploadRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
+          method: "POST",
+          body: file,
+        })
+        if (!uploadRes.ok) {
+          throw new Error("Failed to upload screenshot")
+        }
+        const blob = await uploadRes.json()
+        screenshotUrl = blob.url
+      }
+
+      const payload = { ...formData, screenshotUrl }
+
       const res = await fetch("/api/trades", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       })
 
       const data = await res.json()
@@ -80,7 +98,7 @@ export function AddTradeModal() {
           justifyContent: "center",
           padding: "1rem"
         }}>
-          <div className="card glass" style={{ width: "100%", maxWidth: 650, position: "relative", maxHeight: "90vh", overflowY: "auto" }}>
+          <div className="card glass animate-in" style={{ width: "100%", maxWidth: 650, position: "relative", maxHeight: "90vh", overflowY: "auto" }}>
             
             <button 
               onClick={() => setIsOpen(false)}
@@ -187,6 +205,17 @@ export function AddTradeModal() {
               <div className="form-group">
                 <label className="label">Trade Notes</label>
                 <textarea name="notesPost" value={formData.notesPost} onChange={(e: any) => handleChange(e)} className="input" placeholder="What happened in this trade?" style={{ minHeight: "80px", resize: "vertical" }} />
+              </div>
+
+              <div className="form-group">
+                <label className="label">Screenshot (Optional)</label>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  className="input" 
+                  style={{ padding: "0.4rem" }} 
+                />
               </div>
 
               <div style={{ marginTop: "1rem", display: "flex", justifyContent: "flex-end", gap: "1rem" }}>

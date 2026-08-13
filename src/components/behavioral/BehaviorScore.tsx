@@ -3,10 +3,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts"
 import type { BehavioralResult, DetectedPattern } from "@/lib/behavioral"
 
 export function BehaviorScore() {
-  const [data, setData] = useState<BehavioralResult | null>(null)
+  const [data, setData] = useState<BehavioralResult & { history?: any[] } | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -54,6 +55,47 @@ export function BehaviorScore() {
           {data.patterns.map((pattern) => (
             <PatternCard key={pattern.type} pattern={pattern} />
           ))}
+        </div>
+      )}
+
+      {/* History Chart */}
+      {data.history && data.history.length > 1 && (
+        <div className="card" style={{ padding: "1.5rem" }}>
+          <div style={{ fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-gray-500)", marginBottom: "1rem" }}>
+            Score History
+          </div>
+          <ResponsiveContainer width="100%" height={120}>
+            <LineChart data={data.history}>
+              <XAxis 
+                dataKey="computedAt" 
+                tickFormatter={(d) => new Date(d).toLocaleDateString()} 
+                tick={{ fontSize: 10, fill: "var(--color-gray-500)" }}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={20}
+              />
+              <YAxis 
+                domain={[0, 100]} 
+                hide 
+              />
+              <Tooltip 
+                contentStyle={{
+                  background: "var(--color-gray-800)",
+                  border: "1px solid var(--color-gray-700)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                }}
+                labelFormatter={(l: any) => new Date(l).toLocaleString()}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="disciplineScore" 
+                stroke="var(--color-brand-500)" 
+                strokeWidth={2}
+                dot={{ r: 3, fill: "var(--color-brand-500)", stroke: "var(--color-gray-900)" }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>

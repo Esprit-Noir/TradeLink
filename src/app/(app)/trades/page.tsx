@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { DeleteTradeButton } from "@/components/trades/DeleteTradeButton"
+import { TradesFilter } from "@/components/trades/TradesFilter"
 
 import Link from "next/link"
 
@@ -14,7 +15,7 @@ const ITEMS_PER_PAGE = 20
 export default async function TradesPage({
   searchParams,
 }: {
-  searchParams: { page?: string }
+  searchParams: Promise<{ page?: string; symbol?: string; side?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
@@ -26,19 +27,29 @@ export default async function TradesPage({
   let trades: any[] = []
   let totalTrades = 0
   
-  const currentPage = Number(searchParams?.page) || 1
+  const searchParamsObj = await searchParams
+  const currentPage = Number(searchParamsObj?.page) || 1
   const skip = (currentPage - 1) * ITEMS_PER_PAGE
+
+  const whereClause: any = { accountId: account?.id }
+  if (searchParamsObj?.symbol) {
+    whereClause.symbol = { contains: searchParamsObj.symbol, mode: "insensitive" }
+  }
+  if (searchParamsObj?.side) {
+    whereClause.side = searchParamsObj.side
+  }
 
   if (account) {
     totalTrades = await prisma.trade.count({
-      where: { accountId: account.id },
+      where: whereClause,
     })
     
     trades = await prisma.trade.findMany({
-      where: { accountId: account.id },
+      where: whereClause,
       orderBy: { entryAt: "desc" },
       skip,
       take: ITEMS_PER_PAGE,
+      include: { screenshots: true }
     })
   }
 
@@ -55,6 +66,8 @@ export default async function TradesPage({
           <AddTradeModal />
         </div>
       </div>
+
+      <TradesFilter />
 
       <div className="table-wrapper">
         <table className="data-table">
@@ -92,7 +105,14 @@ export default async function TradesPage({
                     </div>
                   </td>
                   <td>
-                    <span style={{ fontWeight: 600 }}>{t.symbol}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      <span style={{ fontWeight: 600 }}>{t.symbol}</span>
+                      {t.screenshots && t.screenshots.length > 0 && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--color-brand-500)" }}>
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      )}
+                    </div>
                   </td>
                   <td>
                     <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>

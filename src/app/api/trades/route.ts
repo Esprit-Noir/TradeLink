@@ -10,7 +10,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { symbol, instrumentType, side, quantity, entryPrice, exitPrice, entryAt, exitAt, fees, setupTags, emotionTags, notesPost } = body
+    const { symbol, instrumentType, side, quantity, entryPrice, exitPrice, entryAt, exitAt, fees, setupTags, emotionTags, notesPost, screenshotUrl } = body
 
     if (!symbol || !quantity || !entryPrice || !exitPrice || !entryAt) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -52,6 +52,12 @@ export async function POST(request: Request) {
         setupTags: setupTags ? setupTags.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
         emotionTags: emotionTags ? emotionTags.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
         notesPost: notesPost || null,
+        screenshots: screenshotUrl ? {
+          create: {
+            storageUrl: screenshotUrl,
+            fileName: screenshotUrl.split('/').pop() || 'screenshot'
+          }
+        } : undefined
       }
     })
 

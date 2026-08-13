@@ -20,6 +20,13 @@ export async function GET() {
     return NextResponse.json({ disciplineScore: 100, patterns: [], summary: "No account found." })
   }
 
+  // Fetch history for the chart
+  const history = await prisma.behavioralSnapshot.findMany({
+    where: { accountId: account.id },
+    orderBy: { computedAt: "asc" },
+    select: { disciplineScore: true, computedAt: true }
+  })
+
   // Vérifier si un snapshot récent existe (< 1h)
   const cached = await prisma.behavioralSnapshot.findFirst({
     where: {
@@ -35,6 +42,7 @@ export async function GET() {
       patterns: cached.patterns,
       period: { start: cached.periodStart, end: cached.periodEnd },
       summary: buildSummary(cached.disciplineScore),
+      history,
     })
   }
 
@@ -72,7 +80,7 @@ export async function GET() {
     })
   }
 
-  return NextResponse.json(result)
+  return NextResponse.json({ ...result, history })
 }
 
 function buildSummary(score: number): string {
