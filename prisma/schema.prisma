@@ -18,6 +18,7 @@ model User {
   timezone     String   @default("UTC")
   baseCurrency String   @default("USD") @map("base_currency")
   onboarded    Boolean  @default(false)
+  dailyGoal    Decimal? @db.Decimal(15,2) @map("daily_goal")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

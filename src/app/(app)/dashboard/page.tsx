@@ -11,6 +11,7 @@ import { KpiGridSkeleton } from "@/components/dashboard/KpiGridSkeleton"
 import { WinRateChartServer } from "@/components/dashboard/WinRateChartServer"
 import { DailyPnlChartServer } from "@/components/dashboard/DailyPnlChartServer"
 import { DashboardFilter } from "@/components/dashboard/DashboardFilter"
+import { DailyGoalWidget } from "@/components/dashboard/DailyGoalWidget"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -54,17 +55,31 @@ export default async function DashboardPage({
   // Fetch challenge for active account if any
   const session = await auth()
   let challenge = null
+  let todayPnl = 0
+  let dailyGoal: number | null = null
+
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: { accounts: true }
     })
     const defaultAccount = user?.accounts.find(a => a.isDefault)
+    dailyGoal = user?.dailyGoal ? Number(user.dailyGoal) : null
+
     if (defaultAccount) {
       challenge = await prisma.propChallenge.findUnique({
         where: { accountId: defaultAccount.id },
         include: { template: true }
       })
+
+      // Today's P&L
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
+      const todayTrades = await prisma.trade.findMany({
+        where: { accountId: defaultAccount.id, status: "closed", exitAt: { gte: todayStart } },
+        select: { netPnl: true }
+      })
+      todayPnl = todayTrades.reduce((s, t) => s + Number(t.netPnl || 0), 0)
     }
   }
 
@@ -95,13 +110,16 @@ export default async function DashboardPage({
             </Suspense>
           </div>
         </div>
-        <div className="chart-card">
-          <div className="chart-title">Win Rate</div>
-          <div style={{ height: 260 }}>
-            <Suspense fallback={<ChartSkeleton height={260} />}>
-              <WinRateChartServer dateRange={dateRange} />
-            </Suspense>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div className="chart-card" style={{ flex: 1 }}>
+            <div className="chart-title">Win Rate</div>
+            <div style={{ height: 160 }}>
+              <Suspense fallback={<ChartSkeleton height={160} />}>
+                <WinRateChartServer dateRange={dateRange} />
+              </Suspense>
+            </div>
           </div>
+          <DailyGoalWidget todayPnl={todayPnl} initialGoal={dailyGoal} />
         </div>
       </div>
 
