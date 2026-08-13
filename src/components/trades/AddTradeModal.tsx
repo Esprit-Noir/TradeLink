@@ -1,0 +1,206 @@
+"use client"
+
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+
+export function AddTradeModal() {
+  const router = useRouter()
+  const [isOpen, setIsOpen] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  const [formData, setFormData] = useState({
+    symbol: "",
+    instrumentType: "CRYPTO",
+    side: "LONG",
+    quantity: "",
+    entryPrice: "",
+    exitPrice: "",
+    entryAt: new Date().toISOString().slice(0, 16),
+    exitAt: new Date().toISOString().slice(0, 16),
+    fees: "0",
+    setupTags: "",
+    emotionTags: "",
+    notesPost: "",
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError("")
+
+    try {
+      const res = await fetch("/api/trades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to add trade")
+      }
+
+      setIsOpen(false)
+      router.refresh() // Refresh the Server Component to show the new trade
+    } catch (err: any) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <button 
+        className="btn btn-primary" 
+        onClick={() => setIsOpen(true)}
+        style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        Add Trade
+      </button>
+
+      {isOpen && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
+          backdropFilter: "blur(4px)",
+          zIndex: 50,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "1rem"
+        }}>
+          <div className="card glass" style={{ width: "100%", maxWidth: 650, position: "relative", maxHeight: "90vh", overflowY: "auto" }}>
+            
+            <button 
+              onClick={() => setIsOpen(false)}
+              style={{
+                position: "absolute",
+                top: "1.5rem",
+                right: "1.5rem",
+                background: "none",
+                border: "none",
+                color: "var(--color-gray-400)",
+                cursor: "pointer"
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            <div style={{ marginBottom: "2rem" }}>
+              <h2 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-gray-100)" }}>Manual Trade Entry</h2>
+              <p style={{ fontSize: "0.875rem", color: "var(--color-gray-400)" }}>Record a trade that isn't in your CSV imports.</p>
+            </div>
+
+            {error && (
+              <div style={{
+                background: "var(--color-loss-muted)",
+                color: "var(--color-loss)",
+                padding: "0.75rem",
+                borderRadius: "8px",
+                fontSize: "0.875rem",
+                marginBottom: "1.5rem",
+                border: "1px solid rgba(239, 68, 68, 0.2)"
+              }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+              
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+                <div className="form-group">
+                  <label className="label">Symbol</label>
+                  <input name="symbol" value={formData.symbol} onChange={handleChange} className="input" placeholder="BTC/USDT" required />
+                </div>
+                <div className="form-group">
+                  <label className="label">Instrument Type</label>
+                  <select name="instrumentType" value={formData.instrumentType} onChange={handleChange} className="input select">
+                    <option value="CRYPTO">Crypto</option>
+                    <option value="FOREX">Forex</option>
+                    <option value="STOCKS">Stocks</option>
+                    <option value="FUTURES">Futures</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label className="label">Side</label>
+                  <select name="side" value={formData.side} onChange={handleChange} className="input select">
+                    <option value="LONG">Long</option>
+                    <option value="SHORT">Short</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+                <div className="form-group">
+                  <label className="label">Quantity</label>
+                  <input name="quantity" type="number" step="any" value={formData.quantity} onChange={handleChange} className="input" required />
+                </div>
+                <div className="form-group">
+                  <label className="label">Entry Price</label>
+                  <input name="entryPrice" type="number" step="any" value={formData.entryPrice} onChange={handleChange} className="input" required />
+                </div>
+                <div className="form-group">
+                  <label className="label">Exit Price</label>
+                  <input name="exitPrice" type="number" step="any" value={formData.exitPrice} onChange={handleChange} className="input" required />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
+                <div className="form-group">
+                  <label className="label">Entry Date</label>
+                  <input name="entryAt" type="datetime-local" value={formData.entryAt} onChange={handleChange} className="input" required />
+                </div>
+                <div className="form-group">
+                  <label className="label">Exit Date</label>
+                  <input name="exitAt" type="datetime-local" value={formData.exitAt} onChange={handleChange} className="input" required />
+                </div>
+                <div className="form-group">
+                  <label className="label">Fees</label>
+                  <input name="fees" type="number" step="any" value={formData.fees} onChange={handleChange} className="input" />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                <div className="form-group">
+                  <label className="label">Setup Tags (comma separated)</label>
+                  <input name="setupTags" value={formData.setupTags} onChange={handleChange} className="input" placeholder="e.g. Breakout, Pullback" />
+                </div>
+                <div className="form-group">
+                  <label className="label">Emotion Tags (comma separated)</label>
+                  <input name="emotionTags" value={formData.emotionTags} onChange={handleChange} className="input" placeholder="e.g. FOMO, Patient" />
+                </div>
+              </div>
+              
+              <div className="form-group">
+                <label className="label">Trade Notes</label>
+                <textarea name="notesPost" value={formData.notesPost} onChange={(e: any) => handleChange(e)} className="input" placeholder="What happened in this trade?" style={{ minHeight: "80px", resize: "vertical" }} />
+              </div>
+
+              <div style={{ marginTop: "1rem", display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+                <button type="button" className="btn btn-ghost" onClick={() => setIsOpen(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? "Saving..." : "Save Trade"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}

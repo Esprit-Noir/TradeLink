@@ -1,0 +1,31 @@
+"use client"
+
+import { useRouter } from "next/navigation"
+
+export function DeleteTradeButton({ id }: { id: string }) {
+  const router = useRouter()
+
+  async function handleDelete() {
+    if (!confirm("Are you sure you want to delete this trade?")) return
+    try {
+      const res = await fetch(`/api/trades/${id}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Failed to delete")
+      
+      // Refresh the current route to fetch updated data from the server
+      router.refresh()
+    } catch (error) {
+      alert("Error deleting trade.")
+    }
+  }
+
+  return (
+    <button 
+      onClick={handleDelete}
+      className="btn btn-ghost btn-sm"
+      style={{ color: "var(--color-loss)", padding: "0.25rem 0.5rem" }}
+      title="Delete Trade"
+    >
+      ✕
+    </button>
+  )
+}
