@@ -31,20 +31,47 @@ export async function POST(
 
     const metadata = challenge.metadata as any || {}
     const steps = metadata.steps || '1'
-    
-    if (steps === '1') {
-      return NextResponse.json({ error: "1-step challenge cannot be upgraded to Phase 2" }, { status: 400 })
-    }
 
     const phase2Target = metadata.phase2Target ? Number(metadata.phase2Target) : 5
+    const fundedTarget = metadata.fundedTarget ? Number(metadata.fundedTarget) : (metadata.phase1Target ? Number(metadata.phase1Target) : 5)
 
-    // Upgrade to Phase 2: Reset balances, update target, set status active, change phase
-    const upgradedChallenge = await prisma.propChallenge.update({
+    if (steps === '2') {
+      // 2-step challenge: Phase 1 -> Phase 2
+      const upgradedChallenge = await prisma.propChallenge.update({
+        where: { id: challenge.id },
+        data: {
+          phase: 'phase_2',
+          status: 'active',
+          profitTargetPct: phase2Target,
+          currentBalance: challenge.initialBalance,
+          currentEquity: challenge.initialBalance,
+          highestBalance: challenge.initialBalance,
+          highestEquity: challenge.initialBalance,
+          todayStartBalance: challenge.initialBalance,
+          startedAt: new Date(),
+          todayResetAt: null,
+        }
+      })
+
+      await prisma.propChallengeEvent.create({
+        data: {
+          challengeId: challenge.id,
+          eventType: 'phase_passed',
+          severity: 'info',
+          message: 'Passed Phase 1 and upgraded to Phase 2',
+        }
+      })
+
+      return NextResponse.json(upgradedChallenge)
+    }
+
+    // 1-step or master: Phase 1 -> Funded
+    const fundedChallenge = await prisma.propChallenge.update({
       where: { id: challenge.id },
       data: {
-        phase: 'phase_2',
+        phase: 'funded',
         status: 'active',
-        profitTargetPct: phase2Target,
+        profitTargetPct: fundedTarget,
         currentBalance: challenge.initialBalance,
         currentEquity: challenge.initialBalance,
         highestBalance: challenge.initialBalance,
@@ -55,17 +82,16 @@ export async function POST(
       }
     })
 
-    // Log the event
     await prisma.propChallengeEvent.create({
       data: {
         challengeId: challenge.id,
         eventType: 'phase_passed',
         severity: 'info',
-        message: 'Passed Phase 1 and upgraded to Phase 2',
+        message: 'Passed Phase 1 and moved to funded status',
       }
     })
 
-    return NextResponse.json(upgradedChallenge)
+    return NextResponse.json(fundedChallenge)
 
   } catch (error: any) {
     console.error("Error upgrading challenge:", error)

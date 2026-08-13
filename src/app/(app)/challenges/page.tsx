@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ChallengesManager } from "./ChallengesManager"
+import { PropFirmReport } from "@/components/prop-firm/PropFirmReport"
 import { redirect } from "next/navigation"
 
 export const metadata = {
@@ -22,7 +23,8 @@ export default async function ChallengesPage() {
 
   const accounts = user.accounts.map(acc => ({
     ...acc,
-    initialBalance: acc.initialBalance ? Number(acc.initialBalance) : null
+    initialBalance: acc.initialBalance ? Number(acc.initialBalance) : null,
+    fxRateToUsd: acc.fxRateToUsd ? Number(acc.fxRateToUsd) : 1,
   }))
 
   // Fetch templates
@@ -33,6 +35,7 @@ export default async function ChallengesPage() {
   
   const templates = rawTemplates.map(t => ({
     ...t,
+    logoUrl: t.logoUrl || null,
     dailyDDPct: t.dailyDDPct ? Number(t.dailyDDPct) : null,
     maxDDPct: Number(t.maxDDPct),
     profitTargetPhase1Pct: t.profitTargetPhase1Pct ? Number(t.profitTargetPhase1Pct) : null,
@@ -43,7 +46,7 @@ export default async function ChallengesPage() {
   // Fetch user's challenges
   const rawChallenges = await prisma.propChallenge.findMany({
     where: { userId: session.user.id },
-    include: { template: true, account: true },
+    include: { template: true, account: true, events: { orderBy: { createdAt: 'desc' } } },
     orderBy: { createdAt: 'desc' }
   })
 
@@ -59,8 +62,16 @@ export default async function ChallengesPage() {
     highestEquity: Number(c.highestEquity || 0),
     todayStartBalance: Number(c.todayStartBalance || 0),
     metadata: c.metadata ? JSON.parse(JSON.stringify(c.metadata)) : null,
+    events: c.events.map(e => ({
+      id: e.id,
+      eventType: e.eventType,
+      severity: e.severity,
+      message: e.message,
+      createdAt: e.createdAt.toISOString(),
+    })),
     template: {
       ...c.template,
+      logoUrl: c.template.logoUrl || null,
       dailyDDPct: c.template.dailyDDPct ? Number(c.template.dailyDDPct) : null,
       maxDDPct: Number(c.template.maxDDPct),
       profitTargetPhase1Pct: c.template.profitTargetPhase1Pct ? Number(c.template.profitTargetPhase1Pct) : null,
@@ -69,7 +80,8 @@ export default async function ChallengesPage() {
     },
     account: {
       ...c.account,
-      initialBalance: c.account.initialBalance ? Number(c.account.initialBalance) : null
+      initialBalance: c.account.initialBalance ? Number(c.account.initialBalance) : null,
+      fxRateToUsd: c.account.fxRateToUsd ? Number(c.account.fxRateToUsd) : 1,
     }
   }))
 
@@ -81,6 +93,7 @@ export default async function ChallengesPage() {
           <p className="page-subtitle">Track your drawdown limits and profit targets.</p>
         </div>
       </div>
+      <PropFirmReport />
       <ChallengesManager accounts={accounts} templates={templates} challenges={challenges} />
     </div>
   )

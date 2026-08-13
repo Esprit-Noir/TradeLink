@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveAccount } from "@/lib/active-account"
+import { dayOfWeek } from "@/lib/dates"
 
 export async function GET(request: Request) {
   try {
@@ -14,6 +15,12 @@ export async function GET(request: Request) {
     if (!account) {
       return NextResponse.json({ error: "No active account found." }, { status: 404 })
     }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { timezone: true },
+    })
+    const timezone = user?.timezone ?? "UTC"
 
     const trades = await prisma.trade.findMany({
       where: {
@@ -118,7 +125,7 @@ export async function GET(request: Request) {
       }
 
       // Day of Week
-      const dow = trade.entryAt.getDay()
+      const dow = dayOfWeek(trade.entryAt, timezone)
       dowPerformance[dow] += pnl
 
       // Symbols

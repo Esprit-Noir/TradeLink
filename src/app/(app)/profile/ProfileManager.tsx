@@ -6,7 +6,7 @@ import type { User } from "@prisma/client"
 import { User as UserIcon, Settings, Link as LinkIcon, CreditCard, Shield, Save } from "lucide-react"
 import { toast } from "sonner"
 
-export function ProfileManager({ user }: { user: User }) {
+export function ProfileManager({ user, initialDensity = "comfortable" }: { user: User, initialDensity?: string }) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("general")
   const [saving, setSaving] = useState(false)
@@ -15,6 +15,7 @@ export function ProfileManager({ user }: { user: User }) {
   const [name, setName] = useState(user.name || "")
   const [baseCurrency, setBaseCurrency] = useState(user.baseCurrency || "USD")
   const [timezone, setTimezone] = useState(user.timezone || "UTC")
+  const [uiDensity, setUiDensity] = useState(initialDensity)
 
   const TABS = [
     { id: "general", label: "General Profile", icon: <UserIcon size={18} /> },
@@ -47,12 +48,22 @@ export function ProfileManager({ user }: { user: User }) {
     e.preventDefault()
     setSaving(true)
     try {
+      // 1. Save user settings (currency, timezone)
       const res = await fetch("/api/user", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ baseCurrency, timezone })
       })
       if (!res.ok) throw new Error("Failed to save preferences")
+
+      // 2. Save UI density cookie
+      const densityRes = await fetch("/api/preferences/density", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ density: uiDensity })
+      })
+      if (!densityRes.ok) throw new Error("Failed to save density")
+
       toast.success("Preferences saved successfully!")
       router.refresh()
     } catch (err) {
@@ -155,18 +166,17 @@ export function ProfileManager({ user }: { user: User }) {
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                 <div>
-                  <label className="label">Theme</label>
-                  <select className="input select" defaultValue="system">
-                    <option value="system">System Default</option>
-                    <option value="dark">Dark Mode</option>
-                    <option value="light">Light Mode</option>
+                  <label className="label">UI Density</label>
+                  <select className="input select" value={uiDensity} onChange={e => setUiDensity(e.target.value)}>
+                    <option value="comfortable">Comfortable (Default)</option>
+                    <option value="compact">Compact (For Data Tables)</option>
                   </select>
                 </div>
                 <div>
-                  <label className="label">Starting Day of the Week</label>
-                  <select className="input select" defaultValue="monday">
-                    <option value="monday">Monday</option>
-                    <option value="sunday">Sunday</option>
+                  <label className="label">Theme</label>
+                  <select className="input select" defaultValue="system" disabled style={{ opacity: 0.6 }}>
+                    <option value="system">System Default</option>
+                    <option value="dark">Dark Mode</option>
                   </select>
                 </div>
               </div>

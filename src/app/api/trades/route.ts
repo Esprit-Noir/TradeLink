@@ -32,6 +32,8 @@ export async function POST(request: Request) {
     
     const diff = isLong ? exit - entry : entry - exit
     const netPnl = (diff * qty) - f
+    const fxRate = Number(account.fxRateToUsd ?? 1)
+    const netPnlUsd = Math.round(netPnl * fxRate * 10000) / 10000
 
     let finalSetupTags = setupTags ? setupTags.split(",").map((s: string) => s.trim()).filter(Boolean) : []
     if (finalSetupTags.length === 0) {
@@ -57,6 +59,7 @@ export async function POST(request: Request) {
         exitAt: new Date(exitAt),
         fees: f,
         netPnl,
+        netPnlUsd,
         status: "closed",
         setupTags: finalSetupTags,
         emotionTags: emotionTags ? emotionTags.split(",").map((s: string) => s.trim()).filter(Boolean) : [],

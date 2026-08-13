@@ -32,6 +32,66 @@ async function main() {
     }
   })
 
+  // FundingPips 2-Step
+  await prisma.propFirmTemplate.create({
+    data: {
+      firmName: "FundingPips",
+      programName: "Two-Step",
+      drawdownType: "static_balance",
+      dailyDDPct: 5.0,
+      maxDDPct: 10.0,
+      dailyResetTimezone: "Europe/London",
+      profitTargetPhase1Pct: 8.0,
+      profitTargetPhase2Pct: 5.0,
+      minTradingDays: 0,
+    }
+  })
+
+  // FundedNext Evaluation 2-Step
+  await prisma.propFirmTemplate.create({
+    data: {
+      firmName: "FundedNext",
+      programName: "Evaluation 2-Step",
+      drawdownType: "static_balance",
+      dailyDDPct: 5.0,
+      maxDDPct: 10.0,
+      dailyResetTimezone: "UTC",
+      profitTargetPhase1Pct: 10.0,
+      profitTargetPhase2Pct: 5.0,
+      minTradingDays: 0,
+    }
+  })
+
+  // FundedFast 2-Step
+  await prisma.propFirmTemplate.create({
+    data: {
+      firmName: "FundedFast",
+      programName: "Two-Step",
+      drawdownType: "static_balance",
+      dailyDDPct: 5.0,
+      maxDDPct: 10.0,
+      dailyResetTimezone: "UTC",
+      profitTargetPhase1Pct: 10.0,
+      profitTargetPhase2Pct: 5.0,
+      minTradingDays: 0,
+    }
+  })
+
+  // Goat Funded Trader 2-Step
+  await prisma.propFirmTemplate.create({
+    data: {
+      firmName: "Goat Funded Trader",
+      programName: "2-Step",
+      drawdownType: "static_balance",
+      dailyDDPct: 5.0,
+      maxDDPct: 10.0,
+      dailyResetTimezone: "UTC",
+      profitTargetPhase1Pct: 8.0,
+      profitTargetPhase2Pct: 5.0,
+      minTradingDays: 0,
+    }
+  })
+
   console.log("Prop Firm templates seeded.")
 }
 

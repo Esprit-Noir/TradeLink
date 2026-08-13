@@ -12,6 +12,7 @@ import { WinRateChartServer } from "@/components/dashboard/WinRateChartServer"
 import { DailyPnlChartServer } from "@/components/dashboard/DailyPnlChartServer"
 import { DashboardFilter } from "@/components/dashboard/DashboardFilter"
 import { DailyGoalWidget } from "@/components/dashboard/DailyGoalWidget"
+import { PropChallengesOverview } from "@/components/dashboard/PropChallengesOverview"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -57,6 +58,7 @@ export default async function DashboardPage({
   let challenge = null
   let todayPnl = 0
   let dailyGoal: number | null = null
+  let propChallenges: any[] = []
 
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
@@ -81,6 +83,39 @@ export default async function DashboardPage({
       })
       todayPnl = todayTrades.reduce((s, t) => s + Number(t.netPnl || 0), 0)
     }
+
+    // Active prop challenges for the dashboard overview
+    const rawProp = await prisma.propChallenge.findMany({
+      where: { userId: session.user.id, status: { in: ['active', 'passed'] } },
+      include: { template: true, account: true, events: { orderBy: { createdAt: 'desc' } } },
+      orderBy: { createdAt: 'desc' },
+      take: 6,
+    })
+    propChallenges = rawProp.map(c => ({
+      id: c.id,
+      status: c.status,
+      phase: c.phase,
+      initialBalance: Number(c.initialBalance),
+      maxDDPct: Number(c.maxDDPct),
+      profitTargetPct: Number(c.profitTargetPct),
+      currentEquity: Number(c.currentEquity || 0),
+      currentBalance: Number(c.currentBalance || 0),
+      highestBalance: Number(c.highestBalance || 0),
+      highestEquity: Number(c.highestEquity || 0),
+      account: { name: c.account.name },
+      template: {
+        logoUrl: c.template.logoUrl || null,
+        drawdownType: c.template.drawdownType,
+        firmName: c.template.firmName,
+      },
+      events: c.events.slice(0, 1).map(e => ({
+        id: e.id,
+        eventType: e.eventType,
+        severity: e.severity,
+        message: e.message,
+        createdAt: e.createdAt.toISOString(),
+      })),
+    }))
   }
 
   return (
@@ -98,6 +133,11 @@ export default async function DashboardPage({
       {/* KPI Cards */}
       <Suspense fallback={<KpiGridSkeleton />}>
         <KpiGrid dateRange={dateRange} />
+      </Suspense>
+
+      {/* Prop Challenges Overview */}
+      <Suspense fallback={null}>
+        <PropChallengesOverview challenges={propChallenges} />
       </Suspense>
 
       {/* Charts Row 1: Daily P&L and Win Rate */}

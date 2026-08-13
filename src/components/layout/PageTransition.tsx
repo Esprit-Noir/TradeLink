@@ -23,9 +23,9 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     <div
       style={{
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(6px)",
+        transform: isVisible ? "none" : "translateY(6px)",
         transition: "opacity 200ms ease, transform 200ms ease",
-        willChange: "opacity, transform",
+        willChange: isVisible ? "auto" : "opacity, transform",
       }}
     >
       {children}

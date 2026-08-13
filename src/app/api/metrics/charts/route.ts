@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveAccount } from "@/lib/active-account"
+import { dayOfWeek, hourOfDay } from "@/lib/dates"
 
 export async function GET(request: Request) {
   try {
@@ -20,6 +21,12 @@ export async function GET(request: Request) {
     if (!account) {
       return NextResponse.json({ setupData: [], hourlyData: [] })
     }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { timezone: true },
+    })
+    const timezone = user?.timezone ?? "UTC"
 
     const whereClause: any = { accountId: account.id, status: "closed" }
 
@@ -90,13 +97,13 @@ export async function GET(request: Request) {
       }
 
       // Hour (1D)
-      const hour = t.entryAt.getHours()
+      const hour = hourOfDay(t.entryAt, timezone)
       const hourStr = `${String(hour).padStart(2, '0')}:00`
       hourlyMap[hourStr] += pnl
 
       // Heatmap (2D)
-      // JS getDay() returns 0 for Sunday. Let's map it to 0=Mon, 1=Tue... 6=Sun
-      const dayRaw = t.entryAt.getDay()
+      // dayOfWeek() returns 0 for Sunday. Let's map it to 0=Mon, 1=Tue... 6=Sun
+      const dayRaw = dayOfWeek(t.entryAt, timezone)
       const day = dayRaw === 0 ? 6 : dayRaw - 1 
       heatmapMap[`${day}-${hour}`] += pnl
     })

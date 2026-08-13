@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { AccountSwitcher } from "@/components/layout/AccountSwitcher"
+import { NotificationBell } from "@/components/layout/NotificationBell"
 
 type SidebarStats = {
   todayPnl: number
@@ -58,6 +59,8 @@ export function Sidebar() {
       section: "Challenges",
       items: [
         { href: "/challenges",  label: "Prop Firms",  icon: IconTarget },
+        { href: "/challenges/compare", label: "Compare", icon: IconCompare },
+        { href: "/challenges/backtest", label: "Backtest", icon: IconFlask },
       ],
     },
   ]
@@ -85,7 +88,10 @@ export function Sidebar() {
             TradeLink
           </span>
         </div>
-        <ThemeToggle />
+        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
+          <NotificationBell />
+          <ThemeToggle />
+        </div>
       </div>
 
       <AccountSwitcher />
@@ -182,7 +188,9 @@ export function Sidebar() {
             <div className="nav-section-label">{section.section}</div>
             {section.items.map((item) => {
               const Icon = item.icon
-              const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
+              const isActive = item.href === "/challenges"
+                ? pathname === item.href
+                : pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href))
               return (
                 <Link
                   key={item.href}
@@ -302,6 +310,25 @@ function IconLayers() {
       <path d="M1.5 5.5L8 2l6.5 3.5L8 9l-6.5-3.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M1.5 8.5L8 12l6.5-3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
       <path d="M1.5 11.5L8 15l6.5-3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconCompare() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <rect x="1.5" y="2" width="5" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+      <rect x="9.5" y="2" width="5" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
+      <path d="M4 6.5h3M9 9.5h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
+function IconFlask() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <path d="M6 2h4M6.5 2v3.5L3 13.5A1 1 0 003.9 15h8.2a1 1 0 00.9-1.5L9.5 5.5V2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M4.5 11h7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
     </svg>
   )
 }

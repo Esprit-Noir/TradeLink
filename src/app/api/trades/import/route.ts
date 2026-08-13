@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { parseCSV } from "@/lib/parsers"
 import { getActiveAccount } from "@/lib/active-account"
+import { evaluateChallenge } from "@/lib/prop-firm.service"
 
 
 export async function POST(request: Request) {
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     const file = formData.get("file") as File
     const broker = formData.get("broker") as string
+    const challengeId = (formData.get("challengeId") as string) || null
 
     if (!file || !broker) {
       return NextResponse.json({ error: "File and broker are required." }, { status: 400 })
@@ -22,8 +24,22 @@ export async function POST(request: Request) {
 
     const text = await file.text()
 
-    // Retrieve default account
-    const account = await getActiveAccount(session.user.id)
+    // Retrieve target account: a specific prop challenge account, or the default account
+    let account = null
+    let targetChallenge = null
+
+    if (challengeId) {
+      targetChallenge = await prisma.propChallenge.findUnique({
+        where: { id: challengeId },
+        include: { account: true }
+      })
+      if (!targetChallenge || targetChallenge.userId !== session.user.id) {
+        return NextResponse.json({ error: "Challenge not found." }, { status: 404 })
+      }
+      account = targetChallenge.account
+    } else {
+      account = await getActiveAccount(session.user.id)
+    }
 
     if (!account) {
       return NextResponse.json({ error: "No trading account found." }, { status: 404 })
@@ -52,6 +68,8 @@ export async function POST(request: Request) {
     })
     const defaultSetupTags = defaultSetup ? [defaultSetup.name] : []
 
+    const fxRate = Number(account.fxRateToUsd ?? 1)
+
     // Map to Prisma schema and calculate missing fields
     const tradesToInsert = parsedTrades.map((t) => {
       const isLong = t.side.toUpperCase() === "LONG"
@@ -79,6 +97,7 @@ export async function POST(request: Request) {
         exitPrice: t.exitPrice || t.entryPrice,
         quantity: t.quantity,
         netPnl,
+        netPnlUsd: Math.round(Number(netPnl) * fxRate * 10000) / 10000,
         fees: t.fees || 0,
         status: "closed",
         setupTags: defaultSetupTags,
@@ -96,7 +115,14 @@ export async function POST(request: Request) {
       where: { accountId: account.id },
     })
 
-    return NextResponse.json({ count: result.count })
+    // If importing into a prop challenge, re-evaluate the challenge immediately
+    let challengeStatus = null
+    if (targetChallenge && result.count > 0) {
+      const evaluated = await evaluateChallenge(targetChallenge.id)
+      challengeStatus = evaluated?.status ?? null
+    }
+
+    return NextResponse.json({ count: result.count, challengeStatus })
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to import trades" }, { status: 500 })
   }

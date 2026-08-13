@@ -81,7 +81,7 @@ export function PropFirmGauges({ challenge }: { challenge: any }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem" }}>
         <div>
           <h3 style={{ fontSize: "0.9rem", color: "var(--color-gray-400)", marginBottom: "1rem" }}>Drawdown Limits</h3>
           
@@ -110,11 +110,19 @@ export function PropFirmGauges({ challenge }: { challenge: any }) {
             isBreached={false} 
           />
           
-          {challenge.minTradingDays && (
+          {challenge.minTradingDays ? (
              <GaugeBar 
                label="Min Trading Days" 
-               used={0} // To implement tracking
+               used={Number(challenge.metadata?.tradingDaysCount || 0)} 
                total={challenge.minTradingDays} 
+               isBreached={false} 
+               formatCurrency={false}
+             />
+          ) : (
+             <GaugeBar 
+               label="Trading Days" 
+               used={Number(challenge.metadata?.tradingDaysCount || 0)} 
+               total={Math.max(1, Number(challenge.metadata?.tradingDaysCount || 0))} 
                isBreached={false} 
                formatCurrency={false}
              />

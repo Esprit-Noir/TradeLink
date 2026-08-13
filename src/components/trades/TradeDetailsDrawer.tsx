@@ -19,6 +19,7 @@ type Trade = {
   emotionTags: string[]
   notesPost: string | null
   screenshots: { id: string; storageUrl: string; fileName: string | null }[]
+  instrumentType: string
 }
 
 type Setup = { id: string; name: string; isDefault: boolean }
@@ -175,7 +176,7 @@ export function TradeDetailsDrawer() {
       {/* Drawer */}
       <div 
         style={{
-          position: "fixed", top: 0, right: 0, bottom: 0,
+          position: "fixed", top: 0, right: 0, height: "100vh",
           width: "450px", maxWidth: "100%",
           backgroundColor: "var(--color-gray-950)",
           borderLeft: "1px solid var(--color-gray-800)",
@@ -192,7 +193,7 @@ export function TradeDetailsDrawer() {
           </button>
         </div>
 
-        <div style={{ padding: "1.5rem", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "2rem" }}>
+        <div style={{ padding: "1.5rem", paddingBottom: "4rem", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "2rem" }}>
           {loading || !trade ? (
             <div className="skeleton" style={{ height: 200 }} />
           ) : (

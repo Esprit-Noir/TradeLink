@@ -1,6 +1,7 @@
 "use client"
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { dayKey } from "@/lib/dates"
 
 interface Trade {
   exitAt: Date | null
@@ -10,14 +11,14 @@ interface Trade {
 interface DailyPnlChartProps {
   trades: Trade[]
   currency?: string
+  timezone?: string
 }
 
-export function DailyPnlChart({ trades, currency = "USD" }: DailyPnlChartProps) {
-  // Group trades by date (YYYY-MM-DD)
+export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: DailyPnlChartProps) {
+  // Group trades by date (YYYY-MM-DD in the user's timezone)
   const dailyPnlMap = trades.reduce((acc, trade) => {
     if (!trade.exitAt) return acc
-    // format as YYYY-MM-DD local time for simplicity
-    const dateStr = new Date(trade.exitAt).toLocaleDateString("en-CA")
+    const dateStr = dayKey(new Date(trade.exitAt), timezone)
     acc[dateStr] = (acc[dateStr] || 0) + trade.netPnl
     return acc
   }, {} as Record<string, number>)

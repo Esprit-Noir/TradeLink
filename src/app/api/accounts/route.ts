@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
         trades: {
           select: {
             netPnl: true,
+            netPnlUsd: true,
             status: true
           }
         }
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
     const accountsWithStats = accounts.map(acc => {
       const closedTrades = acc.trades.filter(t => t.status === 'closed')
       const totalPnl = closedTrades.reduce((sum, t) => sum + Number(t.netPnl || 0), 0)
+      const totalPnlUsd = closedTrades.reduce((sum, t) => sum + Number(t.netPnlUsd ?? (t.netPnl || 0)), 0)
       
       return {
         id: acc.id,
@@ -33,6 +35,7 @@ export async function GET(request: NextRequest) {
         broker: acc.broker,
         type: acc.type,
         baseCurrency: acc.baseCurrency,
+        fxRateToUsd: acc.fxRateToUsd ? Number(acc.fxRateToUsd) : 1,
         initialBalance: acc.initialBalance ? Number(acc.initialBalance) : 0,
         isDefault: acc.isDefault,
         createdAt: acc.createdAt,
@@ -43,7 +46,8 @@ export async function GET(request: NextRequest) {
         } : null,
         stats: {
           tradesCount: acc.trades.length,
-          totalPnl
+          totalPnl,
+          totalPnlUsd,
         }
       }
     })
@@ -64,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, initialBalance, baseCurrency, type, broker } = body
+    const { name, initialBalance, baseCurrency, type, broker, fxRateToUsd } = body
 
     if (!name) {
       return NextResponse.json({ error: "Account name is required" }, { status: 400 })
@@ -83,6 +87,7 @@ export async function POST(request: NextRequest) {
         broker: broker || null,
         initialBalance: initialBalance ? parseFloat(initialBalance) : 0,
         baseCurrency: baseCurrency || "USD",
+        fxRateToUsd: fxRateToUsd ? parseFloat(fxRateToUsd) : 1,
         isDefault: existingAccounts === 0 // Make default if first account
       }
     })

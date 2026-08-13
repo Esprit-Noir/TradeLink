@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { templateId, challengeName, initialBalance, steps, phase2Target, payoutSplit } = body
+    const { templateId, challengeName, initialBalance, steps, phase2Target, fundedTarget, payoutSplit, logoUrl } = body
 
     if (!templateId || !challengeName || initialBalance === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -39,7 +39,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Template not found" }, { status: 404 })
     }
 
+    // Save the firm logo on the template (shared across all challenges of the firm)
+    if (logoUrl) {
+      await prisma.propFirmTemplate.update({
+        where: { id: template.id },
+        data: { logoUrl },
+      })
+    }
+
     // Create the challenge
+    const isMaster = steps === 'master'
+    const phase1Target = body.profitTargetPct !== undefined ? parseFloat(body.profitTargetPct) : (template.profitTargetPhase1Pct || 0)
+    const initialPhase = isMaster ? 'funded' : 'phase_1'
+    const initialTarget = isMaster
+      ? (fundedTarget ? parseFloat(fundedTarget) : (template.profitTargetPhase2Pct || 0))
+      : phase1Target
+
+    // Default alert config from user preferences
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { notificationPrefs: true },
+    })
+    const prefs = (user?.notificationPrefs as any) || {}
+    const alertDefaults = (prefs.defaults as any) || {}
+    const alertConfig = {
+      stopTradingPct: Number(alertDefaults.stopTradingPct ?? 85),
+      profitGoalPct: Number(alertDefaults.profitGoalPct ?? 50),
+      enableStopTrading: Boolean(body.enableStopTrading ?? false),
+      enableProfitGoal: Boolean(body.enableProfitGoal ?? false),
+    }
+
+    const maxTradingDays = body.maxTradingDays !== undefined ? parseInt(body.maxTradingDays) : (template.maxTradingDays || null)
+    const startedAt = new Date()
+    const deadlineAt = maxTradingDays ? new Date(startedAt.getTime() + maxTradingDays * 24 * 60 * 60 * 1000) : null
+
     const challenge = await prisma.propChallenge.create({
       data: {
         userId: session.user.id,
@@ -48,18 +81,24 @@ export async function POST(request: NextRequest) {
         initialBalance: account.initialBalance || 0,
         dailyDDPct: body.dailyDDPct !== undefined ? parseFloat(body.dailyDDPct) : (template.dailyDDPct || 0),
         maxDDPct: body.maxDDPct !== undefined ? parseFloat(body.maxDDPct) : template.maxDDPct,
-        profitTargetPct: body.profitTargetPct !== undefined ? parseFloat(body.profitTargetPct) : (template.profitTargetPhase1Pct || 0),
+        profitTargetPct: initialTarget,
         minTradingDays: body.minTradingDays !== undefined ? parseInt(body.minTradingDays) : template.minTradingDays,
-        maxTradingDays: template.maxTradingDays,
-        startedAt: new Date(),
+        maxTradingDays,
+        phase: initialPhase,
+        status: 'active',
+        startedAt,
+        deadlineAt,
         currentBalance: account.initialBalance || 0,
         currentEquity: account.initialBalance || 0,
         highestBalance: account.initialBalance || 0,
         highestEquity: account.initialBalance || 0,
         todayStartBalance: account.initialBalance || 0,
+        alertConfig,
         metadata: {
-          steps: steps || '1',
+          steps: steps || '2',
+          phase1Target,
           phase2Target: phase2Target ? parseFloat(phase2Target) : null,
+          fundedTarget: fundedTarget ? parseFloat(fundedTarget) : null,
           payoutSplit: payoutSplit || null
         }
       }

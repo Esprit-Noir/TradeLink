@@ -1,7 +1,8 @@
-// components/dashboard/RecentTradesTable.tsx
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveAccount } from "@/lib/active-account"
+import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
+import { cookies } from "next/headers"
 
 export async function RecentTradesTable({
   dateRange
@@ -11,7 +12,11 @@ export async function RecentTradesTable({
   const session = await auth()
   if (!session?.user?.id) return null
 
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } })
   const account = await getActiveAccount(session.user.id)
+  
+  const cookieStore = await cookies()
+  const density = cookieStore.get("ui_density")?.value === "compact" ? "compact" : "comfortable"
 
   if (!account) return <EmptyTable />
 
@@ -32,7 +37,7 @@ export async function RecentTradesTable({
 
   return (
     <div className="table-wrapper">
-      <table className="data-table">
+      <table className={`data-table ${density}`}>
         <thead>
           <tr>
             <th>Date</th>
@@ -48,10 +53,10 @@ export async function RecentTradesTable({
             <tr key={t.id}>
               <td>
                 <div style={{ fontWeight: 500, color: "var(--color-gray-200)" }}>
-                  {new Date(t.exitAt ?? t.entryAt).toLocaleDateString()}
+                  {formatDateWithTimezone(t.exitAt ?? t.entryAt, user?.timezone)}
                 </div>
                 <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-                  {new Date(t.exitAt ?? t.entryAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(t.exitAt ?? t.entryAt).toLocaleTimeString([], { timeZone: user?.timezone, hour: '2-digit', minute: '2-digit' })}
                 </div>
               </td>
               <td>
@@ -65,14 +70,14 @@ export async function RecentTradesTable({
                   {t.side}
                 </span>
               </td>
-              <td>${Number(t.entryPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
-              <td>${t.exitPrice ? Number(t.exitPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : "—"}</td>
+              <td>{formatCurrency(Number(t.entryPrice), account.baseCurrency, false, 2)}</td>
+              <td>{t.exitPrice ? formatCurrency(Number(t.exitPrice), account.baseCurrency, false, 2) : "—"}</td>
               <td style={{ textAlign: "right" }}>
                 <span style={{ 
                   fontWeight: 600, 
                   color: Number(t.netPnl) > 0 ? "var(--color-profit)" : Number(t.netPnl) < 0 ? "var(--color-loss)" : "inherit" 
                 }}>
-                  {Number(t.netPnl) > 0 ? "+" : ""}${Number(t.netPnl).toFixed(2)}
+                  {formatCurrency(Number(t.netPnl), account.baseCurrency, true, 2)}
                 </span>
               </td>
             </tr>

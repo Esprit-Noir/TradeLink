@@ -19,6 +19,12 @@ export async function GET() {
     return NextResponse.json({ disciplineScore: 100, patterns: [], summary: "No account found." })
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { timezone: true },
+  })
+  const timezone = user?.timezone ?? "UTC"
+
   // Fetch history for the chart
   const history = await prisma.behavioralSnapshot.findMany({
     where: { accountId: account.id },
@@ -32,7 +38,7 @@ export async function GET() {
     orderBy: { entryAt: "asc" },
   })
 
-  const result = analyzeBehavior(trades)
+  const result = analyzeBehavior(trades, timezone)
 
   // Sauvegarder le snapshot
   if (trades.length > 0) {

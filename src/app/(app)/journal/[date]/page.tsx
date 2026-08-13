@@ -5,6 +5,7 @@ import { TradeRow } from "@/components/trades/TradeRow"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getActiveAccount } from "@/lib/active-account"
+import { dayKey, zonedTimeToUtc, nextMidnightInTz } from "@/lib/dates"
 
 export async function generateMetadata({ params }: { params: Promise<{ date: string }> }) {
   const { date } = await params
@@ -20,6 +21,12 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
     notFound()
   }
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { timezone: true },
+  })
+  const timezone = user?.timezone ?? "UTC"
+
   // Fetch the journal entry if it exists
   const journal = await prisma.dailyJournal.findUnique({
     where: {
@@ -30,10 +37,9 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
     },
   })
 
-  // Fetch trades for this day
-  const targetDate = new Date(date)
-  const nextDate = new Date(targetDate)
-  nextDate.setDate(nextDate.getDate() + 1)
+  // Fetch trades for this day (day boundaries in the user's timezone)
+  const targetStart = zonedTimeToUtc(new Date(`${date}T00:00:00`), timezone)
+  const targetEnd = nextMidnightInTz(targetStart, timezone)
 
   const account = await getActiveAccount(session.user.id)
 
@@ -42,8 +48,8 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
       userId: session.user.id,
       accountId: account?.id,
       entryAt: {
-        gte: targetDate,
-        lt: nextDate,
+        gte: targetStart,
+        lt: targetEnd,
       },
     },
     orderBy: { entryAt: "asc" },
@@ -56,16 +62,24 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
   const dailyPnl = trades.reduce((acc, t) => acc + Number(t.netPnl || 0), 0)
   const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0
 
-  // Date object for navigation
-  const prevDate = new Date(targetDate)
-  prevDate.setDate(prevDate.getDate() - 1)
-  const nextNavDate = new Date(targetDate)
-  nextNavDate.setDate(nextNavDate.getDate() + 1)
+  // Date object for navigation (string arithmetic is DST-safe)
+  const [ny, nm, nd] = date.split("-").map(Number)
+  const prevDateStr = dayKey(new Date(Date.UTC(ny, nm - 1, nd - 1, 0, 0, 0, 0)), "UTC")
+  const nextDateStr = dayKey(new Date(Date.UTC(ny, nm - 1, nd + 1, 0, 0, 0, 0)), "UTC")
 
-  const prevDateStr = prevDate.toISOString().split("T")[0]
-  const nextDateStr = nextNavDate.toISOString().split("T")[0]
+  // Prop firm daily snapshots for this day (UTC calendar day)
+  const dayStartUtc = new Date(Date.UTC(ny, nm - 1, nd, 0, 0, 0, 0))
+  const dayEndUtc = new Date(Date.UTC(ny, nm - 1, nd + 1, 0, 0, 0, 0))
+  const propSnapshots = await prisma.propChallengeDailySnapshot.findMany({
+    where: {
+      challenge: { userId: session.user.id },
+      date: { gte: dayStartUtc, lt: dayEndUtc },
+    },
+    include: { challenge: { include: { template: true, account: true } } },
+  })
 
-  const displayDate = new Date(date).toLocaleDateString("en-US", {
+  const displayDate = new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
+    timeZone: timezone,
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -111,6 +125,32 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
             <div className="kpi-label">Total Trades</div>
             <div className="kpi-value">{totalTrades}</div>
           </div>
+
+          {propSnapshots.length > 0 && (
+            <div className="card" style={{ padding: "1rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.75rem" }}>
+                Prop Firm P&L
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                {propSnapshots.map(s => (
+                  <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
+                    <span style={{ color: "var(--color-gray-300)" }}>
+                      {s.challenge.template.logoUrl ? (
+                        <img src={s.challenge.template.logoUrl} alt="" style={{ width: "16px", height: "16px", objectFit: "contain", marginRight: "0.35rem", verticalAlign: "middle", borderRadius: "3px" }} />
+                      ) : null}
+                      {s.challenge.template.firmName}
+                    </span>
+                    <span style={{
+                      fontWeight: 600,
+                      color: Number(s.dailyPnl) > 0 ? "var(--color-profit)" : Number(s.dailyPnl) < 0 ? "var(--color-loss)" : "var(--color-gray-400)",
+                    }}>
+                      {Number(s.dailyPnl) > 0 ? "+" : ""}${Number(s.dailyPnl).toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Journal Form */}

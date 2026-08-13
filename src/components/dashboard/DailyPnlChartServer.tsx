@@ -15,6 +15,11 @@ export async function DailyPnlChartServer({
 
   if (!account) return <DailyPnlChart trades={[]} />
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { timezone: true },
+  })
+
   const whereClause: any = { accountId: account.id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {
     whereClause.entryAt = {}
@@ -34,5 +39,5 @@ export async function DailyPnlChartServer({
     netPnl: Number(t.netPnl || 0)
   }))
 
-  return <DailyPnlChart trades={serializedTrades} currency={account.baseCurrency} />
+  return <DailyPnlChart trades={serializedTrades} currency={account.baseCurrency} timezone={user?.timezone ?? "UTC"} />
 }

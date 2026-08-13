@@ -19,6 +19,7 @@ model User {
   baseCurrency String   @default("USD") @map("base_currency")
   onboarded    Boolean  @default(false)
   dailyGoal    Decimal? @db.Decimal(15,2) @map("daily_goal")
+  notificationPrefs Json? @map("notification_prefs")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -55,6 +56,7 @@ model TradingAccount {
   broker         String?
   type           String   @default("personal") // personal, demo, prop_firm
   baseCurrency   String   @default("USD") @map("base_currency")
+  fxRateToUsd    Decimal  @default(1) @map("fx_rate_to_usd") @db.Decimal(15, 6)
   initialBalance Decimal? @map("initial_balance") @db.Decimal(15, 2)
   isDefault      Boolean  @default(false) @map("is_default")
   createdAt      DateTime @default(now()) @map("created_at")
@@ -165,6 +167,7 @@ model PropFirmTemplate {
   id                    String   @id @default(cuid())
   firmName              String   @map("firm_name") // FTMO, Topstep, FundedNext...
   programName           String   @map("program_name") // "Normal", "Aggressive", "Swing"...
+  logoUrl               String?  @map("logo_url") // logo de la firme
   drawdownType          String   @map("drawdown_type") // static_balance, trailing_balance, trailing_equity
   dailyDDPct            Decimal? @map("daily_dd_pct") @db.Decimal(5, 2)
   maxDDPct              Decimal  @map("max_dd_pct") @db.Decimal(5, 2)
@@ -205,6 +208,7 @@ model PropChallenge {
   breachedAt       DateTime? @map("breached_at")
   breachReason     String?  @map("breach_reason") // daily_dd, max_dd, consistency, time_limit
   metadata         Json?
+  alertConfig      Json?    @map("alert_config") // { stopTradingPct, profitGoalPct, enableStopTrading, enableProfitGoal }
 
   // Live calculated values
   currentBalance   Decimal? @map("current_balance") @db.Decimal(15, 2)
@@ -223,8 +227,23 @@ model PropChallenge {
   
   dailySnapshots   PropChallengeDailySnapshot[]
   events           PropChallengeEvent[]
+  payouts          PropPayout[]
+  notes            PropChallengeNote[]
 
   @@map("prop_challenges")
+}
+
+model PropChallengeNote {
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  content     String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  challenge    PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([challengeId])
+  @@map("prop_challenge_notes")
 }
 
 model PropChallengeDailySnapshot {
@@ -251,11 +270,25 @@ model PropChallengeEvent {
   severity     String   @map("severity")   // info, warning, critical
   message      String?
   metadata     Json?
+  readAt       DateTime? @map("read_at")
   createdAt    DateTime @default(now()) @map("created_at")
 
   challenge    PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@map("prop_challenge_events")
+}
+
+model PropPayout {
+  id          String   @id @default(cuid())
+  challengeId String   @map("challenge_id")
+  amount      Decimal  @db.Decimal(15, 2)
+  status      String   @default("requested") // requested, approved, paid, rejected
+  requestedAt DateTime @default(now()) @map("requested_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  challenge   PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@map("prop_payouts")
 }
 
 // ─── DAILY JOURNAL ───────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react"
 import { CreateAccountModal } from "./CreateAccountModal"
 import { Wallet, Target, Activity, DollarSign, TrendingUp } from "lucide-react"
+import { formatCurrency } from "@/lib/formatters"
 
 export function AccountsManager({ accounts }: { accounts: any[] }) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -12,6 +13,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
   const kpis = useMemo(() => {
     let totalEquity = 0
     let totalPnl = 0
+    let totalPnlUsd = 0
     let fundedCapital = 0
     let activeCount = accounts.length
 
@@ -19,13 +21,14 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
       const eq = acc.propChallenge ? acc.propChallenge.currentEquity : acc.initialBalance + acc.stats.totalPnl
       totalEquity += eq
       totalPnl += acc.stats.totalPnl
+      totalPnlUsd += acc.stats.totalPnlUsd || 0
       
       if (acc.type === 'prop_firm' && acc.propChallenge?.status === 'passed') {
         fundedCapital += acc.initialBalance
       }
     })
 
-    return { totalEquity, totalPnl, fundedCapital, activeCount }
+    return { totalEquity, totalPnl, totalPnlUsd, fundedCapital, activeCount }
   }, [accounts])
 
   // Filtering
@@ -72,7 +75,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
             <Wallet size={16} /> Total Equity
           </div>
           <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)" }}>
-            ${kpis.totalEquity.toLocaleString("en-US", {minimumFractionDigits: 2})}
+            {formatCurrency(kpis.totalEquity, "USD", false, 2)}
           </div>
         </div>
         
@@ -81,8 +84,9 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
             <TrendingUp size={16} /> Total Net P&L
           </div>
           <div style={{ fontSize: "1.75rem", fontWeight: 700, color: kpis.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-            {kpis.totalPnl >= 0 ? "+" : ""}${kpis.totalPnl.toLocaleString("en-US", {minimumFractionDigits: 2})}
+            {formatCurrency(kpis.totalPnlUsd, "USD", true, 2)}
           </div>
+          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>in USD equivalent</div>
         </div>
 
         <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -90,7 +94,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
             <Target size={16} /> Funded Capital (Prop)
           </div>
           <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-brand-400)" }}>
-            ${kpis.fundedCapital.toLocaleString("en-US", {minimumFractionDigits: 2})}
+            {formatCurrency(kpis.fundedCapital, "USD", false, 2)}
           </div>
         </div>
 
@@ -154,9 +158,18 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                   </div>
                   <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
                     {acc.type === 'prop_firm' && acc.propChallenge ? (
-                      <>{acc.propChallenge.firmName} — ${acc.initialBalance.toLocaleString("en-US")} — {acc.propChallenge.phase === 'phase_1' ? "Phase 1" : acc.propChallenge.phase === 'phase_2' ? "Phase 2" : "Funded"}</>
+                      <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                        {acc.propChallenge.logoUrl && (
+                          <span style={{ width: "18px", height: "18px", borderRadius: "4px", overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={acc.propChallenge.logoUrl} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                          </span>
+                        )}
+                        <span>{acc.propChallenge.firmName}</span>
+                        <span> — {formatCurrency(Number(acc.initialBalance), acc.baseCurrency, false, 0)} — {acc.propChallenge.phase === 'phase_1' ? "Phase 1" : acc.propChallenge.phase === 'phase_2' ? "Phase 2" : "Funded"}</span>
+                      </span>
                     ) : (
-                      <>{acc.broker || "No broker"} — ${acc.initialBalance.toLocaleString("en-US")}</>
+                      <>{acc.broker || "No broker"} — {formatCurrency(Number(acc.initialBalance), acc.baseCurrency, false, 0)}</>
                     )}
                   </div>
                 </div>
@@ -180,7 +193,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", background: "var(--color-bg)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-border)", marginTop: "auto" }}>
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Current Equity</div>
-                  <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-text)" }}>${currentEquity.toLocaleString("en-US", {minimumFractionDigits: 2})}</div>
+                  <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-text)" }}>{formatCurrency(currentEquity, acc.baseCurrency, false, 2)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Net Return</div>
@@ -191,13 +204,22 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total P&L</div>
                   <div style={{ fontSize: "1rem", fontWeight: 500, color: acc.stats.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-                    {acc.stats.totalPnl >= 0 ? "+" : ""}${acc.stats.totalPnl.toLocaleString("en-US", {minimumFractionDigits: 2})}
+                    {formatCurrency(acc.stats.totalPnl, acc.baseCurrency, true, 2)}
                   </div>
                 </div>
                 <div>
                   <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Trades Executed</div>
                   <div style={{ fontSize: "1rem", fontWeight: 500, color: "var(--color-text)" }}>{acc.stats.tradesCount}</div>
                 </div>
+                {acc.fxRateToUsd && Number(acc.fxRateToUsd) !== 1 && (
+                  <div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>P&L (USD)</div>
+                    <div style={{ fontSize: "1rem", fontWeight: 500, color: (acc.stats.totalPnlUsd || 0) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                      {formatCurrency(acc.stats.totalPnlUsd || 0, "USD", true, 2)}
+                    </div>
+                    <div style={{ fontSize: "0.65rem", color: "var(--color-gray-600)" }}>fx {Number(acc.fxRateToUsd).toFixed(4)}</div>
+                  </div>
+                )}
               </div>
 
             </div>

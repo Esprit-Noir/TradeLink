@@ -14,7 +14,7 @@ export async function PATCH(
 
     const { id: accountId } = await params
     const body = await request.json()
-    const { name, initialBalance, isDefault } = body
+    const { name, initialBalance, isDefault, fxRateToUsd } = body
 
     // Ensure account belongs to user
     const account = await prisma.tradingAccount.findUnique({
@@ -37,11 +37,29 @@ export async function PATCH(
     if (name !== undefined) dataToUpdate.name = name
     if (initialBalance !== undefined) dataToUpdate.initialBalance = parseFloat(initialBalance)
     if (isDefault !== undefined) dataToUpdate.isDefault = isDefault
+    if (fxRateToUsd !== undefined) dataToUpdate.fxRateToUsd = parseFloat(fxRateToUsd)
 
     const updatedAccount = await prisma.tradingAccount.update({
       where: { id: accountId },
       data: dataToUpdate
     })
+
+    // Recompute netPnlUsd for all closed trades when the FX rate changes
+    if (fxRateToUsd !== undefined) {
+      const rate = parseFloat(fxRateToUsd)
+      const trades = await prisma.trade.findMany({
+        where: { accountId: accountId, netPnl: { not: null } },
+        select: { id: true, netPnl: true },
+      })
+      await prisma.$transaction(
+        trades.map((t) =>
+          prisma.trade.update({
+            where: { id: t.id },
+            data: { netPnlUsd: Math.round(Number(t.netPnl) * rate * 10000) / 10000 },
+          })
+        )
+      )
+    }
 
     return NextResponse.json(updatedAccount)
   } catch (error) {

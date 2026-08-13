@@ -2,12 +2,15 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { DeleteTradeButton } from "@/components/trades/DeleteTradeButton"
+import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 
 type TradeRowProps = {
   trade: any
+  timezone?: string
+  baseCurrency?: string
 }
 
-export function TradeRow({ trade }: TradeRowProps) {
+export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD" }: TradeRowProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -31,10 +34,10 @@ export function TradeRow({ trade }: TradeRowProps) {
     >
       <td>
         <div suppressHydrationWarning style={{ fontWeight: 500, color: "var(--color-gray-200)" }}>
-          {new Date(trade.entryAt).toLocaleDateString()}
+          {formatDateWithTimezone(trade.entryAt, timezone)}
         </div>
         <div suppressHydrationWarning style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
-          {new Date(trade.entryAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          {new Date(trade.entryAt).toLocaleTimeString([], { timeZone: timezone, hour: '2-digit', minute: '2-digit' })}
         </div>
       </td>
       <td>
@@ -58,14 +61,14 @@ export function TradeRow({ trade }: TradeRowProps) {
         </span>
       </td>
       <td>{Number(trade.quantity).toString()}</td>
-      <td>${Number(trade.entryPrice).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 6 })}</td>
-      <td>${trade.exitPrice ? Number(trade.exitPrice).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 6 }) : "—"}</td>
+      <td>{formatCurrency(Number(trade.entryPrice), baseCurrency, false, 2)}</td>
+      <td>{trade.exitPrice ? formatCurrency(Number(trade.exitPrice), baseCurrency, false, 2) : "—"}</td>
       <td style={{ textAlign: "right" }}>
         <span style={{ 
           fontWeight: 600, 
           color: Number(trade.netPnl) > 0 ? "var(--color-profit)" : Number(trade.netPnl) < 0 ? "var(--color-loss)" : "inherit" 
         }}>
-          {Number(trade.netPnl) > 0 ? "+" : ""}${Number(trade.netPnl).toFixed(2)}
+          {formatCurrency(Number(trade.netPnl), baseCurrency, true, 2)}
         </span>
       </td>
       <td style={{ textAlign: "right", width: "40px" }} onClick={handleActionClick}>

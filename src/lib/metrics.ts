@@ -2,6 +2,7 @@
 // Calculs de métriques de performance trading — aucune dépendance externe
 
 import type { Trade } from "@prisma/client"
+import { dayKey, hourOfDay } from "@/lib/dates"
 
 export interface PerformanceMetrics {
   totalTrades: number
@@ -36,7 +37,7 @@ export interface EquityPoint {
 }
 
 // ─── Métriques globales ───────────────────────────────────────────────────────
-export function computeMetrics(trades: Trade[], initialBalance = 0): PerformanceMetrics {
+export function computeMetrics(trades: Trade[], initialBalance = 0, timezone = "UTC"): PerformanceMetrics {
   const closed = trades.filter((t) => t.status === "closed" && t.netPnl !== null)
 
   if (closed.length === 0) {
@@ -70,7 +71,7 @@ export function computeMetrics(trades: Trade[], initialBalance = 0): Performance
       : 0
 
   // Meilleur / pire jour
-  const byDay = groupByDay(closed)
+  const byDay = groupByDay(closed, timezone)
   const days = Object.entries(byDay).map(([date, ts]) => ({
     date,
     pnl: ts.reduce((s, t) => s + Number(t.netPnl), 0),
@@ -106,17 +107,17 @@ export function computeMetrics(trades: Trade[], initialBalance = 0): Performance
 }
 
 // ─── Equity Curve ─────────────────────────────────────────────────────────────
-export function computeEquityCurve(trades: Trade[], initialBalance = 0): EquityPoint[] {
+export function computeEquityCurve(trades: Trade[], initialBalance = 0, timezone = "UTC"): EquityPoint[] {
   const closed = trades
     .filter((t) => t.status === "closed" && t.netPnl !== null && t.exitAt)
 
   // S'il n'y a pas de trades, on retourne juste le solde initial aujourd'hui
   if (closed.length === 0) {
-    return [{ date: new Date().toISOString().split("T")[0], equity: initialBalance, drawdown: 0 }]
+    return [{ date: dayKey(new Date(), timezone), equity: initialBalance, drawdown: 0 }]
   }
 
   // Grouper par jour
-  const byDay = groupByDay(closed)
+  const byDay = groupByDay(closed, timezone)
   // Trier les jours chronologiquement
   const sortedDates = Object.keys(byDay).sort((a, b) => a.localeCompare(b))
 
@@ -125,10 +126,10 @@ export function computeEquityCurve(trades: Trade[], initialBalance = 0): EquityP
   const points: EquityPoint[] = []
 
   // Point de départ (la veille du premier trade)
-  const firstDate = new Date(sortedDates[0])
-  firstDate.setDate(firstDate.getDate() - 1)
+  const [fy, fm, fd] = sortedDates[0].split("-").map(Number)
+  const startDate = new Date(Date.UTC(fy, fm - 1, fd - 1, 0, 0, 0, 0))
   points.push({
-    date: firstDate.toISOString().split("T")[0],
+    date: dayKey(startDate, "UTC"),
     equity,
     drawdown: 0
   })
@@ -154,9 +155,9 @@ export function computeEquityCurve(trades: Trade[], initialBalance = 0): EquityP
 }
 
 // ─── P&L par jour (calendrier) ────────────────────────────────────────────────
-export function computeDailyPnL(trades: Trade[]): DailyPnL[] {
+export function computeDailyPnL(trades: Trade[], timezone = "UTC"): DailyPnL[] {
   const closed = trades.filter((t) => t.status === "closed" && t.netPnl !== null && t.exitAt)
-  const byDay = groupByDay(closed)
+  const byDay = groupByDay(closed, timezone)
 
   return Object.entries(byDay)
     .map(([date, ts]) => ({
@@ -200,7 +201,7 @@ export function computeHourlyPnL(trades: Trade[], timezone = "UTC"): { hour: num
   for (let h = 0; h < 24; h++) hourMap[h] = { pnl: 0, count: 0 }
 
   for (const trade of closed) {
-    const hour = new Date(trade.entryAt).getHours() // TODO: adapter au timezone user
+    const hour = hourOfDay(trade.entryAt, timezone)
     hourMap[hour].pnl += Number(trade.netPnl)
     hourMap[hour].count++
   }
@@ -213,9 +214,9 @@ export function computeHourlyPnL(trades: Trade[], timezone = "UTC"): { hour: num
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function groupByDay(trades: Trade[]): Record<string, Trade[]> {
+function groupByDay(trades: Trade[], timezone = "UTC"): Record<string, Trade[]> {
   return trades.reduce((acc, trade) => {
-    const key = new Date(trade.exitAt ?? trade.entryAt).toISOString().split("T")[0]
+    const key = dayKey(trade.exitAt ?? trade.entryAt, timezone)
     if (!acc[key]) acc[key] = []
     acc[key].push(trade)
     return acc

@@ -11,6 +11,8 @@ export default function ImportPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [defaultSetupName, setDefaultSetupName] = useState<string | null>(null)
+  const [challenges, setChallenges] = useState<any[]>([])
+  const [targetChallengeId, setTargetChallengeId] = useState("")
 
   useEffect(() => {
     fetch("/api/setups")
@@ -18,6 +20,13 @@ export default function ImportPage() {
       .then((setups: any[]) => {
         const def = setups.find(s => s.isDefault)
         if (def) setDefaultSetupName(def.name)
+      })
+      .catch(console.error)
+
+    fetch("/api/challenges")
+      .then(r => r.json())
+      .then((list: any[]) => {
+        setChallenges(list.filter(c => c.status === 'active' || c.status === 'passed'))
       })
       .catch(console.error)
   }, [])
@@ -45,6 +54,7 @@ export default function ImportPage() {
       const formData = new FormData()
       formData.append("file", file)
       formData.append("broker", broker)
+      if (targetChallengeId) formData.append("challengeId", targetChallengeId)
 
       const res = await fetch("/api/trades/import", {
         method: "POST",
@@ -57,7 +67,11 @@ export default function ImportPage() {
         throw new Error(data.error || "Failed to import trades")
       }
 
-      setSuccess(`Successfully imported ${data.count} trades!`)
+      setSuccess(
+        targetChallengeId
+          ? `Successfully imported ${data.count} trades into the challenge${data.challengeStatus ? ` — status: ${data.challengeStatus}` : ""}!`
+          : `Successfully imported ${data.count} trades!`
+      )
       setFile(null)
       
       // Reset input element
@@ -128,6 +142,28 @@ export default function ImportPage() {
               <option value="BYBIT">Bybit (Trade History CSV)</option>
               <option value="INTERACTIVE_BROKERS">Interactive Brokers (Activity Flex Query)</option>
             </select>
+          </div>
+
+          <div className="form-group">
+            <label className="label">Import Into</label>
+            <select 
+              className="input select" 
+              value={targetChallengeId} 
+              onChange={(e) => setTargetChallengeId(e.target.value)}
+              disabled={loading}
+            >
+              <option value="">Default trading account</option>
+              {challenges.map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.account?.name || "Challenge"} — {c.template?.firmName} ({c.status})
+                </option>
+              ))}
+            </select>
+            {targetChallengeId && (
+              <div style={{ fontSize: "0.75rem", color: "var(--color-brand-500)", marginTop: "0.35rem" }}>
+                The challenge will be re-evaluated automatically after import.
+              </div>
+            )}
           </div>
 
           <div className="form-group">

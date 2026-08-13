@@ -2,6 +2,7 @@
 // Détection de patterns comportementaux — moteur de scoring discipline
 
 import type { Trade } from "@prisma/client"
+import { dayKey } from "@/lib/dates"
 
 export type PatternType = "revenge_trading" | "overtrading" | "stop_violation" | "session_breach"
 
@@ -55,7 +56,7 @@ const CONFIG = {
 }
 
 // ─── Point d'entrée principal ─────────────────────────────────────────────────
-export function analyzeBehavior(trades: Trade[]): BehavioralResult {
+export function analyzeBehavior(trades: Trade[], timezone = "UTC"): BehavioralResult {
   if (trades.length === 0) {
     return { 
       disciplineScore: 100, 
@@ -75,7 +76,7 @@ export function analyzeBehavior(trades: Trade[]): BehavioralResult {
 
   const patterns: DetectedPattern[] = [
     detectRevengeTrades(sorted),
-    detectOvertrading(sorted),
+    detectOvertrading(sorted, timezone),
     detectStopViolations(sorted),
   ].filter((p): p is DetectedPattern => p !== null)
 
@@ -182,11 +183,11 @@ function detectRevengeTrades(trades: Trade[]): DetectedPattern | null {
 
 // ─── Sur-trading ─────────────────────────────────────────────────────────────
 // Définition : jours avec > 2× la médiane de trades/jour
-function detectOvertrading(trades: Trade[]): DetectedPattern | null {
+function detectOvertrading(trades: Trade[], timezone = "UTC"): DetectedPattern | null {
   // Grouper par jour
   const byDay: Record<string, Trade[]> = {}
   for (const t of trades) {
-    const day = new Date(t.entryAt).toISOString().split("T")[0]
+    const day = dayKey(t.entryAt, timezone)
     if (!byDay[day]) byDay[day] = []
     byDay[day].push(t)
   }

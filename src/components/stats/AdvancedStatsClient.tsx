@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts"
+import { formatCurrency } from "@/lib/formatters"
 
 const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
@@ -55,7 +56,7 @@ export function AdvancedStatsClient() {
       {/* KPI Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
         
-        <div className="kpi-card" style={{ background: "rgba(16, 185, 129, 0.05)", borderColor: "rgba(16, 185, 129, 0.2)" }}>
+        <div className="kpi-card">
           <div className="kpi-label">Profit Factor</div>
           <div className="kpi-value" style={{ color: kpis.profitFactor >= 2 ? "var(--color-profit)" : kpis.profitFactor >= 1 ? "var(--color-warning)" : "var(--color-loss)" }}>
             {kpis.profitFactor === 99 ? "∞" : kpis.profitFactor.toFixed(2)}
@@ -66,18 +67,18 @@ export function AdvancedStatsClient() {
         <div className="kpi-card">
           <div className="kpi-label">Expectancy (Per Trade)</div>
           <div className={`kpi-value ${kpis.expectancy >= 0 ? "profit" : "loss"}`}>
-            ${kpis.expectancy.toFixed(2)}
+            {formatCurrency(kpis.expectancy, "USD", true, 2)}
           </div>
-          <div className="kpi-sub">Avg Win: ${kpis.avgWin.toFixed(0)} | Avg Loss: ${kpis.avgLoss.toFixed(0)}</div>
+          <div className="kpi-sub">Avg Win: {formatCurrency(kpis.avgWin, "USD", false, 0)} | Avg Loss: {formatCurrency(kpis.avgLoss, "USD", false, 0)}</div>
         </div>
 
         <div className="kpi-card">
           <div className="kpi-label">Max Drawdown</div>
           <div className="kpi-value loss">
-            -${drawdown.maxDrawdown.toFixed(2)}
+            {formatCurrency(drawdown.maxDrawdown, "USD", true, 2)}
           </div>
           <div className="kpi-sub">
-            Current: -${drawdown.currentDrawdown.toFixed(2)}
+            Current: {formatCurrency(drawdown.currentDrawdown, "USD", true, 2)}
           </div>
         </div>
 
@@ -131,12 +132,14 @@ export function AdvancedStatsClient() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 12, fontWeight: 600 }} dy={10} />
                 <YAxis hide />
                 <Tooltip 
-                  cursor={{ fill: "var(--color-gray-800)" }}
-                  contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "8px", color: "var(--color-gray-100)" }}
-                  formatter={(val: number) => [`$${val.toFixed(2)}`, "Net P&L"]}
+                  cursor={{ fill: "rgba(255,255,255,0.05)" }}
+                  formatter={(val: any) => [formatCurrency(Number(val), "USD", true, 2), "Net P&L"]}
+                  labelStyle={{ color: "var(--color-gray-400)" }}
+                  contentStyle={{ backgroundColor: "var(--color-gray-900)", borderColor: "var(--color-gray-800)", borderRadius: "8px" }}
                 />
+                <ReferenceLine y={0} stroke="var(--color-gray-800)" />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-                  {dowData.map((entry, index) => (
+                  {dowData.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                   ))}
                 </Bar>
@@ -156,7 +159,7 @@ export function AdvancedStatsClient() {
             <div className="empty-state">No data</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {topSymbols.map((item, i) => (
+              {topSymbols.map((item: any, i: number) => (
                 <div key={item.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem", background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                     <div style={{ width: "24px", height: "24px", borderRadius: "4px", background: "var(--color-gray-800)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-gray-400)" }}>
@@ -166,7 +169,7 @@ export function AdvancedStatsClient() {
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
                     <span className={item.pnl >= 0 ? "profit" : "loss"} style={{ fontWeight: 700 }}>
-                      ${item.pnl.toFixed(2)}
+                      {formatCurrency(item.pnl, "USD", true, 2)}
                     </span>
                     <span style={{ fontSize: "0.75rem", color: "var(--color-gray-500)" }}>{item.count} trades</span>
                   </div>
@@ -183,7 +186,7 @@ export function AdvancedStatsClient() {
             <div className="empty-state">No data</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {topSetups.map((item, i) => (
+              {topSetups.map((item: any, i: number) => (
                 <div key={item.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem", background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                     <div style={{ width: "24px", height: "24px", borderRadius: "4px", background: "var(--color-gray-800)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-gray-400)" }}>
@@ -193,7 +196,7 @@ export function AdvancedStatsClient() {
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
                     <span className={item.pnl >= 0 ? "profit" : "loss"} style={{ fontWeight: 700 }}>
-                      ${item.pnl.toFixed(2)}
+                      {formatCurrency(item.pnl, "USD", true, 2)}
                     </span>
                     <span style={{ fontSize: "0.75rem", color: "var(--color-gray-500)" }}>{item.count} trades</span>
                   </div>

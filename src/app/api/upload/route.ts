@@ -20,6 +20,10 @@ export async function POST(request: Request) {
     const arrayBuffer = await request.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
 
+    if (buffer.length > 5 * 1024 * 1024) {
+      return NextResponse.json({ error: "File too large (max 5MB)" }, { status: 413 })
+    }
+
     const uploadDir = path.join(process.cwd(), "public", "uploads")
     
     // Create directory if it doesn't exist

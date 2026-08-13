@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> }) {
+export function CalendarView({ dailyPnl, propDailyPnl = {} }: { dailyPnl: Record<string, number>; propDailyPnl?: Record<string, number> }) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [journalDates, setJournalDates] = useState<string[]>([])
   const router = useRouter()
@@ -55,6 +55,7 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
     ].join('-')
 
     const pnl = dailyPnl[dateStr]
+    const propPnl = propDailyPnl[dateStr]
     const hasJournal = journalDates.includes(dateStr)
     
     let bgColor = "var(--color-gray-900)"
@@ -104,8 +105,11 @@ export function CalendarView({ dailyPnl }: { dailyPnl: Record<string, number> })
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span style={{ fontSize: "1rem", opacity: hasJournal ? 1 : 0 }}>
+          <span style={{ fontSize: "1rem", opacity: hasJournal || propPnl !== undefined ? 1 : 0, display: "flex", gap: "0.25rem" }}>
             {hasJournal && "📝"}
+            {propPnl !== undefined && (
+              <span title={`Prop firm P&L: ${propPnl > 0 ? "+" : ""}$${propPnl.toFixed(2)}`} style={{ cursor: "help" }}>🎯</span>
+            )}
           </span>
           <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-gray-500)" }}>
             {i}

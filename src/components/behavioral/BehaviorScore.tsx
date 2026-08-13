@@ -86,7 +86,7 @@ export function BehaviorScore() {
                   <Tooltip 
                     cursor={{ fill: "var(--color-gray-800)" }}
                     contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "var(--radius-card)", padding: "0.75rem" }}
-                    formatter={(val: number) => [`$${val.toFixed(2)}`, "Net P&L"]}
+                    formatter={(val: any) => [`$${Number(val).toFixed(2)}`, "Net P&L"]}
                   />
                   <Bar dataKey="netPnl" radius={[0, 6, 6, 0]} barSize={32}>
                     {data.setupPerformance.map((entry, index) => (

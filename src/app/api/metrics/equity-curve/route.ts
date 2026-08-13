@@ -25,6 +25,11 @@ export async function GET(request: Request) {
       return NextResponse.json({ data: [] })
     }
 
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { timezone: true },
+    })
+
     const whereClause: any = { accountId: account.id, status: "closed" }
 
     let fromDate: Date | undefined
@@ -60,7 +65,7 @@ export async function GET(request: Request) {
       orderBy: { exitAt: "asc" },
     })
 
-    const data = computeEquityCurve(trades, Number(account.initialBalance ?? 0))
+    const data = computeEquityCurve(trades, Number(account.initialBalance ?? 0), user?.timezone ?? "UTC")
     return NextResponse.json({ data })
   } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

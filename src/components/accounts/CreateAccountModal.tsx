@@ -14,6 +14,8 @@ export function CreateAccountModal({
   const [type, setType] = useState("personal")
   const [broker, setBroker] = useState("")
   const [initialBalance, setInitialBalance] = useState("10000")
+  const [baseCurrency, setBaseCurrency] = useState("USD")
+  const [fxRateToUsd, setFxRateToUsd] = useState("1")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   if (!isOpen) return null
@@ -31,7 +33,8 @@ export function CreateAccountModal({
           type,
           broker: broker || null,
           initialBalance,
-          baseCurrency: "USD"
+          baseCurrency,
+          fxRateToUsd,
         })
       })
 
@@ -45,6 +48,8 @@ export function CreateAccountModal({
       setBroker("")
       setType("personal")
       setInitialBalance("10000")
+      setBaseCurrency("USD")
+      setFxRateToUsd("1")
     } catch (error) {
       toast.error("Error creating account")
     } finally {
@@ -94,8 +99,23 @@ export function CreateAccountModal({
                 <input type="text" className="input" placeholder="e.g. Interactive Brokers" value={broker} onChange={e => setBroker(e.target.value)} />
               </div>
               <div>
-                <label className="label">Initial Balance ($)</label>
+                <label className="label">Initial Balance</label>
                 <input type="number" className="input" placeholder="10000" value={initialBalance} onChange={e => setInitialBalance(e.target.value)} required />
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.25rem" }}>
+              <div>
+                <label className="label">Base Currency</label>
+                <select className="input" value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)}>
+                  {["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"].map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="label">FX Rate to USD</label>
+                <input type="number" step="0.000001" min="0" className="input" placeholder="1" value={fxRateToUsd} onChange={e => setFxRateToUsd(e.target.value)} />
               </div>
             </div>
 

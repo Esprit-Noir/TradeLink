@@ -6,9 +6,9 @@ import { DeleteTradeButton } from "@/components/trades/DeleteTradeButton"
 import { TradesFilter } from "@/components/trades/TradesFilter"
 import { TradeRow } from "@/components/trades/TradeRow"
 import { TradeDetailsDrawer } from "@/components/trades/TradeDetailsDrawer"
-
 import Link from "next/link"
 import { getActiveAccount } from "@/lib/active-account"
+import { cookies } from "next/headers"
 
 export const metadata = {
   title: "All Trades",
@@ -24,7 +24,11 @@ export default async function TradesPage({
   const session = await auth()
   if (!session?.user?.id) return null
 
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } })
   const account = await getActiveAccount(session.user.id)
+  
+  const cookieStore = await cookies()
+  const density = cookieStore.get("ui_density")?.value === "compact" ? "compact" : "comfortable"
 
   let trades: any[] = []
   let totalTrades = 0
@@ -100,7 +104,7 @@ export default async function TradesPage({
       </Suspense>
 
       <div className="table-wrapper">
-        <table className="data-table">
+        <table className={`data-table ${density}`}>
           <thead>
             <tr>
               <th>Entry Time</th>
@@ -137,7 +141,7 @@ export default async function TradesPage({
                   stopLoss: t.stopLoss ? Number(t.stopLoss) : null,
                   riskAmount: t.riskAmount ? Number(t.riskAmount) : null,
                 }
-                return <TradeRow key={t.id} trade={serializedTrade} />
+                return <TradeRow key={t.id} trade={serializedTrade} timezone={user?.timezone} baseCurrency={account?.baseCurrency} />
               })
             )}
           </tbody>

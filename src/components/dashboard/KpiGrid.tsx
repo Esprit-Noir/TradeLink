@@ -5,6 +5,7 @@ import { computeMetrics } from "@/lib/metrics"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { getActiveAccount } from "@/lib/active-account"
+import { formatCurrency } from "@/lib/formatters"
 
 export async function KpiGrid({
   dateRange
@@ -42,7 +43,12 @@ export async function KpiGrid({
     orderBy: { entryAt: "desc" },
   })
 
-  const metrics = computeMetrics(trades, Number(account.initialBalance ?? 0))
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { timezone: true },
+  })
+
+  const metrics = computeMetrics(trades, Number(account.initialBalance ?? 0), user?.timezone ?? "UTC")
 
   const currency = account.baseCurrency
 
@@ -121,17 +127,4 @@ function EmptyKpiCard({ label }: { label: string }) {
       <div className="kpi-sub">No data yet</div>
     </div>
   )
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-function formatCurrency(value: number, currency = "USD"): string {
-  const abs = Math.abs(value)
-  const sign = value < 0 ? "-" : value > 0 ? "+" : ""
-  const formatted = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(abs)
-  return `${sign}${formatted}`
 }
