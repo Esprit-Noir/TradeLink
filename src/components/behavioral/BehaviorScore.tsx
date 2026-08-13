@@ -2,20 +2,37 @@
 // Behavioral Score gauge + pattern cards + advanced metrics
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts"
-import type { BehavioralResult, DetectedPattern, EmotionCost, SetupPerformance } from "@/lib/behavioral"
+import type { BehavioralResult, DetectedPattern } from "@/lib/behavioral"
+
+const RANGES = [
+  { key: "all", label: "All time" },
+  { key: "90d", label: "90 days" },
+  { key: "30d", label: "30 days" },
+]
 
 export function BehaviorScore() {
-  const [data, setData] = useState<BehavioralResult & { history?: any[] } | null>(null)
+  const [data, setData] = useState<(BehavioralResult & { history?: any[]; range?: string; recentFlags?: any[] }) | null>(null)
   const [loading, setLoading] = useState(true)
+  const [range, setRange] = useState("all")
+
+  const load = useCallback(async (r: string) => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/behavioral?range=${r}`)
+      const d = await res.json()
+      setData(d)
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    fetch("/api/behavioral")
-      .then((r) => r.json())
-      .then((d) => { setData(d); setLoading(false) })
-      .catch(() => setLoading(false))
-  }, [])
+    load(range)
+  }, [range, load])
 
   if (loading) return <ScoreSkeleton />
   if (!data) return null
@@ -24,12 +41,54 @@ export function BehaviorScore() {
   const scoreClass = score >= 85 ? "score-excellent" : score >= 70 ? "score-good" : score >= 50 ? "score-medium" : score >= 30 ? "score-poor" : "score-critical"
   const scoreLabel = score >= 85 ? "Excellent" : score >= 70 ? "Good" : score >= 50 ? "Fair" : score >= 30 ? "Poor" : "Critical"
 
+  // Score delta vs previous snapshot
+  const history = data.history || []
+  let delta: number | null = null
+  if (history.length >= 2) {
+    const a = history[history.length - 2]?.disciplineScore
+    const b = history[history.length - 1]?.disciplineScore
+    if (typeof a === "number" && typeof b === "number") delta = b - a
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      
+
+      {/* Range selector */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem" }}>
+          {RANGES.map(r => (
+            <button
+              key={r.key}
+              onClick={() => setRange(r.key)}
+              style={{
+                padding: "0.4rem 0.9rem",
+                borderRadius: "8px",
+                fontSize: "0.85rem",
+                fontWeight: 500,
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+                background: range === r.key ? "var(--color-gray-800)" : "transparent",
+                color: range === r.key ? "var(--color-text)" : "var(--color-gray-500)",
+                border: "none",
+              }}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+        {delta !== null && (
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", padding: "0.35rem 0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+            <span style={{ color: "var(--color-gray-500)" }}>vs last analysis</span>
+            <span style={{ fontWeight: 700, color: delta > 0 ? "var(--color-profit)" : delta < 0 ? "var(--color-loss)" : "var(--color-gray-400)" }}>
+              {delta > 0 ? "▲" : delta < 0 ? "▼" : "—"} {delta > 0 ? "+" : ""}{delta}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* TOP ROW: 3 Cards */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
-        
+
         {/* 1. Score Card */}
         <div className="card" style={{ flex: "1 1 300px", textAlign: "center", padding: "2.5rem 1.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "2rem" }}>
@@ -42,6 +101,9 @@ export function BehaviorScore() {
           <div style={{ marginTop: "0.75rem", fontSize: "0.9rem", color: "var(--color-gray-400)", lineHeight: 1.6, padding: "0 1rem" }}>
             {data.summary}
           </div>
+
+          {/* Score breakdown */}
+          <ScoreBreakdownBar breakdown={data.scoreBreakdown} />
         </div>
 
         {/* 2. Emotion Costs */}
@@ -107,14 +169,14 @@ export function BehaviorScore() {
       </div>
 
       {/* 4. History Chart */}
-      <div className="card" style={{ padding: "1.5rem", gridColumn: "1 / -1" }}>
+      <div className="card" style={{ padding: "1.5rem" }}>
         <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-500)", marginBottom: "1.5rem" }}>
           Score History
         </div>
-        {data.history && data.history.length > 1 ? (
+        {history.length > 1 ? (
           <div style={{ height: "200px" }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.history}>
+              <LineChart data={history}>
                 <XAxis 
                   dataKey="computedAt" 
                   tickFormatter={(d) => new Date(d).toLocaleDateString()} 
@@ -156,8 +218,38 @@ export function BehaviorScore() {
         )}
       </div>
 
-      {/* 5. Detected Patterns */}
-      <div style={{ gridColumn: "1 / -1" }}>
+      {/* 5. Recent violations */}
+      {data.recentFlags && data.recentFlags.length > 0 && (
+        <div className="card" style={{ padding: "1.5rem" }}>
+          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-500)", marginBottom: "1rem" }}>
+            Recent Violations
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+            {data.recentFlags.map(f => (
+              <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+                <span style={{
+                  fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", padding: "0.2rem 0.45rem", borderRadius: "4px", whiteSpace: "nowrap",
+                  background: `${f.color}22`, color: f.color, border: `1px solid ${f.color}44`,
+                }}>
+                  {f.label}
+                </span>
+                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-100)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {f.symbol} <span style={{ color: "var(--color-gray-500)", fontWeight: 400, textTransform: "capitalize" }}>{f.side}</span>
+                </span>
+                <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginLeft: "auto", whiteSpace: "nowrap" }}>
+                  {new Date(f.entryAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </span>
+                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: f.netPnl < 0 ? "var(--color-loss)" : "var(--color-profit)", whiteSpace: "nowrap" }}>
+                  {f.netPnl >= 0 ? "+" : ""}${f.netPnl.toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 6. Detected Patterns */}
+      <div>
         <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-200)", marginBottom: "1rem" }}>
           Violations & Patterns
         </div>
@@ -174,6 +266,55 @@ export function BehaviorScore() {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Score breakdown bar ──────────────────────────────────────────────────────
+function ScoreBreakdownBar({ breakdown }: { breakdown: BehavioralResult["scoreBreakdown"] }) {
+  if (!breakdown || breakdown.penalties.length === 0) {
+    return (
+      <div style={{ marginTop: "1.25rem" }}>
+        <div style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-profit)", marginBottom: "0.4rem" }}>
+          No deductions — perfect discipline
+        </div>
+        <div style={{ background: "var(--color-gray-800)", borderRadius: 4, height: 8, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: "100%", borderRadius: 4, background: "var(--color-profit)" }} />
+        </div>
+      </div>
+    )
+  }
+
+  const segments = breakdown.penalties.map(p => ({
+    label: p.label,
+    width: (p.penalty * Math.min(p.count, 5) / 100) * 100,
+    count: p.count,
+    color: p.type === "stop_violation" ? "var(--color-loss)" : p.type === "revenge_trading" ? "var(--color-warning)" : "var(--color-info)",
+  }))
+
+  return (
+    <div style={{ marginTop: "1.25rem", textAlign: "left" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
+        <div style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-gray-500)" }}>
+          Score breakdown
+        </div>
+        <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--color-loss)" }}>
+          -{breakdown.totalPenalty} pts
+        </div>
+      </div>
+      <div style={{ display: "flex", background: "var(--color-gray-800)", borderRadius: 4, height: 8, overflow: "hidden", width: "100%" }}>
+        {segments.map((s, i) => (
+          <div key={i} title={`${s.label}: -${s.count} occurrence(s)`} style={{ width: `${s.width}%`, background: s.color }} />
+        ))}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", marginTop: "0.6rem", fontSize: "0.75rem" }}>
+        {breakdown.penalties.map((p, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", color: "var(--color-gray-400)" }}>
+            <span>{p.label} <span style={{ color: "var(--color-gray-600)" }}>×{p.count}</span></span>
+            <span style={{ fontWeight: 600, color: "var(--color-loss)" }}>-{p.penalty * Math.min(p.count, 5)}</span>
+          </div>
+        ))}
       </div>
     </div>
   )

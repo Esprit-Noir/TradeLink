@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   BarChart, Bar, Cell, ReferenceLine,
+  AreaChart, Area,
 } from "recharts"
 import { PropFirmGauges } from "./PropFirmGauges"
 
@@ -67,7 +68,39 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
     : null
 
   const events: any[] = Array.isArray(challenge.events) ? challenge.events : []
-  const chartData = snapshots.map(s => ({ ...s, dateLabel: formatDate(s.date) }))
+  const initial = Number(challenge.initialBalance)
+  const maxDDPct = Number(challenge.maxDDPct)
+  const targetPct = Number(challenge.profitTargetPct || 0)
+  const profitTarget = initial * (1 + targetPct / 100)
+
+  let runningHighBalance = initial
+  let runningHighEquity = initial
+  const series = snapshots.map(s => {
+    const endB = Number(s.endBalance)
+    const lowE = Number(s.lowestEquity)
+    const anchor = challenge.template?.drawdownType === 'static_balance'
+      ? initial
+      : challenge.template?.drawdownType === 'trailing_balance' ? runningHighBalance : runningHighEquity
+    const ddPct = anchor > 0 ? ((anchor - lowE) / anchor) * 100 : 0
+    const ddUsedPct = maxDDPct > 0 ? (ddPct / maxDDPct) * 100 : 0
+    const maxDDLevel = anchor * (1 - maxDDPct / 100)
+    runningHighBalance = Math.max(runningHighBalance, endB)
+    runningHighEquity = Math.max(runningHighEquity, endB, lowE)
+    return {
+      ...s,
+      endBalance: endB,
+      lowestEquity: lowE,
+      maxDDLevel: Math.round(maxDDLevel * 100) / 100,
+      profitTarget,
+      ddUsedPct: Math.round(ddUsedPct * 100) / 100,
+      ddPct: Math.round(ddPct * 100) / 100,
+      cumPnl: endB - initial,
+      cumPct: initial > 0 ? ((endB - initial) / initial) * 100 : 0,
+      dateLabel: formatDate(s.date),
+    }
+  })
+
+  const ddSeries = series.filter(s => s.ddUsedPct != null && !isNaN(s.ddUsedPct))
 
   const severityColor = (severity: string) =>
     severity === "critical" ? "var(--color-loss)" :
@@ -126,27 +159,71 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
           <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Daily Performance</h3>
 
           <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1rem" }}>
-            <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginBottom: "0.75rem" }}>Equity Curve</div>
-            <ResponsiveContainer width="100%" height={180}>
-              <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Equity Curve</div>
+              <div style={{ display: "flex", gap: "0.9rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                  <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-brand-500)", display: "inline-block" }} /> Equity
+                </span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                  <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-loss)", display: "inline-block" }} /> Max DD level
+                </span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                  <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-profit)", display: "inline-block" }} /> Profit target
+                </span>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={series} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" />
                 <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
                 <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} domain={['auto', 'auto']} width={55} />
                 <Tooltip
                   contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
                   labelStyle={{ color: "var(--color-gray-300)" }}
-                  formatter={(value: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, "Balance"]}
+                  formatter={(value: any, name: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, name === "endBalance" ? "Equity" : name]}
                 />
-                <ReferenceLine y={Number(challenge.initialBalance)} stroke="var(--color-gray-600)" strokeDasharray="4 4" />
+                <ReferenceLine y={profitTarget} stroke="var(--color-profit)" strokeDasharray="4 4" label={{ value: "Target", fill: "var(--color-profit)", fontSize: 10, position: "insideTopRight" }} />
+                <Line type="monotone" dataKey="maxDDLevel" stroke="var(--color-loss)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} opacity={0.7} />
                 <Line type="monotone" dataKey="endBalance" stroke="var(--color-brand-500)" strokeWidth={2} dot={{ r: 2, fill: "var(--color-brand-500)" }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
+          {ddSeries.length > 0 && (
+            <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
+                <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Drawdown used (% of max allowed)</div>
+                <div style={{ display: "flex", gap: "0.9rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-warning)", display: "inline-block" }} /> Drawdown used
+                  </span>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                    <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-loss)", display: "inline-block" }} /> Max allowed
+                  </span>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart data={ddSeries} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" />
+                  <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
+                  <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} domain={[0, 'auto']} width={40} unit="%" />
+                  <Tooltip
+                    contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
+                    labelStyle={{ color: "var(--color-gray-300)" }}
+                    formatter={(value: any, name: any) => [name === "Max allowed" ? "100%" : `${Number(value).toFixed(1)}%`, name === "ddUsedPct" ? "Drawdown used" : name]}
+                  />
+                  <Area type="monotone" dataKey="ddUsedPct" stroke="var(--color-warning)" strokeWidth={2} fill="var(--color-warning)" fillOpacity={0.12} dot={{ r: 2, fill: "var(--color-warning)" }} />
+                  <ReferenceLine y={100} stroke="var(--color-loss)" strokeDasharray="4 4" label={{ value: "Max DD", fill: "var(--color-loss)", fontSize: 10, position: "insideTopRight" }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
           <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1rem" }}>
             <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginBottom: "0.75rem" }}>Daily P&L</div>
             <ResponsiveContainer width="100%" height={140}>
-              <BarChart data={chartData} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+              <BarChart data={series} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
                 <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
                 <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} width={55} />
@@ -156,7 +233,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
                   formatter={(value: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, "P&L"]}
                 />
                 <Bar dataKey="dailyPnl" radius={[3, 3, 0, 0]}>
-                  {chartData.map((s, i) => (
+                  {series.map((s, i) => (
                     <Cell key={i} fill={Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                   ))}
                 </Bar>

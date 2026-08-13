@@ -29,6 +29,19 @@ export interface SetupPerformance {
   netPnl: number
 }
 
+export interface ScorePenalty {
+  type: PatternType
+  label: string
+  count: number
+  penalty: number
+}
+
+export interface ScoreBreakdown {
+  base: number
+  penalties: ScorePenalty[]
+  totalPenalty: number
+}
+
 export interface BehavioralResult {
   disciplineScore: number  // 0–100
   patterns: DetectedPattern[]
@@ -36,6 +49,7 @@ export interface BehavioralResult {
   summary: string
   emotionCosts: EmotionCost[]
   setupPerformance: SetupPerformance[]
+  scoreBreakdown: ScoreBreakdown
 }
 
 // ─── Config paramétrable ─────────────────────────────────────────────────────
@@ -64,7 +78,8 @@ export function analyzeBehavior(trades: Trade[], timezone = "UTC"): BehavioralRe
       period: { start: new Date(), end: new Date() }, 
       summary: "No trades to analyze.",
       emotionCosts: [],
-      setupPerformance: []
+      setupPerformance: [],
+      scoreBreakdown: { base: 100, penalties: [], totalPenalty: 0 },
     }
   }
 
@@ -80,19 +95,20 @@ export function analyzeBehavior(trades: Trade[], timezone = "UTC"): BehavioralRe
     detectStopViolations(sorted),
   ].filter((p): p is DetectedPattern => p !== null)
 
-  const disciplineScore = computeScore(patterns)
+  const { score, breakdown } = computeScore(patterns)
 
   // Compute advanced metrics
   const emotionCosts = computeEmotionCosts(sorted)
   const setupPerformance = computeSetupPerformance(sorted)
 
   return {
-    disciplineScore,
+    disciplineScore: score,
     patterns,
     period,
-    summary: buildSummary(disciplineScore, patterns),
+    summary: buildSummary(score, patterns),
     emotionCosts,
-    setupPerformance
+    setupPerformance,
+    scoreBreakdown: breakdown,
   }
 }
 
@@ -255,15 +271,29 @@ function detectStopViolations(trades: Trade[]): DetectedPattern | null {
 }
 
 // ─── Score de discipline ─────────────────────────────────────────────────────
-function computeScore(patterns: DetectedPattern[]): number {
-  let score = 100
+function computeScore(patterns: DetectedPattern[]): { score: number; breakdown: ScoreBreakdown } {
+  const penalties: ScorePenalty[] = patterns.map((p) => ({
+    type: p.type,
+    label: p.label,
+    count: p.count,
+    penalty: CONFIG.penalties[p.type] ?? 10,
+  }))
 
-  for (const pattern of patterns) {
-    const penalty = CONFIG.penalties[pattern.type] ?? 10
-    score -= penalty * Math.min(pattern.count, 5) // cap à 5 occurrences max de pénalité
+  let score = 100
+  for (const p of penalties) {
+    score -= p.penalty * Math.min(p.count, 5) // cap à 5 occurrences max de pénalité
   }
 
-  return Math.max(0, Math.min(100, Math.round(score)))
+  score = Math.max(0, Math.min(100, Math.round(score)))
+
+  return {
+    score,
+    breakdown: {
+      base: 100,
+      penalties,
+      totalPenalty: 100 - score,
+    },
+  }
 }
 
 // ─── Résumé textuel ───────────────────────────────────────────────────────────

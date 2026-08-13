@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useMemo } from "react"
 import { CreateSetupModal } from "./CreateSetupModal"
 import { toast } from "sonner"
-import { Check, Trash2, Target, TrendingUp, Pencil, X, Save } from "lucide-react"
+import { Check, Trash2, Target, TrendingUp, Pencil, X, Save, ArrowDownWideNarrow } from "lucide-react"
 
 type Setup = {
   id: string
@@ -13,6 +13,59 @@ type Setup = {
   count: number
   winRate: number
   netPnl: number
+  netPnlUsd: number
+  losses: number
+  profitFactor: number
+  avgWin: number
+  avgLoss: number
+  avgR: number
+  best: number
+  worst: number
+  recentCount: number
+  lastTradeAt: string | null
+  series: number[]
+}
+
+type SortKey = "pnl" | "winrate" | "trades" | "name"
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "pnl", label: "Best P&L" },
+  { key: "winrate", label: "Win rate" },
+  { key: "trades", label: "Most trades" },
+  { key: "name", label: "Name" },
+]
+
+function fmt(v: number, sign = false): string {
+  const s = v.toLocaleString("en-US", { minimumFractionDigits: 2 })
+  return `${sign && v > 0 ? "+" : ""}$${s}`
+}
+
+function Sparkline({ series, positive }: { series: number[]; positive: boolean }) {
+  if (series.length < 2) {
+    return <div style={{ height: 36 }} />
+  }
+  const min = Math.min(...series)
+  const max = Math.max(...series)
+  const range = max - min || 1
+  const w = 100
+  const h = 36
+  const pts = series
+    .map((v, i) => `${((i / (series.length - 1)) * w).toFixed(1)},${(h - ((v - min) / range) * (h - 4) - 2).toFixed(1)}`)
+    .join(" ")
+  const last = series[series.length - 1]
+  const color = positive ? "var(--color-profit)" : "var(--color-loss)"
+  return (
+    <svg width="100%" height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" style={{ display: "block" }}>
+      <polyline
+        points={pts}
+        fill="none"
+        stroke={color}
+        strokeWidth={1.75}
+        vectorEffect="non-scaling-stroke"
+        opacity={last >= series[0] ? 1 : 0.85}
+      />
+    </svg>
+  )
 }
 
 export function SetupsManager() {
@@ -22,6 +75,7 @@ export function SetupsManager() {
   const [editName, setEditName] = useState("")
   const [editDescription, setEditDescription] = useState("")
   const [saving, setSaving] = useState(false)
+  const [sortKey, setSortKey] = useState<SortKey>("pnl")
 
   const loadSetups = async () => {
     setLoading(true)
@@ -39,6 +93,26 @@ export function SetupsManager() {
   useEffect(() => {
     loadSetups()
   }, [])
+
+  const sorted = useMemo(() => {
+    const arr = [...setups]
+    switch (sortKey) {
+      case "name": return arr.sort((a, b) => a.name.localeCompare(b.name))
+      case "winrate": return arr.sort((a, b) => (b.count > 0 ? b.winRate : -1) - (a.count > 0 ? a.winRate : -1))
+      case "trades": return arr.sort((a, b) => b.count - a.count)
+      default: return arr.sort((a, b) => b.netPnl - a.netPnl)
+    }
+  }, [setups, sortKey])
+
+  const totals = useMemo(() => {
+    const withTrades = setups.filter(s => s.count > 0)
+    const totalPnl = setups.reduce((sum, s) => sum + s.netPnl, 0)
+    const totalTrades = setups.reduce((sum, s) => sum + s.count, 0)
+    const best = [...setups].sort((a, b) => b.netPnl - a.netPnl)[0]
+    const bestWinRate = withTrades.length > 0 ? [...withTrades].sort((a, b) => b.winRate - a.winRate)[0] : null
+    const profitable = setups.filter(s => s.netPnl > 0).length
+    return { totalPnl, totalTrades, best, bestWinRate, profitable, total: setups.length, withTrades }
+  }, [setups])
 
   const startEdit = (setup: Setup) => {
     setEditingId(setup.id)
@@ -102,8 +176,6 @@ export function SetupsManager() {
     }
   }
 
-  const bestSetup = [...setups].sort((a, b) => b.netPnl - a.netPnl)[0]
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       <div className="page-header" style={{ marginBottom: 0 }}>
@@ -116,26 +188,107 @@ export function SetupsManager() {
         </div>
       </div>
 
-      {bestSetup && bestSetup.netPnl > 0 && (
-        <div className="card" style={{ padding: "1.5rem", border: "1px solid var(--color-profit)", background: "rgba(34, 197, 94, 0.05)", display: "flex", alignItems: "center", gap: "1.5rem" }}>
-          <div style={{ padding: "1rem", background: "rgba(34, 197, 94, 0.1)", borderRadius: "50%", color: "var(--color-profit)" }}>
-            <TrendingUp size={32} />
+      {/* Global KPIs */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "1rem" }}>
+        <div className="kpi-card">
+          <div className="kpi-label">Combined P&L</div>
+          <div className="kpi-value" style={{ color: totals.totalPnl > 0 ? "var(--color-profit)" : totals.totalPnl < 0 ? "var(--color-loss)" : "var(--color-gray-100)" }}>
+            {fmt(totals.totalPnl, true)}
           </div>
-          <div>
-            <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-400)", fontWeight: 700, marginBottom: "0.25rem" }}>
-              Most Performant Setup
+          <div className="kpi-sub">{totals.totalTrades} tagged trades</div>
+        </div>
+        <div className="kpi-card">
+          <div className="kpi-label">Setups</div>
+          <div className="kpi-value">{totals.total}</div>
+          <div className="kpi-sub">{totals.profitable} profitable</div>
+        </div>
+        {totals.best?.count > 0 && (
+          <div className="kpi-card">
+            <div className="kpi-label">Top setup</div>
+            <div className="kpi-value" style={{ fontSize: "1.15rem", color: "var(--color-brand-500)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {totals.best.name}
             </div>
-            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
-              {bestSetup.name} <span style={{ color: "var(--color-profit)" }}>(+${bestSetup.netPnl.toFixed(2)})</span>
-            </div>
+            <div className="kpi-sub">{fmt(totals.best.netPnl, true)} · {totals.best.count} trades</div>
           </div>
+        )}
+        {totals.bestWinRate && (
+          <div className="kpi-card">
+            <div className="kpi-label">Best win rate</div>
+            <div className="kpi-value" style={{ fontSize: "1.15rem", color: "var(--color-profit)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+              {totals.bestWinRate.winRate.toFixed(0)}%
+            </div>
+            <div className="kpi-sub">{totals.bestWinRate.name}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Leaderboard */}
+      {totals.withTrades.length > 0 && (
+        <div className="card" style={{ padding: "1.5rem" }}>
+          <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginBottom: "1rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            Setup Leaderboard
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+            {[...totals.withTrades].sort((a, b) => b.netPnl - a.netPnl).slice(0, 6).map((s, i) => {
+              const maxPnl = Math.max(...totals.withTrades.map(x => Math.abs(x.netPnl)), 1)
+              const width = Math.max(4, (Math.abs(s.netPnl) / maxPnl) * 100)
+              const rankColors = ["#ffd700", "#c0c0c0", "#cd7f32"]
+              return (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div style={{
+                    width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "0.75rem", fontWeight: 700,
+                    background: i < 3 ? `${rankColors[i]}22` : "var(--color-gray-800)",
+                    color: i < 3 ? rankColors[i] : "var(--color-gray-400)",
+                  }}>
+                    {i + 1}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem", gap: "0.5rem" }}>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-100)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {s.name}
+                      </span>
+                      <span style={{ fontSize: "0.8rem", fontWeight: 700, color: s.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", whiteSpace: "nowrap" }}>
+                        {fmt(s.netPnl, true)}
+                      </span>
+                    </div>
+                    <div style={{ background: "var(--color-gray-800)", borderRadius: 3, height: 5, overflow: "hidden" }}>
+                      <div style={{
+                        height: "100%", width: `${width}%`, borderRadius: 3,
+                        background: s.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",
+                        opacity: 0.85,
+                      }} />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Sort bar */}
+      {setups.length > 0 && (
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "0.5rem" }}>
+          <ArrowDownWideNarrow size={15} style={{ color: "var(--color-gray-500)" }} />
+          <select
+            className="input"
+            value={sortKey}
+            onChange={e => setSortKey(e.target.value as SortKey)}
+            style={{ width: 160, padding: "0.35rem 1.8rem 0.35rem 0.6rem", fontSize: "0.82rem" }}
+          >
+            {SORT_OPTIONS.map(o => (
+              <option key={o.key} value={o.key}>{o.label}</option>
+            ))}
+          </select>
         </div>
       )}
 
       {loading ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
-          <div className="skeleton card" style={{ height: "220px" }} />
-          <div className="skeleton card" style={{ height: "220px" }} />
+          <div className="skeleton card" style={{ height: "260px" }} />
+          <div className="skeleton card" style={{ height: "260px" }} />
         </div>
       ) : setups.length === 0 ? (
         <div className="card" style={{ textAlign: "center", padding: "4rem 2rem", color: "var(--color-gray-500)" }}>
@@ -146,19 +299,20 @@ export function SetupsManager() {
           </p>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
-          {setups.map(setup => {
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "1.5rem" }}>
+          {sorted.map(setup => {
             const isEditing = editingId === setup.id
+            const hasTrades = setup.count > 0
             return (
-              <div key={setup.id} className="card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", position: "relative" }}>
+              <div key={setup.id} className="card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", position: "relative", gap: "1rem" }}>
                 {setup.isDefault && !isEditing && (
                   <div style={{ position: "absolute", top: "1.5rem", right: "1.5rem", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", background: "var(--color-brand-500)", color: "#000", padding: "0.25rem 0.5rem", borderRadius: "var(--radius-sm)" }}>
                     Default
                   </div>
                 )}
-                
+
                 {isEditing ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1rem" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                     <input
                       className="input"
                       value={editName}
@@ -176,34 +330,86 @@ export function SetupsManager() {
                     />
                   </div>
                 ) : (
-                  <div style={{ marginBottom: "1rem" }}>
-                    <h3 style={{ fontSize: "1.25rem", margin: "0 0 0.5rem 0", paddingRight: "4rem" }}>{setup.name}</h3>
-                    <p style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                  <div>
+                    <h3 style={{ fontSize: "1.2rem", margin: "0 0 0.4rem 0", paddingRight: "4rem", color: "var(--color-gray-100)" }}>{setup.name}</h3>
+                    <p style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", margin: 0, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", minHeight: "1.3em" }}>
                       {setup.description || <span style={{ fontStyle: "italic", opacity: 0.5 }}>No description provided.</span>}
                     </p>
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1.5rem", padding: "1rem 0", borderTop: "1px solid var(--color-gray-800)", borderBottom: "1px solid var(--color-gray-800)" }}>
+                {/* Sparkline */}
+                {hasTrades && !isEditing && (
                   <div>
-                    <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Win Rate</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: setup.count > 0 ? "var(--color-gray-100)" : "var(--color-gray-600)" }}>
-                      {setup.count > 0 ? `${setup.winRate.toFixed(0)}%` : "—"}
+                    <Sparkline series={setup.series} positive={setup.netPnl >= 0} />
+                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", textAlign: "right", marginTop: "0.2rem" }}>
+                      cumulative P&L
+                    </div>
+                  </div>
+                )}
+
+                {/* Main stats */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", padding: "1rem 0", borderTop: "1px solid var(--color-gray-800)", borderBottom: "1px solid var(--color-gray-800)" }}>
+                  <div>
+                    <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Win rate</div>
+                    <div style={{ fontSize: "1.15rem", fontWeight: 700, color: hasTrades ? (setup.winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)") : "var(--color-gray-600)" }}>
+                      {hasTrades ? `${setup.winRate.toFixed(0)}%` : "—"}
+                    </div>
+                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+                      {hasTrades ? `${setup.winRate >= 50 ? "✔" : "✖"} ${setup.count - setup.losses}W / ${setup.losses}L` : "no data"}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Net P&L</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: setup.netPnl > 0 ? "var(--color-profit)" : setup.netPnl < 0 ? "var(--color-loss)" : "var(--color-gray-600)" }}>
-                      {setup.count > 0 ? `${setup.netPnl > 0 ? "+" : ""}$${setup.netPnl.toFixed(2)}` : "—"}
+                    <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Net P&L</div>
+                    <div style={{ fontSize: "1.15rem", fontWeight: 700, color: hasTrades ? (setup.netPnl > 0 ? "var(--color-profit)" : setup.netPnl < 0 ? "var(--color-loss)" : "var(--color-gray-600)") : "var(--color-gray-600)" }}>
+                      {hasTrades ? `${setup.netPnl > 0 ? "+" : ""}$${setup.netPnl.toFixed(2)}` : "—"}
+                    </div>
+                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+                      {hasTrades ? `${setup.count} trade${setup.count > 1 ? "s" : ""}` : "no data"}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Trades</div>
-                    <div style={{ fontSize: "1.25rem", fontWeight: 700, color: setup.count > 0 ? "var(--color-gray-100)" : "var(--color-gray-600)" }}>
-                      {setup.count}
+                    <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Profit factor</div>
+                    <div style={{ fontSize: "1.15rem", fontWeight: 700, color: hasTrades ? (setup.profitFactor >= 1.5 ? "var(--color-profit)" : setup.profitFactor >= 1 ? "var(--color-warning)" : "var(--color-loss)") : "var(--color-gray-600)" }}>
+                      {hasTrades ? (setup.profitFactor === 99 ? "∞" : setup.profitFactor.toFixed(2)) : "—"}
+                    </div>
+                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+                      {hasTrades ? `avg R ${setup.avgR >= 0 ? "+" : ""}${setup.avgR.toFixed(2)}` : "no data"}
                     </div>
                   </div>
                 </div>
+
+                {/* Secondary stats */}
+                {hasTrades && !isEditing && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.4rem 1rem", fontSize: "0.78rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--color-gray-500)" }}>Avg win</span>
+                      <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{fmt(setup.avgWin, true)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--color-gray-500)" }}>Avg loss</span>
+                      <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{fmt(setup.avgLoss, true)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--color-gray-500)" }}>Best</span>
+                      <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{fmt(setup.best, true)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--color-gray-500)" }}>Worst</span>
+                      <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{fmt(setup.worst, true)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--color-gray-500)" }}>Last 30 days</span>
+                      <span style={{ color: "var(--color-gray-300)", fontWeight: 600 }}>{setup.recentCount} trades</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "var(--color-gray-500)" }}>Last trade</span>
+                      <span style={{ color: "var(--color-gray-300)", fontWeight: 600 }}>
+                        {setup.lastTradeAt ? new Date(setup.lastTradeAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {isEditing ? (
                   <div style={{ display: "flex", gap: "0.5rem", marginTop: "auto" }}>
@@ -225,16 +431,16 @@ export function SetupsManager() {
                       <Pencil size={14} /> Edit
                     </button>
                     {!setup.isDefault && (
-                      <button 
-                        className="btn btn-outline" 
+                      <button
+                        className="btn btn-outline"
                         onClick={() => setAsDefault(setup.id, setup.name)}
                         style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem" }}
                       >
                         <Check size={14} /> Set Default
                       </button>
                     )}
-                    <button 
-                      className="btn btn-outline" 
+                    <button
+                      className="btn btn-outline"
                       onClick={() => deleteSetup(setup.id, setup.name)}
                       style={{ display: "flex", justifyContent: "center", alignItems: "center", color: "var(--color-loss)", borderColor: "rgba(239, 68, 68, 0.2)" }}
                       title="Delete Setup"

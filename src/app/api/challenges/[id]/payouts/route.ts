@@ -49,6 +49,12 @@ export async function POST(
       return NextResponse.json({ error: "Challenge not found" }, { status: 404 })
     }
 
+    if (challenge.phase !== 'funded') {
+      return NextResponse.json({
+        error: "Payouts are only allowed on funded accounts. This challenge is not funded yet."
+      }, { status: 400 })
+    }
+
     if (!body.amount || isNaN(parseFloat(body.amount))) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
     }

@@ -8,21 +8,23 @@ import { useEffect, useState } from "react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { AccountSwitcher } from "@/components/layout/AccountSwitcher"
 import { NotificationBell } from "@/components/layout/NotificationBell"
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  CalendarDays, 
-  BarChart3, 
-  Brain, 
-  List, 
-  Layers, 
-  Upload, 
-  Shield, 
+import {
+  LayoutDashboard,
+  Wallet,
+  CalendarDays,
+  BarChart3,
+  Brain,
+  List,
+  Layers,
+  Upload,
+  Shield,
   Settings,
   LogOut,
   Target,
   GitCompare,
-  FlaskConical
+  FlaskConical,
+  HandCoins,
+  FileText
 } from "lucide-react"
 
 type SidebarStats = {
@@ -54,6 +56,7 @@ export function Sidebar() {
         { href: "/dashboard", label: "Dashboard", icon: () => <LayoutDashboard {...iconProps} /> },
         { href: "/accounts",  label: "Accounts",  icon: () => <Wallet {...iconProps} /> },
         { href: "/calendar",  label: "Calendar",  icon: () => <CalendarDays {...iconProps} /> },
+        { href: "/report",    label: "Monthly Report", icon: () => <FileText {...iconProps} /> },
         { href: "/stats",     label: "Statistics",icon: () => <BarChart3 {...iconProps} /> },
         { href: "/behavioral",label: "Behavioral", icon: () => <Brain {...iconProps} /> },
       ],
@@ -70,6 +73,7 @@ export function Sidebar() {
       section: "Challenges",
       items: [
         { href: "/challenges",  label: "Prop Firms",  icon: () => <Target {...iconProps} /> },
+        { href: "/payouts",     label: "Payouts",     icon: () => <HandCoins {...iconProps} /> },
         { href: "/challenges/compare", label: "Compare", icon: () => <GitCompare {...iconProps} /> },
         { href: "/challenges/backtest", label: "Backtest", icon: () => <FlaskConical {...iconProps} /> },
       ],

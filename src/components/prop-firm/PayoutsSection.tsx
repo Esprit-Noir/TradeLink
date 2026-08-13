@@ -10,13 +10,6 @@ const PAYOUT_STATUS: Record<string, { label: string; color: string }> = {
   rejected: { label: "Rejected", color: "var(--color-loss)" },
 }
 
-const PAYOUT_NEXT: Record<string, string> = {
-  requested: "approved",
-  approved: "paid",
-  paid: "paid",
-  rejected: "requested",
-}
-
 function formatDate(iso: string): string {
   try {
     return new Date(iso).toLocaleString("en-US", {
@@ -78,12 +71,12 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
     }
   }
 
-  const updatePayoutStatus = async (payoutId: string, currentStatus: string) => {
+  const updatePayoutStatus = async (payoutId: string, status: string) => {
     try {
       const res = await fetch(`/api/challenges/${challengeId}/payouts/${payoutId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: PAYOUT_NEXT[currentStatus] || currentStatus }),
+        body: JSON.stringify({ status }),
       })
       if (!res.ok) throw new Error("Failed to update payout")
       await refresh()
@@ -169,12 +162,41 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
                   {st.label.toUpperCase()}
                 </span>
                 {p.status !== 'paid' && (
+                  <div style={{ display: "flex", gap: "0.3rem" }}>
+                    {p.status === 'requested' && (
+                      <button
+                        onClick={() => updatePayoutStatus(p.id, p.status)}
+                        className="btn btn-outline"
+                        style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                      >
+                        Approve
+                      </button>
+                    )}
+                    {p.status === 'approved' && (
+                      <button
+                        onClick={() => updatePayoutStatus(p.id, p.status)}
+                        className="btn btn-outline"
+                        style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
+                      >
+                        Mark Paid
+                      </button>
+                    )}
+                    <button
+                      onClick={() => updatePayoutStatus(p.id, 'rejected')}
+                      className="btn btn-outline"
+                      style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem", color: "var(--color-loss)" }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
+                {p.status === 'rejected' && (
                   <button
-                    onClick={() => updatePayoutStatus(p.id, p.status)}
+                    onClick={() => updatePayoutStatus(p.id, 'requested')}
                     className="btn btn-outline"
                     style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem" }}
                   >
-                    {PAYOUT_NEXT[p.status] === 'paid' ? "Mark Paid" : "Approve"}
+                    Reopen
                   </button>
                 )}
                 <button
