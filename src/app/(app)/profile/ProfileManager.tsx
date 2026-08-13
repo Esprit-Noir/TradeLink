@@ -2,271 +2,250 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import type { User } from "@prisma/client"
-import { User as UserIcon, Settings, Link as LinkIcon, CreditCard, Shield, Save } from "lucide-react"
+import { signOut } from "next-auth/react"
+import { Save, LogOut, Wallet, Target, List, LayoutList, BookOpenText } from "lucide-react"
 import { toast } from "sonner"
+import { NotificationPreferences } from "@/components/prop-firm/NotificationPreferences"
 
-export function ProfileManager({ user, initialDensity = "comfortable" }: { user: User, initialDensity?: string }) {
+type ProfileStats = {
+  accounts: number
+  challenges: number
+  setups: number
+  journals: number
+  trades: number
+}
+
+export function ProfileManager({
+  user,
+  initialDensity = "comfortable",
+  stats,
+}: {
+  user: any
+  initialDensity?: string
+  stats: ProfileStats
+}) {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState("general")
-  const [saving, setSaving] = useState(false)
 
-  // Form State
   const [name, setName] = useState(user.name || "")
   const [baseCurrency, setBaseCurrency] = useState(user.baseCurrency || "USD")
   const [timezone, setTimezone] = useState(user.timezone || "UTC")
   const [uiDensity, setUiDensity] = useState(initialDensity)
+  const [dailyGoal, setDailyGoal] = useState(user.dailyGoal ? String(user.dailyGoal) : "")
 
-  const TABS = [
-    { id: "general", label: "General Profile", icon: <UserIcon size={18} /> },
-    { id: "preferences", label: "Platform Preferences", icon: <Settings size={18} /> },
-    { id: "integrations", label: "Integrations & APIs", icon: <LinkIcon size={18} /> },
-    { id: "billing", label: "Billing & Subscription", icon: <CreditCard size={18} /> },
-    { id: "security", label: "Security", icon: <Shield size={18} /> },
-  ]
+  const [savingPersonal, setSavingPersonal] = useState(false)
+  const [savingPrefs, setSavingPrefs] = useState(false)
 
-  const handleSaveGeneral = async (e: React.FormEvent) => {
+  const memberSince = new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+  const initials = (user.name || user.email)
+    .split(/\s+/)
+    .map((w: string) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase()
+
+  const handleSavePersonal = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
+    setSavingPersonal(true)
     try {
       const res = await fetch("/api/user", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
+        body: JSON.stringify({ name }),
       })
-      if (!res.ok) throw new Error("Failed to save profile")
-      toast.success("Profile saved successfully!")
+      if (!res.ok) throw new Error("Failed to save")
+      toast.success("Profile updated")
       router.refresh()
-    } catch (err) {
-      toast.error("An error occurred while saving your profile.")
+    } catch {
+      toast.error("Failed to save profile")
     } finally {
-      setSaving(false)
+      setSavingPersonal(false)
     }
   }
 
   const handleSavePreferences = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
+    setSavingPrefs(true)
     try {
-      // 1. Save user settings (currency, timezone)
       const res = await fetch("/api/user", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baseCurrency, timezone })
+        body: JSON.stringify({
+          baseCurrency,
+          timezone,
+          dailyGoal: dailyGoal === "" ? null : parseFloat(dailyGoal),
+        }),
       })
-      if (!res.ok) throw new Error("Failed to save preferences")
+      if (!res.ok) throw new Error("Failed to save")
 
-      // 2. Save UI density cookie
       const densityRes = await fetch("/api/preferences/density", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ density: uiDensity })
+        body: JSON.stringify({ density: uiDensity }),
       })
       if (!densityRes.ok) throw new Error("Failed to save density")
 
-      toast.success("Preferences saved successfully!")
+      toast.success("Preferences saved")
       router.refresh()
-    } catch (err) {
-      toast.error("An error occurred while saving preferences.")
+    } catch {
+      toast.error("Failed to save preferences")
     } finally {
-      setSaving(false)
+      setSavingPrefs(false)
     }
   }
 
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/login" })
+  }
+
   return (
-    <div style={{ display: "flex", gap: "2.5rem", alignItems: "flex-start" }}>
-      
-      {/* Sidebar Navigation */}
-      <div style={{ width: "260px", flexShrink: 0, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        {TABS.map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              display: "flex", alignItems: "center", gap: "0.75rem",
-              padding: "0.85rem 1rem",
-              borderRadius: "8px",
-              background: activeTab === tab.id ? "var(--color-brand-500)" : "transparent",
-              color: activeTab === tab.id ? "#fff" : "var(--color-gray-400)",
-              border: "none", cursor: "pointer",
-              fontWeight: activeTab === tab.id ? 600 : 500,
-              textAlign: "left",
-              transition: "all 0.2s ease"
-            }}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      {/* ─── Profile header ─────────────────────────────────────────────── */}
+      <div className="card" style={{ padding: "1.5rem", display: "flex", alignItems: "center", gap: "1.25rem", flexWrap: "wrap" }}>
+        <div style={{
+          width: "76px", height: "76px", borderRadius: "50%", flexShrink: 0,
+          background: "linear-gradient(135deg, var(--color-brand-500), #7c3aed)",
+          color: "#fff", fontSize: "1.7rem", fontWeight: 800,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          boxShadow: "0 6px 20px rgba(139,92,246,0.35)",
+        }}>
+          {initials || user.email[0].toUpperCase()}
+        </div>
+
+        <div style={{ flex: 1, minWidth: 200 }}>
+          <h2 style={{ fontSize: "1.35rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+            {user.name || "Trader"}
+          </h2>
+          <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)", marginTop: "0.15rem" }}>{user.email}</div>
+          <div style={{ fontSize: "0.78rem", color: "var(--color-gray-500)", marginTop: "0.2rem" }}>
+            Member since {memberSince}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
+          <StatChip icon={<Wallet size={15} />} value={stats.accounts} label="Accounts" />
+          <StatChip icon={<Target size={15} />} value={stats.challenges} label="Challenges" />
+          <StatChip icon={<List size={15} />} value={stats.trades} label="Trades" />
+          <StatChip icon={<LayoutList size={15} />} value={stats.setups} label="Setups" />
+          <StatChip icon={<BookOpenText size={15} />} value={stats.journals} label="Journals" />
+        </div>
       </div>
 
-      {/* Main Content Area */}
-      <div style={{ flex: 1, maxWidth: "800px" }}>
-        
-        {activeTab === "general" && (
-          <div className="card" style={{ padding: "2rem" }}>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem" }}>Personal Details</h2>
-            
-            <form onSubmit={handleSaveGeneral} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", paddingBottom: "1.5rem", borderBottom: "1px solid var(--color-border)" }}>
-                <div style={{ width: "80px", height: "80px", borderRadius: "50%", background: "var(--color-brand-500)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "2rem", fontWeight: 700 }}>
-                  {user.email.substring(0, 1).toUpperCase()}
-                </div>
-                <div>
-                  <button type="button" className="btn btn-outline" style={{ marginBottom: "0.5rem" }}>Upload Avatar</button>
-                  <p style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>Recommended size: 256x256px. Max 2MB.</p>
-                </div>
-              </div>
+      {/* ─── Personal details ───────────────────────────────────────────── */}
+      <div className="card" style={{ padding: "1.5rem" }}>
+        <div style={{ fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.25rem" }}>Personal Details</div>
+        <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1.25rem" }}>
+          Basic information about your account.
+        </div>
 
-              <div>
-                <label className="label">Full Name</label>
-                <input type="text" className="input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. John Doe" />
-              </div>
-
-              <div>
-                <label className="label">Email Address</label>
-                <input type="email" className="input" value={user.email} disabled style={{ opacity: 0.6 }} />
-                <p style={{ fontSize: "0.8rem", color: "var(--color-gray-500)", marginTop: "0.5rem" }}>Contact support to change your email address.</p>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  <Save size={16} /> {saving ? "Saving..." : "Save Changes"}
-                </button>
-              </div>
-            </form>
+        <form onSubmit={handleSavePersonal} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div>
+            <label className="label">Full Name</label>
+            <input type="text" className="input" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. John Doe" />
           </div>
-        )}
-
-        {activeTab === "preferences" && (
-          <div className="card" style={{ padding: "2rem" }}>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem" }}>Platform Preferences</h2>
-            
-            <form onSubmit={handleSavePreferences} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-                <div>
-                  <label className="label">Base Currency</label>
-                  <select className="input select" value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)}>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                    <option value="GBP">GBP (£)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Timezone</label>
-                  <select className="input select" value={timezone} onChange={e => setTimezone(e.target.value)}>
-                    <option value="UTC">UTC (Universal Coordinated Time)</option>
-                    <option value="America/New_York">EST (New York)</option>
-                    <option value="Europe/Paris">CET (Paris)</option>
-                    <option value="Europe/London">GMT (London)</option>
-                    <option value="Asia/Tokyo">JST (Tokyo)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-                <div>
-                  <label className="label">UI Density</label>
-                  <select className="input select" value={uiDensity} onChange={e => setUiDensity(e.target.value)}>
-                    <option value="comfortable">Comfortable (Default)</option>
-                    <option value="compact">Compact (For Data Tables)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="label">Theme</label>
-                  <select className="input select" defaultValue="system" disabled style={{ opacity: 0.6 }}>
-                    <option value="system">System Default</option>
-                    <option value="dark">Dark Mode</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  <Save size={16} /> {saving ? "Saving..." : "Save Preferences"}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {activeTab === "integrations" && (
-          <div className="card" style={{ padding: "2rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <h2 style={{ fontSize: "1.25rem", fontWeight: 700 }}>Integrations & APIs</h2>
-              <span className="badge" style={{ background: "var(--color-brand-500)", color: "#fff" }}>Coming Soon</span>
-            </div>
-            <p style={{ color: "var(--color-gray-400)", lineHeight: 1.6, marginBottom: "2rem" }}>
-              Automatically sync your trades directly from your broker. We are currently building deep integrations with major platforms.
+          <div>
+            <label className="label">Email Address</label>
+            <input type="email" className="input" value={user.email} disabled style={{ opacity: 0.6 }} />
+            <p style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginTop: "0.4rem" }}>
+              Email changes require contacting support.
             </p>
-            
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {["TradeLocker", "MetaTrader 5", "cTrader"].map(broker => (
-                <div key={broker} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1.25rem", border: "1px solid var(--color-border)", borderRadius: "12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                    <div style={{ width: "40px", height: "40px", borderRadius: "8px", background: "var(--color-bg)", border: "1px solid var(--color-border)" }} />
-                    <span style={{ fontWeight: 600 }}>{broker}</span>
-                  </div>
-                  <button className="btn btn-outline" disabled style={{ opacity: 0.5 }}>Connect</button>
-                </div>
-              ))}
-            </div>
           </div>
-        )}
-
-        {activeTab === "billing" && (
-          <div className="card" style={{ padding: "2rem" }}>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem" }}>Billing & Subscription</h2>
-            <div style={{ padding: "1.5rem", background: "var(--color-bg)", border: "1px solid var(--color-border)", borderRadius: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <span className="badge" style={{ background: "rgba(34,197,94,0.15)", color: "var(--color-profit)", marginBottom: "0.5rem" }}>Active Plan</span>
-                <h3 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.25rem" }}>TradeLink Pro</h3>
-                <p style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>Next billing date: <strong>Nov 1st, 2026</strong></p>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ fontSize: "1.75rem", fontWeight: 700 }}>$29<span style={{ fontSize: "1rem", color: "var(--color-gray-500)", fontWeight: 500 }}>/mo</span></div>
-                <button className="btn btn-outline" style={{ marginTop: "1rem" }}>Manage Billing</button>
-              </div>
-            </div>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <button type="submit" className="btn btn-primary" disabled={savingPersonal}>
+              <Save size={15} /> {savingPersonal ? "Saving…" : "Save"}
+            </button>
           </div>
-        )}
-
-        {activeTab === "security" && (
-          <div className="card" style={{ padding: "2rem" }}>
-            <h2 style={{ fontSize: "1.25rem", fontWeight: 700, marginBottom: "1.5rem" }}>Security Settings</h2>
-            
-            <form onSubmit={(e) => { e.preventDefault(); toast.success("Password updated!") }} style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-              <div>
-                <label className="label">Current Password</label>
-                <input type="password" className="input" placeholder="••••••••" />
-              </div>
-              <div>
-                <label className="label">New Password</label>
-                <input type="password" className="input" placeholder="••••••••" />
-              </div>
-              <div>
-                <label className="label">Confirm New Password</label>
-                <input type="password" className="input" placeholder="••••••••" />
-              </div>
-              
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem", borderBottom: "1px solid var(--color-border)", paddingBottom: "2rem" }}>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  Update Password
-                </button>
-              </div>
-            </form>
-
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "2rem" }}>
-              <div>
-                <h3 style={{ fontWeight: 600, marginBottom: "0.25rem" }}>Two-Factor Authentication (2FA)</h3>
-                <p style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>Add an extra layer of security to your account.</p>
-              </div>
-              <button className="btn btn-outline" onClick={() => toast.success("2FA setup initiated!")}>Enable 2FA</button>
-            </div>
-          </div>
-        )}
-
+        </form>
       </div>
+
+      {/* ─── Preferences ────────────────────────────────────────────────── */}
+      <div className="card" style={{ padding: "1.5rem" }}>
+        <div style={{ fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.25rem" }}>Preferences</div>
+        <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1.25rem" }}>
+          Currency, timezone, and trading defaults.
+        </div>
+
+        <form onSubmit={handleSavePreferences} style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+            <div>
+              <label className="label">Base Currency</label>
+              <select className="input select" value={baseCurrency} onChange={e => setBaseCurrency(e.target.value)}>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">Timezone</label>
+              <select className="input select" value={timezone} onChange={e => setTimezone(e.target.value)}>
+                <option value="UTC">UTC</option>
+                <option value="America/New_York">America/New_York (EST)</option>
+                <option value="Europe/Paris">Europe/Paris (CET)</option>
+                <option value="Europe/London">Europe/London (GMT)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">UI Density</label>
+              <select className="input select" value={uiDensity} onChange={e => setUiDensity(e.target.value)}>
+                <option value="comfortable">Comfortable</option>
+                <option value="compact">Compact</option>
+              </select>
+            </div>
+            <div>
+              <label className="label">Daily Goal ($)</label>
+              <input
+                type="number"
+                className="input"
+                value={dailyGoal}
+                onChange={e => setDailyGoal(e.target.value)}
+                placeholder="e.g. 250"
+              />
+            </div>
+          </div>
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <button type="submit" className="btn btn-primary" disabled={savingPrefs}>
+              <Save size={15} /> {savingPrefs ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* ─── Notifications ──────────────────────────────────────────────── */}
+      <div className="card" style={{ padding: "1.5rem" }}>
+        <NotificationPreferences />
+      </div>
+
+      {/* ─── Danger zone ────────────────────────────────────────────────── */}
+      <div className="card" style={{ padding: "1.5rem", border: "1px solid rgba(239,68,68,0.25)" }}>
+        <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-loss)", marginBottom: "0.25rem" }}>
+          Danger Zone
+        </div>
+        <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1rem" }}>
+          Log out of your session on this device.
+        </div>
+        <button onClick={handleLogout} className="btn btn-outline" style={{ color: "var(--color-loss)", borderColor: "rgba(239,68,68,0.35)" }}>
+          <LogOut size={15} /> Log out
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function StatChip({ icon, value, label }: { icon: React.ReactNode; value: number; label: string }) {
+  return (
+    <div style={{
+      display: "flex", flexDirection: "column", alignItems: "center", gap: "0.25rem",
+      padding: "0.6rem 0.9rem", borderRadius: "10px",
+      background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
+      minWidth: 84,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "var(--color-brand-500)" }}>
+        {icon}
+        <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-gray-100)" }}>{value}</span>
+      </div>
+      <span style={{ fontSize: "0.62rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+        {label}
+      </span>
     </div>
   )
 }

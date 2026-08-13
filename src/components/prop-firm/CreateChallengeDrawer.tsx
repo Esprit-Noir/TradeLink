@@ -30,6 +30,7 @@ export function CreateChallengeDrawer({
   const [maxDDPct, setMaxDDPct] = useState("12")
   const [dailyDDPct, setDailyDDPct] = useState("4")
   const [minTradingDays, setMinTradingDays] = useState("0")
+  const [cost, setCost] = useState("")
   const [payoutSplit, setPayoutSplit] = useState("Bi-Weekly Up to 95%")
 
   const [logoUrl, setLogoUrl] = useState("")
@@ -54,6 +55,7 @@ export function CreateChallengeDrawer({
       setMaxDDPct(String(challenge.maxDDPct ?? ""))
       setDailyDDPct(String(challenge.dailyDDPct ?? ""))
       setMinTradingDays(challenge.minTradingDays != null ? String(challenge.minTradingDays) : "0")
+      setCost(challenge.cost != null ? String(challenge.cost) : "")
       setSteps(challenge.metadata?.steps || "2")
       setPayoutSplit(challenge.metadata?.payoutSplit || "")
       setLogoUrl(challenge.template?.logoUrl || "")
@@ -70,6 +72,7 @@ export function CreateChallengeDrawer({
       setMaxDDPct("12")
       setDailyDDPct("4")
       setMinTradingDays("0")
+      setCost("")
       setSteps("2")
       setPayoutSplit("Bi-Weekly Up to 95%")
       setLogoUrl("")
@@ -143,6 +146,7 @@ export function CreateChallengeDrawer({
         maxDDPct,
         dailyDDPct,
         minTradingDays,
+        cost,
         steps,
         payoutSplit,
         logoUrl
@@ -286,6 +290,16 @@ export function CreateChallengeDrawer({
               <div>
                 <label className="label">Min Trading Days</label>
                 <input type="number" className="input" value={minTradingDays} onChange={e => setMinTradingDays(e.target.value)} required />
+              </div>
+              <div>
+                <label className="label">Challenge Cost ($)</label>
+                <input
+                  type="number"
+                  className="input"
+                  value={cost}
+                  onChange={e => setCost(e.target.value)}
+                  placeholder="e.g. 89"
+                />
               </div>
             </div>
 

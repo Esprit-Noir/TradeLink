@@ -267,7 +267,7 @@ function PatternCard({ pattern }: { pattern: DetectedPattern }) {
         {pattern.description}
       </p>
 
-      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "0.75rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--color-gray-800)", paddingTop: "0.75rem" }}>
         <div>
           <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Affected Trades</div>
           <div style={{ fontWeight: 600, color: "var(--color-gray-300)" }}>{pattern.count}</div>

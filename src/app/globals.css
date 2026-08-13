@@ -10,6 +10,7 @@
   --color-gray-500: var(--gray-500);
   --color-gray-400: var(--gray-400);
   --color-gray-300: var(--gray-300);
+  --color-gray-200: var(--gray-200);
   --color-gray-100: var(--gray-100);
 
   /* Brand — emerald green (#22c55e) */
@@ -38,11 +39,12 @@
   /* Spacing */
   --radius-card: 12px;
   --radius-button: 8px;
+  --radius-sm: 6px;
 }
 
 :root {
   /* LIGHT MODE */
-  --gray-950: #ffffff; /* bg-main */
+  --gray-950: #fafafa; /* bg-main */
   --gray-900: #ffffff; /* bg-card */
   --gray-800: #e4e4e7; /* border-subtle */
   --gray-700: #d4d4d8; /* border-hover */
@@ -50,10 +52,18 @@
   --gray-500: #71717a; 
   --gray-400: #52525b; 
   --gray-300: #27272a; 
+  --gray-200: #18181b;
   --gray-100: #09090b; /* text-primary */
   
   --profit-muted: #dcfce7;
   --loss-muted: #fee2e2;
+
+  /* Generic aliases used across components */
+  --color-bg: #f4f4f5;
+  --color-text: #18181b;
+  --color-border: #e4e4e7;
+
+  color-scheme: light;
 }
 
 .dark {
@@ -66,10 +76,17 @@
   --gray-500: #71717d;
   --gray-400: #a1a1ae;
   --gray-300: #d4d4dc;
+  --gray-200: #e8e8ee;
   --gray-100: #f4f4f6;
   
   --profit-muted: #064e3b;
   --loss-muted: #450a0a;
+
+  --color-bg: #0b0b0e;
+  --color-text: #f4f4f6;
+  --color-border: #27272f;
+
+  color-scheme: dark;
 }
 
 /* ── Base ───────────────────────────────────────────────── */
@@ -88,8 +105,8 @@
 
 /* ── Glassmorphism utility ──────────────────────────────── */
 .glass {
-  background: rgba(26, 26, 31, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: color-mix(in srgb, var(--color-gray-900) 75%, transparent);
+  border: 1px solid var(--color-gray-700);
 }
 
 /* ── Card ───────────────────────────────────────────────── */
@@ -106,7 +123,7 @@
 .card-hover:hover {
   border-color: var(--color-gray-700);
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 30px color-mix(in srgb, var(--color-gray-950) 55%, transparent);
 }
 
 @keyframes fadeInScale {
@@ -138,9 +155,12 @@
 }
 
 .badge-brand {
-  background: rgba(124, 58, 237, 0.2);
+  background: rgba(34, 197, 94, 0.12);
+  color: var(--color-brand-700);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.dark .badge-brand {
   color: var(--color-brand-300);
-  border: 1px solid rgba(124, 58, 237, 0.3);
 }
 
 .badge-profit {
@@ -441,7 +461,7 @@
 
 .data-table tr:last-child td { border-bottom: none; }
 .data-table tbody tr { transition: background 100ms ease; }
-.data-table tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
+.data-table tbody tr:hover { background: color-mix(in srgb, var(--color-gray-600) 14%, transparent); }
 
 /* ── Behavioral Score ───────────────────────────────────── */
 .score-ring {

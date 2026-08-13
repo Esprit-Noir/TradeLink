@@ -168,6 +168,8 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
 
       <ConsistencySection snapshots={snapshots} challenge={challenge} />
 
+      <TimelineSection challenge={challenge} />
+
       {events.length > 0 && (
         <div style={{ marginTop: "2rem" }}>
           <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Alerts & Events</h3>
@@ -354,6 +356,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
 }
 
 function ConsistencySection({ snapshots, challenge }: { snapshots: any[]; challenge: any }) {
+  const [simBiggest, setSimBiggest] = useState<number | null>(null)
   if (!snapshots || snapshots.length === 0) return null
 
   const totalPnl = snapshots.reduce((s, x) => s + Number(x.dailyPnl || 0), 0)
@@ -361,6 +364,9 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: any[]; challe
   const biggestPct = totalPnl > 0 ? (biggestDay / totalPnl) * 100 : 0
   const consistencyRule = Number(challenge.template?.consistencyRulePct || 0)
   const ruleOk = consistencyRule === 0 || biggestPct <= consistencyRule
+
+  const simBiggestPct = totalPnl > 0 ? ((simBiggest ?? biggestDay) / totalPnl) * 100 : 0
+  const simOk = consistencyRule === 0 || simBiggestPct <= consistencyRule
 
   // Build heatmap grid: weeks × weekdays (Mon..Sun)
   const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
@@ -435,6 +441,39 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: any[]; challe
         </div>
       )}
 
+      <div style={{ background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1.25rem" }}>
+        <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginBottom: "0.75rem" }}>Consistency simulator</div>
+        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div className="form-group" style={{ minWidth: 220 }}>
+            <label className="label">If your biggest day had been ($)</label>
+            <input
+              className="input"
+              type="number"
+              value={simBiggest ?? ""}
+              placeholder={biggestDay.toFixed(2)}
+              onChange={e => setSimBiggest(e.target.value === "" ? null : Number(e.target.value))}
+            />
+          </div>
+          <div style={{ fontSize: "0.85rem", color: "var(--color-gray-300)", paddingBottom: "0.55rem" }}>
+            → Biggest day = <strong style={{ color: "var(--color-gray-100)" }}>{simBiggestPct.toFixed(1)}%</strong> of profit
+          </div>
+          <div style={{
+            padding: "0.5rem 0.9rem", borderRadius: "8px", marginBottom: "0.25rem",
+            background: simOk ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.12)",
+            border: `1px solid ${simOk ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.35)"}`,
+            color: simOk ? "var(--color-profit)" : "var(--color-loss)",
+            fontSize: "0.82rem", fontWeight: 600,
+          }}>
+            {simOk ? "Payout OK" : "Payout blocked"}
+          </div>
+        </div>
+        {simBiggest !== null && simBiggest !== biggestDay && (
+          <div style={{ marginTop: "0.6rem", fontSize: "0.75rem", color: "var(--color-gray-500)" }}>
+            Actual biggest day: ${biggestDay.toFixed(2)} ({biggestPct.toFixed(1)}%). Clear the field to reset.
+          </div>
+        )}
+      </div>
+
       <div style={{ background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
           <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Daily P&L heatmap</div>
@@ -475,6 +514,84 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: any[]; challe
               </div>
             )
           })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TimelineSection({ challenge }: { challenge: any }) {
+  const events: any[] = Array.isArray(challenge.events) ? challenge.events : []
+
+  const milestones: { date: Date; label: string; sub: string; kind: string; severity?: string }[] = []
+
+  milestones.push({
+    date: new Date(challenge.startedAt),
+    label: "Challenge started",
+    sub: `${challenge.template?.firmName || "Prop firm"} — ${challenge.initialBalance ? `$${Number(challenge.initialBalance).toLocaleString("en-US", { maximumFractionDigits: 0 })}` : ""}`.trim(),
+    kind: "info",
+  })
+
+  const kindForEvent = (e: any) => {
+    if (e.eventType === "breached") return "danger"
+    if (e.severity === "critical") return "danger"
+    if (e.severity === "warning") return "warning"
+    return "info"
+  }
+
+  for (const e of events) {
+    milestones.push({
+      date: new Date(e.createdAt),
+      label: EVENT_LABELS[e.eventType] || e.eventType.replace(/_/g, " "),
+      sub: e.message || "",
+      kind: kindForEvent(e),
+      severity: e.severity,
+    })
+  }
+
+  if (challenge.status === "passed" || challenge.status === "breached" || challenge.status === "failed") {
+    milestones.push({
+      date: new Date(challenge.breachedAt || challenge.updatedAt || Date.now()),
+      label: challenge.status === "passed" ? "Phase passed" : "Challenge failed",
+      sub: challenge.status === "passed"
+        ? "Profit target reached — move to the next phase."
+        : `Breach: ${challenge.breachReason ? challenge.breachReason.replace(/_/g, " ") : "unknown"}.`,
+      kind: challenge.status === "passed" ? "success" : "danger",
+    })
+  }
+
+  milestones.sort((a, b) => a.date.getTime() - b.date.getTime())
+
+  const dotColor = (kind: string) =>
+    kind === "danger" ? "var(--color-loss)" :
+    kind === "warning" ? "var(--color-warning)" :
+    kind === "success" ? "var(--color-profit)" :
+    "var(--color-brand-500)"
+
+  return (
+    <div style={{ marginTop: "2rem" }}>
+      <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Timeline</h3>
+      <div style={{ background: "var(--color-gray-900)", padding: "1.25rem 1.25rem 0.5rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
+        <div style={{ position: "relative", paddingLeft: "1.4rem" }}>
+          <div style={{ position: "absolute", left: "0.4rem", top: "0.35rem", bottom: "0.35rem", width: "2px", background: "var(--color-gray-700)", borderRadius: "1px" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+            {milestones.map((m, i) => (
+              <div key={i} style={{ position: "relative", display: "flex", gap: "0.9rem" }}>
+                <div style={{
+                  position: "absolute", left: "-1.4rem", top: "0.25rem",
+                  width: "12px", height: "12px", borderRadius: "50%",
+                  background: dotColor(m.kind), boxShadow: `0 0 0 3px ${dotColor(m.kind)}22`,
+                }} />
+                <div style={{ flex: 1, minWidth: 0, paddingBottom: "0.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.5rem" }}>
+                    <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--color-gray-100)" }}>{m.label}</span>
+                    <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", flexShrink: 0 }}>{formatEventDate(m.date.toISOString())}</span>
+                  </div>
+                  {m.sub && <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginTop: "0.15rem" }}>{m.sub}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { templateId, challengeName, initialBalance, steps, phase2Target, fundedTarget, payoutSplit, logoUrl } = body
+    const { templateId, challengeName, initialBalance, steps, phase2Target, fundedTarget, payoutSplit, logoUrl, cost } = body
 
     if (!templateId || !challengeName || initialBalance === undefined) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
         profitTargetPct: initialTarget,
         minTradingDays: body.minTradingDays !== undefined ? parseInt(body.minTradingDays) : template.minTradingDays,
         maxTradingDays,
+        cost: cost !== undefined ? parseFloat(cost) : null,
         phase: initialPhase,
         status: 'active',
         startedAt,

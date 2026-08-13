@@ -132,7 +132,7 @@ export function AdvancedStatsClient() {
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 12, fontWeight: 600 }} dy={10} />
                 <YAxis hide />
                 <Tooltip 
-                  cursor={{ fill: "rgba(255,255,255,0.05)" }}
+                  cursor={{ fill: "var(--color-gray-800)" }}
                   formatter={(val: any) => [formatCurrency(Number(val), "USD", true, 2), "Net P&L"]}
                   labelStyle={{ color: "var(--color-gray-400)" }}
                   contentStyle={{ backgroundColor: "var(--color-gray-900)", borderColor: "var(--color-gray-800)", borderRadius: "8px" }}

@@ -38,14 +38,41 @@ export function NotificationBell() {
       const res = await fetch("/api/notifications?limit=30")
       if (!res.ok) return
       const data = await res.json()
-      setEvents(data.events || [])
-      setUnread(data.unreadCount || 0)
+      const nextEvents: PropEvent[] = data.events || []
+      const nextUnread = data.unreadCount || 0
+
+      // Fire browser notifications for newly-arrived unread events
+      if (
+        nextUnread > unread &&
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "granted" &&
+        localStorage.getItem("tradelink_browser_notifications") === "1"
+      ) {
+        const fresh = nextEvents.filter(e => !e.readAt)
+        const target = fresh[0]
+        if (target) {
+          const n = new Notification(
+            target.challenge.template?.firmName
+              ? `${target.challenge.template.firmName} — ${target.message || "Prop event"}`
+              : target.message || "New prop-firm event",
+            { body: `Status: ${target.challenge.status}. ${target.challenge.account?.name || ""}`.trim() }
+          )
+          n.onclick = () => {
+            window.focus()
+            window.location.href = `/challenges/${target.challenge.id}`
+          }
+        }
+      }
+
+      setEvents(nextEvents)
+      setUnread(nextUnread)
     } catch {
       // silent
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [unread])
 
   useEffect(() => {
     refresh()

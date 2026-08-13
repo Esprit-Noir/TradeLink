@@ -8,6 +8,22 @@ import { useEffect, useState } from "react"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { AccountSwitcher } from "@/components/layout/AccountSwitcher"
 import { NotificationBell } from "@/components/layout/NotificationBell"
+import { 
+  LayoutDashboard, 
+  Wallet, 
+  CalendarDays, 
+  BarChart3, 
+  Brain, 
+  List, 
+  Layers, 
+  Upload, 
+  Shield, 
+  Settings,
+  LogOut,
+  Target,
+  GitCompare,
+  FlaskConical
+} from "lucide-react"
 
 type SidebarStats = {
   todayPnl: number
@@ -17,13 +33,8 @@ type SidebarStats = {
   challengePct: number // % toward max drawdown used
 }
 
-function IconChart() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <path d="M2 14H14M3.5 10L6.5 6L9.5 9L13.5 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
+// Basic props for all sidebar icons to look consistent and professional
+const iconProps = { size: 18, strokeWidth: 1.75, style: { opacity: 0.9, flexShrink: 0 } }
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -40,27 +51,27 @@ export function Sidebar() {
     {
       section: "Overview",
       items: [
-        { href: "/dashboard", label: "Dashboard", icon: IconDashboard },
-        { href: "/accounts",  label: "Accounts",  icon: IconWallet },
-        { href: "/calendar",  label: "Calendar",  icon: IconCalendar },
-        { href: "/stats",     label: "Statistics",icon: IconChart },
-        { href: "/behavioral",label: "Behavioral", icon: IconBrain },
+        { href: "/dashboard", label: "Dashboard", icon: () => <LayoutDashboard {...iconProps} /> },
+        { href: "/accounts",  label: "Accounts",  icon: () => <Wallet {...iconProps} /> },
+        { href: "/calendar",  label: "Calendar",  icon: () => <CalendarDays {...iconProps} /> },
+        { href: "/stats",     label: "Statistics",icon: () => <BarChart3 {...iconProps} /> },
+        { href: "/behavioral",label: "Behavioral", icon: () => <Brain {...iconProps} /> },
       ],
     },
     {
       section: "Trades",
       items: [
-        { href: "/trades",      label: "All Trades",  icon: IconList },
-        { href: "/setups",      label: "Setups",      icon: IconLayers },
-        { href: "/import",      label: "Import CSV",  icon: IconUpload },
+        { href: "/trades",      label: "All Trades",  icon: () => <List {...iconProps} /> },
+        { href: "/setups",      label: "Setups",      icon: () => <Layers {...iconProps} /> },
+        { href: "/import",      label: "Import CSV",  icon: () => <Upload {...iconProps} /> },
       ],
     },
     {
       section: "Challenges",
       items: [
-        { href: "/challenges",  label: "Prop Firms",  icon: IconTarget },
-        { href: "/challenges/compare", label: "Compare", icon: IconCompare },
-        { href: "/challenges/backtest", label: "Backtest", icon: IconFlask },
+        { href: "/challenges",  label: "Prop Firms",  icon: () => <Target {...iconProps} /> },
+        { href: "/challenges/compare", label: "Compare", icon: () => <GitCompare {...iconProps} /> },
+        { href: "/challenges/backtest", label: "Backtest", icon: () => <FlaskConical {...iconProps} /> },
       ],
     },
   ]
@@ -209,7 +220,7 @@ export function Sidebar() {
       {/* Footer */}
       <div style={{ padding: "0.75rem", borderTop: "1px solid var(--color-gray-800)", marginTop: "auto", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
         <Link href="/profile" className={`nav-item ${pathname === "/profile" ? "active" : ""}`} style={{ gap: "0.625rem" }}>
-          <IconSettings />
+          <Settings {...iconProps} />
           Profile
         </Link>
         <button 
@@ -217,118 +228,10 @@ export function Sidebar() {
           className="nav-item" 
           style={{ gap: "0.625rem", color: "var(--color-gray-400)", width: "100%", textAlign: "left", cursor: "pointer", background: "transparent", border: "none" }}
         >
-          <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
-            <path d="M6 14H3.5C2.67157 14 2 13.3284 2 12.5V3.5C2 2.67157 2.67157 2 3.5 2H6M11.5 11.5L15 8M15 8L11.5 4.5M15 8H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <LogOut {...iconProps} />
           Logout
         </button>
       </div>
     </aside>
-  )
-}
-
-// ── Inline SVG Icons ────────────────────────────────────────────────────────
-function IconDashboard() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-    </svg>
-  )
-}
-
-
-function IconCalendar() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <rect x="1.5" y="2.5" width="13" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <path d="M5 1v3M11 1v3M1.5 6.5h13" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function IconBrain() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <path d="M8 2C5.5 2 3.5 3.8 3.5 6c0 1.2.6 2.2 1.5 2.9V13h2v-1h2v1h2V8.9c.9-.7 1.5-1.7 1.5-2.9C12.5 3.8 10.5 2 8 2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-      <path d="M6 8.5v-2M8 8.5V6M10 8.5v-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function IconWallet() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" width="16" height="16">
-      <path d="M14.5 11.5C14.5 12.3284 13.8284 13 13 13H3C2.17157 13 1.5 12.3284 1.5 11.5V4.5C1.5 3.67157 2.17157 3 3 3H13C13.8284 3 14.5 3.67157 14.5 4.5V11.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M11 8H12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M14.5 6.5H1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
-
-function IconList() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <path d="M3 4h10M3 8h10M3 12h7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function IconUpload() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <path d="M8 2v8M5 5l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M2.5 11v1.5A1.5 1.5 0 004 14h8a1.5 1.5 0 001.5-1.5V11" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function IconSettings() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/>
-      <path d="M8 1.5v1.3M8 13.2v1.3M1.5 8h1.3M13.2 8h1.3M3.3 3.3l.9.9M11.8 11.8l.9.9M3.3 12.7l.9-.9M11.8 4.2l.9-.9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function IconTarget() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.3"/>
-      <circle cx="8" cy="8" r="1" fill="currentColor"/>
-    </svg>
-  )
-}
-
-function IconLayers() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <path d="M1.5 5.5L8 2l6.5 3.5L8 9l-6.5-3.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M1.5 8.5L8 12l6.5-3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M1.5 11.5L8 15l6.5-3.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
-
-function IconCompare() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <rect x="1.5" y="2" width="5" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <rect x="9.5" y="2" width="5" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
-      <path d="M4 6.5h3M9 9.5h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-function IconFlask() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <path d="M6 2h4M6.5 2v3.5L3 13.5A1 1 0 003.9 15h8.2a1 1 0 00.9-1.5L9.5 5.5V2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M4.5 11h7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-    </svg>
   )
 }

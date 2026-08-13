@@ -32,6 +32,8 @@ function formatDate(iso: string): string {
 export function PayoutsSection({ challengeId }: { challengeId: string }) {
   const [payouts, setPayouts] = useState<any[]>([])
   const [payoutAmount, setPayoutAmount] = useState("")
+  const [payoutDate, setPayoutDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [payoutNote, setPayoutNote] = useState("")
   const [savingPayout, setSavingPayout] = useState(false)
 
   const refresh = async () => {
@@ -58,10 +60,15 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
       const res = await fetch(`/api/challenges/${challengeId}/payouts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: parseFloat(payoutAmount) }),
+        body: JSON.stringify({
+          amount: parseFloat(payoutAmount),
+          requestedAt: payoutDate ? `${payoutDate}T12:00:00Z` : undefined,
+          note: payoutNote,
+        }),
       })
       if (!res.ok) throw new Error("Failed to request payout")
       setPayoutAmount("")
+      setPayoutNote("")
       await refresh()
       toast.success("Payout requested")
     } catch (err) {
@@ -107,18 +114,34 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
         Total paid: <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>${totalPaid.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
       </div>
 
-      <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <input
+            type="number"
+            className="input"
+            value={payoutAmount}
+            onChange={e => setPayoutAmount(e.target.value)}
+            placeholder="Amount (USD)"
+            style={{ flex: 1 }}
+          />
+          <input
+            type="date"
+            className="input"
+            value={payoutDate}
+            onChange={e => setPayoutDate(e.target.value)}
+            style={{ width: 170 }}
+          />
+          <button onClick={requestPayout} disabled={savingPayout} className="btn btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
+            {savingPayout ? "..." : "Request"}
+          </button>
+        </div>
         <input
-          type="number"
+          type="text"
           className="input"
-          value={payoutAmount}
-          onChange={e => setPayoutAmount(e.target.value)}
-          placeholder="Amount (USD)"
-          style={{ flex: 1 }}
+          value={payoutNote}
+          onChange={e => setPayoutNote(e.target.value)}
+          placeholder="Note (optional)"
         />
-        <button onClick={requestPayout} disabled={savingPayout} className="btn btn-primary" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
-          {savingPayout ? "..." : "Request"}
-        </button>
       </div>
 
       {payouts.length === 0 ? (
@@ -138,6 +161,9 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(p.amount).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
                   <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>{formatDate(p.requestedAt)}</div>
+                  {p.note && (
+                    <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", marginTop: "0.2rem" }}>{p.note}</div>
+                  )}
                 </div>
                 <span className="badge" style={{ background: `${st.color}22`, color: st.color, border: `1px solid ${st.color}40` }}>
                   {st.label.toUpperCase()}

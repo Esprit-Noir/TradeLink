@@ -1,13 +1,17 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { CreateAccountModal } from "./CreateAccountModal"
-import { Wallet, Target, Activity, DollarSign, TrendingUp } from "lucide-react"
+import { Wallet, Target, Activity, TrendingUp, Pencil, Trash2, ExternalLink } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
+import { toast } from "sonner"
 
 export function AccountsManager({ accounts }: { accounts: any[] }) {
+  const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
   const [filterType, setFilterType] = useState<string>("all")
+  const [editing, setEditing] = useState<any>(null)
 
   // Global KPIs
   const kpis = useMemo(() => {
@@ -22,7 +26,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
       totalEquity += eq
       totalPnl += acc.stats.totalPnl
       totalPnlUsd += acc.stats.totalPnlUsd || 0
-      
+
       if (acc.type === 'prop_firm' && acc.propChallenge?.status === 'passed') {
         fundedCapital += acc.initialBalance
       }
@@ -31,14 +35,13 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
     return { totalEquity, totalPnl, totalPnlUsd, fundedCapital, activeCount }
   }, [accounts])
 
-  // Filtering
   const filteredAccounts = accounts.filter(acc => {
     const type = acc.type || "personal"
     return filterType === "all" || type === filterType
   })
 
   const getTypeColor = (type: string) => {
-    switch(type) {
+    switch (type) {
       case 'prop_firm': return "var(--color-brand-500)"
       case 'demo': return "var(--color-gray-400)"
       default: return "var(--color-profit)"
@@ -46,10 +49,65 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
   }
 
   const getTypeName = (type: string) => {
-    switch(type) {
+    switch (type) {
       case 'prop_firm': return "Prop Firm"
       case 'demo': return "Demo"
       default: return "Personal"
+    }
+  }
+
+  const openAccount = async (acc: any) => {
+    if (acc.propChallenge?.id) {
+      router.push(`/challenges/${acc.propChallenge.id}`)
+      return
+    }
+    try {
+      await fetch("/api/accounts/active", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accountId: acc.id }),
+      })
+    } catch {
+      // ignore — trades page will fall back to default
+    }
+    router.push("/trades")
+  }
+
+  const handleDelete = async (acc: any) => {
+    if (!confirm(`Delete account "${acc.name}" and all its trades? This cannot be undone.`)) return
+    try {
+      const res = await fetch(`/api/accounts/${acc.id}`, { method: "DELETE" })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || "Failed to delete")
+      }
+      toast.success("Account deleted")
+      router.refresh()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete account")
+    }
+  }
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editing) return
+    try {
+      const res = await fetch(`/api/accounts/${editing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editing.name,
+          initialBalance: editing.initialBalance,
+          fxRateToUsd: editing.fxRateToUsd,
+          isDefault: editing.isDefault,
+        }),
+      })
+      if (!res.ok) throw new Error("Failed to update account")
+      toast.success("Account updated")
+      setEditing(null)
+      router.refresh()
+    } catch {
+      toast.error("Failed to update account")
     }
   }
 
@@ -68,6 +126,43 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
 
       <CreateAccountModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
 
+      {/* Edit modal */}
+      {editing && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 200,
+          background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem",
+        }} onClick={() => setEditing(null)}>
+          <div className="card" style={{ width: "100%", maxWidth: 440, padding: "1.5rem" }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
+              <h3 style={{ fontWeight: 700, fontSize: "1.05rem" }}>Edit Account</h3>
+              <button onClick={() => setEditing(null)} style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.4rem" }}>&times;</button>
+            </div>
+            <form onSubmit={handleSaveEdit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div>
+                <label className="label">Account Name</label>
+                <input className="input" value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">Initial Balance</label>
+                <input className="input" type="number" value={editing.initialBalance} onChange={e => setEditing({ ...editing, initialBalance: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">FX Rate to USD</label>
+                <input className="input" type="number" step="0.0001" value={editing.fxRateToUsd} onChange={e => setEditing({ ...editing, fxRateToUsd: e.target.value })} />
+              </div>
+              <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem", color: "var(--color-gray-300)", cursor: "pointer" }}>
+                <input type="checkbox" checked={!!editing.isDefault} onChange={e => setEditing({ ...editing, isDefault: e.target.checked })} />
+                Set as default account
+              </label>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", marginTop: "0.5rem" }}>
+                <button type="button" className="btn btn-outline" onClick={() => setEditing(null)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* KPIs Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
         <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
@@ -78,7 +173,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
             {formatCurrency(kpis.totalEquity, "USD", false, 2)}
           </div>
         </div>
-        
+
         <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-400)", fontSize: "0.85rem", textTransform: "uppercase", fontWeight: 600 }}>
             <TrendingUp size={16} /> Total Net P&L
@@ -111,7 +206,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
       {/* Toolbar (Filters) */}
       <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "1rem" }}>
         {["all", "personal", "prop_firm", "demo"].map(type => (
-          <button 
+          <button
             key={type}
             onClick={() => setFilterType(type)}
             style={{
@@ -131,6 +226,24 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
         ))}
       </div>
 
+      {/* Empty state */}
+      {filteredAccounts.length === 0 && (
+        <div className="card" style={{ padding: "3rem", textAlign: "center" }}>
+          <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>🏦</div>
+          <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-gray-200)" }}>
+            {accounts.length === 0 ? "No accounts yet" : "No accounts of this type"}
+          </div>
+          <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)", marginTop: "0.4rem", marginBottom: "1.25rem" }}>
+            {accounts.length === 0
+              ? "Add a personal, demo, or prop-firm account to start tracking your performance."
+              : "Try a different filter."}
+          </div>
+          {accounts.length === 0 && (
+            <button className="btn btn-primary" onClick={() => setModalOpen(true)}>+ Add Account</button>
+          )}
+        </div>
+      )}
+
       {/* Accounts Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: "1.5rem" }}>
         {filteredAccounts.map(acc => {
@@ -139,21 +252,29 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
           const returnPct = acc.initialBalance > 0 ? (acc.stats.totalPnl / acc.initialBalance) * 100 : 0
 
           return (
-            <div key={acc.id} className="card" style={{ 
-              border: `1px solid ${typeColor}`,
-              padding: "1.5rem",
-              display: "flex", flexDirection: "column", gap: "1.5rem",
-              position: "relative",
-            }}>
-              
+            <div
+              key={acc.id}
+              className="card"
+              onClick={() => openAccount(acc)}
+              style={{
+                border: `1px solid ${typeColor}40`,
+                padding: "1.5rem",
+                display: "flex", flexDirection: "column", gap: "1.5rem",
+                position: "relative",
+                cursor: "pointer",
+                transition: "border-color 0.2s ease, transform 0.15s ease",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = typeColor; e.currentTarget.style.transform = "translateY(-2px)" }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = `${typeColor}40`; e.currentTarget.style.transform = "none" }}
+            >
               {/* Top Header */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.75rem" }}>
+                <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: typeColor, boxShadow: `0 0 10px ${typeColor}` }} />
-                    <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", letterSpacing: "-0.01em" }}>{acc.name}</span>
+                    <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{acc.name}</span>
                     {acc.isDefault && (
-                      <span style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, background: "var(--color-gray-800)", color: "var(--color-text)", padding: "0.15rem 0.4rem", borderRadius: "4px", marginLeft: "0.5rem" }}>Default</span>
+                      <span style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, background: "var(--color-gray-800)", color: "var(--color-text)", padding: "0.15rem 0.4rem", borderRadius: "4px", flexShrink: 0 }}>Default</span>
                     )}
                   </div>
                   <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
@@ -173,12 +294,12 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                     )}
                   </div>
                 </div>
-                <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem", flexShrink: 0 }}>
                   <span className="badge" style={{ background: "var(--color-bg)", border: `1px solid var(--color-border)`, color: "var(--color-text)" }}>
                     {getTypeName(acc.type)}
                   </span>
                   {acc.type === 'prop_firm' && acc.propChallenge && (
-                    <span style={{ 
+                    <span style={{
                       fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", padding: "0.2rem 0.4rem", borderRadius: "4px",
                       background: acc.propChallenge.status === 'passed' ? 'rgba(34,197,94,0.15)' : acc.propChallenge.status === 'breached' ? 'rgba(239,68,68,0.15)' : 'rgba(59,130,246,0.15)',
                       color: acc.propChallenge.status === 'passed' ? 'var(--color-profit)' : acc.propChallenge.status === 'breached' ? 'var(--color-loss)' : 'var(--color-brand-500)'
@@ -186,6 +307,35 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                       {acc.propChallenge.status}
                     </span>
                   )}
+                  {/* actions */}
+                  <div style={{ display: "flex", gap: "0.3rem", marginTop: "0.25rem" }} onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => setEditing({
+                        id: acc.id, name: acc.name,
+                        initialBalance: String(acc.initialBalance),
+                        fxRateToUsd: acc.fxRateToUsd || "1",
+                        isDefault: acc.isDefault,
+                      })}
+                      title="Edit account"
+                      style={{ background: "var(--color-gray-800)", border: "none", color: "var(--color-gray-300)", width: 28, height: 28, borderRadius: 7, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(acc)}
+                      title="Delete account"
+                      style={{ background: "var(--color-gray-800)", border: "none", color: "var(--color-loss)", width: 28, height: 28, borderRadius: 7, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                    <button
+                      onClick={() => openAccount(acc)}
+                      title="Open"
+                      style={{ background: "var(--color-gray-800)", border: "none", color: "var(--color-gray-300)", width: 28, height: 28, borderRadius: 7, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                    >
+                      <ExternalLink size={14} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -221,7 +371,6 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                   </div>
                 )}
               </div>
-
             </div>
           )
         })}

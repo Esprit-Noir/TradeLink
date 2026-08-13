@@ -20,6 +20,34 @@ export function NotificationPreferences() {
   const [defaults, setDefaults] = useState({ stopTradingPct: 85, profitGoalPct: 50 })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [browserEnabled, setBrowserEnabled] = useState(false)
+  const [permission, setPermission] = useState<NotificationPermission | "unsupported">("unsupported")
+
+  useEffect(() => {
+    setBrowserEnabled(localStorage.getItem("tradelink_browser_notifications") === "1")
+    setPermission("Notification" in window ? Notification.permission : "unsupported")
+  }, [])
+
+  const toggleBrowser = async (enabled: boolean) => {
+    if (enabled) {
+      if (!("Notification" in window)) {
+        toast.error("Browser notifications are not supported here")
+        return
+      }
+      const p = await Notification.requestPermission()
+      setPermission(p)
+      if (p === "granted") {
+        localStorage.setItem("tradelink_browser_notifications", "1")
+        setBrowserEnabled(true)
+        toast.success("Browser notifications enabled")
+      } else {
+        toast.error("Permission denied by the browser")
+      }
+    } else {
+      localStorage.removeItem("tradelink_browser_notifications")
+      setBrowserEnabled(false)
+    }
+  }
 
   useEffect(() => {
     fetch("/api/notifications/preferences")
@@ -98,6 +126,25 @@ export function NotificationPreferences() {
           </div>
           <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginTop: "0.25rem" }}>
             These defaults prefill the Alert Settings when you create a new challenge.
+          </div>
+
+          <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--color-gray-800)" }}>
+            <label style={{ display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer", gap: "1rem" }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--color-gray-200)" }}>Browser notifications</div>
+                <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)" }}>
+                  Receive desktop/push-style alerts when a new prop-firm event happens.
+                  {permission === "denied" && " Permission was denied in your browser — allow it in the site settings."}
+                  {permission === "default" && " You'll be asked for permission when you enable this."}
+                </div>
+              </div>
+              <input
+                type="checkbox"
+                checked={browserEnabled}
+                onChange={e => toggleBrowser(e.target.checked)}
+                style={{ width: 17, height: 17, accentColor: "var(--color-brand-500)", flexShrink: 0 }}
+              />
+            </label>
           </div>
 
           <div style={{ marginTop: "1rem", display: "flex", justifyContent: "flex-end" }}>

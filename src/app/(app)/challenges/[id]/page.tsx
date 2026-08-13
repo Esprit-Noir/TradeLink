@@ -39,6 +39,7 @@ export default async function ChallengeDetailRoute({
     highestBalance: Number(raw.highestBalance || 0),
     highestEquity: Number(raw.highestEquity || 0),
     todayStartBalance: Number(raw.todayStartBalance || 0),
+    cost: raw.cost ? Number(raw.cost) : null,
     startedAt: raw.startedAt.toISOString(),
     deadlineAt: raw.deadlineAt ? raw.deadlineAt.toISOString() : null,
     metadata: raw.metadata ? JSON.parse(JSON.stringify(raw.metadata)) : null,

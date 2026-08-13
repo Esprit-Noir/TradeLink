@@ -34,6 +34,21 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
           const profitTarget = Number(c.initialBalance) * (Number(c.profitTargetPct) / 100)
           const currentProfit = Number(c.currentEquity) - Number(c.initialBalance)
           const profitPct = profitTarget > 0 ? Math.min(Math.max((currentProfit / profitTarget) * 100, 0), 100) : 0
+          const profitSign = currentProfit >= 0 ? "+" : ""
+
+          const minDays = Number(c.minTradingDays || 0)
+          const daysDone = Math.min(Number(c.tradingDaysCount || 0), Math.max(minDays, 1))
+          const daysPct = minDays > 0 ? Math.min((daysDone / minDays) * 100, 100) : 100
+
+          let deadlineLabel: string | null = null
+          let deadlineTone = "var(--color-gray-500)"
+          if (c.deadlineAt) {
+            const rem = Math.ceil((new Date(c.deadlineAt).getTime() - Date.now()) / 86400000)
+            if (c.status === "active") {
+              deadlineLabel = rem <= 0 ? "Due today" : `${rem}d left`
+              deadlineTone = rem <= 1 ? "var(--color-loss)" : rem <= 5 ? "var(--color-warning)" : "var(--color-gray-500)"
+            }
+          }
 
           const latestEvent = Array.isArray(c.events) && c.events.length > 0 ? c.events[0] : null
 
@@ -66,21 +81,29 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
                     </div>
                     <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
                       {c.phase === 'phase_1' ? "Phase 1" : c.phase === 'phase_2' ? "Phase 2" : "Funded"}
+                      {c.template.firmName ? ` · ${c.template.firmName}` : ""}
                     </div>
                   </div>
                 </div>
-                <span className={`badge ${c.status === 'active' ? 'badge-profit' : c.status === 'passed' ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: "0.6rem", flexShrink: 0 }}>
-                  {c.status.toUpperCase()}
-                </span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.25rem", flexShrink: 0 }}>
+                  <span className={`badge ${c.status === 'active' || c.status === 'passed' ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: "0.6rem" }}>
+                    {c.status.toUpperCase()}
+                  </span>
+                  {deadlineLabel && (
+                    <span style={{ fontSize: "0.62rem", fontWeight: 600, color: deadlineTone }}>{deadlineLabel}</span>
+                  )}
+                </div>
               </div>
 
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
                   <span>Profit Target</span>
-                  <span style={{ color: "var(--color-profit)" }}>{Math.round(profitPct)}%</span>
+                  <span style={{ color: currentProfit >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                    {profitSign}{currentProfit.toLocaleString("en-US", { maximumFractionDigits: 0 })} · {Math.round(profitPct)}%
+                  </span>
                 </div>
                 <div style={{ width: "100%", height: "5px", background: "var(--color-gray-800)", borderRadius: "3px", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${profitPct}%`, background: "var(--color-profit)", borderRadius: "3px", transition: "width 0.4s ease" }} />
+                  <div style={{ height: "100%", width: `${profitPct}%`, background: currentProfit >= 0 ? "var(--color-profit)" : "var(--color-loss)", borderRadius: "3px", transition: "width 0.4s ease" }} />
                 </div>
               </div>
 
@@ -93,6 +116,18 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
                   <div style={{ height: "100%", width: `${ddPct}%`, background: ddPct >= 80 ? "var(--color-warning)" : "var(--color-brand-500)", borderRadius: "3px", transition: "width 0.4s ease" }} />
                 </div>
               </div>
+
+              {minDays > 0 && (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
+                    <span>Min Trading Days</span>
+                    <span style={{ color: "var(--color-gray-300)" }}>{c.tradingDaysCount ?? 0}/{minDays}</span>
+                  </div>
+                  <div style={{ width: "100%", height: "5px", background: "var(--color-gray-800)", borderRadius: "3px", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${daysPct}%`, background: "var(--color-gray-400)", borderRadius: "3px", transition: "width 0.4s ease" }} />
+                  </div>
+                </div>
+              )}
 
               {latestEvent && (
                 <div style={{ fontSize: "0.68rem", color: latestEvent.severity === 'critical' ? "var(--color-loss)" : latestEvent.severity === 'warning' ? "var(--color-warning)" : "var(--color-gray-400)" }}>

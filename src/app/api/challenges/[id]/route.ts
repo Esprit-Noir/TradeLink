@@ -29,6 +29,7 @@ export async function PATCH(
     if (body.maxDDPct !== undefined) dataToUpdate.maxDDPct = parseFloat(body.maxDDPct)
     if (body.dailyDDPct !== undefined) dataToUpdate.dailyDDPct = parseFloat(body.dailyDDPct)
     if (body.minTradingDays !== undefined) dataToUpdate.minTradingDays = parseInt(body.minTradingDays)
+    if (body.cost !== undefined) dataToUpdate.cost = body.cost === null || body.cost === "" ? null : parseFloat(body.cost)
 
     if (body.alertConfig !== undefined) {
       const currentAlertConfig = (challenge.alertConfig as any) || {}

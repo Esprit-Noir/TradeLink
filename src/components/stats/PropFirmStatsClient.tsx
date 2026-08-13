@@ -73,7 +73,7 @@ export function PropFirmStatsClient({
               <Tooltip
                 contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
                 labelStyle={{ color: "var(--color-gray-300)" }}
-                cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                cursor={{ fill: "var(--color-gray-800)" }}
               />
               <Legend wrapperStyle={{ fontSize: "0.8rem" }} />
               <Bar dataKey="Passed" stackId="a" fill="var(--color-profit)" radius={[0, 0, 0, 0]} />

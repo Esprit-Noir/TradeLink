@@ -8,6 +8,7 @@ import { PayoutsSection } from "@/components/prop-firm/PayoutsSection"
 import { AlertSettings } from "@/components/prop-firm/AlertSettings"
 import { NotesSection } from "@/components/prop-firm/NotesSection"
 import { ShareCard } from "@/components/prop-firm/ShareCard"
+import { ExportPdfButton } from "@/components/prop-firm/ExportPdfButton"
 import { CreateChallengeDrawer } from "@/components/prop-firm/CreateChallengeDrawer"
 
 export function ChallengeDetailPage({
@@ -182,6 +183,7 @@ export function ChallengeDetailPage({
           <button onClick={handleExport} className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
             Export CSV
           </button>
+          <ExportPdfButton challengeId={challenge.id} accountName={challenge.account.name} />
           <ShareCard data={shareData} />
           <button onClick={() => setEditing(true)} className="btn btn-outline" style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
             Edit

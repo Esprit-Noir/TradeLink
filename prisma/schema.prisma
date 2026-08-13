@@ -200,6 +200,7 @@ model PropChallenge {
   profitTargetPct  Decimal  @map("profit_target_pct") @db.Decimal(5, 2)
   minTradingDays   Int?     @map("min_trading_days")
   maxTradingDays   Int?     @map("max_trading_days")
+  cost             Decimal? @map("cost") @db.Decimal(15, 2) // challenge cost / fees paid
 
   phase            String   @default("phase_1") // phase_1, phase_2, funded, failed
   status           String   @default("active")  // active, passed, failed, breached
@@ -284,6 +285,7 @@ model PropPayout {
   amount      Decimal  @db.Decimal(15, 2)
   status      String   @default("requested") // requested, approved, paid, rejected
   requestedAt DateTime @default(now()) @map("requested_at")
+  note        String?  @db.Text
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   challenge   PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)

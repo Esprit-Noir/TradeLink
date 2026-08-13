@@ -44,6 +44,7 @@ export default async function AccountsPage() {
       isDefault: acc.isDefault,
       createdAt: acc.createdAt,
       propChallenge: acc.propChallenge ? {
+        id: acc.propChallenge.id,
         status: acc.propChallenge.status,
         phase: acc.propChallenge.phase,
         currentEquity: acc.propChallenge.currentEquity ? Number(acc.propChallenge.currentEquity) : 0,

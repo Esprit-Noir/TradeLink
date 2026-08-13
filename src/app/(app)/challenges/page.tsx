@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ChallengesManager } from "./ChallengesManager"
 import { PropFirmReport } from "@/components/prop-firm/PropFirmReport"
+import { PropBadges } from "@/components/prop-firm/PropBadges"
 import { redirect } from "next/navigation"
 
 export const metadata = {
@@ -61,6 +62,7 @@ export default async function ChallengesPage() {
     highestBalance: Number(c.highestBalance || 0),
     highestEquity: Number(c.highestEquity || 0),
     todayStartBalance: Number(c.todayStartBalance || 0),
+    cost: c.cost ? Number(c.cost) : null,
     metadata: c.metadata ? JSON.parse(JSON.stringify(c.metadata)) : null,
     events: c.events.map(e => ({
       id: e.id,
@@ -93,8 +95,9 @@ export default async function ChallengesPage() {
           <p className="page-subtitle">Track your drawdown limits and profit targets.</p>
         </div>
       </div>
-      <PropFirmReport />
       <ChallengesManager accounts={accounts} templates={templates} challenges={challenges} />
+      <PropFirmReport />
+      <PropBadges />
     </div>
   )
 }

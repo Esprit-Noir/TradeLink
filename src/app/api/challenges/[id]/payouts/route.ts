@@ -53,11 +53,18 @@ export async function POST(
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 })
     }
 
+    const requestedAt = body.requestedAt ? new Date(body.requestedAt) : new Date()
+    if (isNaN(requestedAt.getTime())) {
+      return NextResponse.json({ error: "Invalid date" }, { status: 400 })
+    }
+
     const payout = await prisma.propPayout.create({
       data: {
         challengeId: id,
         amount: parseFloat(body.amount),
         status: body.status || "requested",
+        requestedAt,
+        note: typeof body.note === "string" && body.note.trim() ? body.note.trim() : null,
       }
     })
 

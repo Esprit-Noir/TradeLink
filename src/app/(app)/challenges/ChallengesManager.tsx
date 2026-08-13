@@ -284,7 +284,7 @@ export function ChallengesManager({
                   </div>
                 </div>
                 <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.5rem" }}>
-                  <span className={`badge ${isBreached ? 'badge-loss' : isPassed ? 'badge-profit' : ''}`} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <span className={`badge ${isBreached ? 'badge-loss' : isPassed ? 'badge-profit' : 'badge-neutral'}`}>
                     {c.status.toUpperCase()}
                   </span>
                   {isBreached && c.breachReason && (
