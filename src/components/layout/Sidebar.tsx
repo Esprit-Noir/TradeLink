@@ -16,6 +16,14 @@ type SidebarStats = {
   challengePct: number // % toward max drawdown used
 }
 
+function IconChart() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+      <path d="M2 14H14M3.5 10L6.5 6L9.5 9L13.5 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
 export function Sidebar() {
   const pathname = usePathname()
   const [stats, setStats] = useState<SidebarStats | null>(null)
@@ -223,13 +231,6 @@ function IconDashboard() {
   )
 }
 
-function IconChart() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" width="16" height="16">
-      <path d="M2 14H14M3.5 10L6.5 6L9.5 9L13.5 2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-  )
-}
 
 function IconCalendar() {
   return (
