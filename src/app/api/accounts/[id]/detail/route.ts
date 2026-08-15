@@ -62,6 +62,7 @@ export async function GET(
     }
 
     const recentTrades = closed
+      .filter(t => t.exitAt)
       .sort((a, b) => new Date(b.exitAt!).getTime() - new Date(a.exitAt!).getTime())
       .slice(0, 20)
       .map(t => ({

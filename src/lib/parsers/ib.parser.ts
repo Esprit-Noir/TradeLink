@@ -29,8 +29,10 @@ export function ibParser(csvText: string): ParseResult {
   const errors: { row: number; message: string }[] = []
   const trades: ParsedTrade[] = []
 
-  // IB Activity Statement a plusieurs sections — on cherche la section "Trades"
   const lines = csvText.split("\n").map((l) => l.trim()).filter(Boolean)
+  if (lines.length === 0) {
+    return { broker: "interactive_brokers", trades: [], errors: [{ row: 0, message: "Empty file" }], totalRows: 0 }
+  }
 
   // Trouver l'en-tête de la section Trades
   // Format IB: "Trades,Header,DataDiscriminator,Asset Category,Currency,Symbol,Date/Time,..."

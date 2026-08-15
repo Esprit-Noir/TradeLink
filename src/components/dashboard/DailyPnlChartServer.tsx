@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { DailyPnlChart } from "./DailyPnlChart"
 import { resolveAccountScope } from "@/lib/active-account"
+import { DailyPnlChart } from "./LazyCharts"
 
 export async function DailyPnlChartServer({
   dateRange,

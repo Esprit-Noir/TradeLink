@@ -77,7 +77,8 @@ export async function POST(request: Request) {
 
     for (const trade of trades) {
       const pnl = Number(trade.netPnl || 0)
-      const exitAt = trade.exitAt!
+      if (!trade.exitAt) continue
+      const exitAt = trade.exitAt
 
       // Update highest marks
       if (drawdownType === "trailing_balance") highestBalance = Math.max(highestBalance, currentBalance)

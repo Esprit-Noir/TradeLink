@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { WinRateDonut } from "./WinRateDonut"
+import { WinRateDonut } from "./LazyCharts"
 import { resolveAccountScope } from "@/lib/active-account"
 
 export async function WinRateChartServer({

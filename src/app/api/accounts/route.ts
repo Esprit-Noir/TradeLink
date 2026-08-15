@@ -85,9 +85,9 @@ export async function POST(request: NextRequest) {
         name,
         type: type || "personal",
         broker: broker || null,
-        initialBalance: initialBalance ? parseFloat(initialBalance) : 0,
+        initialBalance: initialBalance ? parseFloat(initialBalance) || 0 : 0,
         baseCurrency: baseCurrency || "USD",
-        fxRateToUsd: fxRateToUsd ? parseFloat(fxRateToUsd) : 1,
+        fxRateToUsd: fxRateToUsd ? parseFloat(fxRateToUsd) || 1 : 1,
         isDefault: existingAccounts === 0 // Make default if first account
       }
     })

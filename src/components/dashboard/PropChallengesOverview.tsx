@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 
 export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
   const router = useRouter()
+  const now = Date.now()
 
   if (challenges.length === 0) return null
 
@@ -43,7 +44,7 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
           let deadlineLabel: string | null = null
           let deadlineTone = "var(--color-gray-500)"
           if (c.deadlineAt) {
-            const rem = Math.ceil((new Date(c.deadlineAt).getTime() - Date.now()) / 86400000)
+            const rem = Math.ceil((new Date(c.deadlineAt).getTime() - now) / 86400000)
             if (c.status === "active") {
               deadlineLabel = rem <= 0 ? "Due today" : `${rem}d left`
               deadlineTone = rem <= 1 ? "var(--color-loss)" : rem <= 5 ? "var(--color-warning)" : "var(--color-gray-500)"

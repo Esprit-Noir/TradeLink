@@ -3,6 +3,7 @@ import { z } from "zod"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ensureBacktestAccount } from "@/lib/backtest"
+import { classifySymbol } from "@/lib/market/symbols"
 import { MARKET_TIMEFRAMES } from "@/lib/market/types"
 
 const tradeSchema = z.object({
@@ -136,7 +137,7 @@ export async function POST(request: Request) {
             userId,
             accountId: account.id,
             symbol: t.symbol,
-            instrumentType: "crypto",
+            instrumentType: classifySymbol(t.symbol),
             side: t.side === "long" ? "LONG" : "SHORT",
             quantity: t.quantity,
             entryPrice: t.entryPrice,

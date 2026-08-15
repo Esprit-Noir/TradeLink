@@ -51,7 +51,7 @@ export function CalendarView({
   propDailyPnl?: Record<string, number>
   accountId?: string
 }) {
-  const [currentDate, setCurrentDate] = useState(new Date())
+  const [currentDate, setCurrentDate] = useState(() => new Date())
   const [journalDates, setJournalDates] = useState<string[]>([])
   const [view, setView] = useState<"month" | "year">("month")
   const [selectedDay, setSelectedDay] = useState<string | null>(null)

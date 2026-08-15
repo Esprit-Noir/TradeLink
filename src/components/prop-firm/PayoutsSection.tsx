@@ -25,7 +25,11 @@ function formatDate(iso: string): string {
 export function PayoutsSection({ challengeId }: { challengeId: string }) {
   const [payouts, setPayouts] = useState<any[]>([])
   const [payoutAmount, setPayoutAmount] = useState("")
-  const [payoutDate, setPayoutDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [payoutDate, setPayoutDate] = useState("")
+
+  useEffect(() => {
+    setPayoutDate(new Date().toISOString().slice(0, 10))
+  }, [])
   const [payoutNote, setPayoutNote] = useState("")
   const [savingPayout, setSavingPayout] = useState(false)
 

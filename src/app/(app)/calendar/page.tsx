@@ -1,8 +1,9 @@
+import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { CalendarView } from "@/components/calendar/CalendarView"
 import { CalendarFilter } from "@/components/calendar/CalendarFilter"
-import { getActiveAccount, resolveAccountScope } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 import { dayKey } from "@/lib/dates"
 
 export const metadata = {
@@ -18,7 +19,7 @@ export default async function CalendarPage({
   if (!session?.user?.id) return null
 
   const searchParamsObj = await searchParams
-  const accountIdParam = typeof searchParamsObj?.accountId === "string" ? searchParamsObj.accountId : ""
+  const accountIdParam = typeof searchParamsObj?.accountId === "string" ? searchParamsObj.accountId : "all"
 
   const [user, scope] = await Promise.all([
     prisma.user.findUnique({ where: { id: session.user.id }, select: { timezone: true } }),
@@ -27,12 +28,11 @@ export default async function CalendarPage({
   const timezone = user?.timezone ?? "UTC"
 
   // Resolve which accountId to pass to the client component for detailing
-  const activeAccount = await getActiveAccount(session.user.id)
   const selectedAccountId = accountIdParam === "all"
     ? "all"
     : accountIdParam
       ? (scope.accounts[0]?.id ?? null)
-      : (activeAccount?.id ?? null)
+      : null
 
   let trades: any[] = []
   if (scope.all) {
@@ -101,7 +101,9 @@ export default async function CalendarPage({
           <h1 className="page-title">P&L Calendar</h1>
           <p className="page-subtitle">Visualize your daily performance and consistency.</p>
         </div>
-        <CalendarFilter accounts={filterAccounts} />
+        <Suspense fallback={null}>
+          <CalendarFilter accounts={filterAccounts} />
+        </Suspense>
       </div>
 
       <div className="card" style={{ padding: "1.5rem" }}>

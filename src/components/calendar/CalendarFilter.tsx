@@ -15,10 +15,10 @@ export function CalendarFilter({ accounts }: { accounts: FilterAccount[] }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [accountId, setAccountId] = useState(searchParams?.get("accountId") || "")
+  const [accountId, setAccountId] = useState(searchParams?.get("accountId") || "all")
 
   useEffect(() => {
-    const current = searchParams?.get("accountId") || ""
+    const current = searchParams?.get("accountId") || "all"
     if (current !== accountId) setAccountId(current)
   }, [searchParams, accountId])
 
@@ -51,8 +51,8 @@ export function CalendarFilter({ accounts }: { accounts: FilterAccount[] }) {
           value={accountId}
           onChange={handleAccountChange}
         >
-          <option value="">Active account</option>
           <option value="all">All accounts (consolidated)</option>
+          <option value="">Active account</option>
           {accounts.map(acc => (
             <option key={acc.id} value={acc.id}>{acc.name}</option>
           ))}

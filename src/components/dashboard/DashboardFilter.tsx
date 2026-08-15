@@ -15,14 +15,14 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [accountId, setAccountId] = useState(searchParams?.get("accountId") || "")
+  const [accountId, setAccountId] = useState(searchParams?.get("accountId") || "all")
   const [period, setPeriod] = useState(searchParams?.get("period") || "all")
   const [showCustom, setShowCustom] = useState(period === "custom")
   const [startDate, setStartDate] = useState(searchParams?.get("from") || "")
   const [endDate, setEndDate] = useState(searchParams?.get("to") || "")
 
   useEffect(() => {
-    const current = searchParams?.get("accountId") || ""
+    const current = searchParams?.get("accountId") || "all"
     if (current !== accountId) setAccountId(current)
   }, [searchParams, accountId])
 
@@ -96,8 +96,8 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
             value={accountId}
             onChange={handleAccountChange}
           >
-            <option value="">Active account</option>
             <option value="all">All accounts (consolidated)</option>
+            <option value="">Active account</option>
             {accounts.map(a => (
               <option key={a.id} value={a.id}>{a.name}{a.isDefault ? " (default)" : ""}</option>
             ))}

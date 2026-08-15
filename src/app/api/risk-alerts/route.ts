@@ -53,7 +53,8 @@ export async function GET() {
       let todayResetAt = c.todayResetAt || new Date(c.startedAt)
 
       for (const t of trades) {
-        const exit = t.exitAt!
+        if (!t.exitAt) continue
+        const exit = t.exitAt
         if (exit > todayResetAt) {
           todayStartBalance = currentBalance
           todayResetAt = nextMidnightInTz(exit, timezone)
@@ -123,7 +124,7 @@ export async function GET() {
       return sum / stopViolations.length
     })()
     const consecutiveLosingDays = (() => {
-      const days = new Set(stopViolations.map(t => dayKey(t.exitAt!, "UTC")))
+      const days = new Set(stopViolations.filter(t => t.exitAt).map(t => dayKey(t.exitAt!, "UTC")))
       let count = 0
       const today = new Date()
       for (let i = 0; i < 7; i++) {

@@ -5,7 +5,6 @@ import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { TradesFilter } from "@/components/trades/TradesFilter"
 import { TradesTable } from "@/components/trades/TradesTable"
 import { TradeDetailsDrawer } from "@/components/trades/TradeDetailsDrawer"
-import { getActiveAccount } from "@/lib/active-account"
 import { cookies } from "next/headers"
 
 export const metadata = {
@@ -27,13 +26,12 @@ const SORTABLE: Record<string, "asc" | "desc"> = {
 export default async function TradesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; status?: string; tradeId?: string; sort?: string; dir?: string }>
+  searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; status?: string; tradeId?: string; sort?: string; dir?: string; accountId?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-  const account = await getActiveAccount(session.user.id)
 
   const cookieStore = await cookies()
   const density = cookieStore.get("ui_density")?.value === "compact" ? "compact" : "comfortable"
@@ -43,7 +41,15 @@ export default async function TradesPage({
   const skip = (currentPage - 1) * ITEMS_PER_PAGE
 
   const whereClause: any = { userId: session.user.id }
-  if (account) whereClause.accountId = account.id
+  let baseCurrency: string | undefined
+  if (searchParamsObj?.accountId) {
+    whereClause.accountId = searchParamsObj.accountId
+    const acct = await prisma.tradingAccount.findUnique({ where: { id: searchParamsObj.accountId }, select: { baseCurrency: true } })
+    baseCurrency = acct?.baseCurrency ?? undefined
+  } else {
+    const defaultAcct = await prisma.tradingAccount.findFirst({ where: { userId: session.user.id, isDefault: true }, select: { baseCurrency: true } })
+    baseCurrency = defaultAcct?.baseCurrency ?? undefined
+  }
 
   if (searchParamsObj?.symbol) {
     whereClause.symbol = { contains: searchParamsObj.symbol, mode: "insensitive" }
@@ -142,19 +148,21 @@ export default async function TradesPage({
         <TradesFilter />
       </Suspense>
 
-      <TradesTable
-        trades={serialized}
-        totals={totals}
-        density={density}
-        timezone={user?.timezone}
-        baseCurrency={account?.baseCurrency}
-        sortKey={sortKey}
-        sortDir={sortDir}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalTrades={totalTrades}
-        itemsPerPage={ITEMS_PER_PAGE}
-      />
+      <Suspense fallback={<div className="skeleton" style={{ height: 400, marginBottom: "1.5rem" }} />}>
+        <TradesTable
+          trades={serialized}
+          totals={totals}
+          density={density}
+          timezone={user?.timezone}
+          baseCurrency={baseCurrency}
+          sortKey={sortKey}
+          sortDir={sortDir}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalTrades={totalTrades}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
+      </Suspense>
 
       <Suspense fallback={null}>
         <TradeDetailsDrawer />

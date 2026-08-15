@@ -53,6 +53,7 @@ export async function GET() {
     // Green week (5+ green days in rolling 7-day window)
     const dayMap = new Map<string, number>()
     for (let i = 0; i < closedTrades.length; i++) {
+      if (!closedTrades[i].exitAt) continue
       const key = closedTrades[i].exitAt!.toISOString().slice(0, 10)
       dayMap.set(key, (dayMap.get(key) || 0) + pnl[i])
     }

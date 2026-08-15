@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react"
+import dynamic from "next/dynamic"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import { Loader2, RefreshCcw, Save, FileDown, FileText, TriangleAlert, Play, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react"
@@ -11,9 +12,10 @@ import { fetchCandles } from "@/lib/market/client"
 import { CFD_SYMBOLS } from "@/lib/market/symbols"
 import { ReplayChart } from "./ReplayChart"
 import { ReplayControls } from "./ReplayControls"
-import { TradePanel } from "./TradePanel"
 import { PositionsStrip } from "./PositionsStrip"
 import { TradesTimeline } from "./TradesTimeline"
+
+const TradePanel = dynamic(() => import("./TradePanel").then(m => ({ default: m.TradePanel })), { ssr: false })
 import { DEFAULT_INDICATORS, newId, type IndicatorsState, type SimSide, type SimTrade } from "./types"
 import { atrAt, computeIndicatorSeries } from "./indicators"
 import { atrBasedLevels, positionSizeFromRisk, simulateClose } from "@/lib/market/simulator"

@@ -13,11 +13,15 @@ export async function GET(request: Request) {
     const period = searchParams.get("period") || "all"
     const from = searchParams.get("from")
     const to = searchParams.get("to")
-    const accountId = searchParams.get("accountId")
+    const accountId = searchParams.get("accountId") || "all"
 
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    if (accountId !== "all" && !/^[0-9a-f-]{36}$/i.test(accountId)) {
+      return NextResponse.json({ error: "Invalid accountId" }, { status: 400 })
     }
 
     const scope = await resolveAccountScope(session.user.id, accountId)
@@ -50,8 +54,16 @@ export async function GET(request: Request) {
     } else if (period === "ytd") {
       fromDate = new Date(new Date().getFullYear(), 0, 1)
     } else if (period === "custom") {
-      if (from) fromDate = new Date(from)
-      if (to) toDate = new Date(to)
+      if (from) {
+        const d = new Date(from)
+        if (isNaN(d.getTime())) return NextResponse.json({ error: "Invalid from date" }, { status: 400 })
+        fromDate = d
+      }
+      if (to) {
+        const d = new Date(to)
+        if (isNaN(d.getTime())) return NextResponse.json({ error: "Invalid to date" }, { status: 400 })
+        toDate = d
+      }
     }
 
     if (fromDate) fromDate.setHours(0, 0, 0, 0)

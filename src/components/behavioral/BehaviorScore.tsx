@@ -20,7 +20,7 @@ export function BehaviorScore() {
   const load = useCallback(async (r: string) => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/behavioral?range=${r}`)
+      const res = await fetch(`/api/behavioral?range=${r}&accountId=all`)
       const d = await res.json()
       setData(d)
     } catch {
@@ -225,8 +225,8 @@ export function BehaviorScore() {
             Recent Violations
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {data.recentFlags.map(f => (
-              <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+            {data.recentFlags.map((f, i) => (
+              <div key={`${f.id}-${i}`} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
                 <span style={{
                   fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", padding: "0.2rem 0.45rem", borderRadius: "4px", whiteSpace: "nowrap",
                   background: `${f.color}22`, color: f.color, border: `1px solid ${f.color}44`,

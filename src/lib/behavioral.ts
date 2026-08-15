@@ -175,7 +175,8 @@ function detectRevengeTrades(trades: Trade[]): DetectedPattern | null {
     const prevPnl = Number(prev.netPnl)
     if (prevPnl >= 0) continue // le trade précédent n'est pas une perte
 
-    const gap = (new Date(curr.entryAt).getTime() - new Date(prev.exitAt!).getTime()) / 60000
+    if (!prev.exitAt) continue
+    const gap = (new Date(curr.entryAt).getTime() - new Date(prev.exitAt).getTime()) / 60000
     if (gap >= 0 && gap <= CONFIG.revengeWindowMinutes) {
       affectedIds.push(curr.id)
       impactPnl += Number(curr.netPnl ?? 0)

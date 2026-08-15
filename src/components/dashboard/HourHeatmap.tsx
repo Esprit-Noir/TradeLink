@@ -10,11 +10,14 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 export function HourHeatmap() {
   const [data, setData] = useState<HeatmapCell[]>([])
   const [loading, setLoading] = useState(true)
-
-  const searchKey = typeof window !== "undefined" ? window.location.search : ""
+  const [searchKey, setSearchKey] = useState("")
 
   useEffect(() => {
-    fetch(`/api/metrics/charts${window.location.search}`)
+    setSearchKey(window.location.search)
+  }, [])
+
+  useEffect(() => {
+    fetch(`/api/metrics/charts${searchKey}`)
       .then((r) => r.json())
       .then((d) => {
         setData(d.heatmapData || [])

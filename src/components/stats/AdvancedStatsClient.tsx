@@ -28,6 +28,7 @@ export function AdvancedStatsClient() {
     setLoading(true)
     try {
       const params = new URLSearchParams()
+      params.set("accountId", "all")
       if (filters.period && filters.period !== "all") params.set("period", filters.period)
       if (filters.symbol) params.set("symbol", filters.symbol)
       if (filters.setup) params.set("setup", filters.setup)

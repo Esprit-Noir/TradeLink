@@ -133,6 +133,7 @@ model Trade {
   @@index([userId, entryAt(sort: Desc)])
   @@index([accountId])
   @@index([backtestSessionId])
+  @@index([status])
   @@map("trades")
 }
 
@@ -240,6 +241,7 @@ model PropChallenge {
   payouts          PropPayout[]
   notes            PropChallengeNote[]
 
+  @@index([userId])
   @@map("prop_challenges")
 }
 
@@ -285,6 +287,7 @@ model PropChallengeEvent {
 
   challenge    PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
+  @@index([challengeId])
   @@map("prop_challenge_events")
 }
 
@@ -299,6 +302,7 @@ model PropPayout {
 
   challenge   PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
+  @@index([challengeId])
   @@map("prop_payouts")
 }
 

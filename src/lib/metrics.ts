@@ -82,7 +82,7 @@ export function computeMetrics(trades: Trade[], initialBalance = 0, timezone = "
   // Durée moyenne (minutes)
   const durations = closed
     .filter((t) => t.exitAt)
-    .map((t) => (new Date(t.exitAt!).getTime() - new Date(t.entryAt).getTime()) / 60000)
+    .map((t) => (new Date(t.exitAt as Date).getTime() - new Date(t.entryAt).getTime()) / 60000)
   const avgTradeDurationMin = durations.length > 0 ? durations.reduce((s, v) => s + v, 0) / durations.length : 0
 
   return {
@@ -229,7 +229,7 @@ function computeDrawdown(trades: Trade[], initialBalance: number): { maxDrawdown
   let maxDrawdown = 0
   let maxDrawdownPct = 0
 
-  const sorted = [...trades].sort((a, b) => new Date(a.exitAt!).getTime() - new Date(b.exitAt!).getTime())
+  const sorted = [...trades].filter(t => t.exitAt).sort((a, b) => new Date(a.exitAt as Date).getTime() - new Date(b.exitAt as Date).getTime())
 
   for (const trade of sorted) {
     equity += Number(trade.netPnl)

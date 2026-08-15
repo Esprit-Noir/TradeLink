@@ -3,6 +3,7 @@
 // Supports standard column names from MT4/MT5 exported reports (Ticket, Open Time, Type, Size, Item, Profit, etc.)
 
 import type { ParseResult, ParsedTrade } from "./index"
+import { classifySymbol } from "@/lib/market/symbols"
 
 function parseRow(line: string): string[] {
   const out: string[] = []
@@ -207,6 +208,7 @@ export function metatraderParser(csvText: string): ParseResult {
         fees,
         netPnl,
         status: exitAt ? "closed" : "open",
+        instrumentType: classifySymbol(symbol),
         importSource: "csv",
       })
     } catch (err: any) {

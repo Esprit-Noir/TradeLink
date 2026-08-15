@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { parseCSV } from "@/lib/parsers"
 import { parseGenericCSV, type GenericMapping } from "@/lib/parsers/generic.parser"
+import { classifySymbol } from "@/lib/market/symbols"
 import { getActiveAccount } from "@/lib/active-account"
 import { evaluateChallenge } from "@/lib/prop-firm.service"
 
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
         userId,
         accountId: account.id,
         symbol: t.symbol,
-        instrumentType: t.instrumentType || "CRYPTO", // Fallback
+        instrumentType: t.instrumentType || classifySymbol(t.symbol),
         side: t.side.toUpperCase(),
         entryAt: t.entryAt,
         exitAt: t.exitAt || t.entryAt, // Default to entry if missing

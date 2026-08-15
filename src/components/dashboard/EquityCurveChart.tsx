@@ -12,11 +12,14 @@ import type { EquityPoint } from "@/lib/metrics"
 export function EquityCurveChart() {
   const [data, setData] = useState<EquityPoint[]>([])
   const [loading, setLoading] = useState(true)
-
-  const searchKey = typeof window !== "undefined" ? window.location.search : ""
+  const [searchKey, setSearchKey] = useState("")
 
   useEffect(() => {
-    fetch(`/api/metrics/equity-curve${window.location.search}`)
+    setSearchKey(window.location.search)
+  }, [])
+
+  useEffect(() => {
+    fetch(`/api/metrics/equity-curve${searchKey}`)
       .then((r) => r.json())
       .then((d) => {
         setData(d.data || [])

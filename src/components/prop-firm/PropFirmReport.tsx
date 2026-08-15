@@ -47,7 +47,7 @@ export function PropFirmReport() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return null
+  if (loading) return <div className="skeleton" style={{ height: 200 }} />
   if (!report || report.total === 0) return null
 
   const exportCsv = () => {

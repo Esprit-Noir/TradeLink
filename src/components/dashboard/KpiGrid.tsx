@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { resolveAccountScope } from "@/lib/active-account"
 import { formatCurrency } from "@/lib/formatters"
+import type { Trade } from "@prisma/client"
 
 export async function KpiGrid({
   dateRange,
@@ -44,6 +45,14 @@ export async function KpiGrid({
 
   const trades = await prisma.trade.findMany({
     where: whereClause,
+    select: {
+      status: true,
+      netPnl: true,
+      riskAmount: true,
+      entryAt: true,
+      exitAt: true,
+      setupTags: true,
+    },
     orderBy: { entryAt: "desc" },
   })
 
@@ -52,7 +61,7 @@ export async function KpiGrid({
     select: { timezone: true },
   })
 
-  const metrics = computeMetrics(trades, scope.baseBalance, user?.timezone ?? "UTC")
+  const metrics = computeMetrics(trades as Trade[], scope.baseBalance, user?.timezone ?? "UTC")
   const currency = scope.currency
 
   return (

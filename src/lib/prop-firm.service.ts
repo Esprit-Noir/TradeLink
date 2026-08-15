@@ -102,27 +102,11 @@ export async function evaluateChallenge(challengeId: string) {
     }
   }
 
-  // Get all closed trades sorted by exit time
   const trades = await prisma.trade.findMany({
     where: { accountId: challenge.accountId, status: "closed" },
     orderBy: { exitAt: 'asc' }
   })
 
-  // Log debug information to a local file
-  try {
-    const fs = require("fs")
-    const path = require("path")
-    const logPath = path.resolve(process.cwd(), "logs_eval.txt")
-    const logMsg = `[${new Date().toISOString()}] Challenge evaluation triggered. ID: ${challengeId}, Account ID: ${challenge.accountId}, Trades found: ${trades.length}\n`
-    fs.appendFileSync(logPath, logMsg)
-    if (trades.length > 0) {
-      fs.appendFileSync(logPath, `Trades details: ${JSON.stringify(trades.map(t => ({ id: t.id, symbol: t.symbol, exitAt: t.exitAt, netPnl: t.netPnl, status: t.status })))}\n`)
-    }
-  } catch (e) {
-    console.error("Failed to write evaluation logs:", e)
-  }
-
-  // We are calculating from scratch for the MVP, effectively a recalculate flow.
   let currentBalance = Number(challenge.initialBalance)
   let highestBalance = Number(challenge.initialBalance)
   let highestEquity = Number(challenge.initialBalance)
@@ -135,7 +119,8 @@ export async function evaluateChallenge(challengeId: string) {
   const days = new Map<string, DayAccum>()
 
   for (const trade of trades) {
-    const tradeExit = trade.exitAt!
+    if (!trade.exitAt) continue
+    const tradeExit = trade.exitAt
 
     // Check if we entered a new day (reset boundary is midnight in the template's timezone)
     if (tradeExit > todayResetAt) {

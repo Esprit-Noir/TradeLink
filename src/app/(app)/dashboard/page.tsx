@@ -3,19 +3,17 @@
 
 import { Suspense } from "react"
 import { KpiGrid } from "@/components/dashboard/KpiGrid"
-import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
-import { SetupBarChart } from "@/components/dashboard/SetupBarChart"
-import { HourHeatmap } from "@/components/dashboard/HourHeatmap"
 import { RecentTradesTable } from "@/components/dashboard/RecentTradesTable"
 import { KpiGridSkeleton } from "@/components/dashboard/KpiGridSkeleton"
-import { WinRateChartServer } from "@/components/dashboard/WinRateChartServer"
 import { DailyPnlChartServer } from "@/components/dashboard/DailyPnlChartServer"
+import { WinRateChartServer } from "@/components/dashboard/WinRateChartServer"
 import { DashboardFilter } from "@/components/dashboard/DashboardFilter"
 import { DailyGoalWidget } from "@/components/dashboard/DailyGoalWidget"
 import { MonthlyGoalWidget } from "@/components/dashboard/MonthlyGoalWidget"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getActiveAccount } from "@/lib/active-account"
+import { MS_PER_DAY } from "@/lib/constants"
+import { EquityCurveChart, SetupBarChart, HourHeatmap } from "@/components/dashboard/LazyCharts"
 
 export const metadata = {
   title: "Dashboard",
@@ -60,12 +58,13 @@ export default async function DashboardPage({
   let todayPnl = 0
   let dailyGoal: number | null = null
   let selectedAccountId: string | null | "all" = null
+  let filterAccounts: { id: string; name: string; isDefault: boolean }[] = []
 
   // Month & streak aggregates
   let timezone = "UTC"
   let monthlyGoal: number | null = null
   let monthPnl = 0
-  let monthDays: { key: string; pnl: number }[] = []
+  const monthDays: { key: string; pnl: number }[] = []
   let bestDay: { key: string; pnl: number } | null = null
   let worstDay: { key: string; pnl: number } | null = null
   let streak = 0
@@ -77,89 +76,90 @@ export default async function DashboardPage({
       where: { id: session.user.id },
       include: { accounts: true }
     })
-    // Validate accountId param against user's accounts, else fall back to active account
-    const isAll = accountIdParam === "all"
-    const requestedAccount = !isAll && accountIdParam
-      ? user?.accounts.find(a => a.id === accountIdParam)
-      : null
-    const activeAccount = await getActiveAccount(session.user.id)
-    const defaultAccount = isAll ? null : (requestedAccount || activeAccount || user?.accounts.find(a => a.isDefault))
-    selectedAccountId = isAll ? "all" : (defaultAccount?.id ?? null)
-    dailyGoal = user?.dailyGoal ? Number(user.dailyGoal) : null
-    monthlyGoal = user?.monthlyGoal ? Number(user.monthlyGoal) : null
-    timezone = user?.timezone || "UTC"
+    if (!user) {
+      filterAccounts = []
+    } else {
+      const isAll = !accountIdParam || accountIdParam === "all"
+      const requestedAccount = !isAll
+        ? user.accounts.find(a => a.id === accountIdParam)
+        : null
+      const defaultAccount = isAll ? null : (requestedAccount || user.accounts.find(a => a.isDefault))
+      selectedAccountId = isAll ? "all" : (defaultAccount?.id ?? null)
+      dailyGoal = user.dailyGoal ? Number(user.dailyGoal) : null
+      monthlyGoal = user.monthlyGoal ? Number(user.monthlyGoal) : null
+      timezone = user.timezone || "UTC"
 
-    // Trades scope for today & month aggregates
-    const tradesWhere: any = isAll
-      ? { userId: session.user.id, status: "closed" }
-      : { accountId: defaultAccount?.id, status: "closed" }
+      const tradesWhere = isAll
+        ? { userId: session.user.id, status: "closed" as const }
+        : { accountId: defaultAccount?.id, status: "closed" as const }
 
-    // Today's P&L
-    const todayStart = new Date()
-    todayStart.setHours(0, 0, 0, 0)
-    const todayTrades = await prisma.trade.findMany({
-      where: { ...tradesWhere, exitAt: { gte: todayStart } },
-      select: { netPnl: true }
-    })
-    todayPnl = todayTrades.reduce((s, t) => s + Number(t.netPnl || 0), 0)
+      const todayStart = new Date()
+      todayStart.setHours(0, 0, 0, 0)
 
-    // ── Month P&L, best/worst day, streak, calendar ──────────────────────
-    const allClosed = await prisma.trade.findMany({
-      where: tradesWhere,
-      select: { netPnl: true, entryAt: true },
-    })
+      const [todayAggregate, allClosed, filterAccountsData] = await Promise.all([
+        prisma.trade.aggregate({
+          where: { ...tradesWhere, exitAt: { gte: todayStart } },
+          _sum: { netPnl: true },
+        }),
+        prisma.trade.findMany({
+          where: tradesWhere,
+          select: { netPnl: true, entryAt: true },
+        }),
+        prisma.tradingAccount.findMany({
+          where: { userId: session.user.id },
+          select: { id: true, name: true, isDefault: true },
+          orderBy: { createdAt: "asc" },
+        }),
+      ])
 
-    const dayFmt = new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
-    })
-    const localDayKey = (d: Date) => dayFmt.format(new Date(d))
-    const nowParts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "numeric" }).formatToParts(new Date())
-    const currentYear = Number(nowParts.find(p => p.type === "year")?.value)
-    const currentMonth = Number(nowParts.find(p => p.type === "month")?.value)
-    monthLabel = new Date(currentYear, currentMonth - 1, 1).toLocaleString("en", { month: "long", year: "numeric" })
-    const monthKeyPrefix = `${currentYear}-${String(currentMonth).padStart(2, "0")}`
+      todayPnl = Number(todayAggregate._sum.netPnl || 0)
+      filterAccounts = filterAccountsData as typeof filterAccounts
 
-    const byDay = new Map<string, { pnl: number; count: number }>()
-    for (const t of allClosed) {
-      const key = localDayKey(t.entryAt)
-      const cur = byDay.get(key) || { pnl: 0, count: 0 }
-      cur.pnl += Number(t.netPnl || 0)
-      cur.count += 1
-      byDay.set(key, cur)
-    }
+      // ── Month P&L, best/worst day, streak, calendar ──────────────────────
+      const dayFmt = new Intl.DateTimeFormat("en-CA", {
+        timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
+      })
+      const localDayKey = (d: Date) => dayFmt.format(new Date(d))
+      const nowParts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "numeric" }).formatToParts(new Date())
+      const currentYear = Number(nowParts.find(p => p.type === "year")?.value)
+      const currentMonth = Number(nowParts.find(p => p.type === "month")?.value)
+      monthLabel = new Date(currentYear, currentMonth - 1, 1).toLocaleString("en", { month: "long", year: "numeric" })
+      const monthKeyPrefix = `${currentYear}-${String(currentMonth).padStart(2, "0")}`
 
-    for (const [key, v] of byDay) {
-      if (key.startsWith(monthKeyPrefix)) {
-        monthPnl += v.pnl
-        monthDays.push({ key, pnl: v.pnl })
-        if (v.pnl > 0) greenDaysThisMonth += 1
+      const byDay = new Map<string, { pnl: number; count: number }>()
+      for (const t of allClosed) {
+        const key = localDayKey(t.entryAt)
+        const cur = byDay.get(key) || { pnl: 0, count: 0 }
+        cur.pnl += Number(t.netPnl || 0)
+        cur.count += 1
+        byDay.set(key, cur)
+      }
+
+      for (const [key, v] of byDay) {
+        if (key.startsWith(monthKeyPrefix)) {
+          monthPnl += v.pnl
+          monthDays.push({ key, pnl: v.pnl })
+          if (v.pnl > 0) greenDaysThisMonth += 1
+        }
+      }
+      if (monthDays.length > 0) {
+        bestDay = monthDays.reduce((a, b) => (b.pnl > a.pnl ? b : a))
+        worstDay = monthDays.reduce((a, b) => (b.pnl < a.pnl ? b : a))
+      }
+
+      // Consecutive green days (ending today or yesterday)
+      let cursor = new Date()
+      if ((byDay.get(localDayKey(cursor))?.pnl || 0) <= 0) {
+        cursor = new Date(Date.now() - MS_PER_DAY)
+      }
+      for (let i = 0; i < 730; i++) {
+        const pnl = byDay.get(localDayKey(cursor))?.pnl
+        if (pnl !== undefined && pnl > 0) streak += 1
+        else break
+        cursor = new Date(cursor.getTime() - MS_PER_DAY)
       }
     }
-    if (monthDays.length > 0) {
-      bestDay = monthDays.reduce((a, b) => (b.pnl > a.pnl ? b : a))
-      worstDay = monthDays.reduce((a, b) => (b.pnl < a.pnl ? b : a))
-    }
-
-    // Consecutive green days (ending today or yesterday)
-    let cursor = new Date()
-    if ((byDay.get(localDayKey(cursor))?.pnl || 0) <= 0) {
-      cursor = new Date(Date.now() - 86400000)
-    }
-    for (let i = 0; i < 730; i++) {
-      const pnl = byDay.get(localDayKey(cursor))?.pnl
-      if (pnl !== undefined && pnl > 0) streak += 1
-      else break
-      cursor = new Date(cursor.getTime() - 86400000)
-    }
   }
-
-  const filterAccounts = session?.user?.id
-    ? await prisma.tradingAccount.findMany({
-        where: { userId: session.user.id },
-        select: { id: true, name: true, isDefault: true },
-        orderBy: { createdAt: "asc" },
-      })
-    : []
 
   return (
     <div>

@@ -135,7 +135,6 @@ export function symbolCategory(symbol: string): SymbolCategory {
 export function classifySymbol(symbol: string): string {
   const s = symbol.toUpperCase()
   if (s.includes("/USD") && !["BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "DOGE/USD"].includes(s)) {
-    // Base currencies are physicals/indices/commodities quoted in USD.
     const base = s.split("/")[0]
     if (["XAU", "XAG", "XPT", "XPD", "GOLD", "SILVER"].includes(base)) return "futures"
     if (["US500", "NAS100", "GER40", "UK100", "JP225", "FR40", "SPX500"].includes(base)) return "indices"
@@ -150,6 +149,9 @@ export function classifySymbol(symbol: string): string {
   if (["WTI", "BRENT", "NATGAS", "GOLD", "SILVER"].includes(s)) return "commodities"
   if (["US500", "US30", "NAS100", "US2000", "GER40", "UK100", "JP225", "FR40", "EU50"].includes(s)) return "indices"
   if (["BTC", "ETH", "SOL", "XRP", "LTC", "ADA", "DOGE", "BNB"].includes(s)) return "crypto"
+  if (s.endsWith("USDT") || s.endsWith("BUSD") || s.endsWith("USDC")) return "crypto"
+  // Forex without slash: GBPJPY, EURUSD, AUDNZD, etc. (6 letters, two known currency codes)
+  if (/^(EUR|GBP|USD|AUD|NZD|CAD|CHF|JPY|CNY|HKD|SGD|SEK|NOK|DKK|ZAR|MXN|PLN|HUF|CZK|TRY|INR|BRL)(EUR|GBP|USD|AUD|NZD|CAD|CHF|JPY|CNY|HKD|SGD|SEK|NOK|DKK|ZAR|MXN|PLN|HUF|CZK|TRY|INR|BRL)$/.test(s)) return "forex"
   return "stock"
 }
 

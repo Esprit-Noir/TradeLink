@@ -3,107 +3,108 @@ import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-  // Fetch setups
-  const setups = await prisma.tradingSetup.findMany({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  })
+    const setups = await prisma.tradingSetup.findMany({
+      where: { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+    })
 
-  // Fetch all closed trades to compute setup stats
-  const trades = await prisma.trade.findMany({
-    where: { userId: session.user.id, status: "closed" },
-    select: { netPnl: true, netPnlUsd: true, riskAmount: true, setupTags: true, entryAt: true },
-    orderBy: { entryAt: "asc" },
-  })
+    const trades = await prisma.trade.findMany({
+      where: { userId: session.user.id, status: "closed" },
+      select: { netPnl: true, netPnlUsd: true, riskAmount: true, setupTags: true, entryAt: true },
+      orderBy: { entryAt: "asc" },
+    })
 
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000)
 
-  // Calculate stats per setup (case-insensitive)
-  const stats: Record<string, { count: number; wins: number; losses: number; pnl: number; pnlUsd: number; winPnl: number; lossPnl: number; rSum: number; rCount: number; best: number; worst: number; recentCount: number; lastTradeAt: string | null; series: number[] }> = {}
+    const stats: Record<string, { count: number; wins: number; losses: number; pnl: number; pnlUsd: number; winPnl: number; lossPnl: number; rSum: number; rCount: number; best: number; worst: number; recentCount: number; lastTradeAt: string | null; series: number[] }> = {}
 
-  const ensure = (name: string) => {
-    const key = name.toLowerCase()
-    if (!stats[key]) {
-      stats[key] = {
-        count: 0, wins: 0, losses: 0, pnl: 0, pnlUsd: 0, winPnl: 0, lossPnl: 0,
-        rSum: 0, rCount: 0, best: -Infinity, worst: Infinity, recentCount: 0,
-        lastTradeAt: null, series: [],
+    const ensure = (name: string) => {
+      const key = name.toLowerCase()
+      if (!stats[key]) {
+        stats[key] = {
+          count: 0, wins: 0, losses: 0, pnl: 0, pnlUsd: 0, winPnl: 0, lossPnl: 0,
+          rSum: 0, rCount: 0, best: -Infinity, worst: Infinity, recentCount: 0,
+          lastTradeAt: null, series: [],
+        }
+      }
+      return stats[key]
+    }
+
+    for (const t of trades) {
+      if (!t.setupTags) continue
+      const pnl = Number(t.netPnl || 0)
+      const pnlUsd = Number(t.netPnlUsd ?? t.netPnl ?? 0)
+      const isWin = pnl > 0
+      const isLoss = pnl < 0
+
+      for (const tag of t.setupTags) {
+        const s = ensure(tag)
+        s.count += 1
+        if (isWin) s.wins += 1
+        if (isLoss) s.losses += 1
+        s.pnl += pnl
+        s.pnlUsd += pnlUsd
+        if (isWin) s.winPnl += pnl
+        if (isLoss) s.lossPnl += Math.abs(pnl)
+        if (Number(t.riskAmount) > 0) {
+          s.rSum += pnl / Number(t.riskAmount)
+          s.rCount += 1
+        }
+        if (pnl > s.best) s.best = pnl
+        if (pnl < s.worst) s.worst = pnl
+        if (t.entryAt >= thirtyDaysAgo) s.recentCount += 1
+        const ts = t.entryAt.getTime()
+        if (!s.lastTradeAt || ts > new Date(s.lastTradeAt).getTime()) s.lastTradeAt = t.entryAt.toISOString()
+        s.series.push(pnl)
       }
     }
-    return stats[key]
-  }
 
-  for (const t of trades) {
-    if (!t.setupTags) continue
-    const pnl = Number(t.netPnl || 0)
-    const pnlUsd = Number(t.netPnlUsd ?? t.netPnl ?? 0)
-    const isWin = pnl > 0
-    const isLoss = pnl < 0
-
-    for (const tag of t.setupTags) {
-      const s = ensure(tag)
-      s.count += 1
-      if (isWin) s.wins += 1
-      if (isLoss) s.losses += 1
-      s.pnl += pnl
-      s.pnlUsd += pnlUsd
-      if (isWin) s.winPnl += pnl
-      if (isLoss) s.lossPnl += Math.abs(pnl)
-      if (Number(t.riskAmount) > 0) {
-        s.rSum += pnl / Number(t.riskAmount)
-        s.rCount += 1
+    const downsample = (arr: number[], max = 40) => {
+      if (arr.length <= max) return arr
+      const bucket = Math.ceil(arr.length / max)
+      const out: number[] = []
+      for (let i = 0; i < arr.length; i += bucket) {
+        out.push(arr.slice(i, i + bucket).reduce((s, v) => s + v, 0))
       }
-      if (pnl > s.best) s.best = pnl
-      if (pnl < s.worst) s.worst = pnl
-      if (t.entryAt >= thirtyDaysAgo) s.recentCount += 1
-      const ts = t.entryAt.getTime()
-      if (!s.lastTradeAt || ts > new Date(s.lastTradeAt).getTime()) s.lastTradeAt = t.entryAt.toISOString()
-      s.series.push(pnl)
+      return out
     }
+
+    const enrichedSetups = setups.map((s) => {
+      const st = stats[s.name.toLowerCase()] || { count: 0, wins: 0, losses: 0, pnl: 0, pnlUsd: 0, winPnl: 0, lossPnl: 0, rSum: 0, rCount: 0, best: 0, worst: 0, recentCount: 0, lastTradeAt: null, series: [] }
+
+      let cum = 0
+      const series = downsample(st.series).map(v => Math.round((cum += v) * 100) / 100)
+
+      return {
+        ...s,
+        count: st.count,
+        winRate: st.count > 0 ? (st.wins / st.count) * 100 : 0,
+        netPnl: Math.round(st.pnl * 100) / 100,
+        netPnlUsd: Math.round(st.pnlUsd * 100) / 100,
+        losses: st.losses,
+        profitFactor: st.lossPnl > 0 ? st.winPnl / st.lossPnl : st.winPnl > 0 ? 99 : 0,
+        avgWin: st.wins > 0 ? st.winPnl / st.wins : 0,
+        avgLoss: st.losses > 0 ? st.lossPnl / st.losses : 0,
+        avgR: st.rCount > 0 ? st.rSum / st.rCount : 0,
+        best: st.best === -Infinity ? 0 : st.best,
+        worst: st.worst === Infinity ? 0 : st.worst,
+        recentCount: st.recentCount,
+        lastTradeAt: st.lastTradeAt,
+        series,
+      }
+    })
+
+    return NextResponse.json(enrichedSetups)
+  } catch (error) {
+    console.error("[SETUPS_GET]", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
-
-  // Finalize cumulative series (downsampled to max 40 points)
-  const downsample = (arr: number[], max = 40) => {
-    if (arr.length <= max) return arr
-    const bucket = Math.ceil(arr.length / max)
-    const out: number[] = []
-    for (let i = 0; i < arr.length; i += bucket) {
-      out.push(arr.slice(i, i + bucket).reduce((s, v) => s + v, 0))
-    }
-    return out
-  }
-
-  const enrichedSetups = setups.map((s) => {
-    const st = stats[s.name.toLowerCase()] || { count: 0, wins: 0, losses: 0, pnl: 0, pnlUsd: 0, winPnl: 0, lossPnl: 0, rSum: 0, rCount: 0, best: 0, worst: 0, recentCount: 0, lastTradeAt: null, series: [] }
-
-    let cum = 0
-    const series = downsample(st.series).map(v => Math.round((cum += v) * 100) / 100)
-
-    return {
-      ...s,
-      count: st.count,
-      winRate: st.count > 0 ? (st.wins / st.count) * 100 : 0,
-      netPnl: Math.round(st.pnl * 100) / 100,
-      netPnlUsd: Math.round(st.pnlUsd * 100) / 100,
-      losses: st.losses,
-      profitFactor: st.lossPnl > 0 ? st.winPnl / st.lossPnl : st.winPnl > 0 ? 99 : 0,
-      avgWin: st.wins > 0 ? st.winPnl / st.wins : 0,
-      avgLoss: st.losses > 0 ? st.lossPnl / st.losses : 0,
-      avgR: st.rCount > 0 ? st.rSum / st.rCount : 0,
-      best: st.best === -Infinity ? 0 : st.best,
-      worst: st.worst === Infinity ? 0 : st.worst,
-      recentCount: st.recentCount,
-      lastTradeAt: st.lastTradeAt,
-      series,
-    }
-  })
-
-  return NextResponse.json(enrichedSetups)
 }
 
 export async function POST(req: Request) {

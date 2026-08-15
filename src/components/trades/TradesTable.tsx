@@ -60,18 +60,6 @@ export function TradesTable({
   const searchParams = useSearchParams()
 
   const [visible, setVisible] = useState<Record<string, boolean>>(() => {
-    const stored = typeof window !== "undefined" ? localStorage.getItem("trades_columns") : null
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        return TRADE_COLUMNS.reduce((acc: any, c) => {
-          acc[c.key] = parsed[c.key] ?? c.default
-          return acc
-        }, {})
-      } catch {
-        // ignore
-      }
-    }
     return TRADE_COLUMNS.reduce((acc: any, c) => ({ ...acc, [c.key]: c.default }), {})
   })
   const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -79,6 +67,24 @@ export function TradesTable({
   const [bulkOpen, setBulkOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const columnsRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const stored = localStorage.getItem("trades_columns")
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        setVisible(prev => {
+          const next = { ...prev }
+          for (const key of Object.keys(parsed)) {
+            if (key in next) next[key] = parsed[key]
+          }
+          return next
+        })
+      } catch {
+        // ignore
+      }
+    }
+  }, [])
 
   useEffect(() => {
     try {

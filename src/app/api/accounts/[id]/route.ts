@@ -35,9 +35,15 @@ export async function PATCH(
 
     const dataToUpdate: any = {}
     if (name !== undefined) dataToUpdate.name = name
-    if (initialBalance !== undefined) dataToUpdate.initialBalance = parseFloat(initialBalance)
+    if (initialBalance !== undefined) {
+      const v = parseFloat(initialBalance)
+      dataToUpdate.initialBalance = isNaN(v) ? 0 : v
+    }
     if (isDefault !== undefined) dataToUpdate.isDefault = isDefault
-    if (fxRateToUsd !== undefined) dataToUpdate.fxRateToUsd = parseFloat(fxRateToUsd)
+    if (fxRateToUsd !== undefined) {
+      const v = parseFloat(fxRateToUsd)
+      dataToUpdate.fxRateToUsd = isNaN(v) ? 1 : v
+    }
 
     const updatedAccount = await prisma.tradingAccount.update({
       where: { id: accountId },
@@ -47,6 +53,7 @@ export async function PATCH(
     // Recompute netPnlUsd for all closed trades when the FX rate changes
     if (fxRateToUsd !== undefined) {
       const rate = parseFloat(fxRateToUsd)
+      if (isNaN(rate)) return NextResponse.json(updatedAccount)
       const trades = await prisma.trade.findMany({
         where: { accountId: accountId, netPnl: { not: null } },
         select: { id: true, netPnl: true },

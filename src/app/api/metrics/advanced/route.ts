@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getActiveAccount } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 import { dayOfWeek } from "@/lib/dates"
 
 export async function GET(request: Request) {
@@ -11,9 +11,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const account = await getActiveAccount(session.user.id)
-    if (!account) {
-      return NextResponse.json({ error: "No active account found." }, { status: 404 })
+    const url = new URL(request.url)
+    const accountId = url.searchParams.get("accountId") || "all"
+
+    if (accountId !== "all" && !/^[0-9a-f-]{36}$/i.test(accountId)) {
+      return NextResponse.json({ error: "Invalid accountId" }, { status: 400 })
+    }
+
+    const scope = await resolveAccountScope(session.user.id, accountId)
+
+    if (scope.accounts.length === 0) {
+      return NextResponse.json({ empty: true })
     }
 
     const user = await prisma.user.findUnique({
@@ -23,17 +31,14 @@ export async function GET(request: Request) {
     const timezone = user?.timezone ?? "UTC"
 
     // ── Filters ──────────────────────────────────────────────────────────
-    const url = new URL(request.url)
     const period = url.searchParams.get("period") || "all"
     const symbol = url.searchParams.get("symbol") || ""
     const setup = url.searchParams.get("setup") || ""
     const side = url.searchParams.get("side") || ""
 
-    const where: any = {
-      userId: session.user.id,
-      accountId: account.id,
-      status: "closed",
-    }
+    const where: any = scope.all
+      ? { userId: session.user.id, status: "closed" }
+      : { accountId: scope.accounts[0].id, status: "closed" }
     if (period && period !== "all") {
       const now = new Date()
       if (period === "7d") where.entryAt = { gte: new Date(now.getTime() - 7 * 86400000) }

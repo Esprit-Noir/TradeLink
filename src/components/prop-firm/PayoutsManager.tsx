@@ -33,7 +33,11 @@ export function PayoutsManager() {
   // Register form
   const [challengeId, setChallengeId] = useState("")
   const [amount, setAmount] = useState("")
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState("")
+
+  useEffect(() => {
+    setDate(new Date().toISOString().slice(0, 10))
+  }, [])
   const [note, setNote] = useState("")
   const [saving, setSaving] = useState(false)
 

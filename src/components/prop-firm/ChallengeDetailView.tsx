@@ -63,8 +63,9 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
 
   const isBreached = challenge.status === 'failed' || challenge.status === 'breached'
   const isPassed = challenge.status === 'passed'
+  const now = Date.now()
   const daysRemaining = challenge.deadlineAt
-    ? Math.ceil((new Date(challenge.deadlineAt).getTime() - Date.now()) / 86400000)
+    ? Math.ceil((new Date(challenge.deadlineAt).getTime() - now) / 86400000)
     : null
 
   const events: any[] = Array.isArray(challenge.events) ? challenge.events : []

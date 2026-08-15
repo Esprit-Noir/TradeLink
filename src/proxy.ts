@@ -5,7 +5,7 @@ const PUBLIC_ROUTES = ["/login", "/register", "/"]
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
-  
+
   if (
     PUBLIC_ROUTES.some((r) => pathname === r) ||
     pathname.startsWith("/_next") ||
@@ -15,9 +15,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Vérification simple du cookie pour éviter d'importer Prisma dans l'Edge Runtime
-  const hasSession = request.cookies.has("authjs.session-token") || request.cookies.has("__Secure-authjs.session-token")
-  
+  const hasSession =
+    request.cookies.has("authjs.session-token") ||
+    request.cookies.has("__Secure-authjs.session-token")
+
   if (!hasSession) {
     const loginUrl = new URL("/login", request.url)
     loginUrl.searchParams.set("callbackUrl", pathname)

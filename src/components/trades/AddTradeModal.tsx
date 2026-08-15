@@ -19,18 +19,26 @@ export function AddTradeModal() {
 
   const [formData, setFormData] = useState({
     symbol: "",
-    instrumentType: "CRYPTO",
+    instrumentType: "stock",
     side: "LONG",
     quantity: "",
     entryPrice: "",
     exitPrice: "",
-    entryAt: new Date().toISOString().slice(0, 16),
-    exitAt: new Date().toISOString().slice(0, 16),
+    entryAt: "",
+    exitAt: "",
     fees: "0",
     setupTags: "",
     emotionTags: "",
     notesPost: "",
   })
+
+  useEffect(() => {
+    setFormData(prev => {
+      if (prev.entryAt) return prev
+      const now = new Date().toISOString().slice(0, 16)
+      return { ...prev, entryAt: now, exitAt: now }
+    })
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -152,10 +160,12 @@ export function AddTradeModal() {
                 <div className="form-group">
                   <label className="label">Instrument Type</label>
                   <select name="instrumentType" value={formData.instrumentType} onChange={handleChange} className="input select">
-                    <option value="CRYPTO">Crypto</option>
-                    <option value="FOREX">Forex</option>
-                    <option value="STOCKS">Stocks</option>
-                    <option value="FUTURES">Futures</option>
+                    <option value="stock">Stocks</option>
+                    <option value="forex">Forex</option>
+                    <option value="crypto">Crypto</option>
+                    <option value="futures">Futures</option>
+                    <option value="options">Options</option>
+                    <option value="indices">Indices</option>
                   </select>
                 </div>
                 <div className="form-group">

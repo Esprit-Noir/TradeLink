@@ -46,6 +46,7 @@ type Badge = {
 export function PropBadges() {
   const [badges, setBadges] = useState<Badge[]>([])
   const [activeChallenges, setActiveChallenges] = useState<ActiveChallenge[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetch("/api/prop-firms/report")
@@ -62,8 +63,10 @@ export function PropBadges() {
         setBadges(list)
       })
       .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
+  if (loading) return <div className="skeleton" style={{ height: 120 }} />
   if (badges.length === 0) return null
 
   const earnedCount = badges.filter(b => b.earned).length

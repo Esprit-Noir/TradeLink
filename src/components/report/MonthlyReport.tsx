@@ -41,16 +41,16 @@ const PDF_SECTIONS = [
   { key: "summary", label: "Summary" },
   { key: "daily", label: "Daily P&L" },
   { key: "setups", label: "Top setups" },
-  { key: "symbols", label: "Top symbols" },
-  { key: "hours", label: "Hours" },
-  { key: "dow", label: "Days of week" },
+  { key: "symbols", label: "Top Symbols" },
+  { key: "hours", label: "Hourly Performance" },
+  { key: "dow", label: "Day of Week" },
   { key: "payouts", label: "Payouts" },
 ] as const
 
 type PdfSection = (typeof PDF_SECTIONS)[number]["key"]
 
 export function MonthlyReport() {
-  const [month, setMonth] = useState(currentMonth())
+  const [month, setMonth] = useState(currentMonth)
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [pdfSections, setPdfSections] = useState<PdfSection[]>(PDF_SECTIONS.map(s => s.key))
