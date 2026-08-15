@@ -28,7 +28,8 @@ import {
   FileText,
   Bell,
   Menu,
-  X
+  X,
+  Eye
 } from "lucide-react"
 
 type SidebarStats = {
@@ -84,6 +85,7 @@ export function Sidebar({
     {
       section: "Overview",
       items: [
+        { href: "/overview",   label: "Overview",    icon: () => <Eye {...iconProps} /> },
         { href: "/dashboard", label: "Dashboard", icon: () => <LayoutDashboard {...iconProps} /> },
         { href: "/accounts",  label: "Accounts",  icon: () => <Wallet {...iconProps} /> },
         { href: "/calendar",  label: "Calendar",  icon: () => <CalendarDays {...iconProps} /> },

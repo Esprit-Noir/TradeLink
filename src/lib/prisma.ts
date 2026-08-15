@@ -10,7 +10,12 @@ const globalForPrisma = globalThis as unknown as {
 const connectionString = process.env.DATABASE_URL!
 
 // Setup the PostgreSQL connection pool
-const pool = new Pool({ connectionString })
+const pool = new Pool({
+  connectionString,
+  connectionTimeoutMillis: 10000,
+  idleTimeoutMillis: 30000,
+  max: 5,
+})
 const adapter = new PrismaPg(pool)
 
 const base = new PrismaClient({
