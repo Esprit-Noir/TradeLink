@@ -165,7 +165,7 @@ export function NotificationBell() {
         <div style={{
           position: "absolute",
           top: 34,
-          left: 0,
+          right: 0,
           width: 320,
           maxWidth: "85vw",
           background: "var(--color-gray-900)",

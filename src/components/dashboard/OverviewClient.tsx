@@ -183,7 +183,7 @@ export function OverviewClient({ username }: { username?: string }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {[
                 { href: "/trades", icon: Plus, color: "var(--color-profit)", bg: "var(--color-profit-muted)", label: "New Trade", desc: "Log a trade" },
-                { href: "/journal", icon: BookOpen, color: "var(--color-info)", bg: "rgba(59,130,246,0.12)", label: "Journal Entry", desc: "Write a note" },
+                { href: `/journal/${today.toISOString().split("T")[0]}`, icon: BookOpen, color: "var(--color-info)", bg: "rgba(59,130,246,0.12)", label: "Journal Entry", desc: "Write a note" },
                 { href: "/stats", icon: LineChart, color: "#8B5CF6", bg: "rgba(139,92,246,0.12)", label: "Analytics", desc: "Deep dive" },
                 { href: "/calendar", icon: Calendar, color: "var(--color-warning)", bg: "rgba(245,158,11,0.12)", label: "Calendar", desc: "See today" },
               ].map(a => {
