@@ -19,8 +19,10 @@ model User {
   baseCurrency String   @default("USD") @map("base_currency")
   onboarded    Boolean  @default(false)
   dailyGoal    Decimal? @db.Decimal(15,2) @map("daily_goal")
+  monthlyGoal  Decimal? @db.Decimal(15,2) @map("monthly_goal")
   notificationPrefs Json? @map("notification_prefs")
-  createdAt    DateTime @default(now()) @map("created_at")
+  riskPrefs        Json?  @map("risk_prefs") // { dailyLossLimit, maxTradesPerDay, maxConsecutiveLosses, maxRiskPerTradePct }
+  createdAt        DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   accounts             TradingAccount[]
@@ -28,6 +30,9 @@ model User {
   propChallenges       PropChallenge[]
   setups               TradingSetup[]
   dailyJournals        DailyJournal[]
+  achievements         UserAchievement[]
+  backtestSessions     BacktestSession[]
+  watchlist            WatchlistItem[]
 
   @@map("users")
 }
@@ -114,16 +119,20 @@ model Trade {
 
   // Meta
   status         String   @default("closed") // open | closed
-  importSource   String   @default("manual") @map("import_source") // manual | csv | api
+  importSource   String   @default("manual") @map("import_source") // manual | csv | api | backtest
+  source         String   @default("live") // live | backtest — permet d'exclure les trades de backtest des stats réelles
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
   account        TradingAccount  @relation(fields: [accountId], references: [id], onDelete: Cascade)
   screenshots    TradeScreenshot[]
+  backtestSession BacktestSession? @relation(fields: [backtestSessionId], references: [id], onDelete: Cascade)
+  backtestSessionId String? @map("backtest_session_id")
 
   @@unique([accountId, externalId]) // déduplication broker
   @@index([userId, entryAt(sort: Desc)])
   @@index([accountId])
+  @@index([backtestSessionId])
   @@map("trades")
 }
 
@@ -303,6 +312,9 @@ model DailyJournal {
   sessionPlan     String?  @db.Text
   endOfDaySummary String?  @db.Text
   rating          Int?     // 1 to 5 stars
+  sleepHours      Int?     @map("sleep_hours")
+  disciplineChecks Json?   @map("discipline_checks")
+  nightReflection String?  @db.Text @map("night_reflection")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -310,4 +322,75 @@ model DailyJournal {
 
   @@unique([userId, date])
   @@map("daily_journals")
+}
+
+// ─── WATCHLIST ────────────────────────────────────────────────────────────────
+model WatchlistItem {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  symbol      String
+  displayName String?  @map("display_name")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol])
+  @@index([userId, sortOrder])
+  @@map("watchlist_items")
+}
+
+// ─── BACKTEST SESSIONS ───────────────────────────────────────────────────────
+model BacktestSession {
+  id            String   @id @default(cuid())
+  userId        String   @map("user_id")
+  symbol        String
+  timeframe     String // 1m, 5m, 15m, 1h, 4h, 1D
+  from          DateTime
+  to            DateTime
+  strategyName  String?  @map("strategy_name")
+  initialBalance Decimal @default(10000) @map("initial_balance") @db.Decimal(15, 2)
+  closedPnl     Decimal? @map("closed_pnl") @db.Decimal(15, 4)
+  winRate       Decimal? @map("win_rate") @db.Decimal(5, 2)
+  tradesCount   Int      @default(0) @map("trades_count")
+  totalR        Decimal? @map("total_r") @db.Decimal(10, 2)
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades        Trade[]
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("backtest_sessions")
+}
+
+// ─── ACHIEVEMENTS ────────────────────────────────────────────────────────────
+model Achievement {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String
+  icon        String
+  category    String   @default("general") // general, consistency, prop, journal, skill
+  target      Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  unlocks     UserAchievement[]
+
+  @@map("achievements")
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String      @map("user_id")
+  achievementId String      @map("achievement_id")
+  unlockedAt    DateTime    @default(now()) @map("unlocked_at")
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@map("user_achievements")
 }

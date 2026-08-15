@@ -1,26 +1,30 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getActiveAccount } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { cookies } from "next/headers"
 
 export async function RecentTradesTable({
-  dateRange
+  dateRange,
+  accountId,
 }: {
   dateRange?: { from?: Date; to?: Date }
+  accountId?: string | null | "all"
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
-  const account = await getActiveAccount(session.user.id)
-  
+  const scope = await resolveAccountScope(session.user.id, accountId)
+
   const cookieStore = await cookies()
   const density = cookieStore.get("ui_density")?.value === "compact" ? "compact" : "comfortable"
 
-  if (!account) return <EmptyTable />
+  if (scope.accounts.length === 0) return <EmptyTable />
 
-  const whereClause: any = { accountId: account.id, status: "closed" }
+  const whereClause: any = scope.all
+    ? { userId: session.user.id, status: "closed" }
+    : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {
     whereClause.entryAt = {}
     if (dateRange.from) whereClause.entryAt.gte = dateRange.from
@@ -34,6 +38,7 @@ export async function RecentTradesTable({
   })
 
   if (trades.length === 0) return <EmptyTable />
+  const currency = scope.currency
 
   return (
     <div className="table-wrapper">
@@ -70,14 +75,14 @@ export async function RecentTradesTable({
                   {t.side}
                 </span>
               </td>
-              <td>{formatCurrency(Number(t.entryPrice), account.baseCurrency, false, 2)}</td>
-              <td>{t.exitPrice ? formatCurrency(Number(t.exitPrice), account.baseCurrency, false, 2) : "—"}</td>
+              <td>{formatCurrency(Number(t.entryPrice), currency, false, 2)}</td>
+              <td>{t.exitPrice ? formatCurrency(Number(t.exitPrice), currency, false, 2) : "—"}</td>
               <td style={{ textAlign: "right" }}>
                 <span style={{ 
                   fontWeight: 600, 
                   color: Number(t.netPnl) > 0 ? "var(--color-profit)" : Number(t.netPnl) < 0 ? "var(--color-loss)" : "inherit" 
                 }}>
-                  {formatCurrency(Number(t.netPnl), account.baseCurrency, true, 2)}
+                  {formatCurrency(Number(t.netPnl), currency, true, 2)}
                 </span>
               </td>
             </tr>

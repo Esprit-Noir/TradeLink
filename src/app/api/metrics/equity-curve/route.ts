@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { computeEquityCurve } from "@/lib/metrics"
 import { NextResponse } from "next/server"
-import { getActiveAccount } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 
 export async function GET(request: Request) {
   try {
@@ -13,15 +13,16 @@ export async function GET(request: Request) {
     const period = searchParams.get("period") || "all"
     const from = searchParams.get("from")
     const to = searchParams.get("to")
+    const accountId = searchParams.get("accountId")
 
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const account = await getActiveAccount(session.user.id)
+    const scope = await resolveAccountScope(session.user.id, accountId)
 
-    if (!account) {
+    if (scope.accounts.length === 0) {
       return NextResponse.json({ data: [] })
     }
 
@@ -30,7 +31,9 @@ export async function GET(request: Request) {
       select: { timezone: true },
     })
 
-    const whereClause: any = { accountId: account.id, status: "closed" }
+    const whereClause: any = scope.all
+      ? { userId: session.user.id, status: "closed" }
+      : { accountId: scope.accounts[0].id, status: "closed" }
 
     let fromDate: Date | undefined
     let toDate: Date | undefined
@@ -65,7 +68,7 @@ export async function GET(request: Request) {
       orderBy: { exitAt: "asc" },
     })
 
-    const data = computeEquityCurve(trades, Number(account.initialBalance ?? 0), user?.timezone ?? "UTC")
+    const data = computeEquityCurve(trades, scope.baseBalance, user?.timezone ?? "UTC")
     return NextResponse.json({ data })
   } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

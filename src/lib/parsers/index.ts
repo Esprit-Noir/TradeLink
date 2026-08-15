@@ -4,10 +4,11 @@
 import { ibParser, type ParsedTrade } from "./ib.parser"
 import { binanceParser } from "./binance.parser"
 import { bybitParser } from "./bybit.parser"
+import { metatraderParser } from "./metatrader.parser"
 
 export type { ParsedTrade }
 
-export type Broker = "interactive_brokers" | "binance" | "bybit" | "unknown"
+export type Broker = "interactive_brokers" | "binance" | "bybit" | "metatrader" | "generic" | "unknown"
 
 export interface ParseResult {
   broker: Broker
@@ -21,6 +22,8 @@ const BROKER_FINGERPRINTS: Record<Broker, string[]> = {
   interactive_brokers: ["ClientAccountID", "TradeID", "Symbol", "Buy/Sell", "TradePrice"],
   binance: ["Order ID", "Pair", "Side", "Average Price", "Filled"],
   bybit: ["Order ID", "Symbol", "Side", "Order Price", "Order Qty"],
+  metatrader: ["Ticket", "Type", "Size", "Profit"],
+  generic: [],
   unknown: [],
 }
 
@@ -28,7 +31,7 @@ export function detectBroker(headers: string[]): Broker {
   const headerSet = new Set(headers.map((h) => h.trim()))
 
   for (const [broker, fingerprint] of Object.entries(BROKER_FINGERPRINTS) as [Broker, string[]][]) {
-    if (broker === "unknown") continue
+    if (broker === "unknown" || broker === "generic") continue
     const matches = fingerprint.filter((col) => headerSet.has(col)).length
     if (matches >= Math.ceil(fingerprint.length * 0.6)) return broker
   }
@@ -55,11 +58,13 @@ export async function parseCSV(csvText: string, forceBroker?: Broker): Promise<P
       return binanceParser(csvText)
     case "bybit":
       return bybitParser(csvText)
+    case "metatrader":
+      return metatraderParser(csvText)
     default:
       return {
         broker: "unknown",
         trades: [],
-        errors: [{ row: 0, message: "Broker format not recognized. Supported: Interactive Brokers, Binance, Bybit." }],
+        errors: [{ row: 0, message: "Broker format not recognized. Supported: Interactive Brokers, Binance, Bybit, MetaTrader." }],
         totalRows: lines.length - 1,
       }
   }

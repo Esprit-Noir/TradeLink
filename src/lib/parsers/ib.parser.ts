@@ -10,10 +10,10 @@ const REQUIRED_COLS = ["Symbol", "Date/Time", "Quantity", "T. Price", "Comm/Fee"
 export interface ParsedTrade {
   externalId?: string
   symbol: string
-  instrumentType: string
-  side: "long" | "short"
+  instrumentType?: string
+  side: "long" | "short" | "LONG" | "SHORT"
   quantity: number
-  entryPrice: number
+  entryPrice?: number
   exitPrice?: number
   entryAt: Date
   exitAt?: Date
@@ -21,6 +21,7 @@ export interface ParsedTrade {
   fees: number
   netPnl?: number
   session?: string
+  status?: "open" | "closed"
   importSource: "csv"
 }
 

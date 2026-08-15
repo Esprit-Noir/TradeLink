@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     if (accountId) {
       account = await prisma.tradingAccount.findUnique({
         where: { id: accountId },
-        select: { id: true, userId: true, name: true },
+        select: { id: true, userId: true, name: true, type: true },
       })
       if (!account || account.userId !== session.user.id) {
         return NextResponse.json({ error: "Account not found" }, { status: 404 })
@@ -52,6 +52,9 @@ export async function POST(request: Request) {
     const where: any = {
       accountId: account.id,
       status: "closed",
+    }
+    if (account.type === "backtest") {
+      where.includeBacktest = true
     }
     if (startDate) where.exitAt = { gte: new Date(`${startDate}T00:00:00`) }
     if (endDate) where.exitAt = { ...(where.exitAt || {}), lte: new Date(`${endDate}T23:59:59.999`) }

@@ -2,11 +2,9 @@ import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { AddTradeModal } from "@/components/trades/AddTradeModal"
-import { DeleteTradeButton } from "@/components/trades/DeleteTradeButton"
 import { TradesFilter } from "@/components/trades/TradesFilter"
-import { TradeRow } from "@/components/trades/TradeRow"
+import { TradesTable } from "@/components/trades/TradesTable"
 import { TradeDetailsDrawer } from "@/components/trades/TradeDetailsDrawer"
-import Link from "next/link"
 import { getActiveAccount } from "@/lib/active-account"
 import { cookies } from "next/headers"
 
@@ -16,36 +14,45 @@ export const metadata = {
 
 const ITEMS_PER_PAGE = 20
 
+const SORTABLE: Record<string, "asc" | "desc"> = {
+  entryAt: "desc",
+  symbol: "asc",
+  side: "asc",
+  quantity: "asc",
+  entryPrice: "asc",
+  exitPrice: "asc",
+  netPnl: "asc",
+}
+
 export default async function TradesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; tradeId?: string }>
+  searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; status?: string; tradeId?: string; sort?: string; dir?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
   const account = await getActiveAccount(session.user.id)
-  
+
   const cookieStore = await cookies()
   const density = cookieStore.get("ui_density")?.value === "compact" ? "compact" : "comfortable"
 
-  let trades: any[] = []
-  let totalTrades = 0
-  
   const searchParamsObj = await searchParams
   const currentPage = Number(searchParamsObj?.page) || 1
   const skip = (currentPage - 1) * ITEMS_PER_PAGE
 
-  // Always scope to the authenticated user for security
   const whereClause: any = { userId: session.user.id }
   if (account) whereClause.accountId = account.id
-  
+
   if (searchParamsObj?.symbol) {
     whereClause.symbol = { contains: searchParamsObj.symbol, mode: "insensitive" }
   }
   if (searchParamsObj?.side) {
     whereClause.side = searchParamsObj.side
+  }
+  if (searchParamsObj?.status) {
+    whereClause.status = searchParamsObj.status
   }
 
   if (searchParamsObj?.result) {
@@ -76,16 +83,48 @@ export default async function TradesPage({
     }
   }
 
-  totalTrades = await prisma.trade.count({ where: whereClause })
-  trades = await prisma.trade.findMany({
+  const rawSort = searchParamsObj?.sort
+  const sortKey: string = rawSort && SORTABLE[rawSort] ? rawSort : "entryAt"
+  const sortDir: "asc" | "desc" = searchParamsObj?.dir === "asc" ? "asc" : SORTABLE[rawSort || "entryAt"] === "asc" ? "asc" : "desc"
+
+  // Filtered-set totals (independent of pagination)
+  const [agg, winCount, lossCount] = await Promise.all([
+    prisma.trade.aggregate({ where: whereClause, _sum: { netPnl: true }, _count: true }),
+    prisma.trade.count({ where: { ...whereClause, netPnl: { gt: 0 } } }),
+    prisma.trade.count({ where: { ...whereClause, netPnl: { lt: 0 } } }),
+  ])
+
+  const totals = {
+    count: agg._count,
+    netPnl: Number(agg._sum.netPnl || 0),
+    wins: winCount,
+    losses: lossCount,
+  }
+
+  const trades = await prisma.trade.findMany({
     where: whereClause,
-    orderBy: { entryAt: "desc" },
+    orderBy: { [sortKey]: sortDir },
     skip,
     take: ITEMS_PER_PAGE,
-    include: { screenshots: true }
+    include: { screenshots: true },
   })
 
+  const totalTrades = totals.count
   const totalPages = Math.ceil(totalTrades / ITEMS_PER_PAGE)
+
+  const serialized = trades.map((t) => ({
+    ...t,
+    quantity: Number(t.quantity || 0),
+    entryPrice: Number(t.entryPrice || 0),
+    exitPrice: t.exitPrice ? Number(t.exitPrice) : null,
+    grossPnl: t.grossPnl ? Number(t.grossPnl) : null,
+    fees: Number(t.fees || 0),
+    netPnl: t.netPnl ? Number(t.netPnl) : null,
+    netPnlUsd: t.netPnlUsd ? Number(t.netPnlUsd) : null,
+    stopLoss: t.stopLoss ? Number(t.stopLoss) : null,
+    riskAmount: t.riskAmount ? Number(t.riskAmount) : null,
+    screenshots: (t.screenshots || []).map((s: any) => s),
+  }))
 
   return (
     <div>
@@ -103,83 +142,19 @@ export default async function TradesPage({
         <TradesFilter />
       </Suspense>
 
-      <div className="table-wrapper">
-        <table className={`data-table ${density}`}>
-          <thead>
-            <tr>
-              <th>Entry Time</th>
-              <th>Symbol</th>
-              <th>Instrument</th>
-              <th>Side</th>
-              <th>Qty</th>
-              <th>Entry Price</th>
-              <th>Exit Price</th>
-              <th style={{ textAlign: "right" }}>Net P&L</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {trades.length === 0 ? (
-              <tr>
-                <td colSpan={9} style={{ textAlign: "center", padding: "3rem" }}>
-                  <div className="empty-state">
-                    <p>No trades found.</p>
-                  </div>
-                </td>
-              </tr>
-            ) : (
-              trades.map((t) => {
-                const serializedTrade = {
-                  ...t,
-                  quantity: t.quantity ? Number(t.quantity) : 0,
-                  entryPrice: t.entryPrice ? Number(t.entryPrice) : 0,
-                  exitPrice: t.exitPrice ? Number(t.exitPrice) : null,
-                  grossPnl: t.grossPnl ? Number(t.grossPnl) : null,
-                  fees: t.fees ? Number(t.fees) : 0,
-                  netPnl: t.netPnl ? Number(t.netPnl) : null,
-                  netPnlUsd: t.netPnlUsd ? Number(t.netPnlUsd) : null,
-                  stopLoss: t.stopLoss ? Number(t.stopLoss) : null,
-                  riskAmount: t.riskAmount ? Number(t.riskAmount) : null,
-                }
-                return <TradeRow key={t.id} trade={serializedTrade} timezone={user?.timezone} baseCurrency={account?.baseCurrency} />
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem", padding: "0.5rem" }}>
-          <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)" }}>
-            Showing {skip + 1} to {Math.min(skip + ITEMS_PER_PAGE, totalTrades)} of {totalTrades} trades
-          </div>
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            {currentPage > 1 ? (
-              <Link href={`/trades?page=${currentPage - 1}`} className="btn btn-secondary">
-                Previous
-              </Link>
-            ) : (
-              <button className="btn btn-secondary" disabled style={{ opacity: 0.5, cursor: "not-allowed" }}>
-                Previous
-              </button>
-            )}
-            
-            <div style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", color: "var(--color-gray-200)" }}>
-              Page {currentPage} of {totalPages}
-            </div>
-
-            {currentPage < totalPages ? (
-              <Link href={`/trades?page=${currentPage + 1}`} className="btn btn-secondary">
-                Next
-              </Link>
-            ) : (
-              <button className="btn btn-secondary" disabled style={{ opacity: 0.5, cursor: "not-allowed" }}>
-                Next
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      <TradesTable
+        trades={serialized}
+        totals={totals}
+        density={density}
+        timezone={user?.timezone}
+        baseCurrency={account?.baseCurrency}
+        sortKey={sortKey}
+        sortDir={sortDir}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalTrades={totalTrades}
+        itemsPerPage={ITEMS_PER_PAGE}
+      />
 
       <Suspense fallback={null}>
         <TradeDetailsDrawer />

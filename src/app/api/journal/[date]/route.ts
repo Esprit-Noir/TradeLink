@@ -45,7 +45,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ date: s
     }
 
     const body = await req.json()
-    const { mood, macroContext, sessionPlan, endOfDaySummary, rating } = body
+    const { mood, macroContext, sessionPlan, endOfDaySummary, rating, sleepHours, disciplineChecks, nightReflection } = body
 
     const journal = await prisma.dailyJournal.upsert({
       where: {
@@ -60,6 +60,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ date: s
         sessionPlan,
         endOfDaySummary,
         rating: rating !== undefined ? Number(rating) : null,
+        sleepHours: sleepHours !== undefined ? Number(sleepHours) : null,
+        disciplineChecks: disciplineChecks !== undefined ? disciplineChecks : undefined,
+        nightReflection: nightReflection !== undefined ? nightReflection : undefined,
       },
       create: {
         userId: session.user.id,
@@ -69,6 +72,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ date: s
         sessionPlan,
         endOfDaySummary,
         rating: rating !== undefined ? Number(rating) : null,
+        sleepHours: sleepHours !== undefined ? Number(sleepHours) : null,
+        disciplineChecks: disciplineChecks !== undefined ? disciplineChecks : undefined,
+        nightReflection: nightReflection !== undefined ? nightReflection : undefined,
       },
     })
 

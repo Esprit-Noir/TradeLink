@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         id: acc.id,
         name: acc.name,
         broker: acc.broker,
-        type: acc.type,
+        type: acc.type === "backtest" ? "demo" : acc.type,
         baseCurrency: acc.baseCurrency,
         fxRateToUsd: acc.fxRateToUsd ? Number(acc.fxRateToUsd) : 1,
         initialBalance: acc.initialBalance ? Number(acc.initialBalance) : 0,

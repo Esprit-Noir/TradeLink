@@ -144,29 +144,37 @@ export function ChallengeDetailPage({
 
   return (
     <>
-      <div style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+      <div style={{ 
+        padding: "1.25rem 1.5rem", borderRadius: "8px", marginBottom: "2rem", 
+        display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1.5rem", 
+        background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)"
+      }}>
+        
+        <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
           <button
             onClick={() => router.push("/challenges")}
             className="btn btn-outline"
-            style={{ padding: "0.4rem 0.8rem", fontSize: "0.85rem" }}
+            style={{ padding: "0.5rem 0.75rem", fontSize: "0.85rem", color: "var(--color-gray-300)" }}
+            title="Back to Challenges"
           >
             &larr; Back
           </button>
           {challenge.template?.logoUrl && (
             <div style={{
-              width: "40px", height: "40px", borderRadius: "8px",
+              width: "44px", height: "44px", borderRadius: "6px",
               background: "var(--color-gray-800)", border: "1px solid var(--color-gray-700)",
-              display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+              display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden"
             }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={challenge.template.logoUrl} alt={`${challenge.template.firmName} logo`} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+              <img src={challenge.template.logoUrl} alt={`${challenge.template.firmName} logo`} style={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
             </div>
           )}
           <div>
-            <h1 style={{ fontSize: "1.4rem", fontWeight: 700 }}>{challenge.account.name}</h1>
-            <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)" }}>
-              {challenge.template.firmName} — {challenge.template.programName}
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{challenge.account.name}</h1>
+            <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", fontWeight: 500, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span>{challenge.template.firmName}</span>
+              <span style={{ color: "var(--color-gray-600)" }}>&bull;</span>
+              <span>{challenge.template.programName}</span>
             </div>
           </div>
         </div>

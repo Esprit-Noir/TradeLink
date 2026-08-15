@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { ProfileManager } from "./ProfileManager"
+import { AchievementsSection } from "@/components/achievements/AchievementsSection"
+import { DangerZone } from "./DangerZone"
 import { cookies } from "next/headers"
 
 export const metadata = {
@@ -42,10 +44,16 @@ export default async function ProfilePage() {
         </div>
       </div>
       <ProfileManager
-        user={{ ...user, dailyGoal: user.dailyGoal ? Number(user.dailyGoal) : null } as any}
+        user={{ ...user, dailyGoal: user.dailyGoal ? Number(user.dailyGoal) : null, monthlyGoal: user.monthlyGoal ? Number(user.monthlyGoal) : null } as any}
         initialDensity={uiDensity}
         stats={{ accounts: accountCount, challenges: challengeCount, setups: setupCount, journals: journalCount, trades: tradeCount }}
       />
+      <div style={{ marginTop: "1.5rem" }}>
+        <AchievementsSection />
+      </div>
+      <div style={{ marginTop: "1.5rem" }}>
+        <DangerZone />
+      </div>
     </div>
   )
 }

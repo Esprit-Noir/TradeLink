@@ -68,6 +68,10 @@ export async function GET(request: Request) {
     const dayMap = new Map<string, { date: string; pnl: number; pnlUsd: number; trades: number }>()
     const setupMap = new Map<string, { name: string; count: number; pnl: number; wins: number }>()
     const symbolMap = new Map<string, { symbol: string; count: number; pnl: number }>()
+    const hourMap = new Map<number, { hour: number; count: number; pnl: number; wins: number }>()
+    const dowMap = new Map<number, { dow: number; count: number; pnl: number; wins: number }>()
+
+    const DOW_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 
     for (const t of trades) {
       const pnl = Number(t.netPnl || 0)
@@ -114,6 +118,36 @@ export async function GET(request: Request) {
         sym.pnl += pnl
       } else {
         symbolMap.set(t.symbol, { symbol: t.symbol, count: 1, pnl })
+      }
+
+      const localParts = new Intl.DateTimeFormat("en-US", {
+        timeZone: timezone,
+        hour: "numeric",
+        hour12: false,
+        weekday: "long",
+      }).formatToParts(t.entryAt)
+      const hourPart = localParts.find(p => p.type === "hour")
+      const dowPart = localParts.find(p => p.type === "weekday")
+      const hour = hourPart ? Number(hourPart.value) % 24 : 0
+      const dowName = dowPart?.value || "Sunday"
+      const dow = DOW_NAMES.indexOf(dowName)
+
+      const h = hourMap.get(hour)
+      if (h) {
+        h.count++
+        h.pnl += pnl
+        if (pnl > 0) h.wins++
+      } else {
+        hourMap.set(hour, { hour, count: 1, pnl, wins: pnl > 0 ? 1 : 0 })
+      }
+
+      const w = dowMap.get(dow)
+      if (w) {
+        w.count++
+        w.pnl += pnl
+        if (pnl > 0) w.wins++
+      } else {
+        dowMap.set(dow, { dow, count: 1, pnl, wins: pnl > 0 ? 1 : 0 })
       }
     }
 
@@ -180,6 +214,10 @@ export async function GET(request: Request) {
       daily,
       setups: [...setupMap.values()].sort((a, b) => b.pnl - a.pnl),
       symbols: [...symbolMap.values()].sort((a, b) => b.pnl - a.pnl),
+      hours: [...hourMap.values()].sort((a, b) => a.hour - b.hour),
+      dow: [...dowMap.values()]
+        .sort((a, b) => a.dow - b.dow)
+        .map(d => ({ ...d, name: DOW_NAMES[d.dow] })),
       challenges: {
         startedCount: started.length,
         startedCost: started.reduce((s, c) => s + Number(c.cost || 0), 0),

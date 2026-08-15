@@ -37,10 +37,24 @@ const P_STATUS: Record<string, { label: string; color: string }> = {
   rejected: { label: "Rejected", color: "var(--color-loss)" },
 }
 
+const PDF_SECTIONS = [
+  { key: "summary", label: "Summary" },
+  { key: "daily", label: "Daily P&L" },
+  { key: "setups", label: "Top setups" },
+  { key: "symbols", label: "Top symbols" },
+  { key: "hours", label: "Hours" },
+  { key: "dow", label: "Days of week" },
+  { key: "payouts", label: "Payouts" },
+] as const
+
+type PdfSection = (typeof PDF_SECTIONS)[number]["key"]
+
 export function MonthlyReport() {
   const [month, setMonth] = useState(currentMonth())
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [pdfSections, setPdfSections] = useState<PdfSection[]>(PDF_SECTIONS.map(s => s.key))
+  const [showPdfOptions, setShowPdfOptions] = useState(false)
 
   const load = useCallback(async (m: string) => {
     setLoading(true)
@@ -79,6 +93,7 @@ export function MonthlyReport() {
     if (!data) return
     const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" })
     const W = doc.internal.pageSize.getWidth()
+    const incl = (k: PdfSection) => pdfSections.includes(k)
 
     doc.setFillColor(15, 17, 23)
     doc.rect(0, 0, W, 70, "F")
@@ -95,72 +110,127 @@ export function MonthlyReport() {
     let y = 90
     const t = data.trades
 
-    doc.setFontSize(13)
-    doc.setFont("helvetica", "bold")
-    doc.text("Performance Summary", 40, y)
-    y += 8
-    autoTable(doc, {
-      startY: y,
-      head: [["Metric", "Value", "Metric", "Value"]],
-      body: [
-        ["Net P&L", fmtMoney(t.totalPnl, true), "P&L (USD)", fmtMoney(t.totalPnlUsd, true)],
-        ["Trades", String(t.total), "Win rate", `${t.winRate.toFixed(1)}%`],
-        ["Wins / Losses", `${t.wins} / ${t.losses}`, "Profit factor", t.profitFactor === 99 ? "∞" : t.profitFactor.toFixed(2)],
-        ["Expectancy", fmtMoney(t.expectancy, true), "Avg R", t.avgR.toFixed(2)],
-        ["Avg win", fmtMoney(t.avgWin, true), "Avg loss", fmtMoney(t.avgLoss, true)],
-        ["Best trade", fmtMoney(t.best, true), "Worst trade", fmtMoney(t.worst, true)],
-        ["Trading days", String(t.tradingDays), "Avg trades / day", t.avgTradesPerDay.toFixed(1)],
-      ],
-      theme: "striped",
-      styles: { fontSize: 8.5, cellPadding: 5 },
-      headStyles: { fillColor: [80, 70, 229], textColor: 255 },
-      columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 210 }, 2: { cellWidth: 130 }, 3: { cellWidth: 210 } },
-    })
+    if (incl("summary")) {
+      doc.setFontSize(13)
+      doc.setFont("helvetica", "bold")
+      doc.text("Performance Summary", 40, y)
+      y += 8
+      autoTable(doc, {
+        startY: y,
+        head: [["Metric", "Value", "Metric", "Value"]],
+        body: [
+          ["Net P&L", fmtMoney(t.totalPnl, true), "P&L (USD)", fmtMoney(t.totalPnlUsd, true)],
+          ["Trades", String(t.total), "Win rate", `${t.winRate.toFixed(1)}%`],
+          ["Wins / Losses", `${t.wins} / ${t.losses}`, "Profit factor", t.profitFactor === 99 ? "∞" : t.profitFactor.toFixed(2)],
+          ["Expectancy", fmtMoney(t.expectancy, true), "Avg R", t.avgR.toFixed(2)],
+          ["Avg win", fmtMoney(t.avgWin, true), "Avg loss", fmtMoney(t.avgLoss, true)],
+          ["Best trade", fmtMoney(t.best, true), "Worst trade", fmtMoney(t.worst, true)],
+          ["Trading days", String(t.tradingDays), "Avg trades / day", t.avgTradesPerDay.toFixed(1)],
+        ],
+        theme: "striped",
+        styles: { fontSize: 8.5, cellPadding: 5 },
+        headStyles: { fillColor: [80, 70, 229], textColor: 255 },
+        columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 210 }, 2: { cellWidth: 130 }, 3: { cellWidth: 210 } },
+      })
 
-    y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as any).lastAutoTable.finalY + 22
+    }
 
-    doc.setFontSize(13)
-    doc.setFont("helvetica", "bold")
-    doc.text("Daily P&L", 40, y)
-    y += 8
-    const dayRows = data.daily
-      .filter((d: any) => d.trades > 0)
-      .map((d: any) => [
-        d.date,
-        `${d.pnl >= 0 ? "+" : ""}$${d.pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
-        `${d.cumPnl >= 0 ? "+" : ""}$${d.cumPnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
-        String(d.trades),
-      ])
-    autoTable(doc, {
-      startY: y,
-      head: [["Date", "P&L", "Cumulative", "Trades"]],
-      body: dayRows,
-      theme: "striped",
-      styles: { fontSize: 8.5, cellPadding: 4 },
-      headStyles: { fillColor: [80, 70, 229], textColor: 255 },
-      columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 150, halign: "right" }, 2: { cellWidth: 150, halign: "right" }, 3: { cellWidth: 70, halign: "right" } },
-    })
+    if (incl("daily")) {
+      doc.setFontSize(13)
+      doc.setFont("helvetica", "bold")
+      doc.text("Daily P&L", 40, y)
+      y += 8
+      const dayRows = data.daily
+        .filter((d: any) => d.trades > 0)
+        .map((d: any) => [
+          d.date,
+          `${d.pnl >= 0 ? "+" : ""}$${d.pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+          `${d.cumPnl >= 0 ? "+" : ""}$${d.cumPnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
+          String(d.trades),
+        ])
+      autoTable(doc, {
+        startY: y,
+        head: [["Date", "P&L", "Cumulative", "Trades"]],
+        body: dayRows,
+        theme: "striped",
+        styles: { fontSize: 8.5, cellPadding: 4 },
+        headStyles: { fillColor: [80, 70, 229], textColor: 255 },
+        columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 150, halign: "right" }, 2: { cellWidth: 150, halign: "right" }, 3: { cellWidth: 70, halign: "right" } },
+      })
 
-    y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as any).lastAutoTable.finalY + 22
+    }
 
-    if (data.setups.length > 0) {
+    if (incl("setups") && data.setups.length > 0) {
       doc.setFontSize(13)
       doc.setFont("helvetica", "bold")
       doc.text("Top Setups", 40, y)
       y += 8
       autoTable(doc, {
         startY: y,
-        head: [["Setup", "Trades", "Wins", "P&L"]],
-        body: data.setups.map((s: any) => [s.name, String(s.count), String(s.wins), fmtMoney(s.pnl, true)]),
+        head: [["Setup", "Trades", "Wins", "Win rate", "P&L"]],
+        body: data.setups.map((s: any) => [s.name, String(s.count), String(s.wins), s.count > 0 ? `${((s.wins / s.count) * 100).toFixed(0)}%` : "—", fmtMoney(s.pnl, true)]),
         theme: "striped",
         styles: { fontSize: 8.5, cellPadding: 4 },
         headStyles: { fillColor: [80, 70, 229], textColor: 255 },
-        columnStyles: { 0: { cellWidth: 220 }, 1: { cellWidth: 90, halign: "right" }, 2: { cellWidth: 90, halign: "right" }, 3: { cellWidth: 130, halign: "right" } },
+        columnStyles: { 0: { cellWidth: 200 }, 1: { cellWidth: 70, halign: "right" }, 2: { cellWidth: 70, halign: "right" }, 3: { cellWidth: 70, halign: "right" }, 4: { cellWidth: 110, halign: "right" } },
       })
       y = (doc as any).lastAutoTable.finalY + 22
     }
 
-    if (data.payouts.length > 0) {
+    if (incl("symbols") && data.symbols.length > 0) {
+      doc.setFontSize(13)
+      doc.setFont("helvetica", "bold")
+      doc.text("Top Symbols", 40, y)
+      y += 8
+      autoTable(doc, {
+        startY: y,
+        head: [["Symbol", "Trades", "P&L"]],
+        body: data.symbols.map((s: any) => [s.symbol, String(s.count), fmtMoney(s.pnl, true)]),
+        theme: "striped",
+        styles: { fontSize: 8.5, cellPadding: 4 },
+        headStyles: { fillColor: [80, 70, 229], textColor: 255 },
+        columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 90, halign: "right" }, 2: { cellWidth: 130, halign: "right" } },
+      })
+      y = (doc as any).lastAutoTable.finalY + 22
+    }
+
+    if (incl("hours") && data.hours.length > 0) {
+      doc.setFontSize(13)
+      doc.setFont("helvetica", "bold")
+      doc.text("Performance by Hour", 40, y)
+      y += 8
+      autoTable(doc, {
+        startY: y,
+        head: [["Hour", "Trades", "Wins", "P&L"]],
+        body: data.hours.map((h: any) => [`${h.hour}:00`, String(h.count), String(h.wins), fmtMoney(h.pnl, true)]),
+        theme: "striped",
+        styles: { fontSize: 8.5, cellPadding: 4 },
+        headStyles: { fillColor: [80, 70, 229], textColor: 255 },
+        columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 90, halign: "right" }, 2: { cellWidth: 90, halign: "right" }, 3: { cellWidth: 130, halign: "right" } },
+      })
+      y = (doc as any).lastAutoTable.finalY + 22
+    }
+
+    if (incl("dow") && data.dow.length > 0) {
+      doc.setFontSize(13)
+      doc.setFont("helvetica", "bold")
+      doc.text("Performance by Day", 40, y)
+      y += 8
+      autoTable(doc, {
+        startY: y,
+        head: [["Day", "Trades", "Wins", "P&L"]],
+        body: data.dow.map((d: any) => [d.name, String(d.count), String(d.wins), fmtMoney(d.pnl, true)]),
+        theme: "striped",
+        styles: { fontSize: 8.5, cellPadding: 4 },
+        headStyles: { fillColor: [80, 70, 229], textColor: 255 },
+        columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 90, halign: "right" }, 2: { cellWidth: 90, halign: "right" }, 3: { cellWidth: 130, halign: "right" } },
+      })
+      y = (doc as any).lastAutoTable.finalY + 22
+    }
+
+    if (incl("payouts") && data.payouts.length > 0) {
       doc.setFontSize(13)
       doc.setFont("helvetica", "bold")
       doc.text("Payouts", 40, y)
@@ -184,6 +254,10 @@ export function MonthlyReport() {
 
     doc.save(`tradelink-report-${month}.pdf`)
     toast.success("PDF report downloaded")
+  }
+
+  const togglePdfSection = (k: PdfSection) => {
+    setPdfSections(prev => (prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]))
   }
 
   const t = data?.trades
@@ -212,9 +286,45 @@ export function MonthlyReport() {
           <button className="btn btn-outline" onClick={exportCsv} disabled={!data}>
             <Download size={15} /> CSV
           </button>
-          <button className="btn btn-outline" onClick={exportPdf} disabled={!data}>
-            <FileText size={15} /> PDF
-          </button>
+          <div style={{ position: "relative" }}>
+            <button className="btn btn-outline" onClick={() => setShowPdfOptions(v => !v)} disabled={!data}>
+              <FileText size={15} /> PDF
+            </button>
+            {showPdfOptions && (
+              <div
+                style={{
+                  position: "absolute", right: 0, top: "calc(100% + 6px)", zIndex: 40,
+                  background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)",
+                  borderRadius: "10px", padding: "0.75rem", minWidth: 180, boxShadow: "0 10px 30px rgba(0,0,0,0.4)",
+                }}
+              >
+                <div style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "var(--color-gray-500)", marginBottom: "0.5rem" }}>
+                  Include in PDF
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                  {PDF_SECTIONS.map(s => (
+                    <label key={s.key} style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem", color: "var(--color-gray-300)", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        checked={pdfSections.includes(s.key)}
+                        onChange={() => togglePdfSection(s.key)}
+                        style={{ accentColor: "var(--color-brand-500)" }}
+                      />
+                      {s.label}
+                    </label>
+                  ))}
+                </div>
+                <button
+                  className="btn btn-primary"
+                  style={{ marginTop: "0.6rem", width: "100%" }}
+                  onClick={() => { setShowPdfOptions(false); exportPdf() }}
+                  disabled={pdfSections.length === 0}
+                >
+                  <FileText size={14} /> Download
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -338,6 +448,63 @@ export function MonthlyReport() {
                       <span style={{ fontSize: "0.85rem", fontWeight: 600, color: s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", whiteSpace: "nowrap" }}>
                         {fmtMoney(s.pnl, true)}
                       </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Hours + Days of week */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+            <div className="chart-card">
+              <div className="chart-title">Performance by hour</div>
+              {data.hours.length === 0 ? (
+                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No trades this month.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={data.hours} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
+                    <XAxis dataKey="hour" tick={{ fontSize: 9, fill: "var(--color-gray-500)" }} tickFormatter={(v: number) => `${v}:00`} />
+                    <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} width={52} />
+                    <Tooltip
+                      contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
+                      labelStyle={{ color: "var(--color-gray-300)" }}
+                      labelFormatter={(v: any) => `${v}:00`}
+                      formatter={(value: any, name: any) => [fmtMoney(Number(value), true), name === "wins" ? "Wins" : "P&L"]}
+                    />
+                    <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
+                      {data.hours.map((h: any, i: number) => (
+                        <Cell key={i} fill={h.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+            <div className="chart-card">
+              <div className="chart-title">Performance by day of week</div>
+              {data.dow.length === 0 ? (
+                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No trades this month.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                  {data.dow.map((d: any) => (
+                    <div key={d.dow} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <span style={{ width: 90, fontSize: "0.85rem", color: "var(--color-gray-300)", flexShrink: 0 }}>{d.name}</span>
+                      <div style={{ flex: 1, height: 16, background: "var(--color-gray-800)", borderRadius: 4, overflow: "hidden", position: "relative" }}>
+                        <div
+                          style={{
+                            height: "100%", borderRadius: 4,
+                            width: `${Math.max(2, Math.min(100, (Math.abs(d.pnl) / Math.max(...data.dow.map((x: any) => Math.abs(x.pnl)))) * 100))}%`,
+                            background: d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",
+                            opacity: 0.85,
+                          }}
+                        />
+                      </div>
+                      <span style={{ width: 90, fontSize: "0.82rem", fontWeight: 600, textAlign: "right", color: d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", flexShrink: 0 }}>
+                        {fmtMoney(d.pnl, true)}
+                      </span>
+                      <span style={{ width: 46, fontSize: "0.75rem", color: "var(--color-gray-500)", textAlign: "right", flexShrink: 0 }}>{d.count} tr</span>
                     </div>
                   ))}
                 </div>

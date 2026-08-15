@@ -12,9 +12,10 @@ import { WinRateChartServer } from "@/components/dashboard/WinRateChartServer"
 import { DailyPnlChartServer } from "@/components/dashboard/DailyPnlChartServer"
 import { DashboardFilter } from "@/components/dashboard/DashboardFilter"
 import { DailyGoalWidget } from "@/components/dashboard/DailyGoalWidget"
-import { PropChallengesOverview } from "@/components/dashboard/PropChallengesOverview"
+import { MonthlyGoalWidget } from "@/components/dashboard/MonthlyGoalWidget"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { getActiveAccount } from "@/lib/active-account"
 
 export const metadata = {
   title: "Dashboard",
@@ -23,10 +24,11 @@ export const metadata = {
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ period?: string; from?: string; to?: string }>
+  searchParams: Promise<{ period?: string; from?: string; to?: string; accountId?: string }>
 }) {
   const searchParamsObj = await searchParams
   const period = searchParamsObj?.period || "all"
+  const accountIdParam = searchParamsObj?.accountId || ""
   
   let fromDate: Date | undefined
   let toDate: Date | undefined
@@ -55,74 +57,109 @@ export default async function DashboardPage({
 
   // Fetch challenge for active account if any
   const session = await auth()
-  let challenge = null
   let todayPnl = 0
   let dailyGoal: number | null = null
-  let propChallenges: any[] = []
+  let selectedAccountId: string | null | "all" = null
+
+  // Month & streak aggregates
+  let timezone = "UTC"
+  let monthlyGoal: number | null = null
+  let monthPnl = 0
+  let monthDays: { key: string; pnl: number }[] = []
+  let bestDay: { key: string; pnl: number } | null = null
+  let worstDay: { key: string; pnl: number } | null = null
+  let streak = 0
+  let greenDaysThisMonth = 0
+  let monthLabel = ""
 
   if (session?.user?.id) {
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       include: { accounts: true }
     })
-    const defaultAccount = user?.accounts.find(a => a.isDefault)
+    // Validate accountId param against user's accounts, else fall back to active account
+    const isAll = accountIdParam === "all"
+    const requestedAccount = !isAll && accountIdParam
+      ? user?.accounts.find(a => a.id === accountIdParam)
+      : null
+    const activeAccount = await getActiveAccount(session.user.id)
+    const defaultAccount = isAll ? null : (requestedAccount || activeAccount || user?.accounts.find(a => a.isDefault))
+    selectedAccountId = isAll ? "all" : (defaultAccount?.id ?? null)
     dailyGoal = user?.dailyGoal ? Number(user.dailyGoal) : null
+    monthlyGoal = user?.monthlyGoal ? Number(user.monthlyGoal) : null
+    timezone = user?.timezone || "UTC"
 
-    if (defaultAccount) {
-      challenge = await prisma.propChallenge.findUnique({
-        where: { accountId: defaultAccount.id },
-        include: { template: true }
-      })
+    // Trades scope for today & month aggregates
+    const tradesWhere: any = isAll
+      ? { userId: session.user.id, status: "closed" }
+      : { accountId: defaultAccount?.id, status: "closed" }
 
-      // Today's P&L
-      const todayStart = new Date()
-      todayStart.setHours(0, 0, 0, 0)
-      const todayTrades = await prisma.trade.findMany({
-        where: { accountId: defaultAccount.id, status: "closed", exitAt: { gte: todayStart } },
-        select: { netPnl: true }
-      })
-      todayPnl = todayTrades.reduce((s, t) => s + Number(t.netPnl || 0), 0)
+    // Today's P&L
+    const todayStart = new Date()
+    todayStart.setHours(0, 0, 0, 0)
+    const todayTrades = await prisma.trade.findMany({
+      where: { ...tradesWhere, exitAt: { gte: todayStart } },
+      select: { netPnl: true }
+    })
+    todayPnl = todayTrades.reduce((s, t) => s + Number(t.netPnl || 0), 0)
+
+    // ── Month P&L, best/worst day, streak, calendar ──────────────────────
+    const allClosed = await prisma.trade.findMany({
+      where: tradesWhere,
+      select: { netPnl: true, entryAt: true },
+    })
+
+    const dayFmt = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
+    })
+    const localDayKey = (d: Date) => dayFmt.format(new Date(d))
+    const nowParts = new Intl.DateTimeFormat("en-US", { timeZone: timezone, year: "numeric", month: "numeric" }).formatToParts(new Date())
+    const currentYear = Number(nowParts.find(p => p.type === "year")?.value)
+    const currentMonth = Number(nowParts.find(p => p.type === "month")?.value)
+    monthLabel = new Date(currentYear, currentMonth - 1, 1).toLocaleString("en", { month: "long", year: "numeric" })
+    const monthKeyPrefix = `${currentYear}-${String(currentMonth).padStart(2, "0")}`
+
+    const byDay = new Map<string, { pnl: number; count: number }>()
+    for (const t of allClosed) {
+      const key = localDayKey(t.entryAt)
+      const cur = byDay.get(key) || { pnl: 0, count: 0 }
+      cur.pnl += Number(t.netPnl || 0)
+      cur.count += 1
+      byDay.set(key, cur)
     }
 
-    // Active prop challenges for the dashboard overview
-    const rawProp = await prisma.propChallenge.findMany({
-      where: { userId: session.user.id, status: { in: ['active', 'passed'] } },
-      include: { template: true, account: true, events: { orderBy: { createdAt: 'desc' } } },
-      orderBy: { createdAt: 'desc' },
-      take: 6,
-    })
-    propChallenges = rawProp.map(c => ({
-      id: c.id,
-      status: c.status,
-      phase: c.phase,
-      initialBalance: Number(c.initialBalance),
-      maxDDPct: Number(c.maxDDPct),
-      dailyDDPct: Number(c.dailyDDPct),
-      profitTargetPct: Number(c.profitTargetPct),
-      minTradingDays: c.minTradingDays,
-      currentEquity: Number(c.currentEquity || 0),
-      currentBalance: Number(c.currentBalance || 0),
-      highestBalance: Number(c.highestBalance || 0),
-      highestEquity: Number(c.highestEquity || 0),
-      tradingDaysCount: Number((c.metadata as any)?.tradingDaysCount || 0),
-      deadlineAt: c.deadlineAt ? c.deadlineAt.toISOString() : null,
-      startedAt: c.startedAt.toISOString(),
-      cost: c.cost ? Number(c.cost) : null,
-      account: { name: c.account.name },
-      template: {
-        logoUrl: c.template.logoUrl || null,
-        drawdownType: c.template.drawdownType,
-        firmName: c.template.firmName,
-      },
-      events: c.events.slice(0, 1).map(e => ({
-        id: e.id,
-        eventType: e.eventType,
-        severity: e.severity,
-        message: e.message,
-        createdAt: e.createdAt.toISOString(),
-      })),
-    }))
+    for (const [key, v] of byDay) {
+      if (key.startsWith(monthKeyPrefix)) {
+        monthPnl += v.pnl
+        monthDays.push({ key, pnl: v.pnl })
+        if (v.pnl > 0) greenDaysThisMonth += 1
+      }
+    }
+    if (monthDays.length > 0) {
+      bestDay = monthDays.reduce((a, b) => (b.pnl > a.pnl ? b : a))
+      worstDay = monthDays.reduce((a, b) => (b.pnl < a.pnl ? b : a))
+    }
+
+    // Consecutive green days (ending today or yesterday)
+    let cursor = new Date()
+    if ((byDay.get(localDayKey(cursor))?.pnl || 0) <= 0) {
+      cursor = new Date(Date.now() - 86400000)
+    }
+    for (let i = 0; i < 730; i++) {
+      const pnl = byDay.get(localDayKey(cursor))?.pnl
+      if (pnl !== undefined && pnl > 0) streak += 1
+      else break
+      cursor = new Date(cursor.getTime() - 86400000)
+    }
   }
+
+  const filterAccounts = session?.user?.id
+    ? await prisma.tradingAccount.findMany({
+        where: { userId: session.user.id },
+        select: { id: true, name: true, isDefault: true },
+        orderBy: { createdAt: "asc" },
+      })
+    : []
 
   return (
     <div>
@@ -132,19 +169,61 @@ export default async function DashboardPage({
           <p className="page-subtitle">Your trading performance at a glance</p>
         </div>
         <Suspense fallback={<div className="skeleton" style={{ width: 120, height: 38 }} />}>
-          <DashboardFilter />
+          <DashboardFilter accounts={filterAccounts} />
         </Suspense>
       </div>
 
       {/* KPI Cards */}
       <Suspense fallback={<KpiGridSkeleton />}>
-        <KpiGrid dateRange={dateRange} />
+        <KpiGrid dateRange={dateRange} accountId={selectedAccountId} />
       </Suspense>
 
-      {/* Prop Challenges Overview */}
-      <Suspense fallback={null}>
-        <PropChallengesOverview challenges={propChallenges} />
-      </Suspense>
+      {/* Goals & Streak */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem", marginBottom: "1rem" }}>
+        <MonthlyGoalWidget monthPnl={monthPnl} initialGoal={monthlyGoal} monthLabel={monthLabel} />
+
+        <div className="card" style={{ padding: "1.25rem" }}>
+          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "1rem" }}>
+            Month Stats — {monthLabel}
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+            <div style={{ flex: "1 1 120px" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>🔥 Green streak</div>
+              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)" }}>
+                {streak}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> day{streak !== 1 ? "s" : ""}</span>
+              </div>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>consecutive winning days</div>
+            </div>
+            <div style={{ flex: "1 1 120px" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>🟢 Green days</div>
+              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--color-gray-100)" }}>
+                {greenDaysThisMonth}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> this month</span>
+              </div>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
+                {monthDays.length > 0 ? `${Math.round((greenDaysThisMonth / monthDays.length) * 100)}% of trading days` : "no trades yet"}
+              </div>
+            </div>
+            <div style={{ flex: "1 1 120px" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>🏆 Best day</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-profit)" }}>
+                {bestDay ? `+$${bestDay.pnl.toFixed(2)}` : "—"}
+              </div>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
+                {bestDay ? formatDay(bestDay.key) : "no trades yet"}
+              </div>
+            </div>
+            <div style={{ flex: "1 1 120px" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>⚠️ Worst day</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-loss)" }}>
+                {worstDay ? `-$${Math.abs(worstDay.pnl).toFixed(2)}` : "—"}
+              </div>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
+                {worstDay ? formatDay(worstDay.key) : "no trades yet"}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Charts Row 1: Daily P&L and Win Rate */}
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
@@ -152,7 +231,7 @@ export default async function DashboardPage({
           <div className="chart-title">Daily Net P&L</div>
           <div style={{ height: 260 }}>
             <Suspense fallback={<ChartSkeleton height={260} />}>
-              <DailyPnlChartServer dateRange={dateRange} />
+              <DailyPnlChartServer dateRange={dateRange} accountId={selectedAccountId} />
             </Suspense>
           </div>
         </div>
@@ -161,7 +240,7 @@ export default async function DashboardPage({
             <div className="chart-title">Win Rate</div>
             <div style={{ height: 160 }}>
               <Suspense fallback={<ChartSkeleton height={160} />}>
-                <WinRateChartServer dateRange={dateRange} />
+                <WinRateChartServer dateRange={dateRange} accountId={selectedAccountId} />
               </Suspense>
             </div>
           </div>
@@ -206,7 +285,7 @@ export default async function DashboardPage({
       <div className="chart-card">
         <div className="chart-title">Recent Trades</div>
         <Suspense fallback={<TableSkeleton />}>
-          <RecentTradesTable dateRange={dateRange} />
+          <RecentTradesTable dateRange={dateRange} accountId={selectedAccountId} />
         </Suspense>
       </div>
     </div>
@@ -221,6 +300,11 @@ function ChartSkeleton({ height }: { height: number }) {
       <div className="skeleton" style={{ height }} />
     </div>
   )
+}
+
+function formatDay(key: string): string {
+  const d = new Date(key + "T12:00:00Z")
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })
 }
 
 function TableSkeleton() {

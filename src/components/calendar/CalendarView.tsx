@@ -1,101 +1,258 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { ChevronLeft, ChevronRight, X, CalendarDays, List } from "lucide-react"
 
-export function CalendarView({ dailyPnl, propDailyPnl = {} }: { dailyPnl: Record<string, number>; propDailyPnl?: Record<string, number> }) {
+type DayDetail = {
+  date: string
+  dayPnl: number
+  trades: {
+    id: string
+    symbol: string
+    side: string
+    quantity: number
+    entryAt: string
+    netPnl: number
+    setupTags: string[]
+    status: string
+  }[]
+  journal: {
+    mood: string | null
+    sleepHours: number | null
+    sessionPlan: string | null
+    endOfDaySummary: string | null
+    rating: number | null
+    disciplineChecks: Record<string, boolean> | null
+    nightReflection: string | null
+  } | null
+  propSnapshots: { firmName: string; accountName: string; dailyPnl: number }[]
+}
+
+const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"]
+const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+
+const YCELL = 22
+const YGAP = 5
+const YLABEL_W = 36
+
+const MOOD_ICONS: Record<string, string> = {
+  happy: "😊", good: "🙂", neutral: "😐", anxious: "😟", frustrated: "😠", tired: "😴", "": "—",
+}
+
+export function CalendarView({
+  dailyPnl,
+  dailyTradeCount = {},
+  propDailyPnl = {},
+  accountId
+}: {
+  dailyPnl: Record<string, number>
+  dailyTradeCount?: Record<string, number>
+  propDailyPnl?: Record<string, number>
+  accountId?: string
+}) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [journalDates, setJournalDates] = useState<string[]>([])
+  const [view, setView] = useState<"month" | "year">("month")
+  const [selectedDay, setSelectedDay] = useState<string | null>(null)
+  const [detail, setDetail] = useState<DayDetail | null>(null)
+  const [loadingDetail, setLoadingDetail] = useState(false)
   const router = useRouter()
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
 
-  useEffect(() => {
-    // Fetch journal dates for the current month
-    const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`
-    fetch(`/api/journal?month=${monthStr}`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.dates) setJournalDates(data.dates)
-      })
-      .catch(console.error)
-  }, [year, month])
+  const loadJournalDates = useCallback(async (y: number, m: number) => {
+    const monthStr = `${y}-${String(m + 1).padStart(2, "0")}`
+    try {
+      const res = await fetch(`/api/journal?month=${monthStr}`)
+      const data = await res.json()
+      if (data.dates) setJournalDates(data.dates)
+    } catch {
+      // ignore
+    }
+  }, [])
 
-  // Define first day of month and total days
+  useEffect(() => {
+    loadJournalDates(year, month)
+  }, [year, month, loadJournalDates])
+
+  // Month summary
+  const monthSummary = useMemo(() => {
+    const prefix = `${year}-${String(month + 1).padStart(2, "0")}`
+    let total = 0
+    let green = 0
+    let red = 0
+    let count = 0
+    let best: { key: string; pnl: number } | null = null
+    let worst: { key: string; pnl: number } | null = null
+    const days: { key: string; pnl: number }[] = []
+    for (const [key, pnl] of Object.entries(dailyPnl)) {
+      if (!key.startsWith(prefix)) continue
+      total += pnl
+      count++
+      if (pnl > 0) green++
+      if (pnl < 0) red++
+      days.push({ key, pnl })
+      if (!best || pnl > best.pnl) best = { key, pnl }
+      if (!worst || pnl < worst.pnl) worst = { key, pnl }
+    }
+    return { total, green, red, count, best, worst, avg: count > 0 ? total / count : 0 }
+  }, [dailyPnl, year, month])
+
+  // Green streak up to today
+  const streak = useMemo(() => {
+    const today = new Date()
+    const keyOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+    let cursor = new Date()
+    if ((dailyPnl[keyOf(cursor)] || 0) <= 0) cursor = new Date(cursor.getTime() - 86400000)
+    let s = 0
+    for (let i = 0; i < 730; i++) {
+      const pnl = dailyPnl[keyOf(cursor)]
+      if (pnl !== undefined && pnl > 0) s++
+      else break
+      cursor = new Date(cursor.getTime() - 86400000)
+    }
+    return s
+  }, [dailyPnl])
+
+  // Year stats
+  const yearStats = useMemo(() => {
+    const prefix = `${year}-`
+    let total = 0
+    let green = 0
+    let count = 0
+    for (const [key, pnl] of Object.entries(dailyPnl)) {
+      if (!key.startsWith(prefix)) continue
+      total += pnl
+      count++
+      if (pnl > 0) green++
+    }
+    return { total, green, count }
+  }, [dailyPnl, year])
+
+  // Year heatmap grid data (GitHub style)
+  const yearHeatmap = useMemo(() => {
+    const start = new Date(year, 0, 1)
+    while (start.getDay() !== 0) start.setDate(start.getDate() - 1)
+    const weeks: { date: string; pnl: number }[][] = []
+    const cursor = new Date(start)
+    let maxPos = 1
+    let maxNeg = 1
+    const vals = Object.entries(dailyPnl).filter(([k]) => k.startsWith(`${year}-`))
+    for (const [, pnl] of vals) {
+      if (pnl > maxPos) maxPos = pnl
+      if (pnl < 0 && -pnl > maxNeg) maxNeg = -pnl
+    }
+    for (let w = 0; w < 54; w++) {
+      const week: { date: string; pnl: number }[] = []
+      for (let d = 0; d < 7; d++) {
+        const key = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`
+        const pnl = dailyPnl[key] ?? 0
+        const inYear = cursor.getFullYear() === year
+        week.push({ date: key, pnl: inYear ? pnl : 0 })
+        cursor.setDate(cursor.getDate() + 1)
+      }
+      weeks.push(week)
+    }
+
+    // Month label per week (only on the week where the month starts within the year)
+    const weekMonthLabels: (string | null)[] = []
+    let prevLabel = ""
+    for (const week of weeks) {
+      const firstInYear = week.find((d) => d.date.startsWith(`${year}-`))
+      const label = firstInYear ? MONTH_SHORT[Number(firstInYear.date.slice(5, 7)) - 1] : null
+      if (label && label !== prevLabel) weekMonthLabels.push(label)
+      else weekMonthLabels.push(null)
+      if (label) prevLabel = label
+    }
+
+    return { weeks, maxPos, maxNeg, weekMonthLabels }
+  }, [dailyPnl, year])
+
+  const heatColor = (pnl: number, maxPos: number, maxNeg: number, inYear: boolean) => {
+    if (!inYear) return "transparent"
+    if (pnl > 0) return `rgba(16,185,129,${(0.2 + 0.8 * Math.min(1, pnl / maxPos)).toFixed(2)})`
+    if (pnl < 0) return `rgba(239,68,68,${(0.2 + 0.8 * Math.min(1, -pnl / maxNeg)).toFixed(2)})`
+    return "var(--color-gray-800)"
+  }
+
+  const openDay = async (dateStr: string) => {
+    setSelectedDay(dateStr)
+    setDetail(null)
+    setLoadingDetail(true)
+    try {
+      const url = accountId ? `/api/calendar/${dateStr}?accountId=${accountId}` : `/api/calendar/${dateStr}`
+      const res = await fetch(url)
+      const data = await res.json()
+      setDetail(data)
+    } catch {
+      setDetail(null)
+    } finally {
+      setLoadingDetail(false)
+    }
+  }
+
   const firstDay = new Date(year, month, 1)
   const lastDay = new Date(year, month + 1, 0)
-  
   const daysInMonth = lastDay.getDate()
-  const startingDayOfWeek = firstDay.getDay() // 0 = Sunday
+  const startingDayOfWeek = firstDay.getDay()
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1))
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1))
 
-  const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-  ]
+  const todayStr = (() => {
+    const t = new Date()
+    return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`
+  })()
 
   const days = []
-  
-  // Fill empty days for alignment
-  for (let i = 0; i < startingDayOfWeek; i++) {
-    days.push(<div key={`empty-${i}`} style={{ background: "transparent", border: "none" }}></div>)
-  }
+  for (let i = 0; i < startingDayOfWeek; i++) days.push(<div key={`empty-${i}`} />)
 
-  // Fill actual days
   for (let i = 1; i <= daysInMonth; i++) {
-    const d = new Date(year, month, i)
-    // Adjust to YYYY-MM-DD local time correctly
-    const dateStr = [
-      d.getFullYear(),
-      String(d.getMonth() + 1).padStart(2, '0'),
-      String(d.getDate()).padStart(2, '0')
-    ].join('-')
-
+    const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}`
     const pnl = dailyPnl[dateStr]
     const propPnl = propDailyPnl[dateStr]
     const hasJournal = journalDates.includes(dateStr)
-    
+    const isToday = dateStr === todayStr
+
     let bgColor = "var(--color-gray-900)"
     let borderColor = "var(--color-gray-800)"
     let textColor = "var(--color-gray-400)"
 
-    // Flat Color logic (No Glassmorphism)
     if (pnl !== undefined) {
       if (pnl > 0) {
-        bgColor = "#064e3b" // solid dark green
+        bgColor = "#064e3b"
         borderColor = "#047857"
-        textColor = "#34d399" // light green for text
+        textColor = "#34d399"
       } else if (pnl < 0) {
-        bgColor = "#7f1d1d" // solid dark red
+        bgColor = "#7f1d1d"
         borderColor = "#b91c1c"
-        textColor = "#f87171" // light red for text
+        textColor = "#f87171"
       } else {
         textColor = "var(--color-gray-300)"
       }
     }
 
     days.push(
-      <div 
-        key={i} 
-        onClick={() => router.push(`/journal/${dateStr}`)}
+      <div
+        key={i}
+        onClick={() => openDay(dateStr)}
         style={{
           background: bgColor,
-          border: `1px solid ${borderColor}`,
+          border: isToday ? "2px solid var(--color-brand-500)" : `1px solid ${borderColor}`,
           borderRadius: "8px",
-          minHeight: "100px",
-          padding: "0.75rem",
+          minHeight: "96px",
+          padding: "0.6rem 0.75rem",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          transition: "transform 0.15s ease, box-shadow 0.15s ease",
           cursor: "pointer",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.05)"
-          e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.2)"
+          e.currentTarget.style.transform = "scale(1.04)"
+          e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.25)"
           e.currentTarget.style.zIndex = "10"
         }}
         onMouseLeave={(e) => {
@@ -105,28 +262,35 @@ export function CalendarView({ dailyPnl, propDailyPnl = {} }: { dailyPnl: Record
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span style={{ fontSize: "1rem", opacity: hasJournal || propPnl !== undefined ? 1 : 0, display: "flex", gap: "0.25rem" }}>
-            {hasJournal && "📝"}
+          <span style={{ fontSize: "0.85rem", opacity: hasJournal || propPnl !== undefined ? 1 : 0, display: "flex", gap: "0.25rem" }}>
+            {hasJournal && <span title="Journal entry">📝</span>}
             {propPnl !== undefined && (
               <span title={`Prop firm P&L: ${propPnl > 0 ? "+" : ""}$${propPnl.toFixed(2)}`} style={{ cursor: "help" }}>🎯</span>
             )}
           </span>
-          <span style={{ fontSize: "0.9rem", fontWeight: 600, color: "var(--color-gray-500)" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isToday ? "var(--color-brand-400)" : "var(--color-gray-500)" }}>
             {i}
           </span>
         </div>
-        
         {pnl !== undefined && (
           <div style={{ textAlign: "center", marginTop: "auto" }}>
-            <span style={{ 
-              display: "block",
-              fontWeight: 700, 
-              fontSize: "1.1rem", 
-              color: textColor,
-              textShadow: "0 2px 10px rgba(0,0,0,0.5)"
-            }}>
+            <span style={{ display: "block", fontWeight: 700, fontSize: "1rem", color: textColor, textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>
               {pnl > 0 ? "+" : ""}${Number(pnl).toFixed(2)}
             </span>
+            {(() => {
+              const count = dailyTradeCount[dateStr] ?? 0
+              if (count === 0) return null
+              return (
+                <span style={{ display: "block", fontSize: "0.68rem", opacity: 0.8, color: textColor, marginTop: "0.15rem", fontWeight: 500 }}>
+                  {count} {count > 1 ? "trades" : "trade"}
+                </span>
+              )
+            })()}
+          </div>
+        )}
+        {pnl === undefined && (
+          <div style={{ marginTop: "auto", textAlign: "center", fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
+            {isToday ? "Today" : "—"}
           </div>
         )}
       </div>
@@ -134,35 +298,316 @@ export function CalendarView({ dailyPnl, propDailyPnl = {} }: { dailyPnl: Record
   }
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-        <h2 style={{ fontSize: "1.5rem", fontWeight: 600 }}>{monthNames[month]} {year}</h2>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          <button onClick={prevMonth} className="btn btn-secondary">← Prev</button>
-          <button onClick={nextMonth} className="btn btn-secondary">Next →</button>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      {/* Month summary strip */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", padding: "1rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "var(--radius-card)" }}>
+        <Stat label="Month P&L" value={`${monthSummary.total >= 0 ? "+" : ""}$${monthSummary.total.toFixed(2)}`} color={monthSummary.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+        <Stat label="Trading days" value={`${monthSummary.count}`} color="var(--color-gray-100)" />
+        <Stat label="Win days" value={`${monthSummary.green}`} color="var(--color-profit)" />
+        <Stat label="Loss days" value={`${monthSummary.red}`} color="var(--color-loss)" />
+        <Stat label="Avg / day" value={`${monthSummary.avg >= 0 ? "+" : ""}$${monthSummary.avg.toFixed(2)}`} color={monthSummary.avg >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+        <Stat label="Green streak" value={`${streak}d`} color={streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)"} />
+        <Stat label="Best day" value={monthSummary.best ? `+$${monthSummary.best.pnl.toFixed(2)}` : "—"} color="var(--color-profit)" />
+        <Stat label="Worst day" value={monthSummary.worst ? `-$${Math.abs(monthSummary.worst.pnl).toFixed(2)}` : "—"} color="var(--color-loss)" />
+      </div>
+
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ display: "flex", gap: "0.25rem" }}>
+            <button
+              onClick={prevMonth}
+              className="btn btn-secondary"
+              style={{ padding: "0.45rem 0.7rem", display: "flex", alignItems: "center" }}
+              title="Previous month"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={nextMonth}
+              className="btn btn-secondary"
+              style={{ padding: "0.45rem 0.7rem", display: "flex", alignItems: "center" }}
+              title="Next month"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+          <h2 style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{MONTH_NAMES[month]} {year}</h2>
+        </div>
+
+        <div style={{ display: "flex", gap: "0.4rem", border: "1px solid var(--color-gray-800)", borderRadius: "8px", padding: "0.2rem" }}>
+          <button
+            onClick={() => setView("month")}
+            style={{
+              display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.35rem 0.8rem", borderRadius: "6px",
+              background: view === "month" ? "var(--color-gray-800)" : "transparent",
+              border: "none", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
+              color: view === "month" ? "var(--color-text)" : "var(--color-gray-500)",
+            }}
+          >
+            <CalendarDays size={14} /> Month
+          </button>
+          <button
+            onClick={() => setView("year")}
+            style={{
+              display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.35rem 0.8rem", borderRadius: "6px",
+              background: view === "year" ? "var(--color-gray-800)" : "transparent",
+              border: "none", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
+              color: view === "year" ? "var(--color-text)" : "var(--color-gray-500)",
+            }}
+          >
+            <List size={14} /> Year
+          </button>
         </div>
       </div>
 
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "repeat(7, 1fr)", 
-        gap: "0.5rem",
-        marginBottom: "1rem"
-      }}>
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-          <div key={day} style={{ textAlign: "center", fontWeight: 600, color: "var(--color-gray-500)", fontSize: "0.85rem", padding: "0.5rem 0" }}>
-            {day}
+      {/* Month view */}
+      {view === "month" ? (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", marginBottom: "0.25rem" }}>
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+              <div key={day} style={{ textAlign: "center", fontWeight: 600, color: "var(--color-gray-500)", fontSize: "0.85rem", padding: "0.5rem 0" }}>
+                {day}
+              </div>
+            ))}
           </div>
-        ))}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.6rem" }}>{days}</div>
+        </>
+      ) : (
+        /* Year view */
+        <div className="card" style={{ padding: "1.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem" }}>
+              <span style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{year}</span>
+              <span style={{ fontSize: "1rem", fontWeight: 700, color: yearStats.total >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                {yearStats.total >= 0 ? "+" : ""}${yearStats.total.toFixed(2)}
+              </span>
+            </div>
+            <div style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>
+              {yearStats.green} green days · {yearStats.count} trading days
+            </div>
+          </div>
+
+          <div style={{ overflowX: "auto", paddingBottom: "0.25rem" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", minWidth: "fit-content" }}>
+              {/* Month labels */}
+              <div style={{ display: "flex", gap: YGAP, marginLeft: YLABEL_W }}>
+                {yearHeatmap.weekMonthLabels.map((label, wi) => (
+                  <div key={wi} style={{ width: YCELL, fontSize: "0.62rem", fontWeight: 600, color: "var(--color-gray-400)", whiteSpace: "nowrap", overflow: "visible" }}>
+                    {label || ""}
+                  </div>
+                ))}
+              </div>
+
+              {/* Grid */}
+              <div style={{ display: "flex", gap: YGAP }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: YGAP, marginRight: "6px", width: YLABEL_W }}>
+                  {["", "Mon", "", "Wed", "", "Fri", ""].map((wd, i) => (
+                    <div key={i} style={{ height: YCELL, fontSize: "0.65rem", color: "var(--color-gray-600)", lineHeight: `${YCELL}px`, textAlign: "right", paddingRight: "6px" }}>{wd}</div>
+                  ))}
+                </div>
+                {yearHeatmap.weeks.map((week, wi) => (
+                  <div key={wi} style={{ display: "flex", flexDirection: "column", gap: YGAP }}>
+                    {week.map((day, di) => {
+                      const inYear = day.date.startsWith(`${year}-`)
+                      return (
+                        <div
+                          key={di}
+                          title={`${day.date}: ${day.pnl > 0 ? "+" : ""}$${day.pnl.toFixed(2)}`}
+                          onClick={() => inYear && openDay(day.date)}
+                          style={{
+                            width: YCELL, height: YCELL, borderRadius: 3, cursor: inYear ? "pointer" : "default",
+                            background: heatColor(day.pnl, yearHeatmap.maxPos, yearHeatmap.maxNeg, inYear),
+                            opacity: inYear ? 1 : 0,
+                            transition: "transform 0.1s",
+                          }}
+                          onMouseEnter={(e) => { if (inYear) { e.currentTarget.style.transform = "scale(1.25)"; e.currentTarget.style.zIndex = "2"; } }}
+                          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.zIndex = "1"; }}
+                        />
+                      )
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.7rem", color: "var(--color-gray-500)", flexWrap: "wrap" }}>
+            <span>Loss</span>
+            {[0.25, 0.5, 0.75, 1].map((t) => (
+              <div key={`l${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(239,68,68,${(0.25 * t + 0.1).toFixed(2)})` }} />
+            ))}
+            <div style={{ width: YCELL, height: YCELL, borderRadius: 3, background: "var(--color-gray-800)" }} />
+            {[0.25, 0.5, 0.75, 1].map((t) => (
+              <div key={`p${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(16,185,129,${(0.25 * t + 0.1).toFixed(2)})` }} />
+            ))}
+            <span>Profit</span>
+            <span style={{ marginLeft: "0.75rem" }}>Click a day for details</span>
+          </div>
+        </div>
+      )}
+
+      {/* Legend */}
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.7rem", color: "var(--color-gray-500)", padding: "0 0.25rem" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: "#064e3b", border: "1px solid #047857", display: "inline-block" }} /> Profit</span>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: "#7f1d1d", border: "1px solid #b91c1c", display: "inline-block" }} /> Loss</span>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", display: "inline-block" }} /> No trades</span>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>📝 Journal</span>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>🎯 Prop P&L</span>
+        <span style={{ marginLeft: "auto" }}>Click a day to view details</span>
       </div>
 
-      <div style={{ 
-        display: "grid", 
-        gridTemplateColumns: "repeat(7, 1fr)", 
-        gap: "0.75rem" 
-      }}>
-        {days}
-      </div>
+      {/* Day detail modal */}
+      {selectedDay && (
+        <div
+          onClick={() => setSelectedDay(null)}
+          style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="card"
+            style={{ maxWidth: 520, width: "100%", maxHeight: "80vh", overflowY: "auto", padding: "1.5rem" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <div>
+                <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+                  {formatDate(selectedDay)}
+                </div>
+                {detail && (
+                  <div style={{ fontSize: "0.9rem", fontWeight: 700, color: detail.dayPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                    {detail.dayPnl >= 0 ? "+" : ""}${detail.dayPnl.toFixed(2)}
+                  </div>
+                )}
+              </div>
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <button className="btn btn-secondary btn-sm" onClick={() => router.push(`/journal/${selectedDay}`)}>Journal</button>
+                <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-gray-400)" }}>
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {loadingDetail && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                <div className="skeleton" style={{ height: 40 }} />
+                <div className="skeleton" style={{ height: 40 }} />
+                <div className="skeleton" style={{ height: 40 }} />
+              </div>
+            )}
+
+            {detail && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {/* Trades */}
+                <div>
+                  <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.5rem" }}>
+                    Trades ({detail.trades.length})
+                  </div>
+                  {detail.trades.length === 0 ? (
+                    <div style={{ fontSize: "0.82rem", color: "var(--color-gray-500)" }}>No trades on this day.</div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                      {detail.trades.map((t) => (
+                        <div key={t.id} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.5rem 0.6rem", background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+                          <span className={`badge ${t.side === "LONG" ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.62rem" }}>{t.side}</span>
+                          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-100)" }}>{t.symbol}</span>
+                          {t.setupTags[0] && <span className="badge badge-neutral" style={{ fontSize: "0.65rem" }}>{t.setupTags[0]}</span>}
+                          <span style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", marginLeft: "auto" }}>
+                            {new Date(t.entryAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span style={{ fontSize: "0.85rem", fontWeight: 700, color: t.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                            {t.netPnl >= 0 ? "+" : ""}${t.netPnl.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Prop snapshots */}
+                {detail.propSnapshots.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.5rem" }}>
+                      Prop firm challenges
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+                      {detail.propSnapshots.map((s, i) => (
+                        <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0.6rem", background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)", fontSize: "0.82rem" }}>
+                          <span style={{ color: "var(--color-gray-200)" }}>{s.firmName} · {s.accountName}</span>
+                          <span style={{ fontWeight: 600, color: s.dailyPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                            {s.dailyPnl >= 0 ? "+" : ""}${s.dailyPnl.toFixed(2)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Journal */}
+                {detail.journal ? (
+                  <div>
+                    <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.5rem" }}>
+                      Journal {detail.journal.mood && <span style={{ marginLeft: "0.25rem" }}>{MOOD_ICONS[detail.journal.mood] ?? "🙂"}</span>}
+                      {detail.journal.sleepHours != null && <span style={{ marginLeft: "0.5rem" }}>😴 {detail.journal.sleepHours}h</span>}
+                      {detail.journal.rating !== null && <span style={{ marginLeft: "0.5rem" }}>{"★".repeat(Math.max(0, Math.min(5, detail.journal.rating)))}</span>}
+                    </div>
+                    {detail.journal.sessionPlan && (
+                      <div style={{ fontSize: "0.82rem", color: "var(--color-gray-300)", marginBottom: "0.35rem" }}>
+                        <strong style={{ color: "var(--color-gray-400)" }}>Plan: </strong>{detail.journal.sessionPlan}
+                      </div>
+                    )}
+                    {detail.journal.endOfDaySummary && (
+                      <div style={{ fontSize: "0.82rem", color: "var(--color-gray-300)" }}>
+                        <strong style={{ color: "var(--color-gray-400)" }}>Review: </strong>{detail.journal.endOfDaySummary}
+                      </div>
+                    )}
+                    {detail.journal.disciplineChecks && (() => {
+                      const checks = detail.journal.disciplineChecks
+                      const vals = Object.values(checks)
+                      const done = vals.filter(Boolean).length
+                      return vals.length > 0 ? (
+                        <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginTop: "0.4rem" }}>
+                          <strong style={{ color: "var(--color-gray-400)" }}>Discipline: </strong>
+                          <span style={{ color: done === vals.length ? "var(--color-profit)" : done > 0 ? "var(--color-warning)" : "var(--color-gray-500)", fontWeight: 600 }}>
+                            {done}/{vals.length}
+                          </span>
+                        </div>
+                      ) : null
+                    })()}
+                    {detail.journal.nightReflection && (
+                      <div style={{ fontSize: "0.82rem", color: "var(--color-gray-300)", marginTop: "0.35rem" }}>
+                        <strong style={{ color: "var(--color-gray-400)" }}>Reflection: </strong>{detail.journal.nightReflection}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: "0.82rem", color: "var(--color-gray-500)" }}>
+                    No journal entry for this day. <a href={`/journal/${selectedDay}`} style={{ color: "var(--color-brand-500)" }}>Create one</a>.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
+}
+
+function Stat({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div style={{ flex: "1 1 110px" }}>
+      <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>{label}</div>
+      <div style={{ fontSize: "1rem", fontWeight: 700, color, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+    </div>
+  )
+}
+
+function formatDate(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number)
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
 }

@@ -23,8 +23,12 @@ import {
   Target,
   GitCompare,
   FlaskConical,
+  CandlestickChart,
   HandCoins,
-  FileText
+  FileText,
+  Bell,
+  Menu,
+  X
 } from "lucide-react"
 
 type SidebarStats = {
@@ -38,9 +42,36 @@ type SidebarStats = {
 // Basic props for all sidebar icons to look consistent and professional
 const iconProps = { size: 18, strokeWidth: 1.75, style: { opacity: 0.9, flexShrink: 0 } }
 
-export function Sidebar() {
+export function Sidebar({
+  open,
+  onClose,
+  asDrawer = false,
+}: { open?: boolean; onClose?: () => void; asDrawer?: boolean } = {}) {
   const pathname = usePathname()
   const [stats, setStats] = useState<SidebarStats | null>(null)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  // `open` controls the drawer in controlled mode (e.g. the backtest watchlist
+  // layout). When it's undefined the sidebar manages its own mobile state.
+  const isOpen = open ?? mobileOpen
+  const closeSidebar = () => {
+    if (onClose) onClose()
+    setMobileOpen(false)
+  }
+
+  // Close the mobile drawer on navigation
+  const closeOnNav = () => setMobileOpen(false)
+
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [mobileOpen])
 
   useEffect(() => {
     fetch("/api/sidebar-stats")
@@ -59,6 +90,7 @@ export function Sidebar() {
         { href: "/report",    label: "Monthly Report", icon: () => <FileText {...iconProps} /> },
         { href: "/stats",     label: "Statistics",icon: () => <BarChart3 {...iconProps} /> },
         { href: "/behavioral",label: "Behavioral", icon: () => <Brain {...iconProps} /> },
+        { href: "/notifications", label: "Notifications", icon: () => <Bell {...iconProps} /> },
       ],
     },
     {
@@ -67,6 +99,8 @@ export function Sidebar() {
         { href: "/trades",      label: "All Trades",  icon: () => <List {...iconProps} /> },
         { href: "/setups",      label: "Setups",      icon: () => <Layers {...iconProps} /> },
         { href: "/import",      label: "Import CSV",  icon: () => <Upload {...iconProps} /> },
+        { href: "/risk",        label: "Risk",        icon: () => <Shield {...iconProps} /> },
+        { href: "/backtest",    label: "Replay",      icon: () => <CandlestickChart {...iconProps} /> },
       ],
     },
     {
@@ -79,13 +113,39 @@ export function Sidebar() {
       ],
     },
   ]
-
-  const todayPnlPositive = stats && stats.todayPnl > 0
-  const todayPnlNegative = stats && stats.todayPnl < 0
-
   return (
-    <aside className="sidebar">
-      {/* Logo */}
+    <>
+      {/* Mobile top bar */}
+      <div className="mobile-topbar">
+        <div className="mobile-actions">
+          <button
+            className="mobile-hamburger"
+            onClick={() => setMobileOpen(true)}
+            aria-label="Open navigation"
+          >
+            <Menu size={20} />
+          </button>
+          <NotificationBell />
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* Backdrop for mobile drawer */}
+      {mobileOpen && (
+        <div className="sidebar-backdrop" onClick={closeSidebar} />
+      )}
+
+      <aside className={`sidebar ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
+        {/* Mobile close button */}
+        <button
+          className="sidebar-close"
+          onClick={closeSidebar}
+          aria-label="Close navigation"
+        >
+          <X size={18} />
+        </button>
+
+        {/* Logo */}
       <div className="sidebar-logo" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <div style={{
@@ -110,44 +170,6 @@ export function Sidebar() {
       </div>
 
       <AccountSwitcher />
-
-      {/* Today's P&L Widget */}
-      {stats !== null && (
-        <div style={{
-          margin: "0 0.5rem",
-          padding: "0.75rem",
-          borderRadius: "var(--radius-card)",
-          background: todayPnlPositive
-            ? "rgba(16, 185, 129, 0.08)"
-            : todayPnlNegative
-            ? "rgba(239, 68, 68, 0.08)"
-            : "var(--color-gray-900)",
-          border: `1px solid ${todayPnlPositive ? "rgba(16,185,129,0.2)" : todayPnlNegative ? "rgba(239,68,68,0.2)" : "var(--color-gray-800)"}`,
-          transition: "all 300ms ease",
-        }}>
-          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-gray-500)", marginBottom: "0.35rem" }}>
-            Today&apos;s P&L
-          </div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem" }}>
-            <span style={{
-              fontSize: "1.1rem",
-              fontWeight: 700,
-              color: todayPnlPositive ? "var(--color-profit)" : todayPnlNegative ? "var(--color-loss)" : "var(--color-gray-400)",
-              fontVariantNumeric: "tabular-nums",
-            }}>
-              {stats.todayPnl >= 0 ? "+" : ""}${stats.todayPnl.toFixed(2)}
-            </span>
-            {stats.todayTrades > 0 && (
-              <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-                {stats.todayTrades} trade{stats.todayTrades > 1 ? "s" : ""}
-              </span>
-            )}
-          </div>
-          {stats.todayTrades === 0 && (
-            <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)", marginTop: "0.15rem" }}>No trades yet</div>
-          )}
-        </div>
-      )}
 
       {/* Challenge Status Widget */}
       {stats?.challengeStatus && (
@@ -210,6 +232,7 @@ export function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={closeOnNav}
                   className={`nav-item ${isActive ? "active" : ""}`}
                 >
                   <Icon />
@@ -223,7 +246,7 @@ export function Sidebar() {
 
       {/* Footer */}
       <div style={{ padding: "0.75rem", borderTop: "1px solid var(--color-gray-800)", marginTop: "auto", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-        <Link href="/profile" className={`nav-item ${pathname === "/profile" ? "active" : ""}`} style={{ gap: "0.625rem" }}>
+        <Link href="/profile" onClick={closeOnNav} className={`nav-item ${pathname === "/profile" ? "active" : ""}`} style={{ gap: "0.625rem" }}>
           <Settings {...iconProps} />
           Profile
         </Link>
@@ -237,5 +260,6 @@ export function Sidebar() {
         </button>
       </div>
     </aside>
+    </>
   )
 }

@@ -4,21 +4,23 @@
 import { computeMetrics } from "@/lib/metrics"
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { getActiveAccount } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 import { formatCurrency } from "@/lib/formatters"
 
 export async function KpiGrid({
-  dateRange
+  dateRange,
+  accountId,
 }: {
   dateRange?: { from?: Date; to?: Date }
+  accountId?: string | null | "all"
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
 
-  // Récupérer les trades du compte par défaut
-  const account = await getActiveAccount(session.user.id)
+  // Récupérer les trades du compte (sélectionné, consolidé, ou par défaut)
+  const scope = await resolveAccountScope(session.user.id, accountId)
 
-  if (!account) {
+  if (scope.accounts.length === 0) {
     return (
       <div className="kpi-grid">
         <EmptyKpiCard label="Net P&L" />
@@ -31,7 +33,9 @@ export async function KpiGrid({
     )
   }
 
-  const whereClause: any = { accountId: account.id, status: "closed" }
+  const whereClause: any = scope.all
+    ? { userId: session.user.id, status: "closed" }
+    : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {
     whereClause.entryAt = {}
     if (dateRange.from) whereClause.entryAt.gte = dateRange.from
@@ -48,9 +52,8 @@ export async function KpiGrid({
     select: { timezone: true },
   })
 
-  const metrics = computeMetrics(trades, Number(account.initialBalance ?? 0), user?.timezone ?? "UTC")
-
-  const currency = account.baseCurrency
+  const metrics = computeMetrics(trades, scope.baseBalance, user?.timezone ?? "UTC")
+  const currency = scope.currency
 
   return (
     <div className="kpi-grid" style={{ marginBottom: "1rem" }}>

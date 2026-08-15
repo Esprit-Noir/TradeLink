@@ -22,14 +22,36 @@ export async function GET(request: Request) {
     })
     const timezone = user?.timezone ?? "UTC"
 
-    const trades = await prisma.trade.findMany({
-      where: {
-        userId: session.user.id,
-        accountId: account.id,
-        status: "closed"
-      },
-      orderBy: { entryAt: "asc" }
+    // ── Filters ──────────────────────────────────────────────────────────
+    const url = new URL(request.url)
+    const period = url.searchParams.get("period") || "all"
+    const symbol = url.searchParams.get("symbol") || ""
+    const setup = url.searchParams.get("setup") || ""
+    const side = url.searchParams.get("side") || ""
+
+    const where: any = {
+      userId: session.user.id,
+      accountId: account.id,
+      status: "closed",
+    }
+    if (period && period !== "all") {
+      const now = new Date()
+      if (period === "7d") where.entryAt = { gte: new Date(now.getTime() - 7 * 86400000) }
+      else if (period === "30d") where.entryAt = { gte: new Date(now.getTime() - 30 * 86400000) }
+      else if (period === "90d") where.entryAt = { gte: new Date(now.getTime() - 90 * 86400000) }
+      else if (period === "ytd") where.entryAt = { gte: new Date(now.getFullYear(), 0, 1) }
+    }
+    if (symbol) where.symbol = symbol
+    if (side) where.side = side
+
+    let trades = await prisma.trade.findMany({
+      where,
+      orderBy: { entryAt: "asc" },
     })
+
+    if (setup) {
+      trades = trades.filter((t) => (t.setupTags as string[] || []).includes(setup))
+    }
 
     if (trades.length === 0) {
       return NextResponse.json({ empty: true })
@@ -66,10 +88,12 @@ export async function GET(request: Request) {
 
     // Day of Week
     const dowPerformance = [0, 0, 0, 0, 0, 0, 0]
+    const hourPerformance = new Array(24).fill(0) as number[]
+    const monthPerformance: Record<string, number> = {}
 
     // Symbols & Setups Aggregation
-    const symbolMap: Record<string, { pnl: number, count: number }> = {}
-    const setupMap: Record<string, { pnl: number, count: number }> = {}
+    const symbolMap: Record<string, { pnl: number, count: number, wins: number }> = {}
+    const setupMap: Record<string, { pnl: number, count: number, wins: number }> = {}
 
     trades.forEach(trade => {
       const pnl = Number(trade.netPnl)
@@ -128,18 +152,29 @@ export async function GET(request: Request) {
       const dow = dayOfWeek(trade.entryAt, timezone)
       dowPerformance[dow] += pnl
 
+      // Hour of day (local)
+      const hourKey = new Date(trade.entryAt).toLocaleString("en-US", { timeZone: timezone, hour: "numeric", hour12: false })
+      const hour = Number(hourKey) % 24
+      hourPerformance[hour] += pnl
+
+      // Monthly
+      const monthKey = new Date(trade.entryAt).toLocaleString("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit" })
+      monthPerformance[monthKey] = (monthPerformance[monthKey] || 0) + pnl
+
       // Symbols
       const sym = trade.symbol
-      if (!symbolMap[sym]) symbolMap[sym] = { pnl: 0, count: 0 }
+      if (!symbolMap[sym]) symbolMap[sym] = { pnl: 0, count: 0, wins: 0 }
       symbolMap[sym].pnl += pnl
       symbolMap[sym].count++
+      if (isWin) symbolMap[sym].wins++
 
       // Setups
       const tags = (trade.setupTags as string[]) || []
       tags.forEach(tag => {
-        if (!setupMap[tag]) setupMap[tag] = { pnl: 0, count: 0 }
+        if (!setupMap[tag]) setupMap[tag] = { pnl: 0, count: 0, wins: 0 }
         setupMap[tag].pnl += pnl
         setupMap[tag].count++
+        if (isWin) setupMap[tag].wins++
       })
     })
 
@@ -169,15 +204,101 @@ export async function GET(request: Request) {
       .sort((a, b) => b.pnl - a.pnl)
       .slice(0, 3)
 
+    // Full breakdowns
+    const symbols = Object.entries(symbolMap)
+      .map(([name, d]) => ({ name, pnl: d.pnl, count: d.count, winRate: d.count > 0 ? (d.wins / d.count) * 100 : 0 }))
+      .sort((a, b) => b.pnl - a.pnl)
+    const setups = Object.entries(setupMap)
+      .map(([name, d]) => ({ name, pnl: d.pnl, count: d.count, winRate: d.count > 0 ? (d.wins / d.count) * 100 : 0 }))
+      .sort((a, b) => b.pnl - a.pnl)
+    const monthlyPerformance = Object.entries(monthPerformance)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([month, pnl]) => ({ month, pnl }))
+
+    // Build per-day equity for drawdown analysis & Sortino
+    const dayPnl = new Map<string, number>()
+    for (const t of trades) {
+      const pnl = Number(t.netPnl)
+      const dk = new Date(t.entryAt).toLocaleString("en-CA", {
+        timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit",
+      })
+      dayPnl.set(dk, (dayPnl.get(dk) || 0) + pnl)
+    }
+    const dayRows: { date: string; pnl: number; startEq: number; endEq: number }[] = []
+    const dailyReturns: number[] = []
+    let cum = 0
+    for (const [date, pnl] of [...dayPnl.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+      const startEq = cum
+      cum += pnl
+      dayRows.push({ date, pnl, startEq, endEq: cum })
+      dailyReturns.push(startEq !== 0 ? pnl / Math.abs(startEq) : 0)
+    }
+
+    // Sortino (daily returns, rf = 0)
+    const nDays = dailyReturns.length
+    const meanR = nDays > 0 ? dailyReturns.reduce((s, r) => s + r, 0) / nDays : 0
+    const downsideDev = nDays > 0
+      ? Math.sqrt(dailyReturns.reduce((s, r) => s + (r < 0 ? r * r : 0), 0) / nDays)
+      : 0
+    const sortino = downsideDev > 0 ? meanR / downsideDev : meanR > 0 ? 99 : 0
+
+    // Drawdown episodes (from daily equity)
+    let peakEq = 0
+    let ddStartIdx = -1
+    let ddStartDate: string | null = null
+    let epMaxDepth = 0
+    let epMaxDepthPct = 0
+    const episodes: { startDate: string | null; endDate: string | null; depth: number; depthPct: number; durationDays: number | null }[] = []
+    const closeEpisode = (endDate: string | null, endIdx: number) => {
+      if (ddStartIdx >= 0) {
+        episodes.push({
+          startDate: ddStartDate,
+          endDate,
+          depth: Math.round(epMaxDepth * 100) / 100,
+          depthPct: Math.round(epMaxDepthPct * 100) / 100,
+          durationDays: endDate ? endIdx - ddStartIdx : null,
+        })
+      }
+      ddStartIdx = -1
+      ddStartDate = null
+      epMaxDepth = 0
+      epMaxDepthPct = 0
+    }
+    for (let i = 0; i < dayRows.length; i++) {
+      const eq = dayRows[i].endEq
+      if (eq >= peakEq) {
+        closeEpisode(dayRows[i].date, i)
+        peakEq = eq
+      } else {
+        if (ddStartIdx < 0) { ddStartIdx = i; ddStartDate = dayRows[i].date }
+        const depth = peakEq - eq
+        const depthPct = peakEq !== 0 ? (depth / Math.abs(peakEq)) * 100 : 0
+        if (depth > epMaxDepth) { epMaxDepth = depth; epMaxDepthPct = depthPct }
+      }
+    }
+    closeEpisode(null, dayRows.length)
+
+    const worstEp = episodes.length ? episodes.reduce((a, b) => (a.depth > b.depth ? a : b)) : null
+    const finalEq = dayRows.length ? dayRows[dayRows.length - 1].endEq : 0
+    const ddMax = worstEp?.depth ?? 0
+    const ddMaxPct = worstEp?.depthPct ?? 0
+    const ddCurrent = peakEq - finalEq
+    const ddCurrentPct = peakEq !== 0 ? (ddCurrent / Math.abs(peakEq)) * 100 : 0
+    const maxDrawdownDurationDays = worstEp?.durationDays ?? null
+    const maxDrawdownStart = worstEp?.startDate ?? null
+    const maxDrawdownRecovery = worstEp?.endDate ?? null
+
     return NextResponse.json({
       empty: false,
+      filters: { period, symbol, setup, side },
       kpis: {
         profitFactor,
         expectancy,
         avgWin,
         avgLoss,
         winRate: winRate * 100,
-        totalTrades
+        totalTrades,
+        sortino: Math.round(sortino * 100) / 100,
       },
       streaks: {
         longestWinStreak,
@@ -186,13 +307,24 @@ export async function GET(request: Request) {
         currentLossStreak
       },
       drawdown: {
-        maxDrawdown,
-        currentDrawdown,
+        maxDrawdown: ddMax,
+        maxDrawdownPct: Math.round(ddMaxPct * 100) / 100,
+        currentDrawdown: ddCurrent,
+        currentDrawdownPct: Math.round(ddCurrentPct * 100) / 100,
+        maxDrawdownDurationDays,
+        maxDrawdownStart,
+        maxDrawdownRecovery,
       },
+      drawdownEpisodes: episodes.slice(0, 8),
+      equityCurve: dayRows.map(d => ({ date: d.date, equity: d.endEq })),
       rrDistribution,
       dowPerformance,
+      hourPerformance,
+      monthlyPerformance,
       topSymbols,
-      topSetups
+      topSetups,
+      symbols,
+      setups,
     })
   } catch (error) {
     console.error("[ADVANCED_METRICS_GET]", error)

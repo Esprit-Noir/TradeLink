@@ -107,132 +107,147 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
     severity === "warning" ? "var(--color-warning)" :
     "var(--color-profit)"
 
-  const severityBg = (severity: string) =>
-    severity === "critical" ? "rgba(239,68,68,0.12)" :
-    severity === "warning" ? "rgba(245,158,11,0.12)" :
-    "rgba(16,185,129,0.12)"
+  const tooltipStyle = {
+    background: "var(--color-gray-900)",
+    border: "1px solid var(--color-gray-800)",
+    borderRadius: "8px",
+    fontSize: "0.85rem",
+  }
+
+  const latestSnapshot = series.length > 0 ? series[series.length - 1] : null
+  const todayPnl = latestSnapshot ? latestSnapshot.dailyPnl : 0
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "1rem", marginBottom: "2rem" }}>
-        <div style={{ flex: 1, background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Status</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 600, color: isBreached ? "var(--color-loss)" : isPassed ? "var(--color-profit)" : "var(--color-brand-500)" }}>
+      {/* Top Row: Key Statistics */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", marginBottom: "1.5rem" }}>
+        <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>Status</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: isBreached ? "var(--color-loss)" : isPassed ? "var(--color-profit)" : "var(--color-brand-500)" }}>
             {challenge.status.toUpperCase()}
           </div>
         </div>
-        <div style={{ flex: 1, background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Phase</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>
+        <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>Phase</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
             {challenge.phase === 'phase_1' ? "Phase 1" : challenge.phase === 'phase_2' ? "Phase 2" : "Funded"}
           </div>
         </div>
-        <div style={{ flex: 1, background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Steps</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>
-            {challenge.metadata?.steps === 'master' ? 'Funded' : challenge.metadata?.steps ? `${challenge.metadata.steps} Step(s)` : 'N/A'}
+        <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>Current Equity</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+            ${Number(challenge.currentEquity).toLocaleString("en-US", { minimumFractionDigits: 2 })}
           </div>
         </div>
-        <div style={{ flex: 1, background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Deadline</div>
+        <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>Daily P&L (Today)</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: todayPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+            {todayPnl >= 0 ? "+" : ""}${Number(todayPnl).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+          </div>
+        </div>
+        <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>Deadline</div>
           {daysRemaining !== null && !isBreached ? (
-            <>
-              <div style={{ fontSize: "1.1rem", fontWeight: 600, color: daysRemaining <= 1 ? "var(--color-loss)" : daysRemaining <= 5 ? "var(--color-warning)" : "var(--color-gray-100)" }}>
-                {daysRemaining <= 0 ? "Due today" : `${daysRemaining} day${daysRemaining > 1 ? "s" : ""} left`}
-              </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: "0.15rem" }}>
-                {formatDate(challenge.deadlineAt)}
-              </div>
-            </>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: daysRemaining <= 1 ? "var(--color-loss)" : daysRemaining <= 5 ? "var(--color-warning)" : "var(--color-gray-100)" }}>
+              {daysRemaining <= 0 ? "Due today" : `${daysRemaining} days left`}
+            </div>
           ) : (
-            <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
               {isBreached ? "—" : "No limit"}
             </div>
           )}
         </div>
       </div>
 
-      <PropFirmGauges challenge={challenge} />
-
-      {snapshots.length > 0 && (
-        <div style={{ marginTop: "2rem" }}>
-          <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Daily Performance</h3>
-
-          <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1rem" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
-              <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Equity Curve</div>
-              <div style={{ display: "flex", gap: "0.9rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                  <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-brand-500)", display: "inline-block" }} /> Equity
+      {/* Grid Row: Chart (left) and Gauges (right) */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+          <div style={{ flex: "2 1 500px", minWidth: 0, background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)", display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
+              <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-100)" }}>Equity Curve</div>
+              <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span style={{ width: 12, height: 4, borderRadius: 2, background: "var(--color-brand-500)", display: "inline-block" }} /> Equity
                 </span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                  <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-loss)", display: "inline-block" }} /> Max DD level
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span style={{ width: 12, height: 4, borderRadius: 2, background: "var(--color-loss)", display: "inline-block" }} /> Max DD level
                 </span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                  <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-profit)", display: "inline-block" }} /> Profit target
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+                  <span style={{ width: 12, height: 4, borderRadius: 2, background: "var(--color-profit)", display: "inline-block" }} /> Target
                 </span>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={series} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" />
-                <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} domain={['auto', 'auto']} width={55} />
-                <Tooltip
-                  contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
-                  labelStyle={{ color: "var(--color-gray-300)" }}
-                  formatter={(value: any, name: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, name === "endBalance" ? "Equity" : name]}
-                />
-                <ReferenceLine y={profitTarget} stroke="var(--color-profit)" strokeDasharray="4 4" label={{ value: "Target", fill: "var(--color-profit)", fontSize: 10, position: "insideTopRight" }} />
-                <Line type="monotone" dataKey="maxDDLevel" stroke="var(--color-loss)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} opacity={0.7} />
-                <Line type="monotone" dataKey="endBalance" stroke="var(--color-brand-500)" strokeWidth={2} dot={{ r: 2, fill: "var(--color-brand-500)" }} />
-              </LineChart>
-            </ResponsiveContainer>
+            {series.length > 0 ? (
+              <div style={{ flex: 1, minHeight: "300px", display: "flex", flexDirection: "column" }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={series} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" />
+                    <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
+                    <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} domain={['auto', 'auto']} width={55} />
+                    <Tooltip
+                      contentStyle={tooltipStyle}
+                      itemStyle={{ fontWeight: 600 }}
+                      labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.3rem" }}
+                      formatter={(value: any, name: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, name === "endBalance" ? "Equity" : name]}
+                    />
+                    <ReferenceLine y={profitTarget} stroke="var(--color-profit)" strokeDasharray="4 4" />
+                    <Line type="stepAfter" dataKey="maxDDLevel" stroke="var(--color-loss)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} opacity={0.8} />
+                    <Line type="monotone" dataKey="endBalance" stroke="var(--color-brand-500)" strokeWidth={2} dot={{ r: 3, fill: "var(--color-gray-900)", stroke: "var(--color-brand-500)", strokeWidth: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-500)", fontSize: "0.85rem", minHeight: "300px" }}>
+                No performance data available yet.
+              </div>
+            )}
           </div>
 
+          <div style={{ flex: "1 1 300px", minWidth: 0 }}>
+            <PropFirmGauges challenge={challenge} />
+          </div>
+        </div>
+      </div>
+
+      {snapshots.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", marginBottom: "1.5rem" }}>
           {ddSeries.length > 0 && (
-            <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1rem" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
-                <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Drawdown used (% of max allowed)</div>
-                <div style={{ display: "flex", gap: "0.9rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-warning)", display: "inline-block" }} /> Drawdown used
-                  </span>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{ width: 10, height: 3, borderRadius: 2, background: "var(--color-loss)", display: "inline-block" }} /> Max allowed
-                  </span>
-                </div>
+            <div style={{ background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-100)" }}>Drawdown Used</div>
               </div>
-              <ResponsiveContainer width="100%" height={160}>
+              <ResponsiveContainer width="100%" height={180}>
                 <AreaChart data={ddSeries} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" />
                   <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
                   <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} domain={[0, 'auto']} width={40} unit="%" />
                   <Tooltip
-                    contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
-                    labelStyle={{ color: "var(--color-gray-300)" }}
+                    contentStyle={tooltipStyle}
+                    itemStyle={{ fontWeight: 600 }}
+                    labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.3rem" }}
                     formatter={(value: any, name: any) => [name === "Max allowed" ? "100%" : `${Number(value).toFixed(1)}%`, name === "ddUsedPct" ? "Drawdown used" : name]}
                   />
-                  <Area type="monotone" dataKey="ddUsedPct" stroke="var(--color-warning)" strokeWidth={2} fill="var(--color-warning)" fillOpacity={0.12} dot={{ r: 2, fill: "var(--color-warning)" }} />
-                  <ReferenceLine y={100} stroke="var(--color-loss)" strokeDasharray="4 4" label={{ value: "Max DD", fill: "var(--color-loss)", fontSize: 10, position: "insideTopRight" }} />
+                  <Area type="monotone" dataKey="ddUsedPct" stroke="var(--color-warning)" strokeWidth={2} fill="var(--color-warning)" fillOpacity={0.15} />
+                  <ReferenceLine y={100} stroke="var(--color-loss)" strokeDasharray="4 4" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           )}
 
-          <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1rem" }}>
-            <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginBottom: "0.75rem" }}>Daily P&L</div>
-            <ResponsiveContainer width="100%" height={140}>
+          <div style={{ background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+            <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-100)", marginBottom: "1rem" }}>Daily P&L</div>
+            <ResponsiveContainer width="100%" height={180}>
               <BarChart data={series} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
                 <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
                 <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} width={55} />
                 <Tooltip
-                  contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
-                  labelStyle={{ color: "var(--color-gray-300)" }}
+                  contentStyle={tooltipStyle}
+                  itemStyle={{ fontWeight: 600 }}
+                  labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.3rem" }}
                   formatter={(value: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, "P&L"]}
                 />
-                <Bar dataKey="dailyPnl" radius={[3, 3, 0, 0]}>
+                <Bar dataKey="dailyPnl" radius={[2, 2, 0, 0]}>
                   {series.map((s, i) => (
                     <Cell key={i} fill={Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                   ))}
@@ -243,175 +258,183 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
         </div>
       )}
 
-      <ConsistencySection snapshots={snapshots} challenge={challenge} />
-
-      <TimelineSection challenge={challenge} />
-
-      {events.length > 0 && (
-        <div style={{ marginTop: "2rem" }}>
-          <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Alerts & Events</h3>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-            {events.map((event) => (
-              <div key={event.id} style={{
-                background: severityBg(event.severity),
-                border: `1px solid ${severityColor(event.severity)}40`,
-                borderRadius: "10px",
-                padding: "0.85rem 1rem",
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "0.75rem",
-              }}>
-                <div style={{
-                  width: "8px", height: "8px", borderRadius: "50%",
-                  background: severityColor(event.severity),
-                  marginTop: "0.4rem",
-                  flexShrink: 0,
-                  boxShadow: `0 0 8px ${severityColor(event.severity)}`,
-                }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.5rem" }}>
-                    <span style={{ fontSize: "0.85rem", fontWeight: 700, color: severityColor(event.severity) }}>
-                      {EVENT_LABELS[event.eventType] || event.eventType.replace(/_/g, " ")}
-                    </span>
-                    <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", flexShrink: 0 }}>
-                      {formatEventDate(event.createdAt)}
-                    </span>
-                  </div>
-                  {event.message && (
-                    <div style={{ fontSize: "0.85rem", color: "var(--color-gray-300)", marginTop: "0.25rem" }}>
-                      {event.message}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+      {/* Account Statistics and Rules Side-by-Side Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", marginBottom: "1.5rem" }}>
+        
+        {/* Statistics */}
+        <div style={{ background: "var(--color-gray-900)", padding: "1.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+          <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem" }}>Account Statistics</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid var(--color-brand-500)" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Initial Balance</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(challenge.initialBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid #10B981" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Highest Balance</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(challenge.highestBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid #3B82F6" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Highest Equity</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(challenge.highestEquity).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+            </div>
+            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid #8B5CF6" }}>
+              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Steps</div>
+              <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>{challenge.metadata?.steps || "N/A"}</div>
+            </div>
           </div>
         </div>
-      )}
 
-      <div style={{ marginTop: "2rem" }}>
-        <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Account Statistics</h3>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-          <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>Initial Balance</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>${Number(challenge.initialBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
-          </div>
-          <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>Current Equity</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>${Number(challenge.currentEquity).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
-          </div>
-          <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>Highest Balance</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>${Number(challenge.highestBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
-          </div>
-          <div style={{ background: "var(--color-gray-900)", padding: "1rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>Highest Equity</div>
-            <div style={{ fontSize: "1.1rem", fontWeight: 600 }}>${Number(challenge.highestEquity).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+        {/* Rules */}
+        <div style={{ background: "var(--color-gray-900)", padding: "1.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+          <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem" }}>Trading Rules</h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Drawdown Type</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-brand-500)", background: "rgba(59, 130, 246, 0.1)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>{challenge.template.drawdownType.replace(/_/g, " ")}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Daily Reset</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#8B5CF6", background: "rgba(139, 92, 246, 0.1)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>{challenge.template.dailyResetTimezone}</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Weekend Holding</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: challenge.template.weekendHoldingAllowed ? "var(--color-profit)" : "var(--color-loss)", background: challenge.template.weekendHoldingAllowed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>
+                {challenge.template.weekendHoldingAllowed ? "Allowed" : "Not allowed"}
+              </span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>News Trading</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: challenge.template.newsTradingAllowed ? "var(--color-profit)" : "var(--color-loss)", background: challenge.template.newsTradingAllowed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>
+                {challenge.template.newsTradingAllowed ? "Allowed" : "Not allowed"}
+              </span>
+            </div>
+            {challenge.template.consistencyRulePct && (
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Consistency</span>
+                <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#F59E0B", background: "rgba(245, 158, 11, 0.1)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>{challenge.template.consistencyRulePct}% max single day</span>
+              </div>
+            )}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Max Trading Days</span>
+              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-300)", background: "var(--color-gray-800)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>{challenge.maxTradingDays ?? "None"}</span>
+            </div>
           </div>
         </div>
       </div>
 
-      <div style={{ marginTop: "2rem" }}>
-        <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Rules</h3>
+      <ConsistencySection snapshots={snapshots} challenge={challenge} />
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-          <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Drawdown Type</div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem" }}>{challenge.template.drawdownType.replace(/_/g, " ")}</div>
-          </div>
-          <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Daily Reset</div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem" }}>{challenge.template.dailyResetTimezone}</div>
-          </div>
-          <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Weekend Holding</div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem", color: challenge.template.weekendHoldingAllowed ? "var(--color-profit)" : "var(--color-loss)" }}>
-              {challenge.template.weekendHoldingAllowed ? "Allowed" : "Not allowed"}
-            </div>
-          </div>
-          <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>News Trading</div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem", color: challenge.template.newsTradingAllowed ? "var(--color-profit)" : "var(--color-loss)" }}>
-              {challenge.template.newsTradingAllowed ? "Allowed" : "Not allowed"}
-            </div>
-          </div>
-          {challenge.template.consistencyRulePct ? (
-            <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Consistency Rule</div>
-              <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem" }}>{challenge.template.consistencyRulePct}% max single day</div>
-            </div>
-          ) : null}
-          {challenge.deadlineAt ? (
-            <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Deadline</div>
-              <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem", color: new Date(challenge.deadlineAt) < new Date() ? "var(--color-loss)" : "var(--color-gray-100)" }}>
-                {formatDate(challenge.deadlineAt)}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", marginTop: "1.5rem", marginBottom: "1.5rem" }}>
+        <TimelineSection challenge={challenge} />
+
+        {events.length > 0 ? (
+          <div>
+            <div style={{ background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)", padding: "1.5rem", height: "100%", maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+              <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem", flexShrink: 0 }}>Alerts & Events</h3>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+                {events.map((event, idx) => (
+                  <div key={event.id} style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "1rem",
+                    borderBottom: idx !== events.length - 1 ? "1px solid var(--color-gray-800)" : "none",
+                    paddingBottom: idx !== events.length - 1 ? "1.25rem" : 0
+                  }}>
+                    <div style={{
+                      width: "36px", height: "36px", borderRadius: "8px",
+                      background: `${severityColor(event.severity)}15`,
+                      border: `1px solid ${severityColor(event.severity)}40`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      color: severityColor(event.severity),
+                      flexShrink: 0,
+                      fontWeight: 600,
+                    }}>
+                      {event.severity === "critical" ? "!" : event.severity === "warning" ? "!" : "i"}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0, marginTop: "0.2rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.5rem" }}>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: severityColor(event.severity) }}>
+                          {EVENT_LABELS[event.eventType] || event.eventType.replace(/_/g, " ")}
+                        </span>
+                        <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", flexShrink: 0, fontWeight: 500 }}>
+                          {formatEventDate(event.createdAt)}
+                        </span>
+                      </div>
+                      {event.message && (
+                        <div style={{ fontSize: "0.8rem", color: "var(--color-gray-300)", marginTop: "0.3rem", lineHeight: 1.4 }}>
+                          {event.message}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          ) : null}
-          <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Min Trading Days</div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem" }}>{challenge.minTradingDays ?? "None"}</div>
           </div>
-          <div style={{ background: "var(--color-gray-900)", padding: "0.75rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Max Trading Days</div>
-            <div style={{ fontSize: "0.95rem", fontWeight: 600, marginTop: "0.2rem" }}>{challenge.maxTradingDays ?? "None"}</div>
-          </div>
-        </div>
+        ) : <div />}
       </div>
 
       {snapshots.length > 0 && (
-        <div style={{ marginTop: "2rem" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-            <h3 style={{ fontSize: "1.05rem", fontWeight: 600, color: "var(--color-gray-100)" }}>Daily Breakdown</h3>
-            <span style={{ fontSize: "0.78rem", color: "var(--color-gray-500)" }}>
-              {snapshots.length} day{snapshots.length > 1 ? "s" : ""}
-            </span>
-          </div>
-          <div style={{ overflowX: "auto", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem" }}>
+        <div style={{ marginTop: "1.5rem" }}>
+          <div style={{ background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)", overflow: "hidden" }}>
+            <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-gray-800)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h3 style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-100)", margin: 0 }}>Daily Breakdown</h3>
+              <span style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>
+                {snapshots.length} day{snapshots.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
               <thead>
-                <tr style={{ background: "var(--color-gray-900)", color: "var(--color-gray-400)", textAlign: "left" }}>
-                  <th style={{ padding: "0.6rem 0.75rem" }}>Date</th>
-                  <th style={{ padding: "0.6rem 0.75rem", textAlign: "right" }}>Start</th>
-                  <th style={{ padding: "0.6rem 0.75rem", textAlign: "right" }}>End</th>
-                  <th style={{ padding: "0.6rem 0.75rem", textAlign: "right" }}>P&L</th>
-                  <th style={{ padding: "0.6rem 0.75rem", textAlign: "right" }}>Trades</th>
-                  <th style={{ padding: "0.6rem 0.75rem", textAlign: "right" }}>DD used</th>
+                <tr style={{ background: "var(--color-gray-950)", color: "var(--color-gray-400)", textAlign: "left", borderBottom: "1px solid var(--color-gray-800)" }}>
+                  <th style={{ padding: "1rem", fontWeight: 600 }}>Date</th>
+                  <th style={{ padding: "1rem", textAlign: "right", fontWeight: 600 }}>Start Balance</th>
+                  <th style={{ padding: "1rem", textAlign: "right", fontWeight: 600 }}>End Balance</th>
+                  <th style={{ padding: "1rem", textAlign: "right", fontWeight: 600 }}>P&L</th>
+                  <th style={{ padding: "1rem", textAlign: "right", fontWeight: 600 }}>Trades</th>
+                  <th style={{ padding: "1rem", textAlign: "right", fontWeight: 600 }}>DD Used</th>
                 </tr>
               </thead>
               <tbody>
-                {snapshots.slice().reverse().slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map(s => (
-                  <tr key={s.id} style={{ borderTop: "1px solid var(--color-gray-800)", color: "var(--color-gray-300)" }}>
-                    <td style={{ padding: "0.5rem 0.75rem", whiteSpace: "nowrap" }}>{formatDate(s.date)}</td>
-                    <td style={{ padding: "0.5rem 0.75rem", textAlign: "right" }}>${Number(s.startBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
-                    <td style={{ padding: "0.5rem 0.75rem", textAlign: "right" }}>${Number(s.endBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
-                    <td style={{ padding: "0.5rem 0.75rem", textAlign: "right", color: Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                {snapshots.slice().reverse().slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE).map((s, idx) => (
+                  <tr key={s.id} style={{ borderBottom: idx === PAGE_SIZE - 1 ? "none" : "1px solid var(--color-gray-800)", color: "var(--color-gray-300)" }}>
+                    <td style={{ padding: "1rem", whiteSpace: "nowrap", fontWeight: 500, color: "var(--color-gray-200)" }}>{formatDate(s.date)}</td>
+                    <td style={{ padding: "1rem", textAlign: "right" }}>${Number(s.startBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
+                    <td style={{ padding: "1rem", textAlign: "right", fontWeight: 500 }}>${Number(s.endBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
+                    <td style={{ padding: "1rem", textAlign: "right", color: Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600, textShadow: Number(s.dailyPnl) >= 0 ? "0 0 10px rgba(16,185,129,0.2)" : "none" }}>
                       ${Number(s.dailyPnl) >= 0 ? "+" : ""}{Number(s.dailyPnl).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </td>
-                    <td style={{ padding: "0.5rem 0.75rem", textAlign: "right" }}>{s.tradesCount}</td>
-                    <td style={{ padding: "0.5rem 0.75rem", textAlign: "right", color: (s.dailyDDUsedPct ?? 0) >= 80 ? "var(--color-warning)" : "var(--color-gray-400)" }}>
-                      {s.dailyDDUsedPct != null ? `${Math.round(s.dailyDDUsedPct)}%` : "—"}
+                    <td style={{ padding: "1rem", textAlign: "right" }}>{s.tradesCount}</td>
+                    <td style={{ padding: "1rem", textAlign: "right" }}>
+                      <span style={{ 
+                        color: (s.dailyDDUsedPct ?? 0) >= 80 ? "var(--color-warning)" : "var(--color-gray-400)", 
+                        background: (s.dailyDDUsedPct ?? 0) >= 80 ? "rgba(245, 158, 11, 0.1)" : "transparent",
+                        padding: (s.dailyDDUsedPct ?? 0) >= 80 ? "0.2rem 0.5rem" : "0",
+                        borderRadius: "4px",
+                        fontWeight: (s.dailyDDUsedPct ?? 0) >= 80 ? 600 : 400
+                      }}>
+                        {s.dailyDDUsedPct != null ? `${Math.round(s.dailyDDUsedPct)}%` : "—"}
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        </div>
 
-          {snapshots.length > PAGE_SIZE && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.75rem" }}>
-              <span style={{ fontSize: "0.78rem", color: "var(--color-gray-500)" }}>
-                Page {page} / {Math.ceil(snapshots.length / PAGE_SIZE)}
+        {snapshots.length > PAGE_SIZE && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "1rem" }}>
+              <span style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>
+                Page {page} of {Math.ceil(snapshots.length / PAGE_SIZE)}
               </span>
-              <div style={{ display: "flex", gap: "0.4rem" }}>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
                   className="btn btn-outline"
-                  style={{ padding: "0.35rem 0.8rem", fontSize: "0.78rem" }}
+                  style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem" }}
                 >
                   &larr; Prev
                 </button>
@@ -419,7 +442,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
                   onClick={() => setPage(p => Math.min(Math.ceil(snapshots.length / PAGE_SIZE), p + 1))}
                   disabled={page >= Math.ceil(snapshots.length / PAGE_SIZE)}
                   className="btn btn-outline"
-                  style={{ padding: "0.35rem 0.8rem", fontSize: "0.78rem" }}
+                  style={{ padding: "0.4rem 0.8rem", fontSize: "0.8rem" }}
                 >
                   Next &rarr;
                 </button>
@@ -475,124 +498,40 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: any[]; challe
   }
 
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Consistency Analysis</h3>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem", marginBottom: "1.25rem" }}>
-        <div style={{ background: "var(--color-gray-900)", padding: "0.9rem 1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.72rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Total profit</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 700, color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-            {totalPnl >= 0 ? "+" : ""}${totalPnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+    <div style={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>
+      <div style={{ background: "var(--color-gray-900)", padding: "1.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+        <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem" }}>Consistency Analysis</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "2rem" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Total Profit</div>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", textShadow: totalPnl >= 0 ? "0 0 10px rgba(16,185,129,0.2)" : "none" }}>
+              {totalPnl >= 0 ? "+" : ""}${totalPnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            </div>
           </div>
-        </div>
-        <div style={{ background: "var(--color-gray-900)", padding: "0.9rem 1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.72rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Biggest day</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-profit)" }}>
-            +${biggestDay.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+          <div style={{ width: "1px", background: "var(--color-gray-800)", alignSelf: "stretch", display: "none" }} className="md:block" />
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Biggest Day</div>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-profit)", textShadow: "0 0 10px rgba(16,185,129,0.2)" }}>
+              +${biggestDay.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+            </div>
           </div>
-        </div>
-        <div style={{ background: "var(--color-gray-900)", padding: "0.9rem 1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.72rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Biggest day / profit</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 700, color: ruleOk ? "var(--color-gray-100)" : "var(--color-loss)" }}>
-            {biggestPct.toFixed(1)}%
+          <div style={{ width: "1px", background: "var(--color-gray-800)", alignSelf: "stretch", display: "none" }} className="md:block" />
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Biggest Day / Profit</div>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: ruleOk ? "#10B981" : "var(--color-loss)" }}>
+              {biggestPct.toFixed(1)}%
+            </div>
           </div>
-        </div>
-        <div style={{ background: "var(--color-gray-900)", padding: "0.9rem 1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.72rem", color: "var(--color-gray-400)", textTransform: "uppercase" }}>Consistency rule</div>
-          <div style={{ fontSize: "1.1rem", fontWeight: 700, color: consistencyRule > 0 ? "var(--color-brand-500)" : "var(--color-gray-500)" }}>
-            {consistencyRule > 0 ? `max ${consistencyRule}%` : "Not set"}
+          <div style={{ width: "1px", background: "var(--color-gray-800)", alignSelf: "stretch", display: "none" }} className="md:block" />
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+            <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Consistency Rule</div>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: consistencyRule > 0 ? "var(--color-brand-500)" : "var(--color-gray-500)", textShadow: consistencyRule > 0 ? "0 0 10px rgba(59,130,246,0.2)" : "none" }}>
+              {consistencyRule > 0 ? `Max ${consistencyRule}%` : "Not set"}
+            </div>
           </div>
         </div>
       </div>
 
-      {consistencyRule > 0 && (
-        <div style={{
-          marginBottom: "1.25rem", padding: "0.75rem 1rem", borderRadius: "10px",
-          background: ruleOk ? "rgba(16,185,129,0.08)" : "rgba(239,68,68,0.1)",
-          border: `1px solid ${ruleOk ? "rgba(16,185,129,0.25)" : "rgba(239,68,68,0.3)"}`,
-          fontSize: "0.85rem", color: ruleOk ? "var(--color-profit)" : "var(--color-loss)",
-        }}>
-          {ruleOk
-            ? `Your biggest day (${biggestPct.toFixed(1)}%) is within the ${consistencyRule}% consistency rule. You're good to pass.`
-            : `Risk: your biggest day (${biggestPct.toFixed(1)}%) exceeds the ${consistencyRule}% consistency rule. A payout would be blocked.`}
-        </div>
-      )}
-
-      <div style={{ background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)", marginBottom: "1.25rem" }}>
-        <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginBottom: "0.75rem" }}>Consistency simulator</div>
-        <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "flex-end" }}>
-          <div className="form-group" style={{ minWidth: 220 }}>
-            <label className="label">If your biggest day had been ($)</label>
-            <input
-              className="input"
-              type="number"
-              value={simBiggest ?? ""}
-              placeholder={biggestDay.toFixed(2)}
-              onChange={e => setSimBiggest(e.target.value === "" ? null : Number(e.target.value))}
-            />
-          </div>
-          <div style={{ fontSize: "0.85rem", color: "var(--color-gray-300)", paddingBottom: "0.55rem" }}>
-            → Biggest day = <strong style={{ color: "var(--color-gray-100)" }}>{simBiggestPct.toFixed(1)}%</strong> of profit
-          </div>
-          <div style={{
-            padding: "0.5rem 0.9rem", borderRadius: "8px", marginBottom: "0.25rem",
-            background: simOk ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.12)",
-            border: `1px solid ${simOk ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.35)"}`,
-            color: simOk ? "var(--color-profit)" : "var(--color-loss)",
-            fontSize: "0.82rem", fontWeight: 600,
-          }}>
-            {simOk ? "Payout OK" : "Payout blocked"}
-          </div>
-        </div>
-        {simBiggest !== null && simBiggest !== biggestDay && (
-          <div style={{ marginTop: "0.6rem", fontSize: "0.75rem", color: "var(--color-gray-500)" }}>
-            Actual biggest day: ${biggestDay.toFixed(2)} ({biggestPct.toFixed(1)}%). Clear the field to reset.
-          </div>
-        )}
-      </div>
-
-      <div style={{ background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "1rem" }}>
-          <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Daily P&L heatmap</div>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-            Less
-            {[0.25, 0.5, 0.75, 1].map(a => (
-              <span key={a} style={{ width: 12, height: 12, borderRadius: 3, background: `rgba(16,185,129,${a})`, display: "inline-block" }} />
-            ))}
-            More
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: "0.4rem" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem", marginRight: "0.25rem" }}>
-            {DAYS.map(d => (
-              <div key={d} style={{ height: 14, fontSize: "0.62rem", color: "var(--color-gray-500)", lineHeight: "14px" }}>{d}</div>
-            ))}
-          </div>
-          {Array.from({ length: weekSpan }, (_, w) => {
-            const weekNum = minWeek + w
-            return (
-              <div key={w} style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
-                {DAYS.map((_, di) => {
-                  const cell = cellMap.get(`${weekNum}-${di}`)
-                  const pnl = cell ? cell.pnl : null
-                  return (
-                    <div
-                      key={di}
-                      title={cell ? `${cell.date}: ${pnl! >= 0 ? "+" : ""}$${pnl!.toFixed(2)}` : "No trading day"}
-                      style={{
-                        width: 14, height: 14, borderRadius: 4,
-                        background: pnl === null ? "transparent" : cellColor(pnl),
-                        border: pnl === null ? "1px dashed var(--color-gray-800)" : "none",
-                      }}
-                    />
-                  )
-                })}
-              </div>
-            )
-          })}
-        </div>
-      </div>
     </div>
   )
 }
@@ -604,7 +543,7 @@ function TimelineSection({ challenge }: { challenge: any }) {
 
   milestones.push({
     date: new Date(challenge.startedAt),
-    label: "Challenge started",
+    label: "Challenge Started",
     sub: `${challenge.template?.firmName || "Prop firm"} — ${challenge.initialBalance ? `$${Number(challenge.initialBalance).toLocaleString("en-US", { maximumFractionDigits: 0 })}` : ""}`.trim(),
     kind: "info",
   })
@@ -629,7 +568,7 @@ function TimelineSection({ challenge }: { challenge: any }) {
   if (challenge.status === "passed" || challenge.status === "breached" || challenge.status === "failed") {
     milestones.push({
       date: new Date(challenge.breachedAt || challenge.updatedAt || Date.now()),
-      label: challenge.status === "passed" ? "Phase passed" : "Challenge failed",
+      label: challenge.status === "passed" ? "Phase Passed" : "Challenge Failed",
       sub: challenge.status === "passed"
         ? "Profit target reached — move to the next phase."
         : `Breach: ${challenge.breachReason ? challenge.breachReason.replace(/_/g, " ") : "unknown"}.`,
@@ -646,25 +585,26 @@ function TimelineSection({ challenge }: { challenge: any }) {
     "var(--color-brand-500)"
 
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <h3 style={{ fontSize: "1.05rem", fontWeight: 600, marginBottom: "1rem", color: "var(--color-gray-100)" }}>Timeline</h3>
-      <div style={{ background: "var(--color-gray-900)", padding: "1.25rem 1.25rem 0.5rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
-        <div style={{ position: "relative", paddingLeft: "1.4rem" }}>
-          <div style={{ position: "absolute", left: "0.4rem", top: "0.35rem", bottom: "0.35rem", width: "2px", background: "var(--color-gray-700)", borderRadius: "1px" }} />
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}>
+    <div>
+      <div style={{ background: "var(--color-gray-900)", padding: "1.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)", height: "100%", maxHeight: "400px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+        <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem", flexShrink: 0 }}>Timeline</h3>
+        <div style={{ position: "relative", paddingLeft: "1.75rem" }}>
+          <div style={{ position: "absolute", left: "0.5rem", top: "0.5rem", bottom: "0.5rem", width: "2px", background: "var(--color-gray-800)" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
             {milestones.map((m, i) => (
-              <div key={i} style={{ position: "relative", display: "flex", gap: "0.9rem" }}>
+              <div key={i} style={{ position: "relative", display: "flex", gap: "1.25rem" }}>
                 <div style={{
-                  position: "absolute", left: "-1.4rem", top: "0.25rem",
-                  width: "12px", height: "12px", borderRadius: "50%",
-                  background: dotColor(m.kind), boxShadow: `0 0 0 3px ${dotColor(m.kind)}22`,
+                  position: "absolute", left: "-1.7rem", top: "0.2rem",
+                  width: "14px", height: "14px", borderRadius: "50%",
+                  background: dotColor(m.kind), border: "3px solid var(--color-gray-900)",
+                  boxShadow: `0 0 8px ${dotColor(m.kind)}`
                 }} />
-                <div style={{ flex: 1, minWidth: 0, paddingBottom: "0.5rem" }}>
+                <div style={{ flex: 1, minWidth: 0, marginTop: "-0.1rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "0.5rem" }}>
-                    <span style={{ fontSize: "0.88rem", fontWeight: 600, color: "var(--color-gray-100)" }}>{m.label}</span>
-                    <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", flexShrink: 0 }}>{formatEventDate(m.date.toISOString())}</span>
+                    <span style={{ fontSize: "0.85rem", fontWeight: 600, color: dotColor(m.kind) }}>{m.label}</span>
+                    <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", flexShrink: 0, fontWeight: 500 }}>{formatEventDate(m.date.toISOString())}</span>
                   </div>
-                  {m.sub && <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginTop: "0.15rem" }}>{m.sub}</div>}
+                  {m.sub && <div style={{ fontSize: "0.8rem", color: "var(--color-gray-300)", marginTop: "0.3rem", lineHeight: 1.4 }}>{m.sub}</div>}
                 </div>
               </div>
             ))}

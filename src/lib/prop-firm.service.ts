@@ -108,6 +108,20 @@ export async function evaluateChallenge(challengeId: string) {
     orderBy: { exitAt: 'asc' }
   })
 
+  // Log debug information to a local file
+  try {
+    const fs = require("fs")
+    const path = require("path")
+    const logPath = path.resolve(process.cwd(), "logs_eval.txt")
+    const logMsg = `[${new Date().toISOString()}] Challenge evaluation triggered. ID: ${challengeId}, Account ID: ${challenge.accountId}, Trades found: ${trades.length}\n`
+    fs.appendFileSync(logPath, logMsg)
+    if (trades.length > 0) {
+      fs.appendFileSync(logPath, `Trades details: ${JSON.stringify(trades.map(t => ({ id: t.id, symbol: t.symbol, exitAt: t.exitAt, netPnl: t.netPnl, status: t.status })))}\n`)
+    }
+  } catch (e) {
+    console.error("Failed to write evaluation logs:", e)
+  }
+
   // We are calculating from scratch for the MVP, effectively a recalculate flow.
   let currentBalance = Number(challenge.initialBalance)
   let highestBalance = Number(challenge.initialBalance)
@@ -132,15 +146,9 @@ export async function evaluateChallenge(challengeId: string) {
     const pnl = Number(trade.netPnl || 0)
     currentBalance += pnl
 
-    // Update highest marks
-    if (challenge.template.drawdownType === 'trailing_balance') {
-      highestBalance = Math.max(highestBalance, currentBalance)
-    }
-
-    // For trailing equity, we approximate it with balance since we only look at post-trade
-    if (challenge.template.drawdownType === 'trailing_equity') {
-      highestEquity = Math.max(highestEquity, currentBalance)
-    }
+    // Update highest marks for stats
+    highestBalance = Math.max(highestBalance, currentBalance)
+    highestEquity = Math.max(highestEquity, currentBalance)
 
     // Accumulate into the trading day
     const key = dayKey(tradeExit, timezone)
@@ -220,12 +228,14 @@ export async function evaluateChallenge(challengeId: string) {
     }
 
     if (currentBalance <= maxDdThreshold) {
+      await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, days.size)
       await markBreached(challenge.id, 'max_dd', prefs)
       await writeDailySnapshots(challenge.id, days, Number(challenge.dailyDDPct || 0))
       return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
     }
 
     if (currentBalance <= dailyDdThreshold) {
+      await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, days.size)
       await markBreached(challenge.id, 'daily_dd', prefs)
       await writeDailySnapshots(challenge.id, days, Number(challenge.dailyDDPct || 0))
       return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
@@ -275,6 +285,7 @@ export async function evaluateChallenge(challengeId: string) {
       for (const acc of days.values()) biggestDay = Math.max(biggestDay, acc.pnl)
       const biggestPct = (biggestDay / currentProfit) * 100
       if (biggestPct > consistencyPct) {
+        await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
         await markFailed(challenge.id, 'consistency', `Consistency rule violated: largest day was ${Math.round(biggestPct)}% of total profit (max ${consistencyPct}%).`, prefs)
         return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
       }
@@ -288,6 +299,7 @@ export async function evaluateChallenge(challengeId: string) {
       { currentProfit: Math.round(currentProfit * 100) / 100 },
       prefEnabled(prefs, "target_hit")
     )
+    await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
     await prisma.propChallenge.update({
       where: { id: challenge.id },
       data: { status: 'passed' }
@@ -366,6 +378,23 @@ async function markBreached(challengeId: string, reason: string, prefs?: any) {
 }
 
 async function writeDailySnapshots(challengeId: string, days: Map<string, DayAccum>, dailyDDPct: number) {
+  // First, delete any existing snapshots that are not in the current evaluation
+  // This handles cases where trades were deleted or filtered out.
+  const evaluatedDates = Array.from(days.values()).map(acc => acc.date)
+  
+  if (evaluatedDates.length === 0) {
+    await prisma.propChallengeDailySnapshot.deleteMany({
+      where: { challengeId }
+    })
+  } else {
+    await prisma.propChallengeDailySnapshot.deleteMany({
+      where: {
+        challengeId,
+        date: { notIn: evaluatedDates }
+      }
+    })
+  }
+
   for (const acc of days.values()) {
     const key = dayKey(acc.date, "UTC")
     const [y, m, d] = key.split("-").map(Number)

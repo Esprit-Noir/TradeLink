@@ -2,9 +2,11 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { parseCSV } from "@/lib/parsers"
+import { parseGenericCSV, type GenericMapping } from "@/lib/parsers/generic.parser"
 import { getActiveAccount } from "@/lib/active-account"
 import { evaluateChallenge } from "@/lib/prop-firm.service"
 
+const PREVIEW_LIMIT = 10
 
 export async function POST(request: Request) {
   try {
@@ -16,7 +18,9 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     const file = formData.get("file") as File
     const broker = formData.get("broker") as string
-    const challengeId = (formData.get("challengeId") as string) || null
+    const accountId = (formData.get("accountId") as string) || null
+    const mappingRaw = (formData.get("mapping") as string) || null
+    const mode = (formData.get("mode") as string) || "import"
 
     if (!file || !broker) {
       return NextResponse.json({ error: "File and broker are required." }, { status: 400 })
@@ -24,31 +28,45 @@ export async function POST(request: Request) {
 
     const text = await file.text()
 
-    // Retrieve target account: a specific prop challenge account, or the default account
+    // Retrieve target account: a specific account, or the active account
     let account = null
     let targetChallenge = null
 
-    if (challengeId) {
-      targetChallenge = await prisma.propChallenge.findUnique({
-        where: { id: challengeId },
-        include: { account: true }
+    if (accountId) {
+      account = await prisma.tradingAccount.findFirst({
+        where: { id: accountId, userId: session.user.id }
       })
-      if (!targetChallenge || targetChallenge.userId !== session.user.id) {
-        return NextResponse.json({ error: "Challenge not found." }, { status: 404 })
+      if (!account) {
+        return NextResponse.json({ error: "Trading account not found." }, { status: 404 })
       }
-      account = targetChallenge.account
+      targetChallenge = await prisma.propChallenge.findFirst({
+        where: { accountId: account.id }
+      })
     } else {
       account = await getActiveAccount(session.user.id)
+      if (account) {
+        targetChallenge = await prisma.propChallenge.findFirst({
+          where: { accountId: account.id }
+        })
+      }
     }
 
     if (!account) {
       return NextResponse.json({ error: "No trading account found." }, { status: 404 })
     }
 
-    // Run custom parsers directly on the text
-    // The broker type in the parser uses lowercased keys, so we cast it. 
-    // Usually the frontend sends 'interactive_brokers', 'binance', or 'bybit'.
-    const parseResult = await parseCSV(text, broker as any)
+    let parseResult
+    if (broker === "generic" && mappingRaw) {
+      let mapping: GenericMapping
+      try {
+        mapping = JSON.parse(mappingRaw)
+      } catch {
+        return NextResponse.json({ error: "Invalid column mapping." }, { status: 400 })
+      }
+      parseResult = parseGenericCSV(text, mapping)
+    } else {
+      parseResult = await parseCSV(text, broker as any)
+    }
 
     if (parseResult.errors.length > 0 && parseResult.trades.length === 0) {
        return NextResponse.json({ error: "Failed to parse CSV file: " + parseResult.errors[0].message }, { status: 400 })
@@ -74,7 +92,7 @@ export async function POST(request: Request) {
     const tradesToInsert = parsedTrades.map((t) => {
       const isLong = t.side.toUpperCase() === "LONG"
       let netPnl = t.netPnl
-      
+
       // Basic P&L calculation if missing
       if (netPnl === undefined) {
         if (t.exitPrice && t.entryPrice) {
@@ -93,21 +111,59 @@ export async function POST(request: Request) {
         side: t.side.toUpperCase(),
         entryAt: t.entryAt,
         exitAt: t.exitAt || t.entryAt, // Default to entry if missing
-        entryPrice: t.entryPrice,
-        exitPrice: t.exitPrice || t.entryPrice,
-        quantity: t.quantity,
+        entryPrice: t.entryPrice ?? 0,
+        exitPrice: t.exitPrice ?? 0,
+        quantity: t.quantity ?? 0,
         netPnl,
         netPnlUsd: Math.round(Number(netPnl) * fxRate * 10000) / 10000,
         fees: t.fees || 0,
-        status: "closed",
+        status: t.status === "open" ? "open" : "closed",
         setupTags: defaultSetupTags,
       }
     })
 
-    // Batch insert
+    // ── PREVIEW MODE ─────────────────────────────────────────────────────────
+    if (mode === "preview") {
+      // Duplicate detection against existing trades (symbol + entryAt + side)
+      const existing = await prisma.trade.findMany({
+        where: { accountId: account.id },
+        select: { symbol: true, entryAt: true, side: true },
+      })
+      const seen = new Set(existing.map(e => `${e.symbol}|${e.entryAt.getTime()}|${e.side.toUpperCase()}`))
+
+      const previewRows = tradesToInsert.slice(0, PREVIEW_LIMIT).map((t) => ({
+        symbol: t.symbol,
+        side: t.side,
+        entryAt: t.entryAt.toISOString(),
+        exitAt: t.exitAt?.toISOString() || null,
+        quantity: Number(t.quantity),
+        entryPrice: Number(t.entryPrice),
+        exitPrice: Number(t.exitPrice),
+        netPnl: Number(t.netPnl),
+        fees: Number(t.fees),
+        status: t.status,
+      }))
+
+      const duplicates = tradesToInsert.filter(t =>
+        seen.has(`${t.symbol}|${new Date(t.entryAt).getTime()}|${t.side}`)
+      ).length
+
+      return NextResponse.json({
+        preview: true,
+        total: tradesToInsert.length,
+        duplicates,
+        newRows: tradesToInsert.length - duplicates,
+        previewRows,
+        parseErrors: parseResult.errors.slice(0, 5),
+      })
+    }
+
+    // ── IMPORT MODE ──────────────────────────────────────────────────────────
+    const before = new Date()
+
     const result = await prisma.trade.createMany({
       data: tradesToInsert,
-      skipDuplicates: true, // Prevents failing if some trades already exist based on unique constraints if we add them
+      skipDuplicates: true,
     })
 
     // Invalidate behavioral snapshot cache
@@ -122,7 +178,15 @@ export async function POST(request: Request) {
       challengeStatus = evaluated?.status ?? null
     }
 
-    return NextResponse.json({ count: result.count, challengeStatus })
+    return NextResponse.json({
+      count: result.count,
+      challengeStatus,
+      token: {
+        accountId: account.id,
+        before: before.toISOString(),
+        challengeId: targetChallenge?.id || null,
+      },
+    })
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to import trades" }, { status: 500 })
   }

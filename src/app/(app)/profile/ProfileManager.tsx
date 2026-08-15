@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { signOut } from "next-auth/react"
-import { Save, LogOut, Wallet, Target, List, LayoutList, BookOpenText } from "lucide-react"
+import { Save, Wallet, Target, List, LayoutList, BookOpenText } from "lucide-react"
 import { toast } from "sonner"
 import { NotificationPreferences } from "@/components/prop-firm/NotificationPreferences"
 
@@ -93,9 +93,6 @@ export function ProfileManager({
     }
   }
 
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/login" })
-  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
@@ -215,18 +212,6 @@ export function ProfileManager({
         <NotificationPreferences />
       </div>
 
-      {/* ─── Danger zone ────────────────────────────────────────────────── */}
-      <div className="card" style={{ padding: "1.5rem", border: "1px solid rgba(239,68,68,0.25)" }}>
-        <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-loss)", marginBottom: "0.25rem" }}>
-          Danger Zone
-        </div>
-        <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1rem" }}>
-          Log out of your session on this device.
-        </div>
-        <button onClick={handleLogout} className="btn btn-outline" style={{ color: "var(--color-loss)", borderColor: "rgba(239,68,68,0.35)" }}>
-          <LogOut size={15} /> Log out
-        </button>
-      </div>
     </div>
   )
 }

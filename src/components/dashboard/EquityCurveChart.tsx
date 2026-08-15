@@ -13,6 +13,8 @@ export function EquityCurveChart() {
   const [data, setData] = useState<EquityPoint[]>([])
   const [loading, setLoading] = useState(true)
 
+  const searchKey = typeof window !== "undefined" ? window.location.search : ""
+
   useEffect(() => {
     fetch(`/api/metrics/equity-curve${window.location.search}`)
       .then((r) => r.json())
@@ -21,7 +23,7 @@ export function EquityCurveChart() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [searchKey])
 
   const isPositive = data.length > 0 && data[data.length - 1].equity >= (data[0]?.equity ?? 0)
   const lineColor = isPositive ? "var(--color-profit)" : "var(--color-loss)"

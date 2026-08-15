@@ -20,7 +20,6 @@ export default async function AccountsPage() {
   const dbAccounts = await prisma.tradingAccount.findMany({
     where: { userId: session.user.id },
     include: {
-      trades: { select: { id: true, status: true, netPnl: true, netPnlUsd: true } },
       propChallenge: {
         include: { template: true }
       }
@@ -28,16 +27,24 @@ export default async function AccountsPage() {
     orderBy: { createdAt: 'desc' }
   })
 
-  const accounts = dbAccounts.map(acc => {
-    const closedTrades = acc.trades.filter(t => t.status === 'closed')
-    const totalPnl = closedTrades.reduce((sum, t) => sum + Number(t.netPnl || 0), 0)
-    const totalPnlUsd = closedTrades.reduce((sum, t) => sum + Number(t.netPnlUsd ?? (t.netPnl || 0)), 0)
+  const accounts = await Promise.all(dbAccounts.map(async acc => {
+    const where: any = { accountId: acc.id, status: 'closed' }
+    if (acc.type === 'backtest') {
+      where.includeBacktest = true
+    }
+    const trades = await prisma.trade.findMany({
+      where,
+      select: { netPnl: true, netPnlUsd: true, status: true }
+    })
+
+    const totalPnl = trades.reduce((sum, t) => sum + Number(t.netPnl || 0), 0)
+    const totalPnlUsd = trades.reduce((sum, t) => sum + Number(t.netPnlUsd ?? (t.netPnl || 0)), 0)
     
     return {
       id: acc.id,
       name: acc.name,
       broker: acc.broker,
-      type: acc.propChallenge ? 'prop_firm' : (acc.type || 'personal'),
+      type: acc.propChallenge ? 'prop_firm' : (acc.type === 'backtest' ? 'demo' : (acc.type || 'personal')),
       baseCurrency: acc.baseCurrency,
       fxRateToUsd: acc.fxRateToUsd ? Number(acc.fxRateToUsd) : 1,
       initialBalance: acc.initialBalance ? Number(acc.initialBalance) : 0,
@@ -53,12 +60,12 @@ export default async function AccountsPage() {
         logoUrl: acc.propChallenge.template.logoUrl || null,
       } : null,
       stats: {
-        tradesCount: acc.trades.length,
+        tradesCount: trades.length,
         totalPnl,
         totalPnlUsd,
       }
     }
-  })
+  }))
 
   return (
     <div>

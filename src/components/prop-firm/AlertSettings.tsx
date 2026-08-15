@@ -30,15 +30,15 @@ export function AlertSettings({ challengeId, initialConfig }: { challengeId: str
   }
 
   return (
-    <div className="card" style={{ padding: "1.25rem" }}>
-      <div className="chart-title" style={{ marginBottom: "1rem" }}>Alert Settings</div>
+    <div style={{ background: "var(--color-gray-900)", padding: "1.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+      <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem" }}>Alert Settings</h3>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>Stop-trading alert</div>
-            <div style={{ fontSize: "0.78rem", color: "var(--color-gray-500)" }}>
-              Notify when you use {config.stopTradingPct}% of your max drawdown so you stop for the day.
+            <div style={{ fontWeight: 600, fontSize: "0.9rem", color: config.enableStopTrading ? "var(--color-loss)" : "var(--color-gray-300)" }}>Stop-trading alert</div>
+            <div style={{ fontSize: "0.78rem", color: "var(--color-gray-500)", marginTop: "0.2rem" }}>
+              Notify when you use <span style={{ color: "var(--color-gray-300)", fontWeight: 600 }}>{config.stopTradingPct}%</span> of your max drawdown so you stop for the day.
             </div>
           </div>
           <input
@@ -57,7 +57,7 @@ export function AlertSettings({ challengeId, initialConfig }: { challengeId: str
               onChange={e => setConfig(c => ({ ...c, enableStopTrading: e.target.checked }))}
               style={{ width: 16, height: 16, accentColor: "var(--color-brand-500)" }}
             />
-            <span style={{ fontSize: "0.8rem" }}>Enabled</span>
+            <span style={{ fontSize: "0.8rem", color: config.enableStopTrading ? "var(--color-gray-100)" : "var(--color-gray-500)", fontWeight: config.enableStopTrading ? 600 : 400 }}>Enabled</span>
           </label>
         </div>
 
@@ -65,9 +65,9 @@ export function AlertSettings({ challengeId, initialConfig }: { challengeId: str
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>Profit goal alert</div>
-            <div style={{ fontSize: "0.78rem", color: "var(--color-gray-500)" }}>
-              Notify when you reach {config.profitGoalPct}% of the profit target.
+            <div style={{ fontWeight: 600, fontSize: "0.9rem", color: config.enableProfitGoal ? "var(--color-profit)" : "var(--color-gray-300)" }}>Profit goal alert</div>
+            <div style={{ fontSize: "0.78rem", color: "var(--color-gray-500)", marginTop: "0.2rem" }}>
+              Notify when you reach <span style={{ color: "var(--color-gray-300)", fontWeight: 600 }}>{config.profitGoalPct}%</span> of the profit target.
             </div>
           </div>
           <input
@@ -86,7 +86,7 @@ export function AlertSettings({ challengeId, initialConfig }: { challengeId: str
               onChange={e => setConfig(c => ({ ...c, enableProfitGoal: e.target.checked }))}
               style={{ width: 16, height: 16, accentColor: "var(--color-brand-500)" }}
             />
-            <span style={{ fontSize: "0.8rem" }}>Enabled</span>
+            <span style={{ fontSize: "0.8rem", color: config.enableProfitGoal ? "var(--color-gray-100)" : "var(--color-gray-500)", fontWeight: config.enableProfitGoal ? 600 : 400 }}>Enabled</span>
           </label>
         </div>
       </div>

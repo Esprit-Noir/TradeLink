@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { evaluateChallenge } from "@/lib/prop-firm.service"
 import { prisma } from "@/lib/prisma"
+import { revalidatePath } from "next/cache"
 
 export async function POST(
   request: NextRequest,
@@ -24,6 +25,9 @@ export async function POST(
     }
 
     const updatedChallenge = await evaluateChallenge(id)
+
+    revalidatePath(`/challenges/${id}`)
+    revalidatePath(`/challenges`)
 
     return NextResponse.json(updatedChallenge)
   } catch (error: any) {

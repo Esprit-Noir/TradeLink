@@ -7,6 +7,8 @@ export function SetupBarChart() {
   const [data, setData] = useState<{name: string, pnl: number}[]>([])
   const [loading, setLoading] = useState(true)
 
+  const searchKey = typeof window !== "undefined" ? window.location.search : ""
+
   useEffect(() => {
     fetch(`/api/metrics/charts${window.location.search}`)
       .then((r) => r.json())
@@ -15,7 +17,7 @@ export function SetupBarChart() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [searchKey])
 
   return (
     <div className="chart-card">
@@ -51,6 +53,7 @@ export function SetupBarChart() {
                 fontSize: 12,
                 color: "var(--color-gray-200)",
               }}
+              itemStyle={{ color: "var(--color-gray-100)" }}
               formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Net P&L"]}
             />
             <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>

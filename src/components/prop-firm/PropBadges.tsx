@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Target, CheckCircle, RefreshCcw, BadgeDollarSign, TrendingUp } from "lucide-react"
 
 type Report = {
   total: number
@@ -36,7 +37,7 @@ const PHASE_LABEL: Record<string, string> = {
 
 type Badge = {
   id: string
-  emoji: string
+  icon: React.ReactNode
   label: string
   desc: string
   earned: boolean
@@ -52,11 +53,11 @@ export function PropBadges() {
       .then((r: Report) => {
         setActiveChallenges(r.activeChallenges || [])
         const list: Badge[] = [
-          { id: "first", emoji: "🎯", label: "First Challenge", desc: "Create your first prop challenge", earned: r.total >= 1 },
-          { id: "pass", emoji: "✅", label: "First Pass", desc: "Pass your first phase", earned: r.passed >= 1 },
-          { id: "comeback", emoji: "🔁", label: "Comeback", desc: "Pass after a breach", earned: r.passed >= 1 && r.breached >= 1 },
-          { id: "payout", emoji: "💰", label: "Payout", desc: "Receive your first payout", earned: r.payoutsPaid > 0 },
-          { id: "passrate", emoji: "📈", label: "50%+ Pass Rate", desc: "Keep your pass rate above 50%", earned: r.total > 0 && r.passRate >= 50 },
+          { id: "first", icon: <Target size={24} />, label: "First Challenge", desc: "Create your first prop challenge", earned: r.total >= 1 },
+          { id: "pass", icon: <CheckCircle size={24} />, label: "First Pass", desc: "Pass your first phase", earned: r.passed >= 1 },
+          { id: "comeback", icon: <RefreshCcw size={24} />, label: "Comeback", desc: "Pass after a breach", earned: r.passed >= 1 && r.breached >= 1 },
+          { id: "payout", icon: <BadgeDollarSign size={24} />, label: "Payout", desc: "Receive your first payout", earned: r.payoutsPaid > 0 },
+          { id: "passrate", icon: <TrendingUp size={24} />, label: "50%+ Pass Rate", desc: "Keep your pass rate above 50%", earned: r.total > 0 && r.passRate >= 50 },
         ]
         setBadges(list)
       })
@@ -69,26 +70,26 @@ export function PropBadges() {
   const pct = (earnedCount / badges.length) * 100
 
   return (
-    <div className="card" style={{ padding: "1.5rem", marginBottom: "1.25rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.15rem" }}>
-        <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>Achievements</div>
-        <div style={{ fontSize: "0.78rem", color: "var(--color-gray-500)" }}>
+    <div style={{ background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)", borderRadius: "8px", padding: "1.5rem", marginBottom: "1.5rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.25rem" }}>
+        <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--color-gray-100)" }}>Achievements</div>
+        <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--color-gray-500)" }}>
           {earnedCount} / {badges.length} unlocked
         </div>
       </div>
-      <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1.1rem" }}>
+      <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1.25rem" }}>
         Milestones earned on your prop-firm journey.
       </div>
 
-      <div style={{ marginBottom: "1.25rem", height: "5px", borderRadius: "3px", background: "var(--color-gray-800)", overflow: "hidden" }}>
+      <div style={{ marginBottom: "1.5rem", height: "4px", borderRadius: "2px", background: "var(--color-gray-800)", overflow: "hidden" }}>
         <div style={{
-          height: "100%", width: `${pct}%`, borderRadius: "3px",
-          background: "linear-gradient(90deg, #d97706, #fbbf24)",
+          height: "100%", width: `${pct}%`, borderRadius: "2px",
+          background: "#fbbf24",
           transition: "width 500ms ease",
         }} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "0.85rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.75rem" }}>
         {badges.map(b => {
           const isEarned = b.earned
           return (
@@ -98,46 +99,44 @@ export function PropBadges() {
               style={{
                 position: "relative",
                 display: "flex", flexDirection: "column", alignItems: "center",
-                padding: "1.15rem 0.75rem", textAlign: "center",
-                borderRadius: "14px",
+                padding: "1.25rem 0.75rem", textAlign: "center",
+                borderRadius: "8px",
                 background: isEarned
-                  ? "linear-gradient(145deg, rgba(245,158,11,0.10), rgba(245,158,11,0.03))"
+                  ? "rgba(245,158,11,0.05)"
                   : "var(--color-gray-900)",
                 border: isEarned
-                  ? "1px solid rgba(245,158,11,0.35)"
-                  : "1px dashed var(--color-gray-800)",
-                boxShadow: isEarned ? "0 0 22px rgba(245,158,11,0.10)" : "none",
+                  ? "1px solid rgba(245,158,11,0.3)"
+                  : "1px solid var(--color-gray-800)",
                 transition: "all 200ms ease",
                 cursor: "default",
               }}
             >
-              {/* emblem */}
               <div style={{
-                width: "52px", height: "52px", borderRadius: "50%", marginBottom: "0.6rem",
+                width: "48px", height: "48px", borderRadius: "50%", marginBottom: "0.75rem",
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: isEarned ? "rgba(245,158,11,0.15)" : "var(--color-gray-800)",
-                border: isEarned ? "2px solid #f59e0b" : "2px solid var(--color-gray-700)",
-                boxShadow: isEarned ? "0 0 0 4px rgba(245,158,11,0.12), inset 0 0 14px rgba(245,158,11,0.25)" : "none",
+                border: isEarned ? "1px solid rgba(245,158,11,0.4)" : "1px solid var(--color-gray-700)",
+                color: isEarned ? "#f59e0b" : "var(--color-gray-500)",
               }}>
-                <span style={{ fontSize: "1.5rem", filter: isEarned ? "none" : "grayscale(1)", opacity: isEarned ? 1 : 0.45 }}>
-                  {b.emoji}
+                <span style={{ display: "flex", alignItems: "center", justifyContent: "center", opacity: isEarned ? 1 : 0.6 }}>
+                  {b.icon}
                 </span>
               </div>
 
               <div style={{ fontSize: "0.82rem", fontWeight: 700, color: isEarned ? "var(--color-gray-100)" : "var(--color-gray-400)" }}>
                 {b.label}
               </div>
-              <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", marginTop: "0.2rem", lineHeight: 1.35 }}>
+              <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", marginTop: "0.25rem", lineHeight: 1.35 }}>
                 {b.desc}
               </div>
 
               {/* status chip */}
               <div style={{
-                marginTop: "0.7rem", fontSize: "0.62rem", fontWeight: 700, letterSpacing: "0.05em",
-                padding: "0.25rem 0.65rem", borderRadius: "999px",
+                marginTop: "0.85rem", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.05em",
+                padding: "0.25rem 0.6rem", borderRadius: "4px",
                 color: isEarned ? "#fbbf24" : "var(--color-gray-500)",
                 background: isEarned ? "rgba(245,158,11,0.12)" : "var(--color-gray-800)",
-                border: `1px solid ${isEarned ? "rgba(245,158,11,0.4)" : "var(--color-gray-700)"}`,
+                border: `1px solid ${isEarned ? "rgba(245,158,11,0.2)" : "var(--color-gray-700)"}`,
                 textTransform: "uppercase",
               }}>
                 {isEarned ? "Unlocked" : "Locked"}
@@ -146,11 +145,11 @@ export function PropBadges() {
               {/* corner check for earned */}
               {isEarned && (
                 <div style={{
-                  position: "absolute", top: "0.45rem", right: "0.45rem",
-                  width: "18px", height: "18px", borderRadius: "50%",
+                  position: "absolute", top: "0.5rem", right: "0.5rem",
+                  width: "16px", height: "16px", borderRadius: "50%",
                   background: "#f59e0b", color: "#1a1206",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "0.62rem", fontWeight: 800,
+                  fontSize: "0.6rem", fontWeight: 800,
                 }}>
                   ✓
                 </div>
@@ -162,32 +161,34 @@ export function PropBadges() {
 
       {activeChallenges.length > 0 && (
         <>
-          <div style={{ height: "1px", background: "var(--color-gray-800)", margin: "1.5rem 0" }} />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.15rem" }}>
-            <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>Active Challenges</div>
-            <div style={{ fontSize: "0.78rem", color: "var(--color-gray-500)" }}>
+          <div style={{ height: "1px", background: "var(--color-gray-800)", margin: "1.75rem 0" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.25rem" }}>
+            <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--color-gray-100)" }}>Active Challenges</div>
+            <div style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--color-gray-500)" }}>
               {activeChallenges.length} running
             </div>
           </div>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.9rem" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1.25rem" }}>
             Live progress of the challenges currently in play.
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "0.85rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "0.75rem" }}>
             {activeChallenges.map(c => {
               const ddColor = c.ddUsedPct >= 85 ? "var(--color-loss)" : c.ddUsedPct >= 60 ? "var(--color-warning)" : "var(--color-profit)"
-              const ddBg = c.ddUsedPct >= 85 ? "rgba(239,68,68,0.15)" : c.ddUsedPct >= 60 ? "rgba(245,158,11,0.15)" : "rgba(16,185,129,0.15)"
+              const ddBg = c.ddUsedPct >= 85 ? "rgba(239,68,68,0.2)" : c.ddUsedPct >= 60 ? "rgba(245,158,11,0.2)" : "rgba(16,185,129,0.2)"
               return (
                 <div key={c.id} style={{
-                  padding: "0.9rem", borderRadius: "12px",
+                  padding: "1rem", borderRadius: "8px",
                   background: "var(--color-gray-900)",
                   border: "1px solid var(--color-gray-800)",
                 }}>
                   {/* header */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.55rem", marginBottom: "0.7rem" }}>
-                    {c.logoUrl && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.85rem" }}>
+                    {c.logoUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.logoUrl} alt={c.firmName} style={{ width: 22, height: 22, borderRadius: 6, objectFit: "contain" }} />
+                      <img src={c.logoUrl} alt={c.firmName} style={{ width: 20, height: 20, borderRadius: 4, objectFit: "contain" }} />
+                    ) : (
+                      <div style={{ width: 20, height: 20, borderRadius: 4, background: "var(--color-gray-800)" }} />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "var(--color-gray-100)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -198,43 +199,43 @@ export function PropBadges() {
                       </div>
                     </div>
                     <span style={{
-                      fontSize: "0.62rem", fontWeight: 700, padding: "0.2rem 0.55rem", borderRadius: "999px",
-                      color: "var(--color-brand-400)", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)",
+                      fontSize: "0.6rem", fontWeight: 700, padding: "0.2rem 0.55rem", borderRadius: "4px",
+                      color: "var(--color-brand-400)", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.2)", textTransform: "uppercase"
                     }}>
                       {PHASE_LABEL[c.phase] || c.phase.replace("_", " ")}
                     </span>
                   </div>
 
                   {/* profit progress */}
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", fontWeight: 600, color: "var(--color-gray-400)", marginBottom: "0.35rem" }}>
                     <span>Profit target ({c.profitTargetPct}%)</span>
-                    <span style={{ fontWeight: 700, color: c.profitPct >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                    <span style={{ color: c.profitPct >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                       {c.profitPct >= 0 ? "+" : ""}{c.profitPct}%
                     </span>
                   </div>
-                  <div style={{ height: "6px", borderRadius: "3px", background: "var(--color-gray-800)", overflow: "hidden", marginBottom: "0.65rem" }}>
+                  <div style={{ height: "4px", borderRadius: "2px", background: "var(--color-gray-800)", overflow: "hidden", marginBottom: "0.85rem" }}>
                     <div style={{
-                      height: "100%", width: `${Math.min(100, c.profitReachedPct)}%`, borderRadius: "3px",
+                      height: "100%", width: `${Math.min(100, c.profitReachedPct)}%`, borderRadius: "2px",
                       background: c.profitReachedPct >= 100 ? "var(--color-profit)" : "var(--color-brand-500)",
                       transition: "width 400ms ease",
                     }} />
                   </div>
 
                   {/* drawdown progress */}
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", fontWeight: 600, color: "var(--color-gray-400)", marginBottom: "0.35rem" }}>
                     <span>Max drawdown used</span>
-                    <span style={{ fontWeight: 700, color: ddColor }}>{c.ddUsedPct}%</span>
+                    <span style={{ color: ddColor }}>{c.ddUsedPct}%</span>
                   </div>
-                  <div style={{ height: "6px", borderRadius: "3px", background: "var(--color-gray-800)", overflow: "hidden" }}>
+                  <div style={{ height: "4px", borderRadius: "2px", background: "var(--color-gray-800)", overflow: "hidden" }}>
                     <div style={{
-                      height: "100%", width: `${Math.min(100, c.ddUsedPct)}%`, borderRadius: "3px",
-                      background: ddBg, border: `1px solid ${ddColor}`, opacity: 0.9,
+                      height: "100%", width: `${Math.min(100, c.ddUsedPct)}%`, borderRadius: "2px",
+                      background: ddBg, opacity: 0.9,
                       transition: "width 400ms ease",
                     }} />
                   </div>
 
                   {/* footer stats */}
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.65rem", fontSize: "0.66rem", color: "var(--color-gray-500)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "0.85rem", paddingTop: "0.65rem", borderTop: "1px solid var(--color-gray-800)", fontSize: "0.66rem", fontWeight: 600, color: "var(--color-gray-500)" }}>
                     <span>Balance ${c.currentBalance.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
                     <span>Traded {c.daysTraded}/{c.minTradingDays} days</span>
                   </div>

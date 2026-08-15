@@ -1,21 +1,25 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { WinRateDonut } from "./WinRateDonut"
-import { getActiveAccount } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 
 export async function WinRateChartServer({
-  dateRange
+  dateRange,
+  accountId,
 }: {
   dateRange?: { from?: Date; to?: Date }
+  accountId?: string | null | "all"
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
 
-  const account = await getActiveAccount(session.user.id)
+  const scope = await resolveAccountScope(session.user.id, accountId)
 
-  if (!account) return <WinRateDonut wins={0} losses={0} />
+  if (scope.accounts.length === 0) return <WinRateDonut wins={0} losses={0} />
 
-  const whereClause: any = { accountId: account.id, status: "closed" }
+  const whereClause: any = scope.all
+    ? { userId: session.user.id, status: "closed" }
+    : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {
     whereClause.entryAt = {}
     if (dateRange.from) whereClause.entryAt.gte = dateRange.from

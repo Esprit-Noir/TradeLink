@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react"
 import { CreateSetupModal } from "./CreateSetupModal"
+import { SetupDetailPanel } from "./SetupDetailPanel"
 import { toast } from "sonner"
-import { Check, Trash2, Target, TrendingUp, Pencil, X, Save, ArrowDownWideNarrow } from "lucide-react"
+import { Check, Trash2, Target, TrendingUp, Pencil, X, Save, ArrowDownWideNarrow, Search, Eye } from "lucide-react"
 
 type Setup = {
   id: string
@@ -76,6 +77,8 @@ export function SetupsManager() {
   const [editDescription, setEditDescription] = useState("")
   const [saving, setSaving] = useState(false)
   const [sortKey, setSortKey] = useState<SortKey>("pnl")
+  const [query, setQuery] = useState("")
+  const [detailId, setDetailId] = useState<string | null>(null)
 
   const loadSetups = async () => {
     setLoading(true)
@@ -95,14 +98,18 @@ export function SetupsManager() {
   }, [])
 
   const sorted = useMemo(() => {
-    const arr = [...setups]
+    let arr = [...setups]
+    if (query.trim()) {
+      const q = query.trim().toLowerCase()
+      arr = arr.filter(s => s.name.toLowerCase().includes(q) || (s.description || "").toLowerCase().includes(q))
+    }
     switch (sortKey) {
       case "name": return arr.sort((a, b) => a.name.localeCompare(b.name))
       case "winrate": return arr.sort((a, b) => (b.count > 0 ? b.winRate : -1) - (a.count > 0 ? a.winRate : -1))
       case "trades": return arr.sort((a, b) => b.count - a.count)
       default: return arr.sort((a, b) => b.netPnl - a.netPnl)
     }
-  }, [setups, sortKey])
+  }, [setups, sortKey, query])
 
   const totals = useMemo(() => {
     const withTrades = setups.filter(s => s.count > 0)
@@ -270,18 +277,35 @@ export function SetupsManager() {
 
       {/* Sort bar */}
       {setups.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "0.5rem" }}>
-          <ArrowDownWideNarrow size={15} style={{ color: "var(--color-gray-500)" }} />
-          <select
-            className="input"
-            value={sortKey}
-            onChange={e => setSortKey(e.target.value as SortKey)}
-            style={{ width: 160, padding: "0.35rem 1.8rem 0.35rem 0.6rem", fontSize: "0.82rem" }}
-          >
-            {SORT_OPTIONS.map(o => (
-              <option key={o.key} value={o.key}>{o.label}</option>
-            ))}
-          </select>
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "var(--radius-button)", padding: "0.35rem 0.6rem" }}>
+            <Search size={14} style={{ color: "var(--color-gray-500)" }} />
+            <input
+              className="input"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search setups…"
+              style={{ width: 180, padding: "0", border: "none", background: "transparent", fontSize: "0.82rem", boxShadow: "none", outline: "none" }}
+            />
+            {query && (
+              <button onClick={() => setQuery("")} className="btn btn-ghost btn-sm" style={{ padding: "0.15rem" }} title="Clear">
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <ArrowDownWideNarrow size={15} style={{ color: "var(--color-gray-500)" }} />
+            <select
+              className="input"
+              value={sortKey}
+              onChange={e => setSortKey(e.target.value as SortKey)}
+              style={{ width: 160, padding: "0.35rem 1.8rem 0.35rem 0.6rem", fontSize: "0.82rem" }}
+            >
+              {SORT_OPTIONS.map(o => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       )}
 
@@ -297,6 +321,11 @@ export function SetupsManager() {
           <p style={{ maxWidth: 400, margin: "0 auto", lineHeight: 1.5 }}>
             Create your first trading setup to start tracking its performance automatically based on your trade tags.
           </p>
+        </div>
+      ) : sorted.length === 0 ? (
+        <div className="card" style={{ textAlign: "center", padding: "3rem 2rem", color: "var(--color-gray-500)" }}>
+          <Search size={40} style={{ opacity: 0.5, margin: "0 auto 0.75rem" }} />
+          <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-300)" }}>No setups match “{query}”</div>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "1.5rem" }}>
@@ -430,6 +459,14 @@ export function SetupsManager() {
                     >
                       <Pencil size={14} /> Edit
                     </button>
+                    <button
+                      className="btn btn-outline"
+                      onClick={() => setDetailId(setup.id)}
+                      title="View details"
+                      style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem" }}
+                    >
+                      <Eye size={14} /> Details
+                    </button>
                     {!setup.isDefault && (
                       <button
                         className="btn btn-outline"
@@ -454,6 +491,8 @@ export function SetupsManager() {
           })}
         </div>
       )}
+
+      <SetupDetailPanel setupId={detailId} onClose={() => setDetailId(null)} />
     </div>
   )
 }

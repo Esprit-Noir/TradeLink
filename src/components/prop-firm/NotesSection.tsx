@@ -88,8 +88,8 @@ export function NotesSection({ challengeId }: { challengeId: string }) {
     new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
 
   return (
-    <div className="card" style={{ padding: "1.25rem" }}>
-      <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Journal Notes</div>
+    <div style={{ background: "var(--color-gray-900)", padding: "1.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)", display: "flex", flexDirection: "column" }}>
+      <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem", flexShrink: 0 }}>Journal Notes</h3>
 
       <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
         <input
@@ -97,6 +97,7 @@ export function NotesSection({ challengeId }: { challengeId: string }) {
           value={content}
           onChange={e => setContent(e.target.value)}
           placeholder="Add a note about this challenge… (strategy, plan, lessons)"
+          style={{ background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)", color: "var(--color-gray-100)" }}
           onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) add() }}
         />
         <button className="btn btn-primary" onClick={add} disabled={saving || !content.trim()} style={{ padding: "0.5rem 1rem", whiteSpace: "nowrap" }}>
@@ -114,7 +115,7 @@ export function NotesSection({ challengeId }: { challengeId: string }) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
         {notes.map(n => (
-          <div key={n.id} style={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "10px", padding: "0.75rem" }}>
+          <div key={n.id} style={{ background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)", borderRadius: "8px", padding: "1rem" }}>
             {editingId === n.id ? (
               <>
                 <textarea
@@ -122,6 +123,7 @@ export function NotesSection({ challengeId }: { challengeId: string }) {
                   value={editContent}
                   onChange={e => setEditContent(e.target.value)}
                   rows={3}
+                  style={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)" }}
                   autoFocus
                 />
                 <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem", justifyContent: "flex-end" }}>

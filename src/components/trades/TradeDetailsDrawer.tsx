@@ -14,6 +14,8 @@ type Trade = {
   entryAt: string
   exitAt: string | null
   netPnl: number | null
+  netPnlUsd?: number | null
+  riskAmount?: number | null
   fees: number
   setupTags: string[]
   emotionTags: string[]
@@ -128,8 +130,21 @@ export function TradeDetailsDrawer() {
     }
   }
 
-  const handleSaveDetails = async () => {
+  const handleDeleteTrade = async () => {
     if (!tradeId) return
+    if (!confirm(`Delete this trade (${trade?.symbol || ""})? This cannot be undone.`)) return
+    try {
+      const res = await fetch(`/api/trades/${tradeId}`, { method: "DELETE" })
+      if (!res.ok) throw new Error("Failed to delete trade")
+      toast.success("Trade deleted")
+      closeDrawer()
+      router.refresh()
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete trade")
+    }
+  }
+
+  const handleSaveDetails = async () => {    if (!tradeId) return
     setSaving(true)
     try {
       const payload = {
@@ -240,6 +255,22 @@ export function TradeDetailsDrawer() {
                 <div>
                   <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Fees</div>
                   <div style={{ fontWeight: 500 }}>${Number(trade.fees).toFixed(2)}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>R Multiple</div>
+                  <div style={{ fontWeight: 700, color: Number(trade.netPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                    {trade.riskAmount && Number(trade.riskAmount) > 0
+                      ? `${Number(trade.netPnl) / Number(trade.riskAmount) >= 0 ? "+" : ""}${(Number(trade.netPnl) / Number(trade.riskAmount)).toFixed(2)}R`
+                      : "—"}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>P&L (USD)</div>
+                  <div style={{ fontWeight: 500, color: (Number(trade.netPnlUsd ?? trade.netPnl) || 0) > 0 ? "var(--color-profit)" : (Number(trade.netPnlUsd ?? trade.netPnl) || 0) < 0 ? "var(--color-loss)" : "inherit" }}>
+                    {trade.netPnlUsd != null && trade.netPnlUsd !== trade.netPnl
+                      ? `${Number(trade.netPnlUsd) > 0 ? "+" : ""}$${Number(trade.netPnlUsd).toFixed(2)}`
+                      : "—"}
+                  </div>
                 </div>
               </div>
 
@@ -393,6 +424,17 @@ export function TradeDetailsDrawer() {
                     <div style={{ color: "var(--gray-400)", fontSize: "0.9rem" }}>No screenshots uploaded</div>
                   </div>
                 )}
+              </div>
+
+              {/* Delete */}
+              <div style={{ borderTop: "1px solid var(--color-gray-800)", paddingTop: "1.25rem" }}>
+                <button
+                  className="btn"
+                  style={{ width: "100%", padding: "0.5rem", background: "transparent", border: "1px solid rgba(239,68,68,0.35)", color: "var(--color-loss)" }}
+                  onClick={handleDeleteTrade}
+                >
+                  Delete trade
+                </button>
               </div>
             </>
           )}

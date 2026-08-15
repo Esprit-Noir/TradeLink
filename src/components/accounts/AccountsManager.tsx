@@ -61,16 +61,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
       router.push(`/challenges/${acc.propChallenge.id}`)
       return
     }
-    try {
-      await fetch("/api/accounts/active", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountId: acc.id }),
-      })
-    } catch {
-      // ignore — trades page will fall back to default
-    }
-    router.push("/trades")
+    router.push(`/accounts/${acc.id}`)
   }
 
   const handleDelete = async (acc: any) => {

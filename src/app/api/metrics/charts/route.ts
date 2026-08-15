@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { getActiveAccount } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 import { dayOfWeek, hourOfDay } from "@/lib/dates"
 
 export async function GET(request: Request) {
@@ -10,15 +10,16 @@ export async function GET(request: Request) {
     const period = searchParams.get("period") || "all"
     const from = searchParams.get("from")
     const to = searchParams.get("to")
+    const accountId = searchParams.get("accountId")
 
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const account = await getActiveAccount(session.user.id)
+    const scope = await resolveAccountScope(session.user.id, accountId)
 
-    if (!account) {
+    if (scope.accounts.length === 0) {
       return NextResponse.json({ setupData: [], hourlyData: [] })
     }
 
@@ -28,7 +29,9 @@ export async function GET(request: Request) {
     })
     const timezone = user?.timezone ?? "UTC"
 
-    const whereClause: any = { accountId: account.id, status: "closed" }
+    const whereClause: any = scope.all
+      ? { userId: session.user.id, status: "closed" }
+      : { accountId: scope.accounts[0].id, status: "closed" }
 
     let fromDate: Date | undefined
     let toDate: Date | undefined

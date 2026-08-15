@@ -10,7 +10,7 @@ export async function PATCH(req: Request) {
     }
 
     const body = await req.json()
-    const { name, baseCurrency, timezone, dailyGoal } = body
+    const { name, baseCurrency, timezone, dailyGoal, monthlyGoal } = body
 
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
@@ -19,6 +19,7 @@ export async function PATCH(req: Request) {
         ...(baseCurrency !== undefined && { baseCurrency }),
         ...(timezone !== undefined && { timezone }),
         ...(dailyGoal !== undefined && { dailyGoal }),
+        ...(monthlyGoal !== undefined && { monthlyGoal }),
       },
     })
 

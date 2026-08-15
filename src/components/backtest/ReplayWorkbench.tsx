@@ -1,0 +1,793 @@
+"use client"
+
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react"
+import { useTheme } from "next-themes"
+import { toast } from "sonner"
+import { Loader2, RefreshCcw, Save, FileDown, FileText, TriangleAlert, Play, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import type { IChartApi } from "lightweight-charts"
+import type { Candle, MarketTimeframe } from "@/lib/market/types"
+import { MARKET_TIMEFRAMES } from "@/lib/market/types"
+import { fetchCandles } from "@/lib/market/client"
+import { CFD_SYMBOLS } from "@/lib/market/symbols"
+import { ReplayChart } from "./ReplayChart"
+import { ReplayControls } from "./ReplayControls"
+import { TradePanel } from "./TradePanel"
+import { PositionsStrip } from "./PositionsStrip"
+import { TradesTimeline } from "./TradesTimeline"
+import { DEFAULT_INDICATORS, newId, type IndicatorsState, type SimSide, type SimTrade } from "./types"
+import { atrAt, computeIndicatorSeries } from "./indicators"
+import { atrBasedLevels, positionSizeFromRisk, simulateClose } from "@/lib/market/simulator"
+import { exportSessionCsv, exportSessionPdf, type BacktestExportTrade } from "@/lib/backtest-export"
+import type { BacktestSessionItem } from "./types"
+import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
+
+interface SessionMeta {
+  symbol: string
+  timeframe: MarketTimeframe
+  from: number
+  to: number
+  strategyName: string
+}
+
+interface ReplayState {
+  meta: SessionMeta
+  loading: boolean
+  error: string | null
+  data: Candle[]
+  subData: Candle[]
+  currentIndex: number
+  playing: boolean
+  speed: number
+  indicators: IndicatorsState
+  positions: SimTrade[]
+  selectedPositionId: string | null
+  closedTrades: SimTrade[]
+  lastClosed: SimTrade | null
+  entryMode: SimSide
+  balance: number
+  riskPct: number
+  loadToken: number
+}
+
+type Action =
+  | { type: "LOAD_START" }
+  | { type: "LOADED"; meta: SessionMeta; data: Candle[]; subData: Candle[] }
+  | { type: "LOAD_ERROR"; error: string }
+  | { type: "ADVANCE"; delta: number }
+  | { type: "SET_INDEX"; index: number }
+  | { type: "TOGGLE_PLAY" }
+  | { type: "SET_SPEED"; speed: number }
+  | { type: "SET_INDICATORS"; patch: Partial<IndicatorsState> }
+  | { type: "SET_ENTRY_MODE"; mode: SimSide }
+  | { type: "UPDATE_BALANCE"; balance: number }
+  | { type: "UPDATE_RISK"; riskPct: number }
+  | { type: "PLACE_ORDER"; candle: Candle }
+  | { type: "UPDATE_LEVELS"; id: string; stopLoss: number; takeProfit: number }
+  | { type: "CLOSE_MANUAL"; id: string }
+  | { type: "SELECT_POSITION"; id: string }
+  | { type: "SET_SCREENSHOT"; id: string; url: string }
+  | { type: "SET_TRADE_SAVED"; id: string; saved: boolean }
+  | { type: "SET_TRADE_SAVING"; id: string; saving: boolean }
+  | { type: "RESET" }
+
+function closeTrade(
+  trade: SimTrade,
+  exit: { price: number; time: number; index: number; reason: "sl" | "tp" | "manual" },
+): SimTrade {
+  const diff = trade.side === "long" ? exit.price - trade.entryPrice : trade.entryPrice - exit.price
+  const netPnl = diff * trade.quantity
+  const riskPerUnit =
+    trade.side === "long" ? trade.entryPrice - trade.stopLoss : trade.stopLoss - trade.entryPrice
+  const r = riskPerUnit > 0 ? diff / riskPerUnit : 0
+  return {
+    ...trade,
+    exitPrice: exit.price,
+    exitTime: exit.time,
+    exitIndex: exit.index,
+    reason: exit.reason,
+    netPnl,
+    rMultiple: r,
+    screenshotUrl: null,
+  }
+}
+
+function advanceTo(state: ReplayState, to: number): ReplayState {
+  const clamped = Math.max(0, Math.min(to, state.data.length - 1))
+  const atEnd = clamped >= state.data.length - 1
+
+  if (state.positions.length === 0) {
+    return { ...state, currentIndex: clamped, playing: state.playing && !atEnd }
+  }
+
+  const newlyClosed: SimTrade[] = []
+  const remaining: SimTrade[] = []
+  for (const pos of state.positions) {
+    const res = simulateClose(pos, state.data)
+    if (res.closed && res.exitIndex <= clamped) {
+      newlyClosed.push(
+        closeTrade(pos, {
+          price: res.exitPrice,
+          time: res.exitTime,
+          index: res.exitIndex,
+          reason: res.reason,
+        }),
+      )
+    } else {
+      remaining.push(pos)
+    }
+  }
+
+  if (newlyClosed.length === 0) {
+    return { ...state, currentIndex: clamped, playing: state.playing && !atEnd }
+  }
+
+  const netPnlDelta = newlyClosed.reduce((sum, t) => sum + (t.netPnl ?? 0), 0)
+
+  return {
+    ...state,
+    currentIndex: clamped,
+    positions: remaining,
+    selectedPositionId: remaining.some((p) => p.id === state.selectedPositionId)
+      ? state.selectedPositionId
+      : (remaining[0]?.id ?? null),
+    closedTrades: [...newlyClosed, ...state.closedTrades],
+    balance: state.balance + netPnlDelta,
+    lastClosed: newlyClosed[newlyClosed.length - 1],
+    playing: state.playing && !atEnd,
+  }
+}
+
+function reducer(state: ReplayState, action: Action): ReplayState {
+  switch (action.type) {
+    case "LOAD_START":
+      return { ...state, loading: true, error: null }
+    case "LOADED":
+      return {
+        ...state,
+        meta: action.meta,
+        data: action.data,
+        subData: action.subData,
+        currentIndex: Math.min(INITIAL_WINDOW, action.data.length - 1),
+        playing: false,
+        positions: [],
+        selectedPositionId: null,
+        closedTrades: [],
+        lastClosed: null,
+        loading: false,
+        error: null,
+        loadToken: state.loadToken + 1,
+      }
+    case "LOAD_ERROR":
+      return { ...state, loading: false, error: action.error }
+    case "ADVANCE":
+      return advanceTo(state, state.currentIndex + action.delta)
+    case "SET_INDEX":
+      return advanceTo(state, action.index)
+    case "TOGGLE_PLAY":
+      if (state.data.length === 0) return state
+      return { ...state, playing: !state.playing }
+    case "SET_SPEED":
+      return { ...state, speed: action.speed }
+    case "SET_INDICATORS":
+      return { ...state, indicators: { ...state.indicators, ...action.patch } }
+    case "SET_ENTRY_MODE":
+      return { ...state, entryMode: action.mode }
+    case "UPDATE_BALANCE":
+      return { ...state, balance: action.balance }
+    case "UPDATE_RISK":
+      return { ...state, riskPct: action.riskPct }
+    case "PLACE_ORDER": {
+      if (state.data.length === 0) return state
+      const entryIndex = state.data.findIndex((c) => c.time >= action.candle.time)
+      const idx = entryIndex === -1 ? Math.max(0, state.data.length - 1) : entryIndex
+      const candle = state.data[idx]
+      if (!candle) return state
+      const atrValue = atrAt(state.data, idx, 14)
+      const levels = atrBasedLevels(state.entryMode, candle.close, atrValue)
+      const riskAmount = (state.balance * state.riskPct) / 100
+      const quantity = positionSizeFromRisk(state.balance, state.riskPct, candle.close, levels.sl)
+      const trade: SimTrade = {
+        id: newId(),
+        side: state.entryMode,
+        entryPrice: candle.close,
+        stopLoss: levels.sl,
+        takeProfit: levels.tp,
+        quantity,
+        riskAmount,
+        entryTime: candle.time,
+        entryIndex: idx,
+        exitPrice: null,
+        exitTime: null,
+        exitIndex: null,
+        reason: null,
+        netPnl: null,
+        rMultiple: null,
+        screenshotUrl: null,
+        saved: false,
+        saving: false,
+      }
+      return { ...state, positions: [...state.positions, trade], selectedPositionId: trade.id }
+    }
+    case "UPDATE_LEVELS": {
+      return {
+        ...state,
+        positions: state.positions.map((t) => {
+          if (t.id !== action.id) return t
+          const riskPerUnit = Math.abs(t.entryPrice - action.stopLoss)
+          const quantity = riskPerUnit > 0 ? t.riskAmount / riskPerUnit : t.quantity
+          return {
+            ...t,
+            stopLoss: action.stopLoss,
+            takeProfit: action.takeProfit,
+            quantity: Number.isFinite(quantity) && quantity > 0 ? quantity : t.quantity,
+          }
+        }),
+      }
+    }
+    case "SELECT_POSITION":
+      return { ...state, selectedPositionId: action.id }
+    case "CLOSE_MANUAL": {
+      const pos = state.positions.find((t) => t.id === action.id)
+      if (!pos) return state
+      const candle = state.data[state.currentIndex]
+      if (!candle) return state
+      const closed = closeTrade(pos, {
+        price: candle.close,
+        time: candle.time,
+        index: state.currentIndex,
+        reason: "manual",
+      })
+      const remaining = state.positions.filter((t) => t.id !== action.id)
+      return {
+        ...state,
+        positions: remaining,
+        selectedPositionId:
+          state.selectedPositionId === action.id ? (remaining[0]?.id ?? null) : state.selectedPositionId,
+        closedTrades: [closed, ...state.closedTrades],
+        balance: state.balance + (closed.netPnl ?? 0),
+        lastClosed: closed,
+      }
+    }
+    case "SET_SCREENSHOT":
+      return {
+        ...state,
+        closedTrades: state.closedTrades.map((t) => (t.id === action.id ? { ...t, screenshotUrl: action.url } : t)),
+        lastClosed: state.lastClosed && state.lastClosed.id === action.id ? { ...state.lastClosed, screenshotUrl: action.url } : state.lastClosed,
+      }
+    case "SET_TRADE_SAVED":
+      return {
+        ...state,
+        closedTrades: state.closedTrades.map((t) => (t.id === action.id ? { ...t, saved: action.saved, saving: false } : t)),
+      }
+    case "SET_TRADE_SAVING":
+      return {
+        ...state,
+        closedTrades: state.closedTrades.map((t) => (t.id === action.id ? { ...t, saving: action.saving } : t)),
+      }
+    case "RESET":
+      return {
+        ...state,
+        currentIndex: Math.min(INITIAL_WINDOW, Math.max(0, state.data.length - 1)),
+        playing: false,
+        positions: [],
+        selectedPositionId: null,
+        closedTrades: [],
+        lastClosed: null,
+      }
+    default:
+      return state
+  }
+}
+
+const INITIAL_STATE: ReplayState = {
+  meta: { symbol: "EUR/USD", timeframe: "15m", from: 0, to: 0, strategyName: "" },
+  loading: false,
+  error: null,
+  data: [],
+  subData: [],
+  currentIndex: 0,
+  playing: false,
+  speed: 1,
+  indicators: DEFAULT_INDICATORS,
+  positions: [],
+  selectedPositionId: null,
+  closedTrades: [],
+  lastClosed: null,
+  entryMode: "long",
+  balance: 10000,
+  riskPct: 1,
+  loadToken: 0,
+}
+
+const DAYS_OPTIONS = [1, 7, 30, 90, 180]
+
+/** Number of candles shown at once when a session loads/resets. */
+const INITIAL_WINDOW = 120
+
+const DEFAULT_FROM = Math.floor(Date.now() / 1000) - 30 * 86400
+const DEFAULT_TO = Math.floor(Date.now() / 1000)
+
+export function ReplayWorkbench({
+  initialSymbol,
+  pastSessions,
+  timezone = "UTC",
+  initialCapital = 10000,
+}: {
+  initialSymbol?: string
+  pastSessions: BacktestSessionItem[]
+  timezone?: string
+  initialCapital?: number
+}) {
+  const { resolvedTheme } = useTheme()
+  const theme = resolvedTheme === "light" ? "light" : "dark"
+  const chartRef = useRef<IChartApi | null>(null)
+  const processedTradesRef = useRef<Set<string>>(new Set())
+
+  const [fullscreen, setFullscreen] = useState(false)
+  const [watchlistCollapsed, setWatchlistCollapsed] = useState(false)
+  const [draftSymbol, setDraftSymbol] = useState(initialSymbol ?? "XAU/USD")
+
+  useEffect(() => {
+    const handleToggle = () => setWatchlistCollapsed((v) => !v)
+    window.addEventListener("toggle-watchlist", handleToggle)
+    return () => window.removeEventListener("toggle-watchlist", handleToggle)
+  }, [])
+
+  const [config, setConfig] = useState({
+    symbol: initialSymbol ?? "XAU/USD",
+    timeframe: "15m" as MarketTimeframe,
+    subTf: null as MarketTimeframe | null,
+    from: DEFAULT_FROM,
+    to: DEFAULT_TO,
+    strategyName: "",
+  })
+
+  const [state, dispatch] = useReducer(
+    reducer,
+    INITIAL_STATE,
+    (initial) => ({ ...initial, balance: initialCapital })
+  )
+
+  useEffect(() => {
+    dispatch({ type: "UPDATE_BALANCE", balance: initialCapital })
+  }, [initialCapital])
+
+  // ── refs for the playback loop ───────────────────────────────────────────────
+  const speedRef = useRef(state.speed)
+  const playingRef = useRef(state.playing)
+  const indexRef = useRef(state.currentIndex)
+  const lenRef = useRef(state.data.length)
+
+  useEffect(() => {
+    speedRef.current = state.speed
+    playingRef.current = state.playing
+    indexRef.current = state.currentIndex
+    lenRef.current = state.data.length
+  })
+
+  useEffect(() => {
+    if (!state.playing) return
+    const acc = { v: 0 }
+    const iv = setInterval(() => {
+      acc.v += speedRef.current
+      const step = Math.floor(acc.v)
+      acc.v -= step
+      if (step <= 0) return
+      if (indexRef.current >= lenRef.current - 1) return
+      dispatch({ type: "ADVANCE", delta: Math.min(step, lenRef.current - 1 - indexRef.current) })
+    }, 100)
+    return () => clearInterval(iv)
+  }, [state.playing])
+
+  // ── data loading ─────────────────────────────────────────────────────────────
+  const load = useCallback(
+    async (overrides?: Partial<typeof config>) => {
+      const cfg = { ...config, ...overrides }
+      dispatch({ type: "LOAD_START" })
+      try {
+        const { symbol, timeframe, subTf, from, to, strategyName } = cfg
+        const [main, sub] = await Promise.all([
+          fetchCandles({ symbol, timeframe, from, to }),
+          subTf ? fetchCandles({ symbol, timeframe: subTf, from, to }) : Promise.resolve(null),
+        ])
+        if (main.candles.length < 5) {
+          dispatch({
+            type: "LOAD_ERROR",
+            error: `Pas assez de données pour ${symbol} (${main.candles.length} bougies). Vérifiez le symbole ou la période.`,
+          })
+          return
+        }
+        dispatch({
+          type: "LOADED",
+          meta: { symbol, timeframe, from, to, strategyName },
+          data: main.candles,
+          subData: sub?.candles ?? [],
+        })
+      } catch (e) {
+        const message = e instanceof Error ? e.message : "Échec du chargement des données"
+        dispatch({ type: "LOAD_ERROR", error: message })
+      }
+    },
+    [config],
+  )
+
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Auto-reload when the timeframe or period changes (not on symbol keystrokes).
+  const autoKey = `${config.timeframe}|${config.to - config.from}`
+  useEffect(() => {
+    load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoKey])
+
+  // Clear processed trades ref on session reset or symbol load
+  useEffect(() => {
+    processedTradesRef.current.clear()
+  }, [state.loadToken])
+
+  // ── screenshot capture on trade close ────────────────────────────────────────
+  useEffect(() => {
+    const t = state.lastClosed
+    if (!t) return
+
+    // Avoid duplicate toast / screenshot upload for the same trade ID
+    if (processedTradesRef.current.has(t.id)) return
+    processedTradesRef.current.add(t.id)
+
+    const pnl = t.netPnl ?? 0
+    const label = t.reason === "sl" ? "Stop Loss" : t.reason === "tp" ? "Take Profit" : "Clôture manuelle"
+    const sym = state.meta.symbol || "—"
+    const formattedPnl = formatCurrency(pnl, "USD", true)
+    if (pnl >= 0) {
+      toast.success(`${label} — ${t.side.toUpperCase()} ${sym}: ${formattedPnl} (R ${t.rMultiple?.toFixed(2)})`)
+    } else {
+      toast.error(`${label} — ${t.side.toUpperCase()} ${sym}: ${formattedPnl} (R ${t.rMultiple?.toFixed(2)})`)
+    }
+    ;(async () => {
+      const chart = chartRef.current
+      if (!chart) return
+      const canvas = chart.takeScreenshot()
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"))
+      if (!blob) return
+      const fd = new FormData()
+      fd.append("file", blob, "replay.png")
+      try {
+        const res = await fetch("/api/upload?filename=replay.png", { method: "POST", body: fd })
+        if (!res.ok) return
+        const data = await res.json()
+        if (data.url) dispatch({ type: "SET_SCREENSHOT", id: t.id, url: data.url })
+      } catch {}
+    })()
+  }, [state.lastClosed, state.meta.symbol])
+
+  // ── derived display ──────────────────────────────────────────────────────────
+  const cursorTime = state.data[state.currentIndex]?.time ?? null
+  const useSub = !!config.subTf && state.subData.length > 0
+  const displayed = useSub
+    ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
+    : state.data.slice(0, state.currentIndex + 1)
+
+  const mainInd = useMemo(() => computeIndicatorSeries(state.data), [state.data])
+  const subInd = useMemo(() => (config.subTf ? computeIndicatorSeries(state.subData) : null), [state.subData, config.subTf])
+  const indicatorData = useSub && subInd ? subInd : mainInd
+
+  const currentCandle = state.data[state.currentIndex]
+
+  // ── actions ──────────────────────────────────────────────────────────────────
+  const handleOrder = useCallback(
+    (side: SimSide) => {
+      const candle = state.data[state.currentIndex]
+      if (!candle) {
+        toast.info("Chargement des données en cours…")
+        return
+      }
+      dispatch({ type: "SET_ENTRY_MODE", mode: side })
+      dispatch({ type: "PLACE_ORDER", candle })
+    },
+    [state.data, state.currentIndex],
+  )
+
+  const handleUpdateLevels = useCallback(
+    (id: string, levels: { stopLoss: number; takeProfit: number }) =>
+      dispatch({ type: "UPDATE_LEVELS", id, stopLoss: levels.stopLoss, takeProfit: levels.takeProfit }),
+    [],
+  )
+
+  const handleSaveTrade = useCallback(
+    async (trade: SimTrade) => {
+      dispatch({ type: "SET_TRADE_SAVING", id: trade.id, saving: true })
+      try {
+        const res = await fetch("/api/backtest/trades", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session: {
+              symbol: state.meta.symbol,
+              timeframe: state.meta.timeframe,
+              from: state.meta.from,
+              to: state.meta.to,
+              strategyName: state.meta.strategyName || undefined,
+              initialBalance: state.balance,
+            },
+            trade: {
+              side: trade.side,
+              symbol: state.meta.symbol,
+              entryPrice: trade.entryPrice,
+              exitPrice: trade.exitPrice,
+              entryAt: trade.entryTime,
+              exitAt: trade.exitTime,
+              stopLoss: trade.stopLoss,
+              takeProfit: trade.takeProfit,
+              quantity: trade.quantity,
+              riskAmount: trade.riskAmount,
+              netPnl: trade.netPnl,
+              screenshotUrl: trade.screenshotUrl ?? undefined,
+            },
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || "Erreur serveur")
+        dispatch({ type: "SET_TRADE_SAVED", id: trade.id, saved: true })
+        toast.success(`Trade enregistré dans le journal`)
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Échec de l'enregistrement")
+        dispatch({ type: "SET_TRADE_SAVING", id: trade.id, saving: false })
+      }
+    },
+    [state.meta, state.balance],
+  )
+
+  const handleSaveAll = useCallback(async () => {
+    const unsaved = state.closedTrades.filter((t) => !t.saved && !t.saving)
+    if (unsaved.length === 0) {
+      toast.info("Tous les trades sont déjà enregistrés")
+      return
+    }
+    for (const t of unsaved) {
+      await handleSaveTrade(t)
+    }
+  }, [state.closedTrades, handleSaveTrade])
+
+  const exportTrades = (): BacktestExportTrade[] =>
+    state.closedTrades
+      .filter((t) => t.exitPrice != null)
+      .reverse()
+      .map((t) => ({
+        side: t.side,
+        symbol: state.meta.symbol,
+        entryPrice: t.entryPrice,
+        exitPrice: t.exitPrice!,
+        stopLoss: t.stopLoss,
+        takeProfit: t.takeProfit,
+        quantity: t.quantity,
+        entryAt: t.entryTime,
+        exitAt: t.exitTime!,
+        netPnl: t.netPnl ?? 0,
+        rMultiple: t.rMultiple,
+      }))
+
+  const handleExportCsv = () => {
+    if (state.closedTrades.length === 0) {
+      toast.info("Aucun trade à exporter")
+      return
+    }
+    exportSessionCsv(
+      {
+        symbol: state.meta.symbol,
+        timeframe: state.meta.timeframe,
+        from: state.meta.from,
+        to: state.meta.to,
+        strategyName: state.meta.strategyName || undefined,
+        initialBalance: state.balance,
+      },
+      exportTrades(),
+    )
+  }
+
+  const handleExportPdf = () => {
+    if (state.closedTrades.length === 0) {
+      toast.info("Aucun trade à exporter")
+      return
+    }
+    exportSessionPdf(
+      {
+        symbol: state.meta.symbol,
+        timeframe: state.meta.timeframe,
+        from: state.meta.from,
+        to: state.meta.to,
+        strategyName: state.meta.strategyName || undefined,
+        initialBalance: state.balance,
+      },
+      exportTrades(),
+    )
+  }
+
+  const fmtPrice = (v: number | undefined | null) => {
+    if (v == null) return "—"
+    const a = Math.abs(v)
+    if (a >= 1000) return v.toLocaleString("en-US", { maximumFractionDigits: 2 })
+    if (a >= 1) return v.toFixed(2)
+    if (a >= 0.01) return v.toFixed(4)
+    return v.toFixed(6)
+  }
+
+  const progress = state.data.length > 1 ? (state.currentIndex / (state.data.length - 1)) * 100 : 0
+
+  const currentTime = state.data[state.currentIndex]?.time ?? null
+
+  return (
+    <div className={`backtest-page${fullscreen ? " backtest-page--fs" : ""}`}>
+      {/* ── Barre d'outils ── */}
+      <div className="bt-topbar">
+        <button
+          type="button"
+          className="bt-toggle-watchlist-btn"
+          onClick={() => window.dispatchEvent(new Event("toggle-watchlist"))}
+          title={watchlistCollapsed ? "Afficher la watchlist" : "Masquer la watchlist"}
+        >
+          {watchlistCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+        </button>
+
+        <label className="bt-symbol">
+          <input
+            list="bt-symbol-list"
+            value={draftSymbol}
+            onChange={(e) => setDraftSymbol(e.target.value.toUpperCase())}
+            placeholder="Symbole"
+            spellCheck={false}
+          />
+          <datalist id="bt-symbol-list">
+            {CFD_SYMBOLS.map((s) => (
+              <option key={s.symbol} value={s.symbol}>{s.name}</option>
+            ))}
+          </datalist>
+        </label>
+
+        <div className="bt-tf-tabs">
+          {MARKET_TIMEFRAMES.map((tf) => (
+            <button
+              key={tf}
+              type="button"
+              className={config.timeframe === tf ? "active" : ""}
+              onClick={() => setConfig((c) => ({ ...c, timeframe: tf as MarketTimeframe }))}
+            >
+              {tf}
+            </button>
+          ))}
+        </div>
+
+        <label className="bt-period">
+          <select
+            value={config.to - config.from}
+            onChange={(e) => {
+              const durationSeconds = Number(e.target.value)
+              const to = Math.floor(Date.now() / 1000)
+              setConfig((c) => ({ ...c, to, from: to - durationSeconds }))
+            }}
+          >
+            {DAYS_OPTIONS.map((d) => (
+              <option key={d} value={d * 86400}>{d}j</option>
+            ))}
+          </select>
+        </label>
+
+        <button className="bt-load" onClick={() => load({ symbol: draftSymbol })} disabled={state.loading}>
+          {state.loading ? <Loader2 size={14} className="spin" /> : <Play size={14} />}
+          {state.loading ? "Chargement…" : "Charger"}
+        </button>
+
+
+
+        <div className="bt-spacer" />
+
+        <div className="bt-actions">
+          <button onClick={handleExportCsv} title="Exporter en CSV"><FileDown size={14} /> CSV</button>
+          <button onClick={handleExportPdf} title="Exporter en PDF"><FileText size={14} /> PDF</button>
+          <button onClick={handleSaveAll} title="Enregistrer tous les trades dans le journal"><Save size={14} /> Sauver</button>
+          <button onClick={() => dispatch({ type: "RESET" })} title="Réinitialiser la session"><RefreshCcw size={14} /> Reset</button>
+          <button onClick={() => setFullscreen((f) => !f)} title="Plein écran">
+            {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Barre de progression ── */}
+      <div className="bt-progress" title={`${Math.min(state.currentIndex + 1, state.data.length)} / ${state.data.length} bougies`}>
+        <div className="bt-progress-fill" style={{ width: `${progress}%` }} />
+      </div>
+
+      {/* ── Timeline des trades ── */}
+      <TradesTimeline
+        positions={state.positions}
+        closedTrades={state.closedTrades}
+        total={state.data.length}
+        currentIndex={state.currentIndex}
+        onSeek={(index) => dispatch({ type: "SET_INDEX", index })}
+      />
+
+      {/* ── Zone principale ── */}
+      <div className="bt-main">
+        <div className="bt-chart-col">
+          <div className="bt-chart-wrap">
+            {state.loading ? (
+              <div className="backtest-skeleton">
+                <Loader2 className="spin" size={22} />
+                <span>Chargement des données {config.symbol} · {config.timeframe}…</span>
+              </div>
+            ) : state.error ? (
+              <div className="backtest-error">
+                <TriangleAlert size={18} />
+                <span>{state.error}</span>
+              </div>
+            ) : (
+              <ReplayChart
+                key={state.loadToken}
+                candles={displayed}
+                indicatorData={indicatorData}
+                indicators={state.indicators}
+                positions={state.positions}
+                selectedPositionId={state.selectedPositionId}
+                closedTrades={state.closedTrades}
+                theme={theme}
+                onChartReady={(chart) => {
+                  chartRef.current = chart
+                }}
+                onUpdateLevels={handleUpdateLevels}
+              />
+            )}
+          </div>
+
+          {!state.loading && !state.error && (
+            <ReplayControls
+              playing={state.playing}
+              speed={state.speed}
+              currentIndex={state.currentIndex}
+              total={state.data.length}
+              currentTime={currentTime}
+              disabled={state.data.length === 0}
+              timezone={timezone}
+              onTogglePlay={() => dispatch({ type: "TOGGLE_PLAY" })}
+              onStep={(dir) => dispatch({ type: "ADVANCE", delta: dir })}
+              onSpeed={(speed) => dispatch({ type: "SET_SPEED", speed })}
+              onInstant={() => dispatch({ type: "ADVANCE", delta: state.data.length })}
+              onScrub={(index) => dispatch({ type: "SET_INDEX", index })}
+            />
+          )}
+
+          {/* ── Positions ouvertes (sous le graphique) ── */}
+          <PositionsStrip
+            positions={state.positions}
+            selectedPositionId={state.selectedPositionId}
+            currentCandle={currentCandle}
+            symbol={state.meta.symbol || config.symbol}
+            onSelect={(id) => dispatch({ type: "SELECT_POSITION", id })}
+            onCloseManual={(id) => dispatch({ type: "CLOSE_MANUAL", id })}
+            onUpdateLevels={handleUpdateLevels}
+          />
+        </div>
+
+        {/* ── Panneau de trading ── */}
+        <TradePanel
+          symbol={state.meta.symbol || config.symbol}
+          timeframe={state.meta.timeframe}
+          currentCandle={currentCandle}
+          balance={state.balance}
+          riskPct={state.riskPct}
+          positions={state.positions}
+          closedTrades={state.closedTrades}
+          indicators={state.indicators}
+          pastSessions={pastSessions}
+          timezone={timezone}
+          onBalance={(v) => dispatch({ type: "UPDATE_BALANCE", balance: v })}
+          onRiskPct={(v) => dispatch({ type: "UPDATE_RISK", riskPct: v })}
+          onSetIndicators={(patch) => dispatch({ type: "SET_INDICATORS", patch })}
+          onOrder={handleOrder}
+          onSaveTrade={handleSaveTrade}
+        />
+      </div>
+    </div>
+  )
+}

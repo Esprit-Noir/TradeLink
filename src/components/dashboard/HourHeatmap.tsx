@@ -11,6 +11,8 @@ export function HourHeatmap() {
   const [data, setData] = useState<HeatmapCell[]>([])
   const [loading, setLoading] = useState(true)
 
+  const searchKey = typeof window !== "undefined" ? window.location.search : ""
+
   useEffect(() => {
     fetch(`/api/metrics/charts${window.location.search}`)
       .then((r) => r.json())
@@ -19,7 +21,7 @@ export function HourHeatmap() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [])
+  }, [searchKey])
 
   if (loading) {
     return (
@@ -129,6 +131,18 @@ export function HourHeatmap() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+        <span>No trades</span>
+        <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-gray-800)" }} />
+        <span>Loss</span>
+        <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-loss)", opacity: 0.35 }} />
+        <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-loss)" }} />
+        <span>Profit</span>
+        <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-profit)", opacity: 0.35 }} />
+        <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-profit)" }} />
       </div>
     </div>
   )

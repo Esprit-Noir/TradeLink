@@ -1,26 +1,30 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { DailyPnlChart } from "./DailyPnlChart"
-import { getActiveAccount } from "@/lib/active-account"
+import { resolveAccountScope } from "@/lib/active-account"
 
 export async function DailyPnlChartServer({
-  dateRange
+  dateRange,
+  accountId,
 }: {
   dateRange?: { from?: Date; to?: Date }
+  accountId?: string | null | "all"
 }) {
   const session = await auth()
   if (!session?.user?.id) return null
 
-  const account = await getActiveAccount(session.user.id)
+  const scope = await resolveAccountScope(session.user.id, accountId)
 
-  if (!account) return <DailyPnlChart trades={[]} />
+  if (scope.accounts.length === 0) return <DailyPnlChart trades={[]} />
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { timezone: true },
   })
 
-  const whereClause: any = { accountId: account.id, status: "closed" }
+  const whereClause: any = scope.all
+    ? { userId: session.user.id, status: "closed" }
+    : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {
     whereClause.entryAt = {}
     if (dateRange.from) whereClause.entryAt.gte = dateRange.from
@@ -39,5 +43,5 @@ export async function DailyPnlChartServer({
     netPnl: Number(t.netPnl || 0)
   }))
 
-  return <DailyPnlChart trades={serializedTrades} currency={account.baseCurrency} timezone={user?.timezone ?? "UTC"} />
+  return <DailyPnlChart trades={serializedTrades} currency={scope.currency} timezone={user?.timezone ?? "UTC"} />
 }
