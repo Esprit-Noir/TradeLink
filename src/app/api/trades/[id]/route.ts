@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const updateTradeSchema = z.object({
+  setupTags: z.array(z.string()).optional(),
+  emotionTags: z.array(z.string()).optional(),
+  notesPost: z.string().max(5000).optional(),
+})
 
 export async function GET(
   request: NextRequest,
@@ -76,6 +83,10 @@ export async function PATCH(
 
     const { id: tradeId } = await params
     const body = await request.json()
+    const parsed = updateTradeSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
 
     const trade = await prisma.trade.findUnique({
       where: { id: tradeId },
@@ -89,9 +100,9 @@ export async function PATCH(
     const updatedTrade = await prisma.trade.update({
       where: { id: tradeId },
       data: {
-        setupTags: body.setupTags !== undefined ? body.setupTags : undefined,
-        emotionTags: body.emotionTags !== undefined ? body.emotionTags : undefined,
-        notesPost: body.notesPost !== undefined ? body.notesPost : undefined,
+        setupTags: parsed.data.setupTags,
+        emotionTags: parsed.data.emotionTags,
+        notesPost: parsed.data.notesPost,
       },
     })
 

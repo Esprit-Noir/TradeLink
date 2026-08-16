@@ -1,6 +1,12 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { z } from "zod"
+
+const createSetupSchema = z.object({
+  name: z.string().min(1).max(100),
+  description: z.string().max(500).optional(),
+})
 
 export async function GET() {
   try {
@@ -115,11 +121,12 @@ export async function POST(req: Request) {
 
   try {
     const data = await req.json()
-    const { name, description } = data
-
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 })
+    const parsed = createSetupSchema.safeParse(data)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { name, description } = parsed.data
 
     const newSetup = await prisma.tradingSetup.create({
       data: {

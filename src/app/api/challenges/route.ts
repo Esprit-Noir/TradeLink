@@ -1,6 +1,26 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const createChallengeSchema = z.object({
+  templateId: z.string().min(1),
+  challengeName: z.string().min(1).max(100),
+  initialBalance: z.string().or(z.number()),
+  steps: z.string().optional(),
+  phase2Target: z.string().optional(),
+  fundedTarget: z.string().optional(),
+  payoutSplit: z.string().optional(),
+  logoUrl: z.string().url().optional(),
+  cost: z.string().or(z.number()).optional(),
+  profitTargetPct: z.string().optional(),
+  dailyDDPct: z.string().optional(),
+  maxDDPct: z.string().optional(),
+  minTradingDays: z.string().optional(),
+  maxTradingDays: z.string().optional(),
+  enableStopTrading: z.boolean().optional(),
+  enableProfitGoal: z.boolean().optional(),
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,14 +30,15 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { templateId, challengeName, initialBalance, steps, phase2Target, fundedTarget, payoutSplit, logoUrl, cost } = body
-
-    if (!templateId || !challengeName || initialBalance === undefined) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    const parsed = createChallengeSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
 
+    const { templateId, challengeName, initialBalance, steps, phase2Target, fundedTarget, payoutSplit, logoUrl, cost } = parsed.data
+
     // Auto-create a trading account for this challenge
-    const balanceDecimal = parseFloat(initialBalance)
+    const balanceDecimal = parseFloat(String(initialBalance))
     const account = await prisma.tradingAccount.create({
       data: {
         userId: session.user.id,
@@ -49,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     // Create the challenge
     const isMaster = steps === 'master'
-    const phase1Target = body.profitTargetPct !== undefined ? parseFloat(body.profitTargetPct) : (template.profitTargetPhase1Pct || 0)
+    const phase1Target = parsed.data.profitTargetPct !== undefined ? parseFloat(parsed.data.profitTargetPct) : (template.profitTargetPhase1Pct || 0)
     const initialPhase = isMaster ? 'funded' : 'phase_1'
     const initialTarget = isMaster
       ? (fundedTarget ? parseFloat(fundedTarget) : (template.profitTargetPhase2Pct || 0))
@@ -65,11 +86,11 @@ export async function POST(request: NextRequest) {
     const alertConfig = {
       stopTradingPct: Number(alertDefaults.stopTradingPct ?? 85),
       profitGoalPct: Number(alertDefaults.profitGoalPct ?? 50),
-      enableStopTrading: Boolean(body.enableStopTrading ?? false),
-      enableProfitGoal: Boolean(body.enableProfitGoal ?? false),
+      enableStopTrading: Boolean(parsed.data.enableStopTrading ?? false),
+      enableProfitGoal: Boolean(parsed.data.enableProfitGoal ?? false),
     }
 
-    const maxTradingDays = body.maxTradingDays !== undefined ? parseInt(body.maxTradingDays) : (template.maxTradingDays || null)
+    const maxTradingDays = parsed.data.maxTradingDays !== undefined ? parseInt(parsed.data.maxTradingDays) : (template.maxTradingDays || null)
     const startedAt = new Date()
     const deadlineAt = maxTradingDays ? new Date(startedAt.getTime() + maxTradingDays * 24 * 60 * 60 * 1000) : null
 
@@ -79,12 +100,12 @@ export async function POST(request: NextRequest) {
         accountId: account.id,
         templateId: template.id,
         initialBalance: account.initialBalance || 0,
-        dailyDDPct: body.dailyDDPct !== undefined ? parseFloat(body.dailyDDPct) : (template.dailyDDPct || 0),
-        maxDDPct: body.maxDDPct !== undefined ? parseFloat(body.maxDDPct) : template.maxDDPct,
+        dailyDDPct: parsed.data.dailyDDPct !== undefined ? parseFloat(parsed.data.dailyDDPct) : (template.dailyDDPct || 0),
+        maxDDPct: parsed.data.maxDDPct !== undefined ? parseFloat(parsed.data.maxDDPct) : template.maxDDPct,
         profitTargetPct: initialTarget,
-        minTradingDays: body.minTradingDays !== undefined ? parseInt(body.minTradingDays) : template.minTradingDays,
+        minTradingDays: parsed.data.minTradingDays !== undefined ? parseInt(parsed.data.minTradingDays) : template.minTradingDays,
         maxTradingDays,
-        cost: cost !== undefined ? parseFloat(cost) : null,
+        cost: cost !== undefined ? parseFloat(String(cost)) : null,
         phase: initialPhase,
         status: 'active',
         startedAt,
