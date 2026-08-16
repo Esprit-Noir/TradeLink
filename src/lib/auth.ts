@@ -32,20 +32,50 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!user || !user.passwordHash) return null
 
+        // Block suspended/banned users
+        if (user.status === "SUSPENDED" || user.status === "BANNED") {
+          return null
+        }
+
         const valid = await bcrypt.compare(parsed.data.password, user.passwordHash)
         if (!valid) return null
+
+        // Update lastLoginAt
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        })
 
         return { id: user.id, email: user.email, name: user.name }
       },
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
-      if (user) token.id = user.id
+    async jwt({ token, user }) {
+      // On sign-in, set the id
+      if (user) {
+        token.id = user.id
+      }
+
+      // Always refresh role/status from DB (lightweight query)
+      const userId = token.id as string
+      if (userId) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { role: true, status: true },
+        })
+        if (dbUser) {
+          token.role = dbUser.role as string
+          token.status = dbUser.status as string
+        }
+      }
+
       return token
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string
+      if (token.role) (session.user as unknown as Record<string, unknown>).role = token.role as string
+      if (token.status) (session.user as unknown as Record<string, unknown>).status = token.status as string
       return session
     },
   },

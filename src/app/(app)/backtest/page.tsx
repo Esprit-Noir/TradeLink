@@ -84,6 +84,7 @@ export default async function BacktestPage({
         pastSessions={pastSessions}
         timezone={timezone}
         initialCapital={initialCapital}
+        backtestAccountId={backtestAccount?.id}
       />
     </div>
   )

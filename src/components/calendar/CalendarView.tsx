@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback } from "react"
+import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, X, CalendarDays, List } from "lucide-react"
+import { useTheme } from "next-themes"
 
 type DayDetail = {
   date: string
@@ -58,6 +59,36 @@ export function CalendarView({
   const [detail, setDetail] = useState<DayDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
   const router = useRouter()
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const isDark = mounted ? resolvedTheme !== "light" : true
+
+  const colors = isDark
+    ? {
+        profitBg: "#064e3b",
+        profitBorder: "#047857",
+        profitText: "#34d399",
+        lossBg: "#7f1d1d",
+        lossBorder: "#b91c1c",
+        lossText: "#f87171",
+        cellBg: "#08080a",
+        cellBorder: "#101014",
+        cellText: "#85858f",
+        zeroText: "#4c4c58",
+      }
+    : {
+        profitBg: "#d1fae5",
+        profitBorder: "#34d399",
+        profitText: "#065f46",
+        lossBg: "#fee2e2",
+        lossBorder: "#f87171",
+        lossText: "#991b1b",
+        cellBg: "#ffffff",
+        cellBorder: "#e4e4e7",
+        cellText: "#71717a",
+        zeroText: "#a1a1aa",
+      }
 
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -174,7 +205,7 @@ export function CalendarView({
     if (!inYear) return "transparent"
     if (pnl > 0) return `rgba(16,185,129,${(0.2 + 0.8 * Math.min(1, pnl / maxPos)).toFixed(2)})`
     if (pnl < 0) return `rgba(239,68,68,${(0.2 + 0.8 * Math.min(1, -pnl / maxNeg)).toFixed(2)})`
-    return "var(--color-gray-800)"
+    return colors.cellBg
   }
 
   const openDay = async (dateStr: string) => {
@@ -207,7 +238,7 @@ export function CalendarView({
   })()
 
   const days = []
-  for (let i = 0; i < startingDayOfWeek; i++) days.push(<div key={`empty-${i}`} />)
+  for (let i = 0; i < startingDayOfWeek; i++) days.push(<div key={`empty-${i}`} style={{ background: "transparent" }} />)
 
   for (let i = 1; i <= daysInMonth; i++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}`
@@ -216,21 +247,21 @@ export function CalendarView({
     const hasJournal = journalDates.includes(dateStr)
     const isToday = dateStr === todayStr
 
-    let bgColor = "var(--color-gray-900)"
-    let borderColor = "var(--color-gray-800)"
-    let textColor = "var(--color-gray-400)"
+    let bgColor = colors.cellBg
+    let borderColor = colors.cellBorder
+    let textColor = colors.cellText
 
     if (pnl !== undefined) {
       if (pnl > 0) {
-        bgColor = "#064e3b"
-        borderColor = "#047857"
-        textColor = "#34d399"
+        bgColor = colors.profitBg
+        borderColor = colors.profitBorder
+        textColor = colors.profitText
       } else if (pnl < 0) {
-        bgColor = "#7f1d1d"
-        borderColor = "#b91c1c"
-        textColor = "#f87171"
+        bgColor = colors.lossBg
+        borderColor = colors.lossBorder
+        textColor = colors.lossText
       } else {
-        textColor = "var(--color-gray-300)"
+        textColor = colors.zeroText
       }
     }
 
@@ -252,7 +283,7 @@ export function CalendarView({
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "scale(1.04)"
-          e.currentTarget.style.boxShadow = "0 6px 24px rgba(0,0,0,0.25)"
+          e.currentTarget.style.boxShadow = isDark ? "0 6px 24px rgba(0,0,0,0.4)" : "0 6px 24px rgba(0,0,0,0.12)"
           e.currentTarget.style.zIndex = "10"
         }}
         onMouseLeave={(e) => {
@@ -268,13 +299,13 @@ export function CalendarView({
               <span title={`Prop firm P&L: ${propPnl > 0 ? "+" : ""}$${propPnl.toFixed(2)}`} style={{ cursor: "help" }}>🎯</span>
             )}
           </span>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isToday ? "var(--color-brand-400)" : "var(--color-gray-500)" }}>
+          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isToday ? "var(--color-brand-400)" : colors.cellText }}>
             {i}
           </span>
         </div>
         {pnl !== undefined && (
           <div style={{ textAlign: "center", marginTop: "auto" }}>
-            <span style={{ display: "block", fontWeight: 700, fontSize: "1rem", color: textColor, textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>
+            <span style={{ display: "block", fontWeight: 700, fontSize: "1rem", color: textColor, textShadow: isDark ? "0 2px 10px rgba(0,0,0,0.5)" : "none" }}>
               {pnl > 0 ? "+" : ""}${Number(pnl).toFixed(2)}
             </span>
             {(() => {
@@ -289,7 +320,7 @@ export function CalendarView({
           </div>
         )}
         {pnl === undefined && (
-          <div style={{ marginTop: "auto", textAlign: "center", fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
+          <div style={{ marginTop: "auto", textAlign: "center", fontSize: "0.7rem", color: isDark ? "#4c4c58" : "#a1a1aa" }}>
             {isToday ? "Today" : "—"}
           </div>
         )}
@@ -300,9 +331,9 @@ export function CalendarView({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* Month summary strip */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", padding: "1rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "var(--radius-card)" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", padding: "1rem", background: colors.cellBg, border: `1px solid ${colors.cellBorder}`, borderRadius: "var(--radius-card)" }}>
         <Stat label="Month P&L" value={`${monthSummary.total >= 0 ? "+" : ""}$${monthSummary.total.toFixed(2)}`} color={monthSummary.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-        <Stat label="Trading days" value={`${monthSummary.count}`} color="var(--color-gray-100)" />
+        <Stat label="Trading days" value={`${monthSummary.count}`} color={isDark ? "#ededf0" : "#18181b"} />
         <Stat label="Win days" value={`${monthSummary.green}`} color="var(--color-profit)" />
         <Stat label="Loss days" value={`${monthSummary.red}`} color="var(--color-loss)" />
         <Stat label="Avg / day" value={`${monthSummary.avg >= 0 ? "+" : ""}$${monthSummary.avg.toFixed(2)}`} color={monthSummary.avg >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
@@ -335,14 +366,14 @@ export function CalendarView({
           <h2 style={{ fontSize: "1.4rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{MONTH_NAMES[month]} {year}</h2>
         </div>
 
-        <div style={{ display: "flex", gap: "0.4rem", border: "1px solid var(--color-gray-800)", borderRadius: "8px", padding: "0.2rem" }}>
+        <div style={{ display: "flex", gap: "0.4rem", border: `1px solid ${colors.cellBorder}`, borderRadius: "8px", padding: "0.2rem" }}>
           <button
             onClick={() => setView("month")}
             style={{
               display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.35rem 0.8rem", borderRadius: "6px",
-              background: view === "month" ? "var(--color-gray-800)" : "transparent",
+              background: view === "month" ? colors.cellBorder : "transparent",
               border: "none", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
-              color: view === "month" ? "var(--color-text)" : "var(--color-gray-500)",
+              color: view === "month" ? (isDark ? "#ededf0" : "#18181b") : colors.cellText,
             }}
           >
             <CalendarDays size={14} /> Month
@@ -351,9 +382,9 @@ export function CalendarView({
             onClick={() => setView("year")}
             style={{
               display: "flex", alignItems: "center", gap: "0.4rem", padding: "0.35rem 0.8rem", borderRadius: "6px",
-              background: view === "year" ? "var(--color-gray-800)" : "transparent",
+              background: view === "year" ? colors.cellBorder : "transparent",
               border: "none", cursor: "pointer", fontSize: "0.8rem", fontWeight: 600,
-              color: view === "year" ? "var(--color-text)" : "var(--color-gray-500)",
+              color: view === "year" ? (isDark ? "#ededf0" : "#18181b") : colors.cellText,
             }}
           >
             <List size={14} /> Year
@@ -366,7 +397,7 @@ export function CalendarView({
         <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", marginBottom: "0.25rem" }}>
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-              <div key={day} style={{ textAlign: "center", fontWeight: 600, color: "var(--color-gray-500)", fontSize: "0.85rem", padding: "0.5rem 0" }}>
+              <div key={day} style={{ textAlign: "center", fontWeight: 600, color: colors.cellText, fontSize: "0.85rem", padding: "0.5rem 0" }}>
                 {day}
               </div>
             ))}
@@ -378,7 +409,7 @@ export function CalendarView({
         <div className="card" style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.5rem" }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem" }}>
-              <span style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{year}</span>
+              <span style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#ededf0" : "#18181b" }}>{year}</span>
               <span style={{ fontSize: "1rem", fontWeight: 700, color: yearStats.total >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                 {yearStats.total >= 0 ? "+" : ""}${yearStats.total.toFixed(2)}
               </span>
@@ -433,12 +464,12 @@ export function CalendarView({
           </div>
 
           {/* Legend */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.7rem", color: "var(--color-gray-500)", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.7rem", color: colors.cellText, flexWrap: "wrap" }}>
             <span>Loss</span>
             {[0.25, 0.5, 0.75, 1].map((t) => (
               <div key={`l${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(239,68,68,${(0.25 * t + 0.1).toFixed(2)})` }} />
             ))}
-            <div style={{ width: YCELL, height: YCELL, borderRadius: 3, background: "var(--color-gray-800)" }} />
+            <div style={{ width: YCELL, height: YCELL, borderRadius: 3, background: colors.cellBg }} />
             {[0.25, 0.5, 0.75, 1].map((t) => (
               <div key={`p${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(16,185,129,${(0.25 * t + 0.1).toFixed(2)})` }} />
             ))}
@@ -449,10 +480,10 @@ export function CalendarView({
       )}
 
       {/* Legend */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.7rem", color: "var(--color-gray-500)", padding: "0 0.25rem" }}>
-        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: "#064e3b", border: "1px solid #047857", display: "inline-block" }} /> Profit</span>
-        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: "#7f1d1d", border: "1px solid #b91c1c", display: "inline-block" }} /> Loss</span>
-        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", display: "inline-block" }} /> No trades</span>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", fontSize: "0.7rem", color: colors.cellText, padding: "0 0.25rem" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: colors.profitBg, border: `1px solid ${colors.profitBorder}`, display: "inline-block" }} /> Profit</span>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: colors.lossBg, border: `1px solid ${colors.lossBorder}`, display: "inline-block" }} /> Loss</span>
+        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: colors.cellBg, border: `1px solid ${colors.cellBorder}`, display: "inline-block" }} /> No trades</span>
         <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>📝 Journal</span>
         <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>🎯 Prop P&L</span>
         <span style={{ marginLeft: "auto" }}>Click a day to view details</span>
@@ -464,7 +495,7 @@ export function CalendarView({
           onClick={() => setSelectedDay(null)}
           style={{
             position: "fixed", inset: 0, zIndex: 100,
-            background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)",
+            background: isDark ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)",
             display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem",
           }}
         >

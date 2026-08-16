@@ -115,9 +115,8 @@ export async function POST(request: Request) {
 
     // Refresh session aggregates
     // includeBacktest is a sentinel stripped by the Prisma client extension
-    const where: Prisma.TradeWhereInput & { includeBacktest: true } = {
+    const where: Prisma.TradeWhereInput = {
       backtestSessionId: backtestSession.id,
-      includeBacktest: true,
     }
     const trades = await prisma.trade.findMany({ where })
     const pnls = trades.map((x) => Number(x.netPnl || 0))

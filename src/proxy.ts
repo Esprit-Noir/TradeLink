@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 
-const PUBLIC_ROUTES = ["/login", "/register", "/"]
+const PUBLIC_ROUTES = ["/login", "/register", "/", "/marketing"]
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (
@@ -15,14 +16,36 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const hasSession =
-    request.cookies.has("authjs.session-token") ||
-    request.cookies.has("__Secure-authjs.session-token")
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+  })
 
-  if (!hasSession) {
+  // No session → redirect to login
+  if (!token) {
     const loginUrl = new URL("/login", request.url)
     loginUrl.searchParams.set("callbackUrl", pathname)
     return NextResponse.redirect(loginUrl)
+  }
+
+  // Admin routes protection
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const role = token.role as string | undefined
+    const status = token.status as string | undefined
+
+    // Block suspended/banned users
+    if (status === "SUSPENDED" || status === "BANNED") {
+      const response = NextResponse.redirect(new URL("/", request.url))
+      response.cookies.set("admin_error", "account_disabled", { maxAge: 5 })
+      return response
+    }
+
+    // Block non-admin users
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      const response = NextResponse.redirect(new URL("/", request.url))
+      response.cookies.set("admin_error", "unauthorized", { maxAge: 5 })
+      return response
+    }
   }
 
   return NextResponse.next()

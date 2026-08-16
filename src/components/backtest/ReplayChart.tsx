@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef } from "react"
 import {
   createChart,
   createSeriesMarkers,
@@ -28,6 +28,7 @@ interface ReplayChartProps {
   selectedPositionId: string | null
   closedTrades: SimTrade[]
   theme: "dark" | "light"
+  playbackIndex?: number
   onChartReady?: (chart: IChartApi) => void
   onUpdateLevels: (id: string, levels: { stopLoss: number; takeProfit: number }) => void
 }
@@ -84,6 +85,7 @@ export function ReplayChart({
   selectedPositionId,
   closedTrades,
   theme,
+  playbackIndex,
   onChartReady,
   onUpdateLevels,
 }: ReplayChartProps) {
@@ -102,8 +104,8 @@ export function ReplayChart({
   const slLineRef = useRef<IPriceLine | null>(null)
   const tpLineRef = useRef<IPriceLine | null>(null)
   const dragRef = useRef<{ mode: "sl" | "tp" } | null>(null)
-  const lastScrollTimeRef = useRef<number>(0)
   const lastSelectedTradeIdRef = useRef<string | null>(null)
+  const lastScrollTimeRef = useRef<number>(0)
 
   // Live refs so subscription callbacks never read stale props
   const candlesRef = useRef(candles)
@@ -140,7 +142,7 @@ export function ReplayChart({
         horzLine: { color: pal.crosshair, width: 1, style: LineStyle.LargeDashed },
       },
       rightPriceScale: { borderColor: pal.grid },
-      timeScale: { borderColor: pal.grid, rightOffset: 8 },
+      timeScale: { borderColor: pal.grid, rightOffset: 20 },
       handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
       handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
     })
@@ -360,8 +362,7 @@ export function ReplayChart({
       }
     }
 
-    // Keep the view pinned to the newest bar during playback, but allow the user
-    // to scrub back without the chart jumping forward again.
+    // Scroll to newest bar during playback
     const chart = chartRef.current
     const lastTime = candles.length > 0 ? candles[candles.length - 1]!.time : 0
     if (chart && lastTime > lastScrollTimeRef.current) {
@@ -369,6 +370,18 @@ export function ReplayChart({
     }
     lastScrollTimeRef.current = Math.max(lastScrollTimeRef.current, lastTime)
   }, [candles, indicatorData, indicators, theme])
+
+  // ── scroll to follow playback ────────────────────────────────────────────────
+  useLayoutEffect(() => {
+    const chart = chartRef.current
+    if (!chart || candles.length === 0 || playbackIndex == null) return
+    const total = candles.length
+    const idx = Math.min(playbackIndex, total - 1)
+    const windowSize = 200
+    const from = Math.max(0, idx - Math.floor(windowSize * 0.7))
+    const to = Math.min(total - 1, from + windowSize)
+    chart.timeScale().setVisibleLogicalRange({ from, to })
+  }, [playbackIndex])
 
   // ── markers (entries / exits) ────────────────────────────────────────────────
   useEffect(() => {

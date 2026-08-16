@@ -14,6 +14,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { MS_PER_DAY } from "@/lib/constants"
 import { EquityCurveChart, SetupBarChart, HourHeatmap } from "@/components/dashboard/LazyCharts"
+import { MiniCalendar } from "@/components/dashboard/MiniCalendar"
 
 export const metadata = {
   title: "Dashboard",
@@ -59,6 +60,8 @@ export default async function DashboardPage({
   let dailyGoal: number | null = null
   let selectedAccountId: string | null | "all" = null
   let filterAccounts: { id: string; name: string; isDefault: boolean }[] = []
+  let dailyPnlForCalendar: Record<string, number> = {}
+  let dailyTradeCountForCalendar: Record<string, number> = {}
 
   // Month & streak aggregates
   let timezone = "UTC"
@@ -83,13 +86,15 @@ export default async function DashboardPage({
       const requestedAccount = !isAll
         ? user.accounts.find(a => a.id === accountIdParam)
         : null
-      const defaultAccount = isAll ? null : (requestedAccount || user.accounts.find(a => a.isDefault))
-      selectedAccountId = isAll ? "all" : (defaultAccount?.id ?? null)
+      // If a specific account was requested but not found, fall back to "all"
+      const effectiveAll = isAll || !requestedAccount
+      const defaultAccount = effectiveAll ? null : (requestedAccount || user.accounts.find(a => a.isDefault))
+      selectedAccountId = effectiveAll ? "all" : (defaultAccount?.id ?? null)
       dailyGoal = user.dailyGoal ? Number(user.dailyGoal) : null
       monthlyGoal = user.monthlyGoal ? Number(user.monthlyGoal) : null
       timezone = user.timezone || "UTC"
 
-      const tradesWhere = isAll
+      const tradesWhere = effectiveAll
         ? { userId: session.user.id, status: "closed" as const }
         : { accountId: defaultAccount?.id, status: "closed" as const }
 
@@ -136,6 +141,8 @@ export default async function DashboardPage({
       }
 
       for (const [key, v] of byDay) {
+        dailyPnlForCalendar[key] = v.pnl
+        dailyTradeCountForCalendar[key] = v.count
         if (key.startsWith(monthKeyPrefix)) {
           monthPnl += v.pnl
           monthDays.push({ key, pnl: v.pnl })
@@ -279,6 +286,12 @@ export default async function DashboardPage({
         }>
           <HourHeatmap />
         </Suspense>
+      </div>
+
+      {/* Mini Calendar */}
+      <div className="chart-card">
+        <div className="chart-title">Trading Calendar</div>
+        <MiniCalendar dailyPnl={dailyPnlForCalendar} dailyTradeCount={dailyTradeCountForCalendar} />
       </div>
 
       {/* Recent Trades */}

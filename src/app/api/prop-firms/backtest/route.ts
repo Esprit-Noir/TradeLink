@@ -53,9 +53,6 @@ export async function POST(request: Request) {
       accountId: account.id,
       status: "closed",
     }
-    if (account.type === "backtest") {
-      where.includeBacktest = true
-    }
     if (startDate) where.exitAt = { gte: new Date(`${startDate}T00:00:00`) }
     if (endDate) where.exitAt = { ...(where.exitAt || {}), lte: new Date(`${endDate}T23:59:59.999`) }
 

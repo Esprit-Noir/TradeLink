@@ -51,18 +51,11 @@ export default async function StatsPage() {
 
   return (
     <div>
-      <div className="page-header" style={{ marginBottom: "1.5rem" }}>
-        <div>
-          <h1 className="page-title">Advanced Statistics</h1>
-          <p className="page-subtitle">Deep dive into your trading performance metrics.</p>
-        </div>
-      </div>
+      <AdvancedStatsClient />
 
       <Suspense fallback={null}>
         {propStats && <PropFirmStatsClient firms={propStats.firms} totals={propStats.totals} />}
       </Suspense>
-
-      <AdvancedStatsClient />
     </div>
   )
 }

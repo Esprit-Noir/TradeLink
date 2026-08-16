@@ -14,6 +14,7 @@ interface Props {
   onSelect: (id: string) => void
   onCloseManual: (id: string) => void
   onUpdateLevels: (id: string, levels: { stopLoss: number; takeProfit: number }) => void
+  onDeleteTrade: (id: string) => void
 }
 
 export function PositionsStrip({
@@ -24,142 +25,150 @@ export function PositionsStrip({
   onSelect,
   onCloseManual,
   onUpdateLevels,
+  onDeleteTrade,
 }: Props) {
   if (positions.length === 0) {
     return (
-      <div className="bt-strip" style={{ padding: "0.5rem 0.7rem" }}>
-        <div className="bt-strip-head" style={{ marginBottom: 0 }}>
-          <span>Positions ouvertes</span>
-          <span className="bt-strip-count">0</span>
+      <>
+        <div className="tz-replay-positions-header">
+          <div className="tz-replay-positions-title">
+            Positions <span style={{ background: "var(--color-gray-800)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>0</span>
+          </div>
         </div>
-      </div>
+        <div className="tz-replay-positions-table" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-400)", fontSize: "0.85rem" }}>
+          No open positions.
+        </div>
+      </>
     )
   }
 
   return (
-    <div className="bt-strip" style={{ padding: "0.75rem 1rem" }}>
-      <div className="bt-strip-head" style={{ marginBottom: "0.75rem" }}>
-        <span>Positions ouvertes</span>
-        <span className="bt-strip-count">{positions.length}</span>
+    <>
+      <div className="tz-replay-positions-header">
+        <div className="tz-replay-positions-title">
+          Positions <span style={{ background: "var(--color-gray-800)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>{positions.length}</span>
+        </div>
       </div>
-      <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem", textAlign: "left" }}>
+      <div className="tz-replay-positions-table">
+        <table>
           <thead>
-            <tr style={{ borderBottom: "1px solid var(--color-gray-800)", color: "var(--color-gray-500)", textTransform: "uppercase", fontSize: "0.68rem", fontWeight: 700, letterSpacing: "0.05em" }}>
-              <th style={{ padding: "0.5rem 0.5rem" }}>Symbole / Sens</th>
-              <th style={{ padding: "0.5rem 0.5rem" }}>Taille (Qty)</th>
-              <th style={{ padding: "0.5rem 0.5rem" }}>Prix d'entrée</th>
-              <th style={{ padding: "0.5rem 0.5rem", width: "110px" }}>Stop Loss</th>
-              <th style={{ padding: "0.5rem 0.5rem", width: "110px" }}>Take Profit</th>
-              <th style={{ padding: "0.5rem 0.5rem" }}>PNL non réalisé (USD)</th>
-              <th style={{ padding: "0.5rem 0.5rem", textAlign: "right" }}>Action</th>
+            <tr>
+              <th>#</th>
+              <th>Symbol</th>
+              <th>Direction</th>
+              <th>Quantity</th>
+              <th>Open time</th>
+              <th>Entry</th>
+              <th>Stop Loss</th>
+              <th>Take Profit</th>
+              <th>Unrealized P&L</th>
+              <th>Status</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
-            {positions.map((p) => {
-              const unrealized = currentCandle ? unrealizedPnl(p, currentCandle) : null
-              const isProfit = unrealized !== null && unrealized >= 0
-              const pnlColor = unrealized === null ? "var(--color-gray-400)" : isProfit ? "var(--color-profit)" : "var(--color-loss)"
+            {positions.map((p, i) => {
+              const isClosed = p.exitPrice != null
+              const pnl = isClosed ? p.netPnl : (currentCandle ? unrealizedPnl(p, currentCandle) : null)
+              const isProfit = pnl !== null && pnl >= 0
+              const pnlColor = pnl === null ? "" : isProfit ? "tz-replay-td-pnl-up" : "tz-replay-td-pnl-down"
               const active = selectedPositionId === p.id || (selectedPositionId == null && positions[0]?.id === p.id)
               
+              let statusText = "Open"
+              if (isClosed) {
+                statusText = p.saved ? "Saved" : p.saving ? "Saving..." : "Closed"
+              }
+
               return (
                 <tr
                   key={p.id}
                   onClick={() => onSelect(p.id)}
-                  style={{
-                    borderBottom: "1px solid var(--color-gray-800)",
-                    cursor: "pointer",
-                    background: active ? "var(--color-gray-800)" : "transparent",
-                    transition: "background 0.1s"
-                  }}
+                  style={{ background: active ? "var(--color-gray-800)" : "transparent", cursor: "pointer", opacity: isClosed ? 0.7 : 1 }}
                 >
-                  <td style={{ padding: "0.6rem 0.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span style={{ fontWeight: 600, color: "var(--color-gray-200)" }}>{symbol}</span>
-                    <span style={{
-                      fontSize: "0.65rem",
-                      fontWeight: 700,
-                      padding: "0.1rem 0.35rem",
-                      borderRadius: "4px",
-                      background: p.side === "long" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
-                      color: p.side === "long" ? "var(--color-profit)" : "var(--color-loss)",
-                      border: p.side === "long" ? "1px solid rgba(16,185,129,0.3)" : "1px solid rgba(239,68,68,0.3)"
-                    }}>
-                      {p.side === "long" ? "Long" : "Short"}
-                    </span>
+                  <td>{i + 1}</td>
+                  <td>{symbol}</td>
+                  <td className={p.side === "long" ? "tz-replay-td-buy" : "tz-replay-td-sell"}>
+                    {p.side === "long" ? "BUY" : "SELL"}
                   </td>
-                  <td style={{ padding: "0.6rem 0.5rem", fontWeight: 500, color: "var(--color-gray-300)" }}>
-                    {fmtQty(p.quantity)}
+                  <td>{fmtQty(p.quantity)}</td>
+                  <td>{new Date(p.entryTime * 1000).toLocaleString(undefined, { month: '2-digit', day: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+                  <td>{fmtPrice(p.entryPrice)}</td>
+                  <td>
+                    {isClosed ? (
+                      <span>{Number.isFinite(p.stopLoss) ? fmtPrice(p.stopLoss) : "—"}</span>
+                    ) : (
+                      <input
+                        type="number"
+                        step="any"
+                        value={Number.isFinite(p.stopLoss) ? p.stopLoss : ""}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          onUpdateLevels(p.id, { stopLoss: Number(e.target.value), takeProfit: p.takeProfit })
+                        }
+                        style={{
+                          width: "80px",
+                          height: "24px",
+                          background: "transparent",
+                          border: "1px solid var(--color-gray-300)",
+                          borderRadius: "4px",
+                          padding: "0 0.4rem",
+                          fontSize: "0.75rem",
+                          outline: "none",
+                          color: "inherit"
+                        }}
+                      />
+                    )}
                   </td>
-                  <td style={{ padding: "0.6rem 0.5rem", fontWeight: 500, color: "var(--color-gray-300)" }}>
-                    {fmtPrice(p.entryPrice)}
+                  <td>
+                    {isClosed ? (
+                      <span>{Number.isFinite(p.takeProfit) ? fmtPrice(p.takeProfit) : "—"}</span>
+                    ) : (
+                      <input
+                        type="number"
+                        step="any"
+                        value={Number.isFinite(p.takeProfit) ? p.takeProfit : ""}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          onUpdateLevels(p.id, { stopLoss: p.stopLoss, takeProfit: Number(e.target.value) })
+                        }
+                        style={{
+                          width: "80px",
+                          height: "24px",
+                          background: "transparent",
+                          border: "1px solid var(--color-gray-300)",
+                          borderRadius: "4px",
+                          padding: "0 0.4rem",
+                          fontSize: "0.75rem",
+                          outline: "none",
+                          color: "inherit"
+                        }}
+                      />
+                    )}
                   </td>
-                  <td style={{ padding: "0.4rem 0.5rem" }}>
-                    <input
-                      type="number"
-                      step="any"
-                      value={Number.isFinite(p.stopLoss) ? p.stopLoss : ""}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        onUpdateLevels(p.id, { stopLoss: Number(e.target.value), takeProfit: p.takeProfit })
-                      }
-                      style={{
-                        width: "100%",
-                        height: "26px",
-                        background: "var(--color-gray-950)",
-                        border: "1px solid var(--color-gray-800)",
-                        borderRadius: "4px",
-                        color: "var(--color-gray-200)",
-                        padding: "0 0.4rem",
-                        fontSize: "0.75rem",
-                        outline: "none"
-                      }}
-                    />
+                  <td className={pnlColor}>
+                    {pnl === null ? "—" : formatCurrency(pnl, "USD", true)}
                   </td>
-                  <td style={{ padding: "0.4rem 0.5rem" }}>
-                    <input
-                      type="number"
-                      step="any"
-                      value={Number.isFinite(p.takeProfit) ? p.takeProfit : ""}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        onUpdateLevels(p.id, { stopLoss: p.stopLoss, takeProfit: Number(e.target.value) })
-                      }
-                      style={{
-                        width: "100%",
-                        height: "26px",
-                        background: "var(--color-gray-950)",
-                        border: "1px solid var(--color-gray-800)",
-                        borderRadius: "4px",
-                        color: "var(--color-gray-200)",
-                        padding: "0 0.4rem",
-                        fontSize: "0.75rem",
-                        outline: "none"
-                      }}
-                    />
-                  </td>
-                  <td style={{ padding: "0.6rem 0.5rem", fontWeight: 700, color: pnlColor }}>
-                    {unrealized === null ? "—" : (isProfit ? "+" : "") + formatCurrency(unrealized, "USD", true)}
-                  </td>
-                  <td style={{ padding: "0.4rem 0.5rem", textAlign: "right" }}>
+                  <td style={{ color: isClosed && p.saved ? "var(--color-profit)" : "inherit" }}>{statusText}</td>
+                  <td>
                     <button
                       type="button"
+                      title={isClosed ? "Supprimer le trade" : "Fermer la position"}
                       onClick={(e) => {
                         e.stopPropagation()
-                        onCloseManual(p.id)
+                        if (isClosed) {
+                          onDeleteTrade(p.id)
+                        } else {
+                          onCloseManual(p.id)
+                        }
                       }}
                       style={{
-                        background: "rgba(239,68,68,0.15)",
-                        border: "1px solid rgba(239,68,68,0.3)",
-                        color: "var(--color-loss)",
-                        padding: "0.2rem 0.5rem",
-                        borderRadius: "4px",
-                        fontSize: "0.7rem",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        transition: "background 0.1s, color 0.1s"
+                        background: "transparent",
+                        border: "none",
+                        color: "var(--color-gray-400)",
+                        cursor: "pointer"
                       }}
                     >
-                      Market
+                      <X size={16} />
                     </button>
                   </td>
                 </tr>
@@ -168,7 +177,7 @@ export function PositionsStrip({
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   )
 }
 

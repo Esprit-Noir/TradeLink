@@ -65,17 +65,8 @@ export default function RegisterPage() {
         
         {/* Logo */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
-          <div style={{
-            width: 48, height: 48,
-            background: "var(--color-brand-500)",
-            borderRadius: 12,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 8px 32px rgba(124, 58, 237, 0.4)"
-          }}>
-            <svg width="24" height="24" viewBox="0 0 14 14" fill="none">
-              <path d="M2 10L5.5 6.5L8 9L12 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "80px", objectFit: "contain" }} />
+          <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "80px", objectFit: "contain" }} />
         </div>
 
         <h1 style={{ fontSize: "1.5rem", fontWeight: 700, textAlign: "center", marginBottom: "0.5rem" }}>

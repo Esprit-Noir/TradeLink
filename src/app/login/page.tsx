@@ -4,6 +4,7 @@ import { Suspense, useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { ArrowLeft } from "lucide-react"
 
 function LoginContent() {
   const router = useRouter()
@@ -52,23 +53,32 @@ function LoginContent() {
       alignItems: "center",
       justifyContent: "center",
       padding: "1rem",
+      position: "relative",
       background: "radial-gradient(circle at top, var(--color-brand-900) 0%, var(--color-gray-950) 40%)"
     }}>
+      <Link 
+        href="/"
+        className="btn btn-ghost"
+        style={{
+          position: "absolute",
+          top: "2rem",
+          left: "2rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          color: "var(--color-gray-300)"
+        }}
+      >
+        <ArrowLeft size={16} />
+        Back to Home
+      </Link>
+
       <div className="card glass" style={{ width: "100%", maxWidth: 400, padding: "2.5rem" }}>
         
         {/* Logo */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
-          <div style={{
-            width: 48, height: 48,
-            background: "var(--color-brand-500)",
-            borderRadius: 12,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            boxShadow: "0 8px 32px rgba(124, 58, 237, 0.4)"
-          }}>
-            <svg width="24" height="24" viewBox="0 0 14 14" fill="none">
-              <path d="M2 10L5.5 6.5L8 9L12 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "80px", objectFit: "contain" }} />
+          <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "80px", objectFit: "contain" }} />
         </div>
 
         <h1 style={{ fontSize: "1.5rem", fontWeight: 700, textAlign: "center", marginBottom: "0.5rem" }}>

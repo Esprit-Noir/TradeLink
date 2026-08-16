@@ -116,6 +116,13 @@ export function AdvancedStatsClient() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
 
+      <div className="page-header" style={{ marginBottom: "0.5rem" }}>
+        <div>
+          <h1 className="page-title">Advanced Statistics</h1>
+          <p className="page-subtitle">Deep dive into your trading performance metrics.</p>
+        </div>
+      </div>
+
       <StatsFilters available={available} filters={{ period, symbol, setup, side }} apply={apply} />
 
       {/* KPI Grid */}

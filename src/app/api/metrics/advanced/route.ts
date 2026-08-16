@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
@@ -14,7 +16,7 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const accountId = url.searchParams.get("accountId") || "all"
 
-    if (accountId !== "all" && !/^[0-9a-f-]{36}$/i.test(accountId)) {
+    if (!accountId || typeof accountId !== "string") {
       return NextResponse.json({ error: "Invalid accountId" }, { status: 400 })
     }
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import dynamic from "next/dynamic"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
-import { Loader2, RefreshCcw, Save, FileDown, FileText, TriangleAlert, Play, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen } from "lucide-react"
+import { Loader2, RefreshCcw, Save, FileDown, FileText, TriangleAlert, Play, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, Share, X } from "lucide-react"
 import type { IChartApi } from "lightweight-charts"
 import type { Candle, MarketTimeframe } from "@/lib/market/types"
 import { MARKET_TIMEFRAMES } from "@/lib/market/types"
@@ -22,6 +22,7 @@ import { atrBasedLevels, positionSizeFromRisk, simulateClose } from "@/lib/marke
 import { exportSessionCsv, exportSessionPdf, type BacktestExportTrade } from "@/lib/backtest-export"
 import type { BacktestSessionItem } from "./types"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
+import Link from "next/link"
 
 interface SessionMeta {
   symbol: string
@@ -70,6 +71,7 @@ type Action =
   | { type: "SET_SCREENSHOT"; id: string; url: string }
   | { type: "SET_TRADE_SAVED"; id: string; saved: boolean }
   | { type: "SET_TRADE_SAVING"; id: string; saving: boolean }
+  | { type: "DELETE_TRADE"; id: string }
   | { type: "RESET" }
 
 function closeTrade(
@@ -149,7 +151,7 @@ function reducer(state: ReplayState, action: Action): ReplayState {
         meta: action.meta,
         data: action.data,
         subData: action.subData,
-        currentIndex: Math.min(INITIAL_WINDOW, action.data.length - 1),
+        currentIndex: 0,
         playing: false,
         positions: [],
         selectedPositionId: null,
@@ -261,6 +263,11 @@ function reducer(state: ReplayState, action: Action): ReplayState {
         ...state,
         closedTrades: state.closedTrades.map((t) => (t.id === action.id ? { ...t, saved: action.saved, saving: false } : t)),
       }
+    case "DELETE_TRADE":
+      return {
+        ...state,
+        closedTrades: state.closedTrades.filter((t) => t.id !== action.id),
+      }
     case "SET_TRADE_SAVING":
       return {
         ...state,
@@ -301,12 +308,10 @@ const INITIAL_STATE: ReplayState = {
   loadToken: 0,
 }
 
-const DAYS_OPTIONS = [1, 7, 30, 90, 180]
-
 /** Number of candles shown at once when a session loads/resets. */
 const INITIAL_WINDOW = 120
 
-const DEFAULT_FROM = Math.floor(Date.now() / 1000) - 30 * 86400
+const DEFAULT_FROM = Math.floor(Date.now() / 1000) - 365 * 86400
 const DEFAULT_TO = Math.floor(Date.now() / 1000)
 
 export function ReplayWorkbench({
@@ -314,11 +319,13 @@ export function ReplayWorkbench({
   pastSessions,
   timezone = "UTC",
   initialCapital = 10000,
+  backtestAccountId,
 }: {
   initialSymbol?: string
   pastSessions: BacktestSessionItem[]
   timezone?: string
   initialCapital?: number
+  backtestAccountId?: string
 }) {
   const { resolvedTheme } = useTheme()
   const theme = resolvedTheme === "light" ? "light" : "dark"
@@ -327,7 +334,6 @@ export function ReplayWorkbench({
 
   const [fullscreen, setFullscreen] = useState(false)
   const [watchlistCollapsed, setWatchlistCollapsed] = useState(false)
-  const [draftSymbol, setDraftSymbol] = useState(initialSymbol ?? "XAU/USD")
 
   useEffect(() => {
     const handleToggle = () => setWatchlistCollapsed((v) => !v)
@@ -385,6 +391,7 @@ export function ReplayWorkbench({
   const load = useCallback(
     async (overrides?: Partial<typeof config>) => {
       const cfg = { ...config, ...overrides }
+      setConfig(cfg)
       dispatch({ type: "LOAD_START" })
       try {
         const { symbol, timeframe, subTf, from, to, strategyName } = cfg
@@ -470,7 +477,7 @@ export function ReplayWorkbench({
   const useSub = !!config.subTf && state.subData.length > 0
   const displayed = useSub
     ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
-    : state.data.slice(0, state.currentIndex + 1)
+    : state.data
 
   const mainInd = useMemo(() => computeIndicatorSeries(state.data), [state.data])
   const subInd = useMemo(() => (config.subTf ? computeIndicatorSeries(state.subData) : null), [state.subData, config.subTf])
@@ -521,10 +528,10 @@ export function ReplayWorkbench({
               exitPrice: trade.exitPrice,
               entryAt: trade.entryTime,
               exitAt: trade.exitTime,
-              stopLoss: trade.stopLoss,
-              takeProfit: trade.takeProfit,
+              stopLoss: Number.isFinite(trade.stopLoss) && trade.stopLoss > 0 ? trade.stopLoss : undefined,
+              takeProfit: Number.isFinite(trade.takeProfit) && trade.takeProfit > 0 ? trade.takeProfit : undefined,
               quantity: trade.quantity,
-              riskAmount: trade.riskAmount,
+              riskAmount: Number.isFinite(trade.riskAmount) && trade.riskAmount > 0 ? trade.riskAmount : undefined,
               netPnl: trade.netPnl,
               screenshotUrl: trade.screenshotUrl ?? undefined,
             },
@@ -621,157 +628,159 @@ export function ReplayWorkbench({
   const currentTime = state.data[state.currentIndex]?.time ?? null
 
   return (
-    <div className={`backtest-page${fullscreen ? " backtest-page--fs" : ""}`}>
-      {/* ── Barre d'outils ── */}
-      <div className="bt-topbar">
-        <button
-          type="button"
-          className="bt-toggle-watchlist-btn"
-          onClick={() => window.dispatchEvent(new Event("toggle-watchlist"))}
-          title={watchlistCollapsed ? "Afficher la watchlist" : "Masquer la watchlist"}
-        >
-          {watchlistCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
-        </button>
-
-        <label className="bt-symbol">
-          <input
-            list="bt-symbol-list"
-            value={draftSymbol}
-            onChange={(e) => setDraftSymbol(e.target.value.toUpperCase())}
-            placeholder="Symbole"
-            spellCheck={false}
-          />
-          <datalist id="bt-symbol-list">
-            {CFD_SYMBOLS.map((s) => (
-              <option key={s.symbol} value={s.symbol}>{s.name}</option>
-            ))}
-          </datalist>
-        </label>
-
-        <div className="bt-tf-tabs">
-          {MARKET_TIMEFRAMES.map((tf) => (
-            <button
-              key={tf}
-              type="button"
-              className={config.timeframe === tf ? "active" : ""}
-              onClick={() => setConfig((c) => ({ ...c, timeframe: tf as MarketTimeframe }))}
-            >
-              {tf}
-            </button>
-          ))}
+    <div className="tz-replay-fullscreen">
+      {/* ── Top Bar ── */}
+      <div className="tz-replay-topbar">
+        <div className="tz-replay-topbar-left">
+          <Link href="/dashboard" className="tz-replay-logo">
+            <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "30px", objectFit: "contain" }} />
+            <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "30px", objectFit: "contain" }} />
+          </Link>
         </div>
 
-        <label className="bt-period">
-          <select
-            value={config.to - config.from}
-            onChange={(e) => {
-              const durationSeconds = Number(e.target.value)
-              const to = Math.floor(Date.now() / 1000)
-              setConfig((c) => ({ ...c, to, from: to - durationSeconds }))
-            }}
+        <div className="tz-replay-topbar-center">
+          <div className="tz-replay-date">
+            {currentTime ? formatDateWithTimezone(currentTime * 1000, timezone, true) : "—"}
+          </div>
+          <div className="tz-replay-timeline-bar" title={`${Math.min(state.currentIndex + 1, state.data.length)} / ${state.data.length} bougies`}>
+            <div className="tz-replay-timeline-fill" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+
+        <div className="tz-replay-topbar-right">
+          <button
+            className="tz-btn-close"
+            onClick={() => dispatch({ type: "RESET" })}
+            title="Réinitialiser la session"
           >
-            {DAYS_OPTIONS.map((d) => (
-              <option key={d} value={d * 86400}>{d}j</option>
-            ))}
-          </select>
-        </label>
-
-        <button className="bt-load" onClick={() => load({ symbol: draftSymbol })} disabled={state.loading}>
-          {state.loading ? <Loader2 size={14} className="spin" /> : <Play size={14} />}
-          {state.loading ? "Chargement…" : "Charger"}
-        </button>
-
-
-
-        <div className="bt-spacer" />
-
-        <div className="bt-actions">
-          <button onClick={handleExportCsv} title="Exporter en CSV"><FileDown size={14} /> CSV</button>
-          <button onClick={handleExportPdf} title="Exporter en PDF"><FileText size={14} /> PDF</button>
-          <button onClick={handleSaveAll} title="Enregistrer tous les trades dans le journal"><Save size={14} /> Sauver</button>
-          <button onClick={() => dispatch({ type: "RESET" })} title="Réinitialiser la session"><RefreshCcw size={14} /> Reset</button>
-          <button onClick={() => setFullscreen((f) => !f)} title="Plein écran">
-            {fullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+            <RefreshCcw size={14} /> Reset
           </button>
+          <button
+            className="tz-btn-share"
+            onClick={handleSaveAll}
+            disabled={state.closedTrades.length === 0}
+            title="Enregistrer dans le journal"
+          >
+            <Save size={14} /> Save
+          </button>
+          <button className="tz-btn-close" onClick={handleExportPdf}>
+            <Share size={14} /> Share
+          </button>
+          <Link href="/dashboard" className="tz-btn-close">
+            <X size={16} />
+          </Link>
         </div>
       </div>
 
-      {/* ── Barre de progression ── */}
-      <div className="bt-progress" title={`${Math.min(state.currentIndex + 1, state.data.length)} / ${state.data.length} bougies`}>
-        <div className="bt-progress-fill" style={{ width: `${progress}%` }} />
-      </div>
-
-      {/* ── Timeline des trades ── */}
-      <TradesTimeline
-        positions={state.positions}
-        closedTrades={state.closedTrades}
-        total={state.data.length}
-        currentIndex={state.currentIndex}
-        onSeek={(index) => dispatch({ type: "SET_INDEX", index })}
-      />
-
-      {/* ── Zone principale ── */}
-      <div className="bt-main">
-        <div className="bt-chart-col">
-          <div className="bt-chart-wrap">
-            {state.loading ? (
-              <div className="backtest-skeleton">
-                <Loader2 className="spin" size={22} />
-                <span>Chargement des données {config.symbol} · {config.timeframe}…</span>
+      {/* ── Main Area ── */}
+      <div className="tz-replay-main">
+        <div className="tz-replay-content">
+          <div className="tz-replay-chart-area">
+            {/* Chart Header Tabs */}
+            <div className="tz-replay-chart-header">
+              <div className="tz-replay-symbol-tab">
+                <select
+                  value={config.symbol}
+                  onChange={(e) => load({ symbol: e.target.value })}
+                  style={{ background: "transparent", border: "none", fontWeight: "inherit", fontSize: "inherit", outline: "none", width: "100px", color: "inherit", cursor: "pointer" }}
+                >
+                  {CFD_SYMBOLS.map((s) => (
+                    <option key={s.symbol} value={s.symbol} style={{ color: "black" }}>
+                      {s.symbol}
+                    </option>
+                  ))}
+                </select>
               </div>
-            ) : state.error ? (
-              <div className="backtest-error">
-                <TriangleAlert size={18} />
-                <span>{state.error}</span>
+              <select
+                className="tz-replay-tf-select"
+                value={config.timeframe}
+                onChange={(e) => setConfig((c) => ({ ...c, timeframe: e.target.value as MarketTimeframe }))}
+              >
+                {MARKET_TIMEFRAMES.map((tf) => (
+                  <option key={tf} value={tf}>{tf}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Chart View */}
+            <div style={{ flex: 1, position: "relative" }}>
+              {state.loading ? (
+                <div className="backtest-skeleton">
+                  <Loader2 className="spin" size={22} />
+                  <span>Chargement {config.symbol} · {config.timeframe}…</span>
+                </div>
+              ) : state.error ? (
+                <div className="backtest-error">
+                  <TriangleAlert size={18} />
+                  <span>{state.error}</span>
+                </div>
+              ) : (
+                <ReplayChart
+                  key={state.loadToken}
+                  candles={displayed}
+                  indicatorData={indicatorData}
+                  indicators={state.indicators}
+                  positions={state.positions}
+                  selectedPositionId={state.selectedPositionId}
+                  closedTrades={state.closedTrades}
+                  theme={theme}
+                  playbackIndex={state.currentIndex}
+                  onChartReady={(chart) => {
+                    chartRef.current = chart
+                  }}
+                  onUpdateLevels={handleUpdateLevels}
+                />
+              )}
+            </div>
+
+            {/* Speed Controls */}
+            {!state.loading && !state.error && (
+              <div className="tz-replay-speed-controls">
+                <div className="tz-replay-speed-slider">
+                  {state.speed}x
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    step="1"
+                    value={state.speed}
+                    onChange={(e) => dispatch({ type: "SET_SPEED", speed: Number(e.target.value) })}
+                    disabled={state.data.length === 0}
+                  />
+                </div>
+                <div className="tz-replay-play-btns">
+                  <button onClick={() => dispatch({ type: "ADVANCE", delta: -1 })} disabled={state.data.length === 0}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
+                  </button>
+                  <button onClick={() => dispatch({ type: "TOGGLE_PLAY" })} disabled={state.data.length === 0}>
+                    {state.playing ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    )}
+                  </button>
+                  <button onClick={() => dispatch({ type: "ADVANCE", delta: 1 })} disabled={state.data.length === 0}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+                  </button>
+                </div>
               </div>
-            ) : (
-              <ReplayChart
-                key={state.loadToken}
-                candles={displayed}
-                indicatorData={indicatorData}
-                indicators={state.indicators}
-                positions={state.positions}
-                selectedPositionId={state.selectedPositionId}
-                closedTrades={state.closedTrades}
-                theme={theme}
-                onChartReady={(chart) => {
-                  chartRef.current = chart
-                }}
-                onUpdateLevels={handleUpdateLevels}
-              />
             )}
           </div>
 
-          {!state.loading && !state.error && (
-            <ReplayControls
-              playing={state.playing}
-              speed={state.speed}
-              currentIndex={state.currentIndex}
-              total={state.data.length}
-              currentTime={currentTime}
-              disabled={state.data.length === 0}
-              timezone={timezone}
-              onTogglePlay={() => dispatch({ type: "TOGGLE_PLAY" })}
-              onStep={(dir) => dispatch({ type: "ADVANCE", delta: dir })}
-              onSpeed={(speed) => dispatch({ type: "SET_SPEED", speed })}
-              onInstant={() => dispatch({ type: "ADVANCE", delta: state.data.length })}
-              onScrub={(index) => dispatch({ type: "SET_INDEX", index })}
+          <div className="tz-replay-positions">
+            <PositionsStrip
+              positions={[...state.positions, ...state.closedTrades]}
+              selectedPositionId={state.selectedPositionId}
+              currentCandle={currentCandle}
+              symbol={state.meta.symbol || config.symbol}
+              onSelect={(id) => dispatch({ type: "SELECT_POSITION", id })}
+              onCloseManual={(id) => dispatch({ type: "CLOSE_MANUAL", id })}
+              onDeleteTrade={(id) => dispatch({ type: "DELETE_TRADE", id })}
+              onUpdateLevels={handleUpdateLevels}
             />
-          )}
-
-          {/* ── Positions ouvertes (sous le graphique) ── */}
-          <PositionsStrip
-            positions={state.positions}
-            selectedPositionId={state.selectedPositionId}
-            currentCandle={currentCandle}
-            symbol={state.meta.symbol || config.symbol}
-            onSelect={(id) => dispatch({ type: "SELECT_POSITION", id })}
-            onCloseManual={(id) => dispatch({ type: "CLOSE_MANUAL", id })}
-            onUpdateLevels={handleUpdateLevels}
-          />
+          </div>
         </div>
 
-        {/* ── Panneau de trading ── */}
         <TradePanel
           symbol={state.meta.symbol || config.symbol}
           timeframe={state.meta.timeframe}
@@ -783,6 +792,7 @@ export function ReplayWorkbench({
           indicators={state.indicators}
           pastSessions={pastSessions}
           timezone={timezone}
+          backtestAccountId={backtestAccountId}
           onBalance={(v) => dispatch({ type: "UPDATE_BALANCE", balance: v })}
           onRiskPct={(v) => dispatch({ type: "UPDATE_RISK", riskPct: v })}
           onSetIndicators={(patch) => dispatch({ type: "SET_INDICATORS", patch })}

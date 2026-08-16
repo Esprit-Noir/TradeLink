@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 
 interface Session {
   id: string
@@ -28,7 +29,6 @@ const SESSION_NAMES: Record<string, string> = {
 }
 
 // Detect DST: check if London is in summer time (UTC+1) or winter (UTC+0)
-// DST = last Sunday of March → last Sunday of October (approximation)
 function isDST(now: Date): boolean {
   const utc = now.getTime()
   const year = now.getUTCFullYear()
@@ -41,18 +41,14 @@ function isDST(now: Date): boolean {
 
 function getSessionHours(session: Session, summer: boolean) {
   if (session.id === "sydney") {
-    // Summer: 22:00→07:00 UTC, Winter: 21:00→06:00 UTC
     return { open: summer ? 22 : 21, close: summer ? 7 : 6 }
   }
   if (session.id === "london") {
-    // Summer: 07:00→16:00 UTC, Winter: 08:00→17:00 UTC
     return { open: summer ? 7 : 8, close: summer ? 16 : 17 }
   }
   if (session.id === "new_york") {
-    // Summer: 12:00→21:00 UTC, Winter: 13:00→22:00 UTC
     return { open: summer ? 12 : 13, close: summer ? 21 : 22 }
   }
-  // Tokyo: same all year 00:00→09:00 UTC
   return { open: session.openHour, close: session.closeHour }
 }
 
@@ -62,33 +58,83 @@ function isSessionOpen(session: Session, now: Date): boolean {
   const summer = isDST(now)
   const h = getSessionHours(session, summer)
 
-  // Weekend check
+  // Forex weekend check (Closed from Friday 21:00 UTC to Sunday 21:00 UTC)
   if (day === 6) return false
-  if (day === 5 && utc >= h.close) return false
-  if (day === 0 && utc < h.open) return false
+  if (day === 5 && utc >= 21) return false
+  if (day === 0 && utc < 21) return false
 
   return h.open < h.close
     ? utc >= h.open && utc < h.close
     : utc >= h.open || utc < h.close
 }
 
-function MapPin({ session, now }: { session: Session; now: Date }) {
+function getSessionProgress(session: Session, now: Date): number {
+  if (!isSessionOpen(session, now)) return 0
+  const utc = now.getUTCHours() + now.getUTCMinutes() / 60
+  const summer = isDST(now)
+  const h = getSessionHours(session, summer)
+  
+  const open = h.open
+  const close = h.close < h.open ? h.close + 24 : h.close
+  const current = utc < h.open && h.close < h.open ? utc + 24 : utc
+
+  if (current >= open && current < close) {
+    return Math.max(0, Math.min(100, ((current - open) / (close - open)) * 100))
+  }
+  return 0
+}
+
+function MapPin({ session, now, summer }: { session: Session; now: Date; summer: boolean }) {
   const open = isSessionOpen(session, now)
+  const h = getSessionHours(session, summer)
   return (
     <div style={{
       position: "absolute", left: session.left, top: session.top,
-      transform: "translate(-50%, -100%)", zIndex: open ? 10 : 1,
+      transform: "translate(-50%, -50%)", zIndex: open ? 10 : 1,
     }}>
-      <svg width="24" height="32" viewBox="0 0 24 32" fill="none" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.5))" }}>
-        <path d="M12 0C5.37 0 0 5.37 0 12c0 9 12 20 12 20s12-11 12-20C24 5.37 18.63 0 12 0z" fill="var(--color-gray-800)" stroke="var(--color-gray-700)" strokeWidth="1" />
-        <circle cx="12" cy="11" r="5" fill={session.color} opacity={open ? 1 : 0.3} style={open ? { filter: `drop-shadow(0 0 6px ${session.color})` } : {}} />
-      </svg>
-      <div style={{
-        position: "absolute", top: -20, left: "50%", transform: "translateX(-50%)",
-        whiteSpace: "nowrap", fontSize: "0.7rem", fontWeight: 700, color: session.color,
-        textShadow: "0 1px 3px rgba(0,0,0,0.8)",
-      }}>
-        {SESSION_NAMES[session.id]}
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        
+        {/* Radar Ping Effect */}
+        {open && (
+          <>
+            <motion.div
+              style={{ position: "absolute", borderRadius: "50%", background: session.color, width: 14, height: 14 }}
+              animate={{ scale: [1, 6], opacity: [0.7, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
+            />
+            <motion.div
+              style={{ position: "absolute", borderRadius: "50%", background: session.color, width: 14, height: 14 }}
+              animate={{ scale: [1, 6], opacity: [0.7, 0] }}
+              transition={{ duration: 2.5, delay: 1.25, repeat: Infinity, ease: "easeOut" }}
+            />
+          </>
+        )}
+
+        {/* Core Dot */}
+        <div style={{
+          width: 14, height: 14, borderRadius: "50%",
+          background: open ? session.color : "var(--color-gray-600)",
+          boxShadow: open ? `0 0 15px 2px ${session.color}, 0 0 30px ${session.color}` : "none",
+          position: "relative", zIndex: 10,
+        }} />
+
+        {/* Label */}
+        <div style={{
+          position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)",
+          display: "flex", flexDirection: "column", alignItems: "center",
+          background: "var(--color-gray-950)", padding: "4px 8px", borderRadius: 6,
+          border: `1px solid ${open ? session.color : 'var(--color-gray-800)'}`,
+          boxShadow: open ? `0 4px 12px rgba(0,0,0,0.5), 0 0 10px ${session.color}40` : "0 4px 12px rgba(0,0,0,0.5)",
+          pointerEvents: "none",
+          opacity: open ? 1 : 0.6,
+        }}>
+          <span style={{ fontSize: "0.7rem", fontWeight: 800, color: open ? session.color : "var(--color-gray-300)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            {SESSION_NAMES[session.id]}
+          </span>
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: open ? "#ffffff" : "var(--color-gray-400)", marginTop: -1 }}>
+            {String(h.open).padStart(2, "0")}:00 - {String(h.close).padStart(2, "0")}:00
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -96,67 +142,135 @@ function MapPin({ session, now }: { session: Session; now: Date }) {
 
 export function WorldSessionsMap() {
   const [now, setNow] = useState(() => new Date())
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 15000)
+    setMounted(true)
+    const interval = setInterval(() => setNow(new Date()), 60000)
     return () => clearInterval(interval)
   }, [])
 
   const day = now.getUTCDay()
   const utc = now.getUTCHours() + now.getUTCMinutes() / 60
   const summer = isDST(now)
-  const isWeekend = day === 6 || (day === 5 && utc >= 21) || (day === 0 && utc < 0)
+  const isWeekend = day === 6 || (day === 5 && utc >= 21) || (day === 0 && utc < 21)
+  
+  const currentUtcString = mounted ? now.toLocaleTimeString('en-US', { timeZone: 'UTC', hour12: false, hour: '2-digit', minute: '2-digit' }) : "--:--"
 
   return (
-    <div style={{ padding: "1.25rem" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 8, height: 8, borderRadius: "50%", background: isWeekend ? "var(--color-loss)" : "var(--color-profit)" }} />
-          <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)", display: "flex", alignItems: "center", gap: 6 }}>
-            Market Sessions
-            {isWeekend && (
-              <span className="badge badge-loss" style={{ fontSize: "0.55rem" }}>Weekend</span>
-            )}
-          </h3>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, fontSize: "0.7rem", color: "var(--color-gray-400)" }}>
-          {SESSIONS.map(s => (
-            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: isSessionOpen(s, now) ? "var(--color-profit)" : "var(--color-loss)", opacity: isSessionOpen(s, now) ? 1 : 0.5 }} />
-              <span>{s.flag}</span>
+    <div style={{ padding: "1.25rem", display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ 
+            width: 32, height: 32, borderRadius: 8, 
+            background: isWeekend ? "var(--color-loss-muted)" : "rgba(124, 58, 237, 0.1)", 
+            display: "flex", alignItems: "center", justifyContent: "center" 
+          }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={isWeekend ? "var(--color-loss)" : "var(--color-brand-500)"} strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div>
+            <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--color-gray-100)", marginBottom: 2 }}>
+              Market Sessions
+            </h3>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontSize: "0.65rem", color: "var(--color-gray-400)", fontWeight: 600, letterSpacing: "0.05em" }}>CURRENT TIME (UTC)</span>
+              <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--color-gray-100)", background: "var(--color-gray-800)", padding: "1px 6px", borderRadius: 4 }}>
+                {currentUtcString}
+              </span>
+              {isWeekend && (
+                <span className="badge badge-loss" style={{ fontSize: "0.55rem", padding: "1px 4px" }}>Weekend</span>
+              )}
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
-      {/* World Map */}
-      <div style={{ position: "relative", width: "100%", aspectRatio: "2/1", background: "var(--color-gray-950)", borderRadius: 8, border: "1px solid var(--color-gray-800)", overflow: "hidden", marginBottom: 12 }}>
-        <img src="/world.svg" alt="World Map" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
-        {SESSIONS.map(session => (
-          <MapPin key={session.id} session={session} now={now} />
+      {/* World Map Area */}
+      <div style={{ 
+        position: "relative", width: "100%", aspectRatio: "2/1", 
+        background: "var(--color-gray-950)", borderRadius: 12, 
+        border: "1px solid var(--color-gray-800)", overflow: "hidden", 
+        marginBottom: 16 
+      }}>
+        {/* Grid pattern */}
+        <div style={{
+          position: "absolute", inset: 0, opacity: 0.2, pointerEvents: "none",
+          backgroundImage: "linear-gradient(var(--color-gray-800) 1px, transparent 1px), linear-gradient(90deg, var(--color-gray-800) 1px, transparent 1px)",
+          backgroundSize: "20px 20px"
+        }} />
+        
+        {/* Colored Map using CSS Mask */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundColor: "var(--color-brand-500)",
+          opacity: 0.15,
+          maskImage: "url(/world.svg)",
+          WebkitMaskImage: "url(/world.svg)",
+          maskSize: "contain",
+          WebkitMaskSize: "contain",
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          maskPosition: "center",
+          WebkitMaskPosition: "center"
+        }} />
+        
+        {mounted && SESSIONS.map(session => (
+          <MapPin key={session.id} session={session} now={now} summer={summer} />
         ))}
       </div>
 
       {/* Session Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 8 }}>
-        {SESSIONS.map(session => {
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10 }}>
+        {mounted && SESSIONS.map(session => {
           const open = isSessionOpen(session, now)
+          const h = getSessionHours(session, summer)
+          const progress = getSessionProgress(session, now)
+          
           return (
             <div key={session.id} className="card" style={{
-              padding: "0.75rem",
-              borderColor: open ? "rgba(16,185,129,0.3)" : undefined,
-              background: open ? "var(--color-profit-muted)" : undefined,
+              padding: "0.85rem",
+              borderColor: open ? `${session.color}40` : "var(--color-gray-800)",
+              background: open ? "var(--color-gray-900)" : "transparent",
+              position: "relative", overflow: "hidden"
             }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ fontSize: "1.1rem" }}>{session.flag}</span>
-                <span className={`badge ${open ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.55rem" }}>
+              {open && (
+                <div style={{
+                  position: "absolute", top: -20, right: -20, width: 80, height: 80,
+                  background: session.color, opacity: 0.1, filter: "blur(20px)", borderRadius: "50%"
+                }} />
+              )}
+              
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ fontSize: "1.2rem" }}>{session.flag}</span>
+                  <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--color-gray-100)", textTransform: "uppercase" }}>
+                    {SESSION_NAMES[session.id]}
+                  </span>
+                </div>
+                <span className={`badge ${open ? "badge-profit" : "badge-loss"}`} style={{ 
+                  fontSize: "0.55rem", background: open ? `${session.color}20` : undefined, color: open ? session.color : undefined 
+                }}>
                   {open ? "Open" : "Closed"}
                 </span>
               </div>
-              <p style={{ fontSize: "0.75rem", fontWeight: 500, color: open ? "var(--color-gray-200)" : "var(--color-gray-400)" }}>{SESSION_NAMES[session.id]}</p>
-              <p style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", marginTop: 2 }}>
-                {String(getSessionHours(session, summer).open).padStart(2, "0")}:00 – {String(getSessionHours(session, summer).close).padStart(2, "0")}:00 UTC
-              </p>
+
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-gray-100)", marginBottom: 6 }}>
+                <span>{String(h.open).padStart(2, "0")}:00 UTC</span>
+                <span>{String(h.close).padStart(2, "0")}:00 UTC</span>
+              </div>
+              
+              {/* Progress Bar */}
+              <div style={{ height: 6, width: "100%", background: "var(--color-gray-800)", borderRadius: 4, overflow: "hidden" }}>
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  style={{ height: "100%", background: open ? session.color : "transparent", borderRadius: 4 }}
+                />
+              </div>
             </div>
           )
         })}

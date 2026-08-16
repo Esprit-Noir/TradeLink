@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const accountId = searchParams.get("accountId") || "all"
 
-    if (accountId !== "all" && !/^[0-9a-f-]{36}$/i.test(accountId)) {
+    if (!accountId || typeof accountId !== "string") {
       return NextResponse.json({ error: "Invalid accountId" }, { status: 400 })
     }
 

@@ -1,5 +1,4 @@
-// TradeLink — Prisma Schema MVP
-// 5 tables, pas une de plus
+// TradeLink — Prisma Schema
 
 generator client {
   provider = "prisma-client-js"
@@ -9,19 +8,49 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── ENUMS ───────────────────────────────────────────────────────────────────
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELED
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
 // ─── USERS ──────────────────────────────────────────────────────────────────
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String      @id @default(cuid())
+  email        String      @unique
   name         String?
-  passwordHash String?  @map("password_hash")
-  timezone     String   @default("UTC")
-  baseCurrency String   @default("USD") @map("base_currency")
-  onboarded    Boolean  @default(false)
-  dailyGoal    Decimal? @db.Decimal(15,2) @map("daily_goal")
-  monthlyGoal  Decimal? @db.Decimal(15,2) @map("monthly_goal")
-  notificationPrefs Json? @map("notification_prefs")
-  riskPrefs        Json?  @map("risk_prefs") // { dailyLossLimit, maxTradesPerDay, maxConsecutiveLosses, maxRiskPerTradePct }
+  passwordHash String?     @map("password_hash")
+  role         UserRole    @default(USER)
+  status       UserStatus  @default(ACTIVE)
+  deletedAt    DateTime?   @map("deleted_at")
+  timezone     String      @default("UTC")
+  baseCurrency String      @default("USD") @map("base_currency")
+  onboarded    Boolean     @default(false)
+  lastLoginAt  DateTime?   @map("last_login_at")
+  dailyGoal    Decimal?    @db.Decimal(15,2) @map("daily_goal")
+  monthlyGoal  Decimal?    @db.Decimal(15,2) @map("monthly_goal")
+  notificationPrefs Json?  @map("notification_prefs")
+  riskPrefs        Json?   @map("risk_prefs")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -33,6 +62,12 @@ model User {
   achievements         UserAchievement[]
   backtestSessions     BacktestSession[]
   watchlist            WatchlistItem[]
+  subscriptions        Subscription[]
+  adminActionLogs      AdminActionLog[]     @relation("AdminUser")
+  targetedActionLogs   AdminActionLog[]     @relation("TargetUser")
+  ownedTickets         SupportTicket[]      @relation("TicketUser")
+  assignedTickets      SupportTicket[]      @relation("TicketAssignedAdmin")
+  supportMessages      SupportMessage[]
 
   @@map("users")
 }
@@ -397,4 +432,91 @@ model UserAchievement {
   @@unique([userId, achievementId])
   @@index([userId])
   @@map("user_achievements")
+}
+
+// ─── PLANS & SUBSCRIPTIONS ──────────────────────────────────────────────────
+model Plan {
+  id                String  @id @default(cuid())
+  name              String  @unique
+  price             Decimal @db.Decimal(10, 2)
+  maxAccounts       Int     @default(1) @map("max_accounts")
+  backtestAccess    Boolean @default(false) @map("backtest_access")
+  maxTradesPerMonth Int?    @map("max_trades_per_month")
+  isActive          Boolean @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  subscriptions     Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id            String             @id @default(cuid())
+  userId        String             @map("user_id")
+  planId        String             @map("plan_id")
+  status        SubscriptionStatus @default(ACTIVE)
+  startDate     DateTime           @default(now()) @map("start_date")
+  renewalDate   DateTime?          @map("renewal_date")
+  canceledAt    DateTime?          @map("canceled_at")
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan          Plan               @relation(fields: [planId], references: [id])
+
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+// ─── ADMIN ACTION LOGS ──────────────────────────────────────────────────────
+model AdminActionLog {
+  id           String   @id @default(cuid())
+  adminId      String   @map("admin_id")
+  targetUserId String?  @map("target_user_id")
+  action       String   // ROLE_CHANGED, USER_SUSPENDED, USER_BANNED, USER_DELETED, PLAN_CHANGED, IMPERSONATION_STARTED, etc.
+  reason       String?  @db.Text
+  metadata     Json?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  admin        User     @relation("AdminUser", fields: [adminId], references: [id])
+  targetUser   User?    @relation("TargetUser", fields: [targetUserId], references: [id])
+
+  @@index([adminId])
+  @@index([targetUserId])
+  @@index([createdAt(sort: Desc)])
+  @@map("admin_action_logs")
+}
+
+// ─── SUPPORT TICKETS ────────────────────────────────────────────────────────
+model SupportTicket {
+  id              String       @id @default(cuid())
+  userId          String       @map("user_id")
+  subject         String
+  status          TicketStatus @default(OPEN)
+  priority        String       @default("normal") // low, normal, high, urgent
+  assignedAdminId String?      @map("assigned_admin_id")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  user            User         @relation("TicketUser", fields: [userId], references: [id], onDelete: Cascade)
+  assignedAdmin   User?        @relation("TicketAssignedAdmin", fields: [assignedAdminId], references: [id])
+  messages        SupportMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id        String   @id @default(cuid())
+  ticketId  String   @map("ticket_id")
+  senderId  String   @map("sender_id")
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender    User          @relation(fields: [senderId], references: [id])
+
+  @@index([ticketId])
+  @@map("support_messages")
 }

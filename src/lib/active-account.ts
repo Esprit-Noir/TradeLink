@@ -53,11 +53,11 @@ export async function resolveAccount(userId: string, accountId?: string | null) 
 
 /**
  * Resolves the account scope for dashboard widgets.
- * - `accountId === "all"` → aggregated across every account of the user.
+ * - `accountId === "all"` or undefined/null → aggregated across every account of the user (including backtest).
  * - otherwise → a single account (or the active one).
  */
 export async function resolveAccountScope(userId: string, accountId?: string | null | "all") {
-  if (accountId === "all") {
+  if (!accountId || accountId === "all") {
     const accounts = await prisma.tradingAccount.findMany({
       where: { userId },
     })

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { CFD_SYMBOLS } from "@/lib/market/symbols"
 
 export function AddTradeModal() {
   const router = useRouter()
@@ -155,7 +156,12 @@ export function AddTradeModal() {
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1rem" }}>
                 <div className="form-group">
                   <label className="label">Symbol</label>
-                  <input name="symbol" value={formData.symbol} onChange={handleChange} className="input" placeholder="BTC/USDT" required />
+                  <select name="symbol" value={formData.symbol} onChange={handleChange} className="input select" required>
+                    <option value="">Choose a symbol</option>
+                    {CFD_SYMBOLS.map(s => (
+                      <option key={s.symbol} value={s.symbol}>{s.symbol}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label className="label">Instrument Type</label>

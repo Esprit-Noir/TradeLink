@@ -198,11 +198,11 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
       <div className="watchlist-head">
         <div className="watchlist-head-top">
           <button className="watchlist-nav-btn" onClick={onOpenNav} aria-label="Ouvrir la navigation">
-            <Menu size={18} />
+            <Menu size={14} />
           </button>
           <Link href="/dashboard" className="watchlist-logo">
             <div className="watchlist-logo-mark">
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+              <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
                 <path d="M2 10L5.5 6.5L8 9L12 4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
@@ -221,7 +221,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
             onClick={() => setPickerOpen((v) => !v)}
             title="Ajouter une paire"
           >
-            <Plus size={15} />
+            <Plus size={12} />
           </button>
         </div>
       </div>
@@ -230,7 +230,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
       {pickerOpen && (
         <div className="watchlist-picker">
           <div className="watchlist-picker-search">
-            <Search size={14} />
+            <Search size={12} />
             <input
               autoFocus
               value={query}
@@ -284,9 +284,8 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
 
       {/* Column headers */}
       <div className="watchlist-cols">
-        <span>Paire</span>
+        <span style={{ flex: 1 }}>Paire</span>
         <span>Last</span>
-        <span>Chg</span>
         <span>Chg%</span>
       </div>
 
@@ -294,7 +293,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
       <div className="watchlist-list">
         {loading ? (
           <div className="watchlist-empty">
-            <Loader2 size={16} className="spin" />
+            <Loader2 size={14} className="spin" />
           </div>
         ) : items.length === 0 ? (
           <div className="watchlist-empty">Ajoutez une paire avec +</div>
@@ -310,39 +309,39 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
                 className={`watchlist-row ${active ? "active" : ""}`}
                 onClick={() => selectSymbol(item.symbol)}
               >
-                <div className="watchlist-row-main">
-                  <Star size={12} className="watchlist-row-star" />
-                  <div className="watchlist-row-name">
-                    <span className="watchlist-row-sym">{item.symbol}</span>
-                    <span className="watchlist-row-label">{item.name}</span>
-                  </div>
+                <div className="watchlist-row-top">
+                  <Star size={10} className="watchlist-row-star" />
+                  <span className="watchlist-row-sym">{item.symbol}</span>
+                  <span className={`watchlist-price ${cls}`}>
+                    {q?.last != null ? fmtPrice(q.last) : "—"}
+                  </span>
+                  <span className={`watchlist-pct ${cls}`}>
+                    {pct != null ? (
+                      <>
+                        {pct >= 0 ? <TrendingUp size={9} /> : pct < 0 ? <TrendingDown size={9} /> : <Minus size={9} />}
+                        {`${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`}
+                      </>
+                    ) : (
+                      "—"
+                    )}
+                  </span>
                 </div>
-                <span className={`watchlist-price ${cls}`}>
-                  {q?.last != null ? fmtPrice(q.last) : "—"}
-                </span>
-                <span className={`watchlist-price ${cls}`}>
-                  {q?.change != null ? `${q.change > 0 ? "+" : ""}${fmtChange(q.change)}` : "—"}
-                </span>
-                <span className={`watchlist-pct ${cls}`}>
-                  {pct != null ? (
-                    <>
-                      {pct >= 0 ? <TrendingUp size={11} /> : pct < 0 ? <TrendingDown size={11} /> : <Minus size={11} />}
-                      {`${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`}
-                    </>
-                  ) : (
-                    "—"
-                  )}
-                </span>
-                <button
-                  className="watchlist-remove"
-                  title={`Retirer ${item.symbol}`}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    removeSymbol(item.symbol)
-                  }}
-                >
-                  <X size={12} />
-                </button>
+                <div className="watchlist-row-bottom">
+                  <span className="watchlist-row-label">{item.name}</span>
+                  <span className={`watchlist-price ${cls}`}>
+                    {q?.change != null ? `${q.change > 0 ? "+" : ""}${fmtChange(q.change)}` : "—"}
+                  </span>
+                  <button
+                    className="watchlist-remove"
+                    title={`Retirer ${item.symbol}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeSymbol(item.symbol)
+                    }}
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
               </div>
             )
           })

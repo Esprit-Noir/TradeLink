@@ -31,6 +31,7 @@ import {
   Eye,
   PanelLeftClose,
   PanelLeftOpen,
+  Calculator,
 } from "lucide-react"
 
 type SidebarStats = {
@@ -107,6 +108,7 @@ export function Sidebar({
         { href: "/setups",      label: "Setups",      icon: () => <Layers {...iconProps} /> },
         { href: "/import",      label: "Import CSV",  icon: () => <Upload {...iconProps} /> },
         { href: "/risk",        label: "Risk",        icon: () => <Shield {...iconProps} /> },
+        { href: "/calculator",  label: "Calculator",  icon: () => <Calculator {...iconProps} /> },
         { href: "/backtest",    label: "Replay",      icon: () => <CandlestickChart {...iconProps} /> },
       ],
     },
@@ -143,22 +145,16 @@ export function Sidebar({
         {/* Logo + collapse toggle */}
         <div className="sidebar-logo">
           {!collapsed ? (
-            <Link href="/overview" style={{ display: "flex", alignItems: "center", gap: "0.5rem", textDecoration: "none", overflow: "hidden" }}>
-              <div style={{
-                width: 30, height: 30, minWidth: 30,
-                background: "linear-gradient(135deg, var(--color-brand-500), var(--color-brand-600))",
-                borderRadius: 8,
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
-                  <path d="M2 10L5.5 6.5L8 9L12 4" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </div>
-              <span style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em", color: "var(--color-gray-100)", whiteSpace: "nowrap" }}>
-                TradeLink
-              </span>
+            <Link href="/overview" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
+              <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "42px", objectFit: "contain" }} />
+              <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "42px", objectFit: "contain" }} />
             </Link>
-          ) : <div />}
+          ) : (
+            <Link href="/overview" style={{ display: "flex", alignItems: "center", textDecoration: "none", overflow: "hidden", width: "36px", height: "36px" }}>
+              <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "36px", width: "140px", maxWidth: "none", objectFit: "cover", objectPosition: "left" }} />
+              <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "36px", width: "140px", maxWidth: "none", objectFit: "cover", objectPosition: "left" }} />
+            </Link>
+          )}
           <button
             onClick={() => setCollapsed(!collapsed)}
             className="sidebar-collapse-btn"

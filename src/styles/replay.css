@@ -1,0 +1,460 @@
+/* ── Replay Mode Tradezella Style ── */
+.tz-replay-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--color-gray-950);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--color-gray-100);
+}
+
+/* ── Top Bar ── */
+.tz-replay-topbar {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  background: var(--color-gray-900);
+  border-bottom: 1px solid var(--color-gray-800);
+  flex-shrink: 0;
+}
+
+.tz-replay-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.tz-replay-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-gray-100);
+}
+.tz-replay-logo img {
+  height: 24px;
+}
+
+.tz-replay-topbar-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.tz-replay-date {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-gray-400);
+}
+.tz-replay-timeline-bar {
+  width: 300px;
+  height: 4px;
+  background: var(--color-gray-800);
+  border-radius: 4px;
+  position: relative;
+}
+.tz-replay-timeline-fill {
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  background: var(--color-brand-500);
+  border-radius: 4px;
+}
+
+.tz-replay-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tz-btn-share {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-brand-500);
+  color: white; /* buttons with brand bg keep white text */
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+.tz-btn-close {
+  display: flex;
+  align-items: center;
+  background: transparent;
+  color: var(--color-gray-400);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--color-gray-700);
+  cursor: pointer;
+}
+.tz-btn-close:hover { background: var(--color-gray-800); }
+
+/* ── Main Layout ── */
+.tz-replay-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  background: var(--color-gray-950);
+}
+
+.tz-replay-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.tz-replay-chart-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-gray-900);
+  margin: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--color-gray-800);
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.tz-replay-chart-header {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-gray-800);
+  gap: 16px;
+}
+
+.tz-replay-symbol-tab {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-gray-100);
+}
+
+.tz-replay-tf-select {
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  outline: none;
+}
+
+/* ── Speed Controls ── */
+.tz-replay-speed-controls {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border-top: 1px solid var(--color-gray-800);
+  background: var(--color-gray-900);
+}
+.tz-replay-speed-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-brand-600);
+}
+.tz-replay-speed-slider input[type="range"] {
+  width: 100px;
+}
+.tz-replay-play-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tz-replay-play-btns button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+}
+.tz-replay-play-btns button:hover { background: var(--color-gray-800); }
+
+/* ── Positions Bottom Bar ── */
+.tz-replay-positions {
+  height: 200px;
+  background: var(--color-gray-900);
+  border-top: 1px solid var(--color-gray-800);
+  display: flex;
+  flex-direction: column;
+}
+
+.tz-replay-positions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-gray-800);
+}
+
+.tz-replay-positions-title {
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tz-replay-positions-summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.8rem;
+}
+.tz-replay-positions-summary span { color: var(--color-gray-400); }
+.tz-replay-positions-summary b { font-weight: 600; color: var(--color-gray-100); }
+
+.tz-replay-positions-table {
+  flex: 1;
+  overflow-y: auto;
+}
+.tz-replay-positions-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.tz-replay-positions-table th {
+  text-align: left;
+  padding: 8px 16px;
+  color: var(--color-gray-400);
+  font-weight: 500;
+  border-bottom: 1px solid var(--color-gray-800);
+  background: var(--color-gray-950);
+  position: sticky;
+  top: 0;
+}
+.tz-replay-positions-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-gray-800);
+  color: var(--color-gray-200);
+}
+.tz-replay-td-buy { color: var(--color-profit) !important; font-weight: 600; }
+.tz-replay-td-sell { color: var(--color-loss) !important; font-weight: 600; }
+.tz-replay-td-pnl-up { color: var(--color-profit) !important; font-weight: 600; }
+.tz-replay-td-pnl-down { color: var(--color-loss) !important; font-weight: 600; }
+.tz-replay-td-closed { color: var(--color-gray-500); }
+
+/* ── Place Order Sidebar ── */
+.tz-replay-sidebar {
+  width: 340px;
+  background: var(--color-gray-900);
+  border-left: 1px solid var(--color-gray-800);
+  display: flex;
+  flex-direction: column;
+}
+
+.tz-replay-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-gray-800);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tz-replay-sidebar-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+}
+
+.tz-replay-order-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.tz-replay-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-brand-600);
+}
+
+.tz-replay-radio-group {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+}
+.tz-replay-radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.tz-replay-radio input {
+  accent-color: var(--color-brand-500);
+}
+
+.tz-replay-risk-buttons {
+  display: flex;
+  gap: 8px;
+}
+.tz-replay-risk-btn {
+  flex: 1;
+  padding: 6px 0;
+  background: transparent;
+  border: 1px solid var(--color-gray-700);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-gray-300);
+  cursor: pointer;
+}
+.tz-replay-risk-btn.active {
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  color: white;
+}
+
+.tz-replay-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tz-replay-input-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-gray-400);
+}
+
+.tz-replay-input-wrapper {
+  position: relative;
+}
+.tz-replay-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--color-gray-700);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--color-gray-100);
+}
+.tz-replay-input-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.85rem;
+  color: var(--color-gray-400);
+  font-weight: 600;
+}
+
+.tz-replay-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tz-replay-price-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--color-gray-950);
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.tz-replay-reward-risk {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  margin-top: -10px;
+}
+.tz-replay-reward-risk .reward { color: var(--color-profit); font-weight: 600; }
+.tz-replay-reward-risk .risk { color: var(--color-loss); font-weight: 600; }
+.tz-replay-reward-risk .total {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-gray-100);
+}
+
+.tz-replay-order-actions {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid var(--color-gray-800);
+}
+
+.tz-replay-btn-buy {
+  flex: 1;
+  padding: 12px;
+  background: var(--color-profit);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.tz-replay-btn-buy:hover { opacity: 0.9; }
+
+.tz-replay-btn-sell {
+  flex: 1;
+  padding: 12px;
+  background: var(--color-loss);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.tz-replay-btn-sell:hover { opacity: 0.9; }
+
+/* ── Right Vertical Sidebar ── */
+.tz-replay-vertical-tabs {
+  width: 60px;
+  background: var(--color-gray-950);
+  border-left: 1px solid var(--color-gray-800);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 0;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.tz-replay-vtab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-gray-400);
+  font-size: 0.65rem;
+  cursor: pointer;
+}
+.tz-replay-vtab.active {
+  color: var(--color-brand-500);
+}
+.tz-replay-vtab svg {
+  width: 20px;
+  height: 20px;
+}

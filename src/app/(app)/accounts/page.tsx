@@ -29,9 +29,6 @@ export default async function AccountsPage() {
 
   const accounts = await Promise.all(dbAccounts.map(async acc => {
     const where: any = { accountId: acc.id, status: 'closed' }
-    if (acc.type === 'backtest') {
-      where.includeBacktest = true
-    }
     const trades = await prisma.trade.findMany({
       where,
       select: { netPnl: true, netPnlUsd: true, status: true }

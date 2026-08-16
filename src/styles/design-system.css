@@ -1,0 +1,406 @@
+/* ══════════════════════════════════════════════════════════
+   TRADELINK DESIGN SYSTEM — Glass Morphism & Premium UI
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Glass Morphism Cards ──────────────────────────────── */
+.glass-card {
+  background: color-mix(in srgb, var(--color-gray-900) 70%, transparent);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--color-gray-700) 50%, transparent);
+  border-radius: var(--radius-card);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-card:hover {
+  border-color: color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+  box-shadow: 
+    0 8px 32px color-mix(in srgb, var(--color-brand-500) 8%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-brand-500) 10%, transparent);
+}
+
+/* ── Premium Card Variants ─────────────────────────────── */
+.card-premium {
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--color-gray-900) 80%, transparent) 0%,
+    color-mix(in srgb, var(--color-gray-900) 60%, transparent) 100%);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border: 1px solid color-mix(in srgb, var(--color-gray-700) 40%, transparent);
+  border-radius: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-premium::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    color-mix(in srgb, var(--color-brand-400) 40%, transparent) 50%,
+    transparent 100%);
+}
+
+.card-premium:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px color-mix(in srgb, var(--color-brand-500) 12%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+}
+
+/* ── Glow Effects ──────────────────────────────────────── */
+.glow-brand {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+}
+
+.glow-profit {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-profit) 15%, transparent);
+}
+
+.glow-loss {
+  box-shadow: 0 0 20px color-mix(in srgb, var(--color-loss) 15%, transparent);
+}
+
+/* ── Animated Backgrounds ──────────────────────────────── */
+.bg-gradient-animated {
+  background: linear-gradient(-45deg, 
+    var(--color-gray-950),
+    var(--color-gray-900),
+    color-mix(in srgb, var(--color-brand-900) 30%, var(--color-gray-900)),
+    var(--color-gray-950));
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Stagger Animations ────────────────────────────────── */
+.stagger-in > * {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: staggerFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.stagger-in > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-in > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-in > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-in > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-in > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-in > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-in > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-in > *:nth-child(8) { animation-delay: 420ms; }
+
+@keyframes staggerFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Pulse Animation ───────────────────────────────────── */
+.pulse-brand {
+  animation: pulseBrand 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulseBrand {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-brand-500) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 8px color-mix(in srgb, var(--color-brand-500) 0%, transparent);
+  }
+}
+
+/* ── Shimmer Loading ───────────────────────────────────── */
+.shimmer {
+  background: linear-gradient(90deg, 
+    var(--color-gray-900) 0%,
+    var(--color-gray-800) 50%,
+    var(--color-gray-900) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Float Animation ───────────────────────────────────── */
+.float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ── Scale On Hover ────────────────────────────────────── */
+.scale-hover {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scale-hover:hover {
+  transform: scale(1.02);
+}
+
+/* ── Border Gradient ───────────────────────────────────── */
+.border-gradient {
+  position: relative;
+  border: none !important;
+}
+
+.border-gradient::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, 
+    var(--color-brand-500),
+    color-mix(in srgb, var(--color-brand-500) 30%, transparent),
+    var(--color-gray-700));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ── Text Gradient ─────────────────────────────────────── */
+.text-gradient {
+  background: linear-gradient(135deg, 
+    var(--color-brand-400),
+    var(--color-brand-600));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Stat Card ─────────────────────────────────────────── */
+.stat-card {
+  background: color-mix(in srgb, var(--color-gray-900) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-gray-800);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--color-brand-500);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.stat-card:hover {
+  border-color: var(--color-gray-700);
+  transform: translateY(-1px);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+}
+
+.stat-card.profit::before {
+  background: var(--color-profit);
+  opacity: 1;
+}
+
+.stat-card.loss::before {
+  background: var(--color-loss);
+  opacity: 1;
+}
+
+/* ── Chart Card ────────────────────────────────────────── */
+.chart-card {
+  background: color-mix(in srgb, var(--color-gray-900) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-gray-800);
+  border-radius: var(--radius-card);
+  padding: 1.25rem;
+  transition: border-color 0.25s ease;
+}
+
+.chart-card:hover {
+  border-color: var(--color-gray-700);
+}
+
+.chart-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-gray-400);
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ── KPI Card ──────────────────────────────────────────── */
+.kpi-card {
+  background: color-mix(in srgb, var(--color-gray-900) 80%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-gray-800);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent,
+    var(--color-brand-500),
+    transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.kpi-card:hover {
+  border-color: var(--color-gray-700);
+  transform: translateY(-2px);
+}
+
+.kpi-card:hover::after {
+  opacity: 1;
+}
+
+/* ── Navigation Enhancements ───────────────────────────── */
+.nav-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  background: var(--color-brand-500);
+  border-radius: 0 2px 2px 0;
+  transition: height 0.2s ease;
+}
+
+.nav-item:hover::before {
+  height: 60%;
+}
+
+.nav-item.active::before {
+  height: 80%;
+}
+
+/* ── Button Enhancements ───────────────────────────────── */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgba(255,255,255,0.1) 0%,
+    rgba(255,255,255,0) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover::after {
+  opacity: 1;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, 
+    var(--color-brand-500),
+    var(--color-brand-600));
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-brand-500) 40%, transparent);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ── Input Enhancements ────────────────────────────────── */
+.input {
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+}
+
+/* ── Table Enhancements ────────────────────────────────── */
+.table-row {
+  transition: background-color 0.15s ease;
+}
+
+.table-row:hover {
+  background-color: color-mix(in srgb, var(--color-brand-500) 5%, transparent);
+}
+
+/* ── Modal Backdrop ────────────────────────────────────── */
+.modal-backdrop {
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  background: color-mix(in srgb, var(--color-gray-950) 70%, transparent);
+}
+
+/* ── Tooltip ───────────────────────────────────────────── */
+.tooltip {
+  background: color-mix(in srgb, var(--color-gray-800) 90%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-gray-700);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-gray-200);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* ── Responsive Glass ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .glass-card {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  
+  .card-premium {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}

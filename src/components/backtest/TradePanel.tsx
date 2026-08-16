@@ -6,18 +6,17 @@ import {
   Save,
   Check,
   Loader2,
-  Wallet,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  ChevronDown,
-  ChevronUp,
-  History,
+  X,
+  PlusCircle,
+  List,
+  Calendar,
+  BarChart2
 } from "lucide-react"
 import type { Candle } from "@/lib/market/types"
 import type { BacktestSessionItem, IndicatorsState, SimSide, SimTrade } from "./types"
 import { unrealizedPnl } from "@/lib/market/simulator"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
+import { useRouter } from "next/navigation"
 
 interface Props {
   symbol: string
@@ -35,6 +34,7 @@ interface Props {
   onSetIndicators: (patch: Partial<IndicatorsState>) => void
   onOrder: (side: SimSide) => void
   onSaveTrade: (trade: SimTrade) => void
+  backtestAccountId?: string
 }
 
 const INDICATOR_TOGGLES: { key: keyof IndicatorsState; label: string }[] = [
@@ -76,7 +76,9 @@ export function TradePanel({
   onSetIndicators,
   onOrder,
   onSaveTrade,
+  backtestAccountId,
 }: Props) {
+  const router = useRouter()
   const [historyOpen, setHistoryOpen] = useState(true)
 
   const price = currentCandle?.close ?? null
@@ -93,189 +95,150 @@ export function TradePanel({
   const avgR = rVals.length ? rVals.reduce((s, r) => s + r, 0) / rVals.length : 0
 
   return (
-    <div className="bt-panel">
-      {/* ── Prix actuel ── */}
-      <div className="bt-price-banner">
-        <div className="bt-price-banner-top">
-          <span className="bt-label">Prix actuel</span>
-          <span className="bt-sub">{symbol} · {timeframe}{candleTime ? ` · ${candleTime}` : ""}</span>
+    <>
+      <div className="tz-replay-sidebar">
+        <div className="tz-replay-sidebar-header">
+          <div className="tz-replay-sidebar-title">PLACE ORDER</div>
+          <button className="tz-btn-close" style={{ border: "none", padding: "4px" }}><X size={16} /></button>
         </div>
-        <div className={`bt-price${price == null ? "" : price >= (currentCandle?.open ?? 0) ? " up" : " down"}`}>
-          {price == null ? "—" : fmtPrice(price)}
-        </div>
-      </div>
 
-      {/* ── Capital & risque ── */}
-      <div className="bt-section">
-        <div className="bt-row">
-          <div className="bt-row-icon">
-            <Wallet size={13} />
+        <div className="tz-replay-order-body">
+          <div className="tz-replay-toggle-row">
+            <span>Advanced order</span>
+            <input type="checkbox" style={{ accentColor: "var(--color-brand-500)", transform: "scale(1.2)" }} defaultChecked />
           </div>
-          <span className="bt-label">Capital (USD)</span>
-          <input
-            className="bt-num"
-            type="number"
-            min={0}
-            step={500}
-            value={balance}
-            onChange={(e) => onBalance(Number(e.target.value))}
-          />
-        </div>
-        <div className="bt-row">
-          <div className="bt-row-icon">
-            <Activity size={13} />
+
+          <div className="tz-replay-radio-group">
+            <label className="tz-replay-radio">
+              <input type="radio" name="balanceType" defaultChecked /> Current balance
+            </label>
+            <label className="tz-replay-radio">
+              <input type="radio" name="balanceType" /> Initial balance
+            </label>
           </div>
-          <span className="bt-label">Risque / trade (%)</span>
-          <input
-            className="bt-num"
-            type="number"
-            min={0.1}
-            max={100}
-            step={0.1}
-            value={riskPct}
-            onChange={(e) => onRiskPct(Number(e.target.value))}
-          />
-        </div>
-      </div>
 
-      {/* ── Boutons Achat / Vente ── */}
-      <div className="bt-order-btns">
-        <button className="bt-sellbtn" onClick={() => onOrder("short")} disabled={!price}>
-          <div className="bt-order-btn-left">
-            <TrendingDown size={14} />
-            <span>Vendre</span>
-          </div>
-        </button>
-        <button className="bt-buybtn" onClick={() => onOrder("long")} disabled={!price}>
-          <div className="bt-order-btn-left">
-            <TrendingUp size={14} />
-            <span>Acheter</span>
-          </div>
-        </button>
-      </div>
-
-      {/* ── Stats session ── */}
-      <div className="bt-stats">
-        <div className="bt-stat">
-          <span>Floating</span>
-          <b className={floating >= 0 ? "up" : "down"}>{formatCurrency(floating, "USD", true)}</b>
-        </div>
-        <div className="bt-stat">
-          <span>Clôturé</span>
-          <b className={totalClosed >= 0 ? "up" : "down"}>{formatCurrency(totalClosed, "USD", true)}</b>
-        </div>
-        <div className="bt-stat">
-          <span>Win %</span>
-          <b>{total ? `${winRate.toFixed(0)}%` : "—"}</b>
-        </div>
-        <div className="bt-stat">
-          <span>R moyen</span>
-          <b className={avgR >= 0 ? "up" : "down"}>{avgR != null && total ? `${avgR >= 0 ? "+" : ""}${avgR.toFixed(2)}` : "—"}</b>
-        </div>
-        <div className="bt-stat">
-          <span>Trades</span>
-          <b>{total}</b>
-        </div>
-      </div>
-
-      {/* ── Indicateurs ── */}
-      <div className="bt-section">
-        <div className="bt-section-title">Indicateurs</div>
-        <div className="bt-toggles">
-          {INDICATOR_TOGGLES.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              className={`bt-toggle${indicators[key] ? " on" : ""}`}
-              onClick={() => onSetIndicators({ [key]: !indicators[key] })}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Historique ── */}
-      <div className="bt-section bt-grow">
-        <div className="bt-section-head">
-          <div className="bt-section-title">
-            <History size={12} /> Trades clôturés
-            <span className="bt-strip-count">{total}</span>
-          </div>
-          {total > 0 && (
-            <button className="bt-chev" onClick={() => setHistoryOpen((o) => !o)}>
-              {historyOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-          )}
-        </div>
-
-        <AnimatePresence initial={false}>
-          {historyOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="bt-history"
-            >
-              {total === 0 ? (
-                <div className="bt-empty">Aucun trade clôturé pour l&apos;instant.</div>
-              ) : (
-                closedTrades.map((t) => {
-                  const pnl = t.netPnl ?? 0
-                  return (
-                    <motion.div
-                      key={t.id}
-                      layout
-                      initial={{ opacity: 0, y: -6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="bt-trade-row"
-                    >
-                      <div className="bt-trade-main">
-                        <span className={`bt-live-badge ${t.side === "long" ? "profit" : "loss"}`}>
-                          {t.side === "long" ? "L" : "S"}
-                        </span>
-                        <span className="bt-reason">{t.reason === "sl" ? "SL" : t.reason === "tp" ? "TP" : "Manuel"}</span>
-                        <strong className={pnl >= 0 ? "up" : "down"}>{formatCurrency(pnl, "USD", true)}</strong>
-                        <span className="bt-r">
-                          R {t.rMultiple != null ? `${t.rMultiple >= 0 ? "+" : ""}${t.rMultiple.toFixed(2)}` : "—"}
-                        </span>
-                      </div>
-                      <button
-                        className={`bt-save ${t.saved ? "saved" : ""}`}
-                        onClick={() => onSaveTrade(t)}
-                        disabled={t.saved || t.saving}
-                        title={t.saved ? "Enregistré dans le journal" : "Enregistrer dans le journal"}
-                      >
-                        {t.saving ? <Loader2 size={13} className="spin" /> : t.saved ? <Check size={13} /> : <Save size={13} />}
-                      </button>
-                    </motion.div>
-                  )
-                })
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Sessions passées ── */}
-      {pastSessions.length > 0 && (
-        <div className="bt-section">
-          <div className="bt-section-title">Sessions passées</div>
-          <div className="bt-past">
-            {pastSessions.slice(0, 5).map((s) => (
-              <div key={s.id} className="bt-past-row">
-                <strong>{s.symbol}</strong>
-                <span>{s.timeframe}</span>
-                <span>{s.tradesCount} trades</span>
-                <b className={s.closedPnl != null && s.closedPnl >= 0 ? "up" : "down"}>
-                  {s.closedPnl != null ? formatCurrency(s.closedPnl, "USD", true) : "—"}
-                </b>
-              </div>
+          <div className="tz-replay-risk-buttons">
+            {[0.5, 1, 2, 3, 5].map((pct) => (
+              <button
+                key={pct}
+                className={`tz-replay-risk-btn ${riskPct === pct ? "active" : ""}`}
+                onClick={() => onRiskPct(pct)}
+              >
+                {pct}%
+              </button>
             ))}
           </div>
+
+          <div className="tz-replay-input-group">
+            <label className="tz-replay-input-label">Max risk percent</label>
+            <div className="tz-replay-input-wrapper">
+              <input
+                type="number"
+                className="tz-replay-input"
+                value={riskPct}
+                onChange={(e) => onRiskPct(Number(e.target.value))}
+                step={0.1}
+              />
+              <span className="tz-replay-input-suffix">%</span>
+            </div>
+          </div>
+
+          <div className="tz-replay-input-group">
+            <label className="tz-replay-input-label">Max risk amount</label>
+            <div className="tz-replay-input-wrapper">
+              <input
+                type="number"
+                className="tz-replay-input"
+                value={((balance * riskPct) / 100).toFixed(2)}
+                readOnly
+              />
+              <span className="tz-replay-input-suffix">USD</span>
+            </div>
+          </div>
+
+          <div className="tz-replay-row-2">
+            <div className="tz-replay-input-group">
+              <label className="tz-replay-input-label">Type</label>
+              <select className="tz-replay-input">
+                <option>Market</option>
+              </select>
+            </div>
+            <div className="tz-replay-input-group">
+              <label className="tz-replay-input-label">Market price</label>
+              <div className="tz-replay-price-display">
+                {price ? fmtPrice(price) : "—"}
+                <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginLeft: "8px" }}>{symbol.split("/")[0] || symbol}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="tz-replay-row-2">
+            <div className="tz-replay-input-group">
+              <label className="tz-replay-input-label">Profit target</label>
+              <div className="tz-replay-input-wrapper">
+                <input type="text" className="tz-replay-input" placeholder="Price" />
+              </div>
+            </div>
+            <div className="tz-replay-input-group">
+              <label className="tz-replay-input-label">Stop loss <span style={{ color: "var(--color-loss)", fontWeight: "normal" }}>required</span></label>
+              <div className="tz-replay-input-wrapper">
+                <input type="text" className="tz-replay-input" placeholder="Price" />
+              </div>
+            </div>
+          </div>
+
+          <div className="tz-replay-reward-risk">
+            <div>
+              <div className="reward">Reward</div>
+              <div className="total">— USD</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div className="risk">Risk</div>
+              <div className="total">{((balance * riskPct) / 100).toLocaleString("en-US", { maximumFractionDigits: 2 })} USD</div>
+            </div>
+          </div>
+
+          {/* Indicators Toggles */}
+          <div className="tz-replay-input-group" style={{ marginTop: "16px" }}>
+            <label className="tz-replay-input-label">Indicators</label>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              {INDICATOR_TOGGLES.map((t) => (
+                <button
+                  key={t.key}
+                  className={`tz-replay-risk-btn ${indicators[t.key] ? "active" : ""}`}
+                  onClick={() => onSetIndicators({ [t.key]: !indicators[t.key] })}
+                  style={{ padding: "4px 8px", fontSize: "0.75rem", minWidth: "45px" }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+
+        <div className="tz-replay-order-actions">
+          <button className="tz-replay-btn-buy" onClick={() => onOrder("long")} disabled={!price}>Buy</button>
+          <button className="tz-replay-btn-sell" onClick={() => onOrder("short")} disabled={!price}>Sell</button>
+        </div>
+      </div>
+
+      {/* Right vertical tabs */}
+      <div className="tz-replay-vertical-tabs">
+        <div className="tz-replay-vtab active"><PlusCircle size={20} />Order</div>
+        <div 
+          className="tz-replay-vtab" 
+          onClick={() => {
+            if (backtestAccountId) {
+              router.push(`/accounts/${backtestAccountId}`)
+            } else {
+              router.push("/accounts")
+            }
+          }}
+          style={{ cursor: "pointer" }}
+        ><List size={20} />Details</div>
+        <div className="tz-replay-vtab"><Calendar size={20} />Calendar</div>
+        <div className="tz-replay-vtab"><BarChart2 size={20} />Add Chart</div>
+      </div>
+    </>
   )
 }
