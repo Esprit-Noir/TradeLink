@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const createNoteSchema = z.object({
+  content: z.string().min(1).max(5000),
+})
 
 async function assertOwnership(challengeId: string, userId: string) {
   const challenge = await prisma.propChallenge.findUnique({
@@ -52,10 +57,12 @@ export async function POST(
     }
 
     const body = await request.json()
-    const content = (body.content || "").trim()
-    if (!content) {
-      return NextResponse.json({ error: "Content is required" }, { status: 400 })
+    const parsed = createNoteSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { content } = parsed.data
 
     const note = await prisma.propChallengeNote.create({
       data: { challengeId: id, content },

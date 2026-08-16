@@ -3,6 +3,22 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveAccount } from "@/lib/active-account"
 import { dayKey } from "@/lib/dates"
+import { z } from "zod"
+
+const backtestSchema = z.object({
+  accountId: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  initialBalance: z.number().min(1).default(100000),
+  profitTargetPct: z.number().min(0),
+  maxDDPct: z.number().min(0).max(100),
+  dailyDDPct: z.number().min(0).max(100),
+  minTradingDays: z.number().min(0).default(0),
+  maxTradingDays: z.number().min(0).nullable().default(null),
+  consistencyRulePct: z.number().min(0).default(0),
+  drawdownType: z.enum(["static_balance", "trailing_balance", "trailing_equity"]).default("static_balance"),
+  dailyResetTimezone: z.string().default("UTC"),
+})
 
 export async function POST(request: Request) {
   try {
@@ -12,24 +28,25 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
+    const parsed = backtestSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
+
     const {
       accountId,
       startDate,
       endDate,
-      initialBalance = 100000,
+      initialBalance,
       profitTargetPct,
       maxDDPct,
       dailyDDPct,
-      minTradingDays = 0,
-      maxTradingDays = null,
-      consistencyRulePct = 0,
-      drawdownType = "static_balance",
-      dailyResetTimezone = "UTC",
-    } = body
-
-    if (profitTargetPct === undefined || maxDDPct === undefined || dailyDDPct === undefined) {
-      return NextResponse.json({ error: "profitTargetPct, maxDDPct and dailyDDPct are required" }, { status: 400 })
-    }
+      minTradingDays,
+      maxTradingDays,
+      consistencyRulePct,
+      drawdownType,
+      dailyResetTimezone,
+    } = parsed.data
 
     // Resolve target account
     let account = null

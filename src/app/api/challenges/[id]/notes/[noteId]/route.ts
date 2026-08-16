@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const updateNoteSchema = z.object({
+  content: z.string().min(1).max(5000),
+})
 
 async function assertOwnership(noteId: string, userId: string) {
   const note = await prisma.propChallengeNote.findUnique({
@@ -27,10 +32,12 @@ export async function PATCH(
     }
 
     const body = await request.json()
-    const content = (body.content || "").trim()
-    if (!content) {
-      return NextResponse.json({ error: "Content is required" }, { status: 400 })
+    const parsed = updateNoteSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { content } = parsed.data
 
     const updated = await prisma.propChallengeNote.update({
       where: { id: noteId },

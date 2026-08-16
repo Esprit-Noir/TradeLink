@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const createTemplateSchema = z.object({
+  firmName: z.string().min(1).max(100),
+  programName: z.string().min(1).max(100),
+  drawdownType: z.string().min(1),
+  logoUrl: z.union([z.string().url(), z.null()]).optional(),
+  dailyDDPct: z.union([z.string(), z.number(), z.null()]).optional(),
+  maxDDPct: z.union([z.string(), z.number(), z.null()]).optional(),
+  dailyResetTimezone: z.string().max(50).optional(),
+  profitTargetPhase1Pct: z.union([z.string(), z.number(), z.null()]).optional(),
+  profitTargetPhase2Pct: z.union([z.string(), z.number(), z.null()]).optional(),
+  minTradingDays: z.union([z.string(), z.number()]).optional(),
+  maxTradingDays: z.union([z.string(), z.number()]).optional(),
+  consistencyRulePct: z.union([z.string(), z.number(), z.null()]).optional(),
+  weekendHoldingAllowed: z.boolean().optional(),
+  newsTradingAllowed: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+})
 
 function parseOptionalNumber(value: any): number | null {
   if (value === undefined || value === null || value === "") return null
@@ -34,11 +53,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { firmName, programName, drawdownType, logoUrl } = body
-
-    if (!firmName || !programName || !drawdownType) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    const parsed = createTemplateSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { firmName, programName, drawdownType, logoUrl } = parsed.data
 
     const template = await prisma.propFirmTemplate.create({
       data: {
@@ -46,17 +66,17 @@ export async function POST(request: NextRequest) {
         programName,
         drawdownType,
         logoUrl: logoUrl || null,
-        dailyDDPct: parseOptionalNumber(body.dailyDDPct),
-        maxDDPct: parseOptionalNumber(body.maxDDPct) ?? 10,
-        dailyResetTimezone: body.dailyResetTimezone || "UTC",
-        profitTargetPhase1Pct: parseOptionalNumber(body.profitTargetPhase1Pct),
-        profitTargetPhase2Pct: parseOptionalNumber(body.profitTargetPhase2Pct),
-        minTradingDays: body.minTradingDays !== undefined && body.minTradingDays !== "" ? parseInt(body.minTradingDays) : null,
-        maxTradingDays: body.maxTradingDays !== undefined && body.maxTradingDays !== "" ? parseInt(body.maxTradingDays) : null,
-        consistencyRulePct: parseOptionalNumber(body.consistencyRulePct),
-        weekendHoldingAllowed: body.weekendHoldingAllowed !== false,
-        newsTradingAllowed: body.newsTradingAllowed !== false,
-        isActive: body.isActive !== false,
+        dailyDDPct: parseOptionalNumber(parsed.data.dailyDDPct),
+        maxDDPct: parseOptionalNumber(parsed.data.maxDDPct) ?? 10,
+        dailyResetTimezone: parsed.data.dailyResetTimezone || "UTC",
+        profitTargetPhase1Pct: parseOptionalNumber(parsed.data.profitTargetPhase1Pct),
+        profitTargetPhase2Pct: parseOptionalNumber(parsed.data.profitTargetPhase2Pct),
+        minTradingDays: parsed.data.minTradingDays !== undefined && parsed.data.minTradingDays !== "" ? parseInt(String(parsed.data.minTradingDays)) : null,
+        maxTradingDays: parsed.data.maxTradingDays !== undefined && parsed.data.maxTradingDays !== "" ? parseInt(String(parsed.data.maxTradingDays)) : null,
+        consistencyRulePct: parseOptionalNumber(parsed.data.consistencyRulePct),
+        weekendHoldingAllowed: parsed.data.weekendHoldingAllowed !== false,
+        newsTradingAllowed: parsed.data.newsTradingAllowed !== false,
+        isActive: parsed.data.isActive !== false,
       }
     })
 

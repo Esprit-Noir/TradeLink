@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const notificationPrefsSchema = z.object({
+  eventTypes: z.record(z.string(), z.boolean()).optional(),
+  defaults: z.object({
+    stopTradingPct: z.number().min(0).max(100).optional(),
+    profitGoalPct: z.number().min(0).max(100).optional(),
+  }).optional(),
+})
 
 const DEFAULT_EVENT_TYPES: Record<string, boolean> = {
   breached: true,
@@ -49,6 +58,11 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json()
+    const parsed = notificationPrefsSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
+
     const existing = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: { notificationPrefs: true },
@@ -56,8 +70,8 @@ export async function PATCH(request: Request) {
     const prev = (existing?.notificationPrefs as any) || {}
 
     const merged = {
-      eventTypes: { ...DEFAULT_EVENT_TYPES, ...(prev.eventTypes || {}), ...(body.eventTypes || {}) },
-      defaults: { ...DEFAULT_PREFS.defaults, ...(prev.defaults || {}), ...(body.defaults || {}) },
+      eventTypes: { ...DEFAULT_EVENT_TYPES, ...(prev.eventTypes || {}), ...(parsed.data.eventTypes || {}) },
+      defaults: { ...DEFAULT_PREFS.defaults, ...(prev.defaults || {}), ...(parsed.data.defaults || {}) },
     }
 
     await prisma.user.update({

@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const screenshotSchema = z.object({
+  storageUrl: z.string().url(),
+  fileName: z.string().max(255).optional(),
+})
 
 export async function POST(
   request: NextRequest,
@@ -13,11 +19,13 @@ export async function POST(
     }
 
     const { id: tradeId } = await params
-    const { storageUrl, fileName } = await request.json()
-
-    if (!storageUrl) {
-      return NextResponse.json({ error: "Storage URL is required" }, { status: 400 })
+    const body = await request.json()
+    const parsed = screenshotSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { storageUrl, fileName } = parsed.data
 
     // Verify trade ownership
     const trade = await prisma.trade.findUnique({
