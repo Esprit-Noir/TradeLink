@@ -107,7 +107,7 @@ export async function PATCH(
 
     return NextResponse.json(updated)
   } catch (error: any) {
-    console.error("Error updating challenge:", error)
+    console.error("Error updating challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to update challenge" }, { status: 500 })
   }
 }
@@ -141,7 +141,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    console.error("Error deleting challenge:", error)
+    console.error("Error deleting challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to delete challenge" }, { status: 500 })
   }
 }

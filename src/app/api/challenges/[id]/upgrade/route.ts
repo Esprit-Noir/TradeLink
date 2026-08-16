@@ -94,7 +94,7 @@ export async function POST(
     return NextResponse.json(fundedChallenge)
 
   } catch (error: any) {
-    console.error("Error upgrading challenge:", error)
+    console.error("Error upgrading challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

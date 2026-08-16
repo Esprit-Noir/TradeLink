@@ -42,7 +42,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("[ACTIVE_ACCOUNT_POST]", error)
+    console.error("[ACTIVE_ACCOUNT_POST]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }

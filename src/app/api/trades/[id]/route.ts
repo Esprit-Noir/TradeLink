@@ -32,7 +32,7 @@ export async function GET(
 
     return NextResponse.json(trade)
   } catch (error) {
-    console.error("Error fetching trade:", error)
+    console.error("Error fetching trade:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to fetch trade" }, { status: 500 })
   }
 }
@@ -66,7 +66,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting trade:", error)
+    console.error("Error deleting trade:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to delete trade" }, { status: 500 })
   }
 }
@@ -108,7 +108,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedTrade)
   } catch (error) {
-    console.error("Error updating trade:", error)
+    console.error("Error updating trade:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to update trade" }, { status: 500 })
   }
 }

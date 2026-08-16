@@ -73,7 +73,7 @@ export async function PATCH(
 
     return NextResponse.json(template)
   } catch (error) {
-    console.error("Error updating template:", error)
+    console.error("Error updating template:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to update template" }, { status: 500 })
   }
 }
@@ -108,7 +108,7 @@ export async function DELETE(
     await prisma.propFirmTemplate.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting template:", error)
+    console.error("Error deleting template:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to delete template" }, { status: 500 })
   }
 }

@@ -27,7 +27,7 @@ export async function GET() {
     })
     return NextResponse.json({ challenges: c, snapshots: snaps })
   } catch (error) {
-    console.error("[DEBUG_GET]", error)
+    console.error("[DEBUG_GET]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

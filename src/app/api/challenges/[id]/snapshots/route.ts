@@ -34,7 +34,7 @@ export async function GET(
       dailyDDUsedPct: s.dailyDDUsedPct ? Number(s.dailyDDUsedPct) : null,
     })))
   } catch (error) {
-    console.error("Error fetching snapshots:", error)
+    console.error("Error fetching snapshots:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to fetch snapshots" }, { status: 500 })
   }
 }

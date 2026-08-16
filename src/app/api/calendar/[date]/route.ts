@@ -98,7 +98,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ date: st
       })),
     })
   } catch (error: any) {
-    console.error("[CALENDAR_DAY]", error)
+    console.error("[CALENDAR_DAY]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

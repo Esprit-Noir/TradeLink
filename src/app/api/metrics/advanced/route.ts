@@ -334,7 +334,7 @@ export async function GET(request: Request) {
       setups,
     })
   } catch (error) {
-    console.error("[ADVANCED_METRICS_GET]", error)
+    console.error("[ADVANCED_METRICS_GET]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }

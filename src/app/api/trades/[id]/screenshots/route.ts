@@ -47,7 +47,7 @@ export async function POST(
 
     return NextResponse.json(screenshot)
   } catch (error) {
-    console.error("Error saving screenshot:", error)
+    console.error("Error saving screenshot:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to save screenshot" }, { status: 500 })
   }
 }

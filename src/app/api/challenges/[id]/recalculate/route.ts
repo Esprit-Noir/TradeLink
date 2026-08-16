@@ -31,7 +31,7 @@ export async function POST(
 
     return NextResponse.json(updatedChallenge)
   } catch (error: any) {
-    console.error("Error recalculating challenge:", error)
+    console.error("Error recalculating challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to recalculate" }, { status: 500 })
   }
 }

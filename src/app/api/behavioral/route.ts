@@ -113,7 +113,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ ...result, history, range, recentFlags })
   } catch (error) {
-    console.error("[BEHAVIORAL_GET]", error)
+    console.error("[BEHAVIORAL_GET]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

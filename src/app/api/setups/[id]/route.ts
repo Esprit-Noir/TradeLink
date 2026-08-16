@@ -112,7 +112,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       recentTrades,
     })
   } catch (error) {
-    console.error("Error fetching setup detail", error)
+    console.error("Error fetching setup detail", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -158,7 +158,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
 
     return NextResponse.json(updated)
   } catch (error) {
-    console.error("Error updating setup", error)
+    console.error("Error updating setup", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -184,7 +184,7 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting setup", error)
+    console.error("Error deleting setup", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

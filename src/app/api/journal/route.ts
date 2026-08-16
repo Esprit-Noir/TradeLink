@@ -26,7 +26,7 @@ export async function GET(req: Request) {
 
     return NextResponse.json({ dates })
   } catch (error) {
-    console.error("[JOURNAL_LIST_GET]", error)
+    console.error("[JOURNAL_LIST_GET]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }

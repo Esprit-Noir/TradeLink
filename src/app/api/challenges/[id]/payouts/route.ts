@@ -34,7 +34,7 @@ export async function GET(
 
     return NextResponse.json(payouts)
   } catch (error) {
-    console.error("Error fetching payouts:", error)
+    console.error("Error fetching payouts:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to fetch payouts" }, { status: 500 })
   }
 }
@@ -84,7 +84,7 @@ export async function POST(
 
     return NextResponse.json(payout)
   } catch (error) {
-    console.error("Error creating payout:", error)
+    console.error("Error creating payout:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to create payout" }, { status: 500 })
   }
 }

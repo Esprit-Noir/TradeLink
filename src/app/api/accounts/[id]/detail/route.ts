@@ -122,7 +122,7 @@ export async function GET(
       timezone,
     })
   } catch (error) {
-    console.error("Error fetching account detail:", error)
+    console.error("Error fetching account detail:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to fetch account" }, { status: 500 })
   }
 }

@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server"
 import { requireAdmin, logAdminAction } from "@/lib/admin-auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const impersonateSchema = z.object({
+  action: z.literal("impersonate"),
+  reason: z.string().max(500).optional(),
+})
 
 export async function GET(
   request: Request,
@@ -53,8 +59,12 @@ export async function POST(
   const session = await requireAdmin()
   const { id } = await params
   const body = await request.json()
+  const parsed = impersonateSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+  }
 
-  if (body.action !== "impersonate") {
+  if (parsed.data.action !== "impersonate") {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
   }
 
@@ -73,7 +83,7 @@ export async function POST(
     adminId: session.user.id,
     targetUserId: id,
     action: "IMPERSONATION_STARTED",
-    reason: body.reason,
+    reason: parsed.data.reason,
     metadata: { targetEmail: targetUser.email },
   })
 

@@ -70,7 +70,7 @@ export async function GET(request: Request) {
       recentTrades,
     })
   } catch (error) {
-    console.error("[OVERVIEW_STATS_GET]", error)
+    console.error("[OVERVIEW_STATS_GET]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

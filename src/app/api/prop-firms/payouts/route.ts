@@ -58,7 +58,7 @@ export async function GET() {
       }))
     })
   } catch (error) {
-    console.error("Error fetching payouts:", error)
+    console.error("Error fetching payouts:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to fetch payouts" }, { status: 500 })
   }
 }

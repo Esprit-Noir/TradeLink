@@ -108,7 +108,7 @@ export async function GET() {
 
     return NextResponse.json(enrichedSetups)
   } catch (error) {
-    console.error("[SETUPS_GET]", error)
+    console.error("[SETUPS_GET]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -142,7 +142,7 @@ export async function POST(req: Request) {
     if (error.code === 'P2002') {
       return NextResponse.json({ error: "A setup with this name already exists" }, { status: 400 })
     }
-    console.error("Error creating setup", error)
+    console.error("Error creating setup", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

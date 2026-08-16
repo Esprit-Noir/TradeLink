@@ -83,7 +83,7 @@ export async function PATCH(
 
     return NextResponse.json(updatedAccount)
   } catch (error) {
-    console.error("Error updating account:", error)
+    console.error("Error updating account:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to update account" }, { status: 500 })
   }
 }
@@ -136,7 +136,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error deleting account:", error)
+    console.error("Error deleting account:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to delete account" }, { status: 500 })
   }
 }

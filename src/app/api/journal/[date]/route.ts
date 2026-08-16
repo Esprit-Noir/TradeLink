@@ -1,6 +1,18 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const journalEntrySchema = z.object({
+  mood: z.string().max(50).optional(),
+  macroContext: z.string().max(5000).optional(),
+  sessionPlan: z.string().max(5000).optional(),
+  endOfDaySummary: z.string().max(5000).optional(),
+  rating: z.union([z.string(), z.number()]).optional(),
+  sleepHours: z.union([z.string(), z.number()]).optional(),
+  disciplineChecks: z.any().optional(),
+  nightReflection: z.string().max(5000).optional(),
+})
 
 export async function GET(req: Request, { params }: { params: Promise<{ date: string }> }) {
   try {
@@ -27,7 +39,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ date: st
 
     return NextResponse.json({ journal })
   } catch (error) {
-    console.error("[JOURNAL_GET]", error)
+    console.error("[JOURNAL_GET]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }
@@ -45,7 +57,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ date: s
     }
 
     const body = await req.json()
-    const { mood, macroContext, sessionPlan, endOfDaySummary, rating, sleepHours, disciplineChecks, nightReflection } = body
+    const parsed = journalEntrySchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
+
+    const { mood, macroContext, sessionPlan, endOfDaySummary, rating, sleepHours, disciplineChecks, nightReflection } = parsed.data
 
     const journal = await prisma.dailyJournal.upsert({
       where: {
@@ -80,7 +97,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ date: s
 
     return NextResponse.json({ journal })
   } catch (error) {
-    console.error("[JOURNAL_POST]", error)
+    console.error("[JOURNAL_POST]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }

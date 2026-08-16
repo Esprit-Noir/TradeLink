@@ -62,7 +62,7 @@ export async function POST(
 
     return NextResponse.json(updated)
   } catch (error: any) {
-    console.error("Error resetting challenge:", error)
+    console.error("Error resetting challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to reset challenge" }, { status: 500 })
   }
 }

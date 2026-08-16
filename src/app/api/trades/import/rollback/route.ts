@@ -2,6 +2,15 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { evaluateChallenge } from "@/lib/prop-firm.service"
+import { z } from "zod"
+
+const rollbackSchema = z.object({
+  token: z.object({
+    accountId: z.string().min(1),
+    before: z.string(),
+    challengeId: z.string().optional(),
+  }),
+})
 
 export async function POST(request: Request) {
   try {
@@ -11,11 +20,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { token } = body
-
-    if (!token || !token.accountId || !token.before) {
-      return NextResponse.json({ error: "Invalid rollback token." }, { status: 400 })
+    const parsed = rollbackSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { token } = parsed.data
 
     // Ensure the account belongs to the user
     const account = await prisma.tradingAccount.findUnique({

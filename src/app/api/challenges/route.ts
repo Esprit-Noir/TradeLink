@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(challenge)
   } catch (error: any) {
-    console.error("Error creating challenge:", error)
+    console.error("Error creating challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to create challenge" }, { status: 500 })
   }
 }

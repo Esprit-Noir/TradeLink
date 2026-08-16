@@ -39,7 +39,7 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json({ user: updatedUser })
   } catch (error) {
-    console.error("[USER_UPDATE]", error)
+    console.error("[USER_UPDATE]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }

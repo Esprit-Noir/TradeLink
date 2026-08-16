@@ -21,13 +21,13 @@ export async function POST() {
         const updated = await evaluateChallenge(c.id)
         results.push({ id: c.id, status: updated?.status ?? 'unknown' })
       } catch (err) {
-        console.error(`evaluate-all error for ${c.id}:`, err)
+        console.error(`evaluate-all error for ${c.id}:`, err instanceof Error ? err.message : "Unknown error")
       }
     }
 
     return NextResponse.json({ evaluated: results.length, results })
   } catch (error) {
-    console.error("Error evaluating challenges:", error)
+    console.error("Error evaluating challenges:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to evaluate challenges" }, { status: 500 })
   }
 }

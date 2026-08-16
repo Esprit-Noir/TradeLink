@@ -240,7 +240,7 @@ export async function GET(request: Request) {
       },
     })
   } catch (error) {
-    console.error("Error generating monthly report:", error)
+    console.error("Error generating monthly report:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to generate report" }, { status: 500 })
   }
 }

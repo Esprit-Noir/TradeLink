@@ -1,12 +1,20 @@
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
+import { z } from "zod"
+
+const densitySchema = z.object({
+  density: z.enum(["comfortable", "compact"]),
+})
 
 export async function POST(req: Request) {
   try {
-    const { density } = await req.json()
-    if (density !== "comfortable" && density !== "compact") {
-      return NextResponse.json({ error: "Invalid density value" }, { status: 400 })
+    const body = await req.json()
+    const parsed = densitySchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { density } = parsed.data
 
     const cookieStore = await cookies()
     cookieStore.set("ui_density", density, {
@@ -19,7 +27,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, density })
   } catch (error) {
-    console.error("[PREFS_DENSITY]", error)
+    console.error("[PREFS_DENSITY]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })
   }
 }

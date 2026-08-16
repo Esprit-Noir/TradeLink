@@ -47,7 +47,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ url: `/uploads/${uniqueFilename}` })
   } catch (error) {
-    console.error("Upload error:", error)
+    console.error("Upload error:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Upload failed" }, { status: 500 })
   }
 }
