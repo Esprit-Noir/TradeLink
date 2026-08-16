@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const createAccountSchema = z.object({
+  name: z.string().min(1).max(100),
+  initialBalance: z.string().or(z.number()).optional(),
+  baseCurrency: z.string().min(3).max(3).optional(),
+  type: z.enum(["personal", "prop_firm", "demo", "backtest"]).optional(),
+  broker: z.string().max(100).optional(),
+  fxRateToUsd: z.string().or(z.number()).optional(),
+})
 
 export async function GET(request: NextRequest) {
   try {
@@ -68,11 +78,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, initialBalance, baseCurrency, type, broker, fxRateToUsd } = body
-
-    if (!name) {
-      return NextResponse.json({ error: "Account name is required" }, { status: 400 })
+    const parsed = createAccountSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { name, initialBalance, baseCurrency, type, broker, fxRateToUsd } = parsed.data
 
     // Check if it's the first account
     const existingAccounts = await prisma.tradingAccount.count({
@@ -85,10 +96,10 @@ export async function POST(request: NextRequest) {
         name,
         type: type || "personal",
         broker: broker || null,
-        initialBalance: initialBalance ? parseFloat(initialBalance) || 0 : 0,
+        initialBalance: initialBalance ? parseFloat(String(initialBalance)) || 0 : 0,
         baseCurrency: baseCurrency || "USD",
-        fxRateToUsd: fxRateToUsd ? parseFloat(fxRateToUsd) || 1 : 1,
-        isDefault: existingAccounts === 0 // Make default if first account
+        fxRateToUsd: fxRateToUsd ? parseFloat(String(fxRateToUsd)) || 1 : 1,
+        isDefault: existingAccounts === 0
       }
     })
 

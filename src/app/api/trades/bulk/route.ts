@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const bulkSchema = z.object({
+  ids: z.array(z.string()).min(1, "At least one trade ID required").max(100, "Too many trades"),
+  action: z.enum(["delete", "open", "close"]),
+})
 
 export async function POST(request: Request) {
   try {
@@ -9,12 +15,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { ids, action } = await request.json()
-
-    if (!Array.isArray(ids) || ids.length === 0 || !["delete", "open", "close"].includes(action)) {
-      return NextResponse.json({ error: "Invalid request." }, { status: 400 })
+    const body = await request.json()
+    const parsed = bulkSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
 
+    const { ids, action } = parsed.data
     const where = { id: { in: ids }, userId: session.user.id }
 
     let count = 0
@@ -41,7 +48,7 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ count })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

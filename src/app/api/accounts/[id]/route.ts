@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const updateAccountSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  initialBalance: z.string().or(z.number()).optional(),
+  isDefault: z.boolean().optional(),
+  fxRateToUsd: z.string().or(z.number()).optional(),
+})
 
 export async function PATCH(
   request: NextRequest,
@@ -14,7 +22,12 @@ export async function PATCH(
 
     const { id: accountId } = await params
     const body = await request.json()
-    const { name, initialBalance, isDefault, fxRateToUsd } = body
+    const parsed = updateAccountSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
+
+    const { name, initialBalance, isDefault, fxRateToUsd } = parsed.data
 
     // Ensure account belongs to user
     const account = await prisma.tradingAccount.findUnique({
@@ -36,12 +49,12 @@ export async function PATCH(
     const dataToUpdate: any = {}
     if (name !== undefined) dataToUpdate.name = name
     if (initialBalance !== undefined) {
-      const v = parseFloat(initialBalance)
+      const v = parseFloat(String(initialBalance))
       dataToUpdate.initialBalance = isNaN(v) ? 0 : v
     }
     if (isDefault !== undefined) dataToUpdate.isDefault = isDefault
     if (fxRateToUsd !== undefined) {
-      const v = parseFloat(fxRateToUsd)
+      const v = parseFloat(String(fxRateToUsd))
       dataToUpdate.fxRateToUsd = isNaN(v) ? 1 : v
     }
 
@@ -52,7 +65,7 @@ export async function PATCH(
 
     // Recompute netPnlUsd for all closed trades when the FX rate changes
     if (fxRateToUsd !== undefined) {
-      const rate = parseFloat(fxRateToUsd)
+      const rate = parseFloat(String(fxRateToUsd))
       if (isNaN(rate)) return NextResponse.json(updatedAccount)
       const trades = await prisma.trade.findMany({
         where: { accountId: accountId, netPnl: { not: null } },
