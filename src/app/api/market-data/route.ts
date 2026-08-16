@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
       provider: getMarketDataProvider().name,
     })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch market data"
+    const message = "Internal Server Error"
     console.error("Market data error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }

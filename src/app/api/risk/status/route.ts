@@ -110,6 +110,6 @@ export async function GET(request: Request) {
       alerts,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch risk status" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

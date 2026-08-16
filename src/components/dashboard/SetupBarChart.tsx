@@ -1,26 +1,35 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
 export function SetupBarChart() {
   const [data, setData] = useState<{name: string, pnl: number}[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchKey, setSearchKey] = useState("")
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    setSearchKey(window.location.search)
-  }, [])
+    setLoading(true)
+    const params = new URLSearchParams()
+    const period = searchParams.get("period")
+    const accountId = searchParams.get("accountId")
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
+    if (period) params.set("period", period)
+    if (accountId) params.set("accountId", accountId)
+    if (from) params.set("from", from)
+    if (to) params.set("to", to)
 
-  useEffect(() => {
-    fetch(`/api/metrics/charts${searchKey}`)
+    const qs = params.toString()
+    fetch(`/api/metrics/charts${qs ? `?${qs}` : ""}`)
       .then((r) => r.json())
       .then((d) => {
         setData(d.setupData || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [searchKey])
+  }, [searchParams])
 
   return (
     <div className="chart-card">

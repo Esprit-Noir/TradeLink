@@ -33,7 +33,7 @@ export async function GET(
     })
     return NextResponse.json(notes)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch notes" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 
@@ -62,6 +62,6 @@ export async function POST(
     })
     return NextResponse.json(note, { status: 201 })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to create note" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

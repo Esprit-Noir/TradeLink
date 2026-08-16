@@ -37,7 +37,7 @@ export async function GET() {
       defaults: { ...DEFAULT_PREFS.defaults, ...(prefs.defaults || {}) },
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch preferences" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 
@@ -67,6 +67,6 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json(merged)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to save preferences" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

@@ -27,7 +27,7 @@ export async function GET() {
       maxRiskPerTradePct: prefs.maxRiskPerTradePct ?? DEFAULT_RISK_PREFS.maxRiskPerTradePct,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch risk preferences" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 
@@ -59,6 +59,6 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json(merged)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to save risk preferences" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

@@ -1,8 +1,7 @@
-// components/dashboard/EquityCurveChart.tsx
-// Equity curve — Client Component (Recharts nécessite le client)
 "use client"
 
 import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine
@@ -12,21 +11,29 @@ import type { EquityPoint } from "@/lib/metrics"
 export function EquityCurveChart() {
   const [data, setData] = useState<EquityPoint[]>([])
   const [loading, setLoading] = useState(true)
-  const [searchKey, setSearchKey] = useState("")
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    setSearchKey(window.location.search)
-  }, [])
+    setLoading(true)
+    const params = new URLSearchParams()
+    const period = searchParams.get("period")
+    const accountId = searchParams.get("accountId")
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
+    if (period) params.set("period", period)
+    if (accountId) params.set("accountId", accountId)
+    if (from) params.set("from", from)
+    if (to) params.set("to", to)
 
-  useEffect(() => {
-    fetch(`/api/metrics/equity-curve${searchKey}`)
+    const qs = params.toString()
+    fetch(`/api/metrics/equity-curve${qs ? `?${qs}` : ""}`)
       .then((r) => r.json())
       .then((d) => {
         setData(d.data || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [searchKey])
+  }, [searchParams])
 
   const isPositive = data.length > 0 && data[data.length - 1].equity >= (data[0]?.equity ?? 0)
   const lineColor = isPositive ? "var(--color-profit)" : "var(--color-loss)"

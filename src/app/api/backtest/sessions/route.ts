@@ -90,7 +90,7 @@ export async function GET() {
       })),
     )
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to list sessions"
+    const message = "Internal Server Error"
     console.error("Backtest sessions list error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }
@@ -170,7 +170,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, session: backtestSession })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to save backtest session"
+    const message = "Internal Server Error"
     console.error("Backtest session save error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }

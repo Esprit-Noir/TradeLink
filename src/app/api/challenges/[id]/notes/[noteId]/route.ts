@@ -38,7 +38,7 @@ export async function PATCH(
     })
     return NextResponse.json(updated)
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to update note" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 
@@ -60,6 +60,6 @@ export async function DELETE(
     await prisma.propChallengeNote.delete({ where: { id: noteId } })
     return NextResponse.json({ success: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to delete note" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

@@ -30,6 +30,6 @@ export async function PATCH(
 
     return NextResponse.json({ ok: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to update notification" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

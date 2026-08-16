@@ -3,10 +3,19 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not Found" }, { status: 404 })
+  }
+
   try {
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const role = (session.user as Record<string, unknown>).role
+    if (role !== "ADMIN" && role !== "SUPER_ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const c = await prisma.propChallenge.findMany({

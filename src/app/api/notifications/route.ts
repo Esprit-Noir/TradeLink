@@ -40,7 +40,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ events, unreadCount })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch notifications" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 
@@ -66,6 +66,6 @@ export async function PATCH() {
 
     return NextResponse.json({ ok: true })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to mark notifications read" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

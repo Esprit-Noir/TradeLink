@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     cache.set(key, { at: now, quotes })
     return NextResponse.json({ quotes })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to fetch quotes"
+    const message = "Internal Server Error"
     console.error("Quotes error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }

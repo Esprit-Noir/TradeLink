@@ -135,6 +135,6 @@ export async function GET() {
       groups: grouped,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch achievements" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

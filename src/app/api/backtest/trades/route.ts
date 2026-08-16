@@ -138,7 +138,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, trade, sessionId: backtestSession.id })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to save backtest trade"
+    const message = "Internal Server Error"
     console.error("Backtest trade save error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }

@@ -4,6 +4,23 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveAccount } from "@/lib/active-account"
+import { z } from "zod"
+
+const tradeSchema = z.object({
+  symbol: z.string().min(1).max(20),
+  instrumentType: z.string().optional(),
+  side: z.enum(["LONG", "SHORT"]),
+  quantity: z.string().or(z.number()),
+  entryPrice: z.string().or(z.number()),
+  exitPrice: z.string().or(z.number()),
+  entryAt: z.string(),
+  exitAt: z.string().optional(),
+  fees: z.string().or(z.number()).optional(),
+  setupTags: z.string().optional(),
+  emotionTags: z.string().optional(),
+  notesPost: z.string().optional(),
+  screenshotUrl: z.string().url().optional(),
+})
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +30,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { symbol, instrumentType, side, quantity, entryPrice, exitPrice, entryAt, exitAt, fees, setupTags, emotionTags, notesPost, screenshotUrl } = body
+    const parsed = tradeSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
+
+    const { symbol, instrumentType, side, quantity, entryPrice, exitPrice, entryAt, exitAt, fees, setupTags, emotionTags, notesPost, screenshotUrl } = parsed.data
 
     if (!symbol || !quantity || !entryPrice || !exitPrice || !entryAt) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -27,10 +49,10 @@ export async function POST(request: Request) {
     }
 
     const isLong = side === "LONG"
-    const entry = parseFloat(entryPrice)
-    const exit = parseFloat(exitPrice)
-    const qty = parseFloat(quantity)
-    const f = parseFloat(fees || "0")
+    const entry = parseFloat(String(entryPrice))
+    const exit = parseFloat(String(exitPrice))
+    const qty = parseFloat(String(quantity))
+    const f = parseFloat(String(fees || "0"))
     
     const diff = isLong ? exit - entry : entry - exit
     const netPnl = (diff * qty) - f
@@ -58,7 +80,7 @@ export async function POST(request: Request) {
         entryPrice: entry,
         exitPrice: exit,
         entryAt: new Date(entryAt),
-        exitAt: new Date(exitAt),
+        exitAt: exitAt ? new Date(exitAt) : null,
         fees: f,
         netPnl,
         netPnlUsd,
@@ -82,6 +104,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, trade })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to create trade" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

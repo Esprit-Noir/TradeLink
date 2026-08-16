@@ -123,6 +123,6 @@ export async function GET() {
       activeChallenges,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to fetch report" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

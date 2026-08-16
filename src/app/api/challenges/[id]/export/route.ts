@@ -83,7 +83,7 @@ export async function GET(
       },
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to export challenge" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
 

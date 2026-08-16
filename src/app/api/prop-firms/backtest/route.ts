@@ -220,6 +220,6 @@ export async function POST(request: Request) {
       dailyBreakdown,
     })
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || "Failed to run backtest" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

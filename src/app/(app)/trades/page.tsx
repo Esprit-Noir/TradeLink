@@ -61,6 +61,13 @@ export default async function TradesPage({
     whereClause.status = searchParamsObj.status
   }
 
+  // Fetch all user accounts for the filter dropdown
+  const accounts = await prisma.tradingAccount.findMany({
+    where: { userId: session.user.id },
+    select: { id: true, name: true, isDefault: true },
+    orderBy: { createdAt: "asc" },
+  })
+
   if (searchParamsObj?.result) {
     if (searchParamsObj.result === "win") {
       whereClause.netPnl = { gt: 0 }
@@ -145,7 +152,7 @@ export default async function TradesPage({
       </div>
 
       <Suspense fallback={<div className="skeleton" style={{ height: 80, marginBottom: "1.5rem" }} />}>
-        <TradesFilter />
+        <TradesFilter accounts={accounts} />
       </Suspense>
 
       <Suspense fallback={<div className="skeleton" style={{ height: 400, marginBottom: "1.5rem" }} />}>

@@ -4,11 +4,14 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { useState } from "react"
 import { Search, SlidersHorizontal, X } from "lucide-react"
 
-export function TradesFilter() {
+type Account = { id: string; name: string; isDefault: boolean }
+
+export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
+  const [accountId, setAccountId] = useState(searchParams?.get("accountId") || "")
   const [symbol, setSymbol] = useState(searchParams?.get("symbol") || "")
   const [side, setSide] = useState(searchParams?.get("side") || "")
   const [result, setResult] = useState(searchParams?.get("result") || "")
@@ -18,6 +21,9 @@ export function TradesFilter() {
     e.preventDefault()
     const params = new URLSearchParams(searchParams as any)
     
+    if (accountId) params.set("accountId", accountId)
+    else params.delete("accountId")
+
     if (symbol) params.set("symbol", symbol)
     else params.delete("symbol")
 
@@ -38,6 +44,7 @@ export function TradesFilter() {
   }
 
   const handleClear = () => {
+    setAccountId("")
     setSymbol("")
     setSide("")
     setResult("")
@@ -46,7 +53,7 @@ export function TradesFilter() {
     router.refresh()
   }
 
-  const hasActiveFilters = symbol || side || result || date
+  const hasActiveFilters = accountId || symbol || side || result || date
 
   return (
     <form onSubmit={handleApply} style={{
@@ -54,6 +61,24 @@ export function TradesFilter() {
       background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)",
     }}>
       
+      {accounts.length > 1 && (
+        <div className="form-group" style={{ flex: 1, minWidth: "170px", margin: 0 }}>
+          <label className="label" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 700 }}>
+            Account
+          </label>
+          <select 
+            value={accountId} 
+            onChange={(e) => setAccountId(e.target.value)} 
+            className="input select"
+          >
+            <option value="">All Accounts</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>{a.name}{a.isDefault ? " (default)" : ""}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       <div className="form-group" style={{ flex: 1, minWidth: "200px", margin: 0 }}>
         <label className="label" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 700 }}>
           Symbol

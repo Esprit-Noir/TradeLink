@@ -4,6 +4,8 @@ import { getToken } from "next-auth/jwt"
 
 const PUBLIC_ROUTES = ["/login", "/register", "/", "/marketing"]
 
+const PUBLIC_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".webp", ".css", ".js", ".map", ".woff", ".woff2", ".ttf", ".eot"]
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -11,7 +13,7 @@ export async function proxy(request: NextRequest) {
     PUBLIC_ROUTES.some((r) => pathname === r) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api/auth") ||
-    pathname.includes(".")
+    PUBLIC_EXTENSIONS.some((ext) => pathname.endsWith(ext))
   ) {
     return NextResponse.next()
   }

@@ -41,7 +41,7 @@ export async function GET() {
     await seedDefaults(session.user.id)
     return NextResponse.json({ items: await rowsFor(session.user.id) })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to list watchlist"
+    const message = "Internal Server Error"
     console.error("Watchlist list error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, items: await rowsFor(session.user.id) })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to add symbol"
+    const message = "Internal Server Error"
     console.error("Watchlist add error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }
@@ -90,7 +90,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true, items: await rowsFor(session.user.id) })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to remove symbol"
+    const message = "Internal Server Error"
     console.error("Watchlist delete error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
   }

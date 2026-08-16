@@ -99,6 +99,6 @@ export async function GET(req: Request, { params }: { params: Promise<{ date: st
     })
   } catch (error: any) {
     console.error("[CALENDAR_DAY]", error)
-    return NextResponse.json({ error: error.message || "Internal Error" }, { status: 500 })
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
