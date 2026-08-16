@@ -1,6 +1,13 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
+import { z } from "zod"
+
+const updateSetupSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  description: z.string().max(500).optional(),
+  isDefault: z.boolean().optional(),
+})
 
 export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
@@ -119,7 +126,12 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   try {
     const { id } = await params
     const data = await req.json()
-    const { name, description, isDefault } = data
+    const parsed = updateSetupSchema.safeParse(data)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
+
+    const { name, description, isDefault } = parsed.data
 
     // Verify ownership
     const setup = await prisma.tradingSetup.findUnique({ where: { id } })

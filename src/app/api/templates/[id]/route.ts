@@ -1,6 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const updateTemplateSchema = z.object({
+  firmName: z.string().max(100).optional(),
+  programName: z.string().max(100).optional(),
+  drawdownType: z.string().optional(),
+  logoUrl: z.union([z.string().url(), z.null()]).optional(),
+  dailyResetTimezone: z.string().max(50).optional(),
+  dailyDDPct: z.union([z.string(), z.number(), z.null()]).optional(),
+  maxDDPct: z.union([z.string(), z.number(), z.null()]).optional(),
+  profitTargetPhase1Pct: z.union([z.string(), z.number(), z.null()]).optional(),
+  profitTargetPhase2Pct: z.union([z.string(), z.number(), z.null()]).optional(),
+  minTradingDays: z.union([z.string(), z.number()]).optional(),
+  maxTradingDays: z.union([z.string(), z.number()]).optional(),
+  consistencyRulePct: z.union([z.string(), z.number(), z.null()]).optional(),
+  weekendHoldingAllowed: z.boolean().optional(),
+  newsTradingAllowed: z.boolean().optional(),
+  isActive: z.boolean().optional(),
+})
 
 function parseOptionalNumber(value: any): number | null {
   if (value === undefined || value === null || value === "") return null
@@ -20,6 +39,10 @@ export async function PATCH(
 
     const { id } = await params
     const body = await request.json()
+    const parsed = updateTemplateSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
 
     const existing = await prisma.propFirmTemplate.findUnique({ where: { id } })
     if (!existing) {
@@ -27,21 +50,21 @@ export async function PATCH(
     }
 
     const data: any = {}
-    if (body.firmName !== undefined) data.firmName = body.firmName
-    if (body.programName !== undefined) data.programName = body.programName
-    if (body.drawdownType !== undefined) data.drawdownType = body.drawdownType
-    if (body.logoUrl !== undefined) data.logoUrl = body.logoUrl || null
-    if (body.dailyResetTimezone !== undefined) data.dailyResetTimezone = body.dailyResetTimezone
-    if (body.dailyDDPct !== undefined) data.dailyDDPct = parseOptionalNumber(body.dailyDDPct)
-    if (body.maxDDPct !== undefined) data.maxDDPct = parseOptionalNumber(body.maxDDPct) ?? 10
-    if (body.profitTargetPhase1Pct !== undefined) data.profitTargetPhase1Pct = parseOptionalNumber(body.profitTargetPhase1Pct)
-    if (body.profitTargetPhase2Pct !== undefined) data.profitTargetPhase2Pct = parseOptionalNumber(body.profitTargetPhase2Pct)
-    if (body.minTradingDays !== undefined) data.minTradingDays = body.minTradingDays === "" ? null : parseInt(body.minTradingDays)
-    if (body.maxTradingDays !== undefined) data.maxTradingDays = body.maxTradingDays === "" ? null : parseInt(body.maxTradingDays)
-    if (body.consistencyRulePct !== undefined) data.consistencyRulePct = parseOptionalNumber(body.consistencyRulePct)
-    if (body.weekendHoldingAllowed !== undefined) data.weekendHoldingAllowed = body.weekendHoldingAllowed
-    if (body.newsTradingAllowed !== undefined) data.newsTradingAllowed = body.newsTradingAllowed
-    if (body.isActive !== undefined) data.isActive = body.isActive
+    if (parsed.data.firmName !== undefined) data.firmName = parsed.data.firmName
+    if (parsed.data.programName !== undefined) data.programName = parsed.data.programName
+    if (parsed.data.drawdownType !== undefined) data.drawdownType = parsed.data.drawdownType
+    if (parsed.data.logoUrl !== undefined) data.logoUrl = parsed.data.logoUrl || null
+    if (parsed.data.dailyResetTimezone !== undefined) data.dailyResetTimezone = parsed.data.dailyResetTimezone
+    if (parsed.data.dailyDDPct !== undefined) data.dailyDDPct = parseOptionalNumber(parsed.data.dailyDDPct)
+    if (parsed.data.maxDDPct !== undefined) data.maxDDPct = parseOptionalNumber(parsed.data.maxDDPct) ?? 10
+    if (parsed.data.profitTargetPhase1Pct !== undefined) data.profitTargetPhase1Pct = parseOptionalNumber(parsed.data.profitTargetPhase1Pct)
+    if (parsed.data.profitTargetPhase2Pct !== undefined) data.profitTargetPhase2Pct = parseOptionalNumber(parsed.data.profitTargetPhase2Pct)
+    if (parsed.data.minTradingDays !== undefined) data.minTradingDays = parsed.data.minTradingDays === "" || parsed.data.minTradingDays === null ? null : parseInt(String(parsed.data.minTradingDays))
+    if (parsed.data.maxTradingDays !== undefined) data.maxTradingDays = parsed.data.maxTradingDays === "" || parsed.data.maxTradingDays === null ? null : parseInt(String(parsed.data.maxTradingDays))
+    if (parsed.data.consistencyRulePct !== undefined) data.consistencyRulePct = parseOptionalNumber(parsed.data.consistencyRulePct)
+    if (parsed.data.weekendHoldingAllowed !== undefined) data.weekendHoldingAllowed = parsed.data.weekendHoldingAllowed
+    if (parsed.data.newsTradingAllowed !== undefined) data.newsTradingAllowed = parsed.data.newsTradingAllowed
+    if (parsed.data.isActive !== undefined) data.isActive = parsed.data.isActive
 
     const template = await prisma.propFirmTemplate.update({
       where: { id },
