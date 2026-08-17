@@ -32,49 +32,51 @@ export function SetupBarChart() {
   }, [searchParams])
 
   return (
-    <div className="chart-card">
+    <div className="chart-card" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div className="chart-title">P&L by Setup</div>
       
       {loading ? (
-        <div className="skeleton" style={{ height: 260 }} />
+        <div className="skeleton" style={{ flex: 1, minHeight: 200 }} />
       ) : data.length === 0 ? (
-        <div className="empty-state" style={{ padding: "1.5rem", height: 260 }}>
+        <div className="empty-state" style={{ flex: 1, padding: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <p style={{ fontSize: "0.85rem" }}>Tag your trades to see this chart.</p>
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-            <XAxis 
-              dataKey="name" 
-              tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis 
-              tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
-            />
-            <Tooltip
-              cursor={{ fill: "var(--color-gray-800)", opacity: 0.4 }}
-              contentStyle={{
-                background: "var(--color-gray-900)",
-                border: "1px solid var(--color-gray-700)",
-                borderRadius: 8,
-                fontSize: 12,
-                color: "var(--color-gray-200)",
-              }}
-              itemStyle={{ color: "var(--color-gray-100)" }}
-              formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Net P&L"]}
-            />
-            <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis 
+                tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+              />
+              <Tooltip
+                cursor={{ fill: "var(--color-gray-800)", opacity: 0.4 }}
+                contentStyle={{
+                  background: "var(--color-gray-900)",
+                  border: "1px solid var(--color-gray-700)",
+                  borderRadius: 8,
+                  fontSize: 12,
+                  color: "var(--color-gray-200)",
+                }}
+                itemStyle={{ color: "var(--color-gray-100)" }}
+                formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Net P&L"]}
+              />
+              <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+                {data.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   )
