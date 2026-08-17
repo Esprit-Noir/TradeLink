@@ -422,18 +422,8 @@ export const ReplayChart = memo(function ReplayChart({
   useLayoutEffect(() => {
     const chart = chartRef.current
     if (!chart || candles.length === 0 || playbackIndex == null) return
-    const ts = chart.timeScale()
-    const idx = Math.min(playbackIndex, candles.length - 1)
-
-    // Keep 80 bars visible with current candle near the right edge
-    const windowSize = 80
-    const rightPad = 10
-    const targetFrom = idx - (windowSize - rightPad)
-
-    ts.setVisibleLogicalRange({
-      from: Math.max(0, targetFrom),
-      to: Math.max(windowSize, targetFrom + windowSize),
-    })
+    // Just scroll to real-time — lightweight-charts handles the rest
+    chart.timeScale().scrollToRealTime()
   }, [playbackIndex])
 
   // ── markers (entries / exits) ────────────────────────────────────────────────

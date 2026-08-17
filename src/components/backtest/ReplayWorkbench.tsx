@@ -487,11 +487,18 @@ export function ReplayWorkbench({
   const cursorTime = state.data[state.currentIndex]?.time ?? null
   const useSub = !!config.subTf && state.subData.length > 0
   const displayed = useMemo(
-    () => useSub
-      ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
-      : state.data,
+    () => {
+      const base = useSub
+        ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
+        : state.data
+      // During playback, only show candles up to currentIndex
+      if (state.playing || state.currentIndex < base.length - 1) {
+        return base.slice(0, state.currentIndex + 1)
+      }
+      return base
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [useSub, state.subData, state.data, cursorTime]
+    [useSub, state.subData, state.data, cursorTime, state.currentIndex, state.playing]
   )
 
   const mainInd = useMemo(() => computeIndicatorSeries(state.data), [state.data])
