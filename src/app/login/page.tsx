@@ -120,9 +120,9 @@ function LoginContent() {
           <div className="form-group">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
               <label className="label" htmlFor="password">Password</label>
-              <Link href="#" style={{ fontSize: "0.75rem", color: "var(--color-brand-400)", textDecoration: "none" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--color-gray-500)" }}>
                 Forgot password?
-              </Link>
+              </span>
             </div>
             <input
               id="password"

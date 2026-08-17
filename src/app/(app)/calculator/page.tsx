@@ -1,10 +1,15 @@
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { CalculatorClient } from "@/components/calculator/CalculatorClient"
 
 export const metadata = {
   title: "Position Calculator",
 }
 
-export default function CalculatorPage() {
+export default async function CalculatorPage() {
+  const session = await auth()
+  if (!session?.user?.id) redirect("/login")
+
   return (
     <div>
       <div className="page-header">

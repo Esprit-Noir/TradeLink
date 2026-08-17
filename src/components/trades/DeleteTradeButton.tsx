@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Trash2 } from "lucide-react"
 
 export function DeleteTradeButton({ id }: { id: string }) {
   const router = useRouter()

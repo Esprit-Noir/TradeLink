@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { AccountsManager } from "@/components/accounts/AccountsManager"
 
 export const metadata = {
-  title: "Accounts | TradeLink",
+  title: "Accounts",
 }
 
 export default async function AccountsPage() {

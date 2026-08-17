@@ -1,10 +1,15 @@
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { BehaviorScore } from "@/components/behavioral/BehaviorScore"
 
 export const metadata = {
   title: "Behavioral Analysis",
 }
 
-export default function BehavioralPage() {
+export default async function BehavioralPage() {
+  const session = await auth()
+  if (!session?.user?.id) redirect("/login")
+
   return (
     <div>
       <div className="page-header">

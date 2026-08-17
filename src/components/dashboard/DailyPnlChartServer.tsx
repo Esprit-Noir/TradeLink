@@ -33,13 +33,12 @@ export async function DailyPnlChartServer({
 
   const trades = await prisma.trade.findMany({
     where: whereClause,
-    select: { entryAt: true, netPnl: true },
+    select: { entryAt: true, exitAt: true, netPnl: true },
     orderBy: { entryAt: "asc" }
   })
 
-  // We need to pass the raw data, but it needs to be serialized for the client component
   const serializedTrades = trades.map(t => ({
-    exitAt: t.entryAt,
+    exitAt: t.exitAt ?? t.entryAt,
     netPnl: Number(t.netPnl || 0)
   }))
 

@@ -5,7 +5,7 @@ import { AccountDetail } from "@/components/accounts/AccountDetail"
 import { Suspense } from "react"
 
 export const metadata = {
-  title: "Account Detail | TradeLink",
+  title: "Account Detail",
 }
 
 export default async function AccountDetailPage({ params }: { params: Promise<{ id: string }> }) {

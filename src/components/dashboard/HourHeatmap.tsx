@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 
 type HeatmapCell = { day: number; hour: number; pnl: number }

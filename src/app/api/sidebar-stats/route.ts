@@ -37,8 +37,8 @@ export async function GET() {
     let challengePct = 0
 
     const challengeWhere: any = scope.all
-      ? { userId: session.user.id, status: { in: ["phase1", "phase2"] } }
-      : { accountId: scope.accounts[0].id, status: { in: ["phase1", "phase2"] } }
+      ? { userId: session.user.id, status: "active" }
+      : { accountId: scope.accounts[0].id, status: "active" }
 
     const challenge = await prisma.propChallenge.findFirst({
       where: challengeWhere,

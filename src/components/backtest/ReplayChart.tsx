@@ -111,6 +111,7 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
   const lastSelectedTradeIdRef = useRef<string | null>(null)
   const rafRef = useRef<number | null>(null)
   const candlesCountRef = useRef<number>(0)
+  const candlesRef = useRef<Candle[]>([])
 
   // Live refs so callbacks never read stale props
   const activeTradeRef = useRef(selectedTrade)
@@ -339,6 +340,7 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
       const vs = volumeSeriesRef.current
       const pal = PALETTES[theme]
       candlesCountRef.current = candles.length
+      candlesRef.current = candles
 
       if (cs) {
         cs.setData(
@@ -409,10 +411,11 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
 
   // ── indicators-only update (when indicators toggle changes) ──────────────────
   useEffect(() => {
-    // We need access to the current candles to update indicators.
-    // Since candles are managed externally via setData/updateTick,
-    // we use the candleSeries data as source of truth.
-    // This effect only runs when indicator toggles change.
+    const n = candlesCountRef.current
+    const candles = candlesRef.current
+    if (n > 0 && candles.length > 0) {
+      updateIndicators(n, candles)
+    }
   }, [indicators])
 
   // ── markers (entries / exits) ────────────────────────────────────────────────

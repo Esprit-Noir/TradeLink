@@ -10,9 +10,7 @@ import { MARKET_TIMEFRAMES } from "@/lib/market/types"
 import { fetchCandles } from "@/lib/market/client"
 import { CFD_SYMBOLS } from "@/lib/market/symbols"
 import { ReplayChart, type ReplayChartRef } from "./ReplayChart"
-import { ReplayControls } from "./ReplayControls"
 import { PositionsStrip } from "./PositionsStrip"
-import { TradesTimeline } from "./TradesTimeline"
 
 const TradePanel = dynamic(() => import("./TradePanel").then(m => ({ default: m.TradePanel })), { ssr: false })
 import { DEFAULT_INDICATORS, newId, type IndicatorsState, type SimSide, type SimTrade } from "./types"
