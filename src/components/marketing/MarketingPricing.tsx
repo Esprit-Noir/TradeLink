@@ -40,7 +40,7 @@ const PLANS = [
   },
   {
     name: "Team & Firm",
-    price: "$79",
+    price: "$49",
     period: "/month",
     description: "For prop firms, mentors, and trading communities.",
     features: [

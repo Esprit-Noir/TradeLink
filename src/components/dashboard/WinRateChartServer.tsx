@@ -32,7 +32,6 @@ export async function WinRateChartServer({
   })
 
   const wins = trades.filter((t) => Number(t.netPnl || 0) > 0).length
-  const losses = trades.filter((t) => Number(t.netPnl || 0) <= 0).length // Assuming break-even is a loss or neutral, but we'll count it as loss for now, or just <= 0. Actually, let's just use < 0 for losses.
   const actualLosses = trades.filter((t) => Number(t.netPnl || 0) < 0).length
 
   return <WinRateDonut wins={wins} losses={actualLosses} />

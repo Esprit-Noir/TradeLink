@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
 import { AccountsManager } from "@/components/accounts/AccountsManager"
-import { headers } from "next/headers"
 
 export const metadata = {
   title: "Accounts | TradeLink",

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowRight, Check, Eye, Undo2, AlertTriangle, Download, Loader2, UploadCloud, FileSpreadsheet, Award } from "lucide-react"
+import { Check, Eye, Undo2, AlertTriangle, Download, Loader2, UploadCloud, FileSpreadsheet, Award } from "lucide-react"
 
 const FIELDS = [
   { key: "symbol", label: "Symbol", required: true, hint: "e.g. AAPL, BTCUSDT" },

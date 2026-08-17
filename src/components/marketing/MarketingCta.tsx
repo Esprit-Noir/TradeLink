@@ -1,4 +1,5 @@
 import { ArrowRight, Shield, Clock, CreditCard } from "lucide-react"
+import Link from "next/link"
 
 export function MarketingCta() {
   return (
@@ -28,10 +29,10 @@ export function MarketingCta() {
             </div>
           </div>
 
-          <a href="/register" className="btn btn-primary btn-lg marketing-cta-button" data-animate="fade-up" data-delay="2">
+          <Link href="/register" className="btn btn-primary btn-lg marketing-cta-button" data-animate="fade-up" data-delay="2">
             Start Free — No Card Required
             <ArrowRight size={18} />
-          </a>
+          </Link>
 
           <p className="marketing-cta-note">
             Free forever. No credit card required. Cancel anytime.

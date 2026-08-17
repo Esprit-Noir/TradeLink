@@ -15,7 +15,6 @@ import { prisma } from "@/lib/prisma"
 import { MS_PER_DAY } from "@/lib/constants"
 import { EquityCurveChart, SetupBarChart, HourHeatmap } from "@/components/dashboard/LazyCharts"
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar"
-import Link from "next/link"
 
 export const metadata = {
   title: "Dashboard",

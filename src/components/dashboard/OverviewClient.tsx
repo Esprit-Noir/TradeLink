@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { MarketOverview } from "./MarketOverview"
 import { WorldSessionsMap } from "./WorldSessionsMap"
@@ -34,7 +33,6 @@ interface OverviewStats {
 }
 
 export function OverviewClient({ username }: { username?: string }) {
-  const router = useRouter()
   const [stats, setStats] = useState<OverviewStats | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -124,7 +122,7 @@ export function OverviewClient({ username }: { username?: string }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
         {/* Recent Trades */}
         <div className="card">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "spaceBetween", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Clock size={16} style={{ color: "var(--color-brand-500)" }} />
               <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Recent Trades</h3>
