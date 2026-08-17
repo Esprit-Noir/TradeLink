@@ -244,7 +244,7 @@ export function WorldSessionsMap() {
   const [now, setNow] = useState(() => new Date())
   const [mounted, setMounted] = useState(false)
   const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === "dark"
+  const isDark = mounted ? resolvedTheme === "dark" : true
 
   useEffect(() => {
     setMounted(true)
