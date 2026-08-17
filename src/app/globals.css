@@ -350,7 +350,8 @@
 /* ── Sidebar ─────────────────────────────────────────────── */
 .sidebar {
   width: 240px;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto;
   background: #0a0a0c;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
