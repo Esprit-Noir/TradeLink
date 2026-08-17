@@ -842,7 +842,6 @@ export function ReplayWorkbench({
           indicators={state.indicators}
           pastSessions={pastSessions}
           timezone={timezone}
-          backtestAccountId={backtestAccountId}
           onBalance={(v) => dispatch({ type: "UPDATE_BALANCE", balance: v })}
           onRiskPct={(v) => dispatch({ type: "UPDATE_RISK", riskPct: v })}
           onSetIndicators={(patch) => dispatch({ type: "SET_INDICATORS", patch })}

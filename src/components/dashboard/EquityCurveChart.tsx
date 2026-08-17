@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from "react"
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart, Bar,
+  Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart,
 } from "recharts"
 import { Activity, BarChart2 } from "lucide-react"
 import { useSearchParams } from "next/navigation"
@@ -349,7 +349,6 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
                   label={{ value: "Target", position: "insideTopRight", fill: "var(--color-profit)", fontSize: 9 }}
                 />
               )}
-              <Bar dataKey="Profit" fill="transparent" radius={[2, 2, 0, 0]} maxBarSize={3} opacity={0} />
               <Area
                 type="monotone"
                 dataKey="Balance"

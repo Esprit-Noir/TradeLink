@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
+import { formatCurrency } from "@/lib/formatters"
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"]
 const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
@@ -158,7 +159,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
               {hasTrades ? (
                 <>
                   <span style={{ fontSize: "0.78rem", fontWeight: 700, color: textColor, textAlign: "center", textShadow: isDark ? "0 1px 6px rgba(0,0,0,0.4)" : "none" }}>
-                    {cell.pnl > 0 ? "+" : ""}${cell.pnl.toFixed(2)}
+                    {formatCurrency(cell.pnl, "USD", true, 2)}
                   </span>
                   <span style={{ fontSize: "0.65rem", color: textColor, opacity: 0.7, textAlign: "center" }}>
                     {cell.trades} {cell.trades > 1 ? "trades" : "trade"}
@@ -178,7 +179,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
           <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{greenDays} green days</span>
           <span style={{ color: "var(--color-gray-500)" }}>{tradingDays} trading days</span>
           <span style={{ color: monthPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 700, fontSize: "0.8rem" }}>
-            {monthPnl >= 0 ? "+" : ""}${monthPnl.toFixed(2)}
+            {formatCurrency(monthPnl, "USD", true, 2)}
           </span>
           <span style={{ color: "var(--color-gray-500)" }}>{Math.round((greenDays / Math.max(tradingDays, 1)) * 100)}% win days</span>
           <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{redDays} red days</span>
