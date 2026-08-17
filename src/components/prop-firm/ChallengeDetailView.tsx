@@ -7,7 +7,12 @@ import {
   ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, ReferenceLine,
 } from "recharts"
 import { PropFirmGauges } from "./PropFirmGauges"
-import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
+import dynamic from "next/dynamic"
+
+const EquityCurveChart = dynamic(
+  () => import("@/components/dashboard/EquityCurveChart").then(m => ({ default: m.EquityCurveChart })),
+  { ssr: false }
+)
 
 const EVENT_LABELS: Record<string, string> = {
   alert_80pct: "80% Drawdown Warning",

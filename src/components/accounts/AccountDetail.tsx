@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState, Suspense } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -10,7 +10,12 @@ import {
 import { ArrowLeft, Wallet, TrendingUp, Target, Activity, Pencil, Check } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
 import { toast } from "sonner"
-import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
+import dynamic from "next/dynamic"
+
+const EquityCurveChart = dynamic(
+  () => import("@/components/dashboard/EquityCurveChart").then(m => ({ default: m.EquityCurveChart })),
+  { ssr: false }
+)
 
 export function AccountDetail({ accountId }: { accountId: string }) {
   const router = useRouter()
@@ -181,14 +186,12 @@ export function AccountDetail({ accountId }: { accountId: string }) {
           </div>
         </div>
       ) : (
-        <Suspense fallback={<div className="chart-card"><div className="chart-title">Equity Curve</div><div className="skeleton" style={{ height: 280 }} /></div>}>
           <EquityCurveChart
             equityData={equityCurve}
             initialBalance={initialBalance}
             currentBalance={stats.currentEquity}
             maxDrawdownPct={stats.maxDrawdownPct}
           />
-        </Suspense>
       )}
 
       {/* Daily P&L */}
