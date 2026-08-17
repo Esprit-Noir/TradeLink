@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react"
 import { CreateSetupModal } from "./CreateSetupModal"
 import { SetupDetailPanel } from "./SetupDetailPanel"
 import { toast } from "sonner"
+import { formatCurrency } from "@/lib/formatters"
 import { Check, Trash2, Target, TrendingUp, Pencil, X, Save, ArrowDownWideNarrow, Search, Eye } from "lucide-react"
 
 type Setup = {
@@ -391,7 +392,7 @@ export function SetupsManager() {
                   <div>
                     <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Net P&L</div>
                     <div style={{ fontSize: "1.15rem", fontWeight: 700, color: hasTrades ? (setup.netPnl > 0 ? "var(--color-profit)" : setup.netPnl < 0 ? "var(--color-loss)" : "var(--color-gray-600)") : "var(--color-gray-600)" }}>
-                      {hasTrades ? `${setup.netPnl > 0 ? "+" : ""}$${setup.netPnl.toFixed(2)}` : "—"}
+                      {hasTrades ? formatCurrency(setup.netPnl, "USD", true, 2) : "—"}
                     </div>
                     <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
                       {hasTrades ? `${setup.count} trade${setup.count > 1 ? "s" : ""}` : "no data"}

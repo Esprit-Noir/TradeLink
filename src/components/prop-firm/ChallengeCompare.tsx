@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { BarChart2 } from "lucide-react"
+import { formatCurrency } from "@/lib/formatters"
 
 type CompareChallenge = {
   id: string
@@ -284,7 +285,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
                   <div style={{ background: "var(--color-gray-900)", padding: "0.5rem", borderRadius: "8px" }}>
                     <div style={{ color: "var(--color-gray-500)" }}>Last day</div>
                     <div style={{ fontWeight: 600, color: c.lastDailyPnl != null && c.lastDailyPnl >= 0 ? "var(--color-profit)" : c.lastDailyPnl != null ? "var(--color-loss)" : "inherit" }}>
-                      {c.lastDailyPnl != null ? `${c.lastDailyPnl >= 0 ? "+" : ""}$${c.lastDailyPnl.toFixed(2)}` : "—"}
+                      {c.lastDailyPnl != null ? formatCurrency(c.lastDailyPnl, "USD", true, 2) : "—"}
                     </div>
                   </div>
                 </div>

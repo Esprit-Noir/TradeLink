@@ -13,6 +13,7 @@ import { MonthlyGoalWidget } from "@/components/dashboard/MonthlyGoalWidget"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { MS_PER_DAY } from "@/lib/constants"
+import { formatCurrency } from "@/lib/formatters"
 import { EquityCurveChart, SetupBarChart, HourHeatmap } from "@/components/dashboard/LazyCharts"
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar"
 
@@ -213,7 +214,7 @@ export default async function DashboardPage({
             <div style={{ flex: "1 1 120px" }}>
               <div className="stat-label">🏆 Best day</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-profit)" }}>
-                {bestDay ? `+$${bestDay.pnl.toFixed(2)}` : "—"}
+                {bestDay ? formatCurrency(bestDay.pnl, "USD", true, 2) : "—"}
               </div>
               <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
                 {bestDay ? formatDay(bestDay.key) : "no trades yet"}
@@ -222,7 +223,7 @@ export default async function DashboardPage({
             <div style={{ flex: "1 1 120px" }}>
               <div className="stat-label">⚠️ Worst day</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-loss)" }}>
-                {worstDay ? `-$${Math.abs(worstDay.pnl).toFixed(2)}` : "—"}
+                {worstDay ? formatCurrency(worstDay.pnl, "USD", true, 2) : "—"}
               </div>
               <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
                 {worstDay ? formatDay(worstDay.key) : "no trades yet"}

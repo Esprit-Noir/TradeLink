@@ -4,6 +4,7 @@
 
 import { useEffect, useState, useCallback } from "react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts"
+import { formatCurrency } from "@/lib/formatters"
 import type { BehavioralResult, DetectedPattern } from "@/lib/behavioral"
 
 const RANGES = [
@@ -120,7 +121,7 @@ export function BehaviorScore() {
                     <div style={{ fontSize: "0.8rem", color: "var(--color-gray-500)", marginTop: "0.25rem" }}>Occurred in {ec.count} losing trades</div>
                   </div>
                   <div style={{ fontWeight: 700, color: "var(--color-loss)", fontSize: "1.25rem" }}>
-                    -${ec.totalLoss.toFixed(2)}
+                    {formatCurrency(ec.totalLoss, "USD", true, 2)}
                   </div>
                 </div>
               ))}
@@ -148,7 +149,7 @@ export function BehaviorScore() {
                   <Tooltip 
                     cursor={{ fill: "var(--color-gray-800)" }}
                     contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "var(--radius-card)", padding: "0.75rem" }}
-                    formatter={(val: any) => [`$${Number(val).toFixed(2)}`, "Net P&L"]}
+                    formatter={(val: any) => [formatCurrency(Number(val), "USD", true, 2), "Net P&L"]}
                   />
                   <Bar dataKey="netPnl" radius={[0, 6, 6, 0]} barSize={32}>
                     {data.setupPerformance.map((entry, index) => (
@@ -240,7 +241,7 @@ export function BehaviorScore() {
                   {new Date(f.entryAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                 </span>
                 <span style={{ fontSize: "0.85rem", fontWeight: 700, color: f.netPnl < 0 ? "var(--color-loss)" : "var(--color-profit)", whiteSpace: "nowrap" }}>
-                  {f.netPnl >= 0 ? "+" : ""}${f.netPnl.toFixed(2)}
+                  {formatCurrency(f.netPnl, "USD", true, 2)}
                 </span>
               </div>
             ))}
@@ -416,7 +417,7 @@ function PatternCard({ pattern }: { pattern: DetectedPattern }) {
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Impact (P&L)</div>
           <div style={{ fontWeight: 700, color: "var(--color-loss)" }}>
-            {pattern.impactPnl < 0 ? "-" : ""}${Math.abs(pattern.impactPnl).toFixed(2)}
+            {formatCurrency(pattern.impactPnl, "USD", true, 2)}
           </div>
         </div>
       </div>

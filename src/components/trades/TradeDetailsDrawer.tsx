@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
+import { formatCurrency } from "@/lib/formatters"
 
 type Trade = {
   id: string
@@ -224,7 +225,7 @@ export function TradeDetailsDrawer() {
                 </div>
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: "1.5rem", fontWeight: 700, color: Number(trade.netPnl) > 0 ? "var(--color-profit)" : Number(trade.netPnl) < 0 ? "var(--color-loss)" : "inherit" }}>
-                    {Number(trade.netPnl) > 0 ? "+" : ""}${Number(trade.netPnl).toFixed(2)}
+                    {formatCurrency(Number(trade.netPnl), "USD", true, 2)}
                   </div>
                   <div style={{ color: "var(--gray-400)", fontSize: "0.9rem", marginTop: "0.25rem" }}>Net P&L</div>
                 </div>
@@ -242,11 +243,11 @@ export function TradeDetailsDrawer() {
                 </div>
                 <div>
                   <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Entry Price</div>
-                  <div style={{ fontWeight: 500 }}>${Number(trade.entryPrice).toString()}</div>
+                  <div style={{ fontWeight: 500 }}>{formatCurrency(Number(trade.entryPrice), "USD", false, 2)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Exit Price</div>
-                  <div style={{ fontWeight: 500 }}>{trade.exitPrice ? "$" + Number(trade.exitPrice).toString() : "—"}</div>
+                  <div style={{ fontWeight: 500 }}>{trade.exitPrice ? formatCurrency(Number(trade.exitPrice), "USD", false, 2) : "—"}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Quantity</div>
@@ -254,7 +255,7 @@ export function TradeDetailsDrawer() {
                 </div>
                 <div>
                   <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Fees</div>
-                  <div style={{ fontWeight: 500 }}>${Number(trade.fees).toFixed(2)}</div>
+                  <div style={{ fontWeight: 500 }}>{formatCurrency(Number(trade.fees), "USD", true, 2)}</div>
                 </div>
                 <div>
                   <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>R Multiple</div>
@@ -268,7 +269,7 @@ export function TradeDetailsDrawer() {
                   <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>P&L (USD)</div>
                   <div style={{ fontWeight: 500, color: (Number(trade.netPnlUsd ?? trade.netPnl) || 0) > 0 ? "var(--color-profit)" : (Number(trade.netPnlUsd ?? trade.netPnl) || 0) < 0 ? "var(--color-loss)" : "inherit" }}>
                     {trade.netPnlUsd != null && trade.netPnlUsd !== trade.netPnl
-                      ? `${Number(trade.netPnlUsd) > 0 ? "+" : ""}$${Number(trade.netPnlUsd).toFixed(2)}`
+                      ? formatCurrency(Number(trade.netPnlUsd), "USD", true, 2)
                       : "—"}
                   </div>
                 </div>

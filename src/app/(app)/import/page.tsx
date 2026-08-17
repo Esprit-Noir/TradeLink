@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Check, Eye, Undo2, AlertTriangle, Download, Loader2, UploadCloud, FileSpreadsheet, Award } from "lucide-react"
+import { formatCurrency } from "@/lib/formatters"
 
 const FIELDS = [
   { key: "symbol", label: "Symbol", required: true, hint: "e.g. AAPL, BTCUSDT" },
@@ -565,10 +566,10 @@ export default function ImportPage() {
                           </td>
                           <td style={{ padding: "0.5rem 0.65rem", fontWeight: 500 }}>{Number(r.quantity).toLocaleString()}</td>
                           <td style={{ padding: "0.5rem 0.65rem", color: "var(--color-gray-500)" }}>
-                            {r.fees > 0 ? `-$${r.fees.toFixed(2)}` : "$0.00"}
+                            {r.fees > 0 ? formatCurrency(r.fees, "USD", true, 2) : formatCurrency(0, "USD", true, 2)}
                           </td>
                           <td style={{ padding: "0.5rem 0.65rem", fontWeight: 700, color: r.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-                            {r.netPnl >= 0 ? "+" : ""}${r.netPnl.toFixed(2)}
+                            {formatCurrency(r.netPnl, "USD", true, 2)}
                           </td>
                         </tr>
                       ))}

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { formatCurrency } from "@/lib/formatters"
 import { JournalForm } from "@/components/journal/JournalForm"
 import { TradeRow } from "@/components/trades/TradeRow"
 import Link from "next/link"
@@ -116,7 +117,7 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
           <div className="kpi-card">
             <div className="kpi-label">Daily P&L</div>
             <div className={`kpi-value ${dailyPnl > 0 ? "profit" : dailyPnl < 0 ? "loss" : ""}`}>
-              {dailyPnl > 0 ? "+" : ""}${dailyPnl.toFixed(2)}
+              {formatCurrency(dailyPnl, "USD", true, 2)}
             </div>
           </div>
           <div className="kpi-card">
@@ -147,7 +148,7 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
                       fontWeight: 600,
                       color: Number(s.dailyPnl) > 0 ? "var(--color-profit)" : Number(s.dailyPnl) < 0 ? "var(--color-loss)" : "var(--color-gray-400)",
                     }}>
-                      {Number(s.dailyPnl) > 0 ? "+" : ""}${Number(s.dailyPnl).toFixed(2)}
+                      {formatCurrency(Number(s.dailyPnl), "USD", true, 2)}
                     </span>
                   </div>
                 ))}
