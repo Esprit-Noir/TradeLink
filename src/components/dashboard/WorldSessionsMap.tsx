@@ -128,9 +128,9 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
       diffuse: 1.2,
       mapSamples: 20000,
       mapBrightness: 6,
-      baseColor: [0.1, 0.25, 0.12],
+      baseColor: [0.12, 0.22, 0.12],
       markerColor: [1, 1, 1],
-      glowColor: [0.1, 0.35, 0.15],
+      glowColor: [0.15, 0.4, 0.15],
       markers: initialMarkers,
     } as any)
     
@@ -290,7 +290,7 @@ export function WorldSessionsMap() {
       {/* World Map Area */}
       <div style={{ 
         position: "relative", width: "100%", aspectRatio: "2/1", 
-        background: "radial-gradient(ellipse at center, #0c1a3a 0%, #060e1f 70%, #030810 100%)", borderRadius: 12, 
+        background: "radial-gradient(ellipse at center, #0a2012 0%, #061208 70%, #030a05 100%)", borderRadius: 12, 
         border: "1px solid var(--color-gray-800)", overflow: "hidden", 
         marginBottom: 16 
       }}>
