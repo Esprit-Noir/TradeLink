@@ -131,10 +131,8 @@
   object-fit: contain;
 }
 
-.logo-light { display: none; }
-.logo-dark { display: block; }
-.light .logo-light { display: block; }
-.light .logo-dark { display: none; }
+.logo-light { display: none !important; }
+.logo-dark { display: block !important; }
 
 .marketing-nav-links {
   display: flex;
