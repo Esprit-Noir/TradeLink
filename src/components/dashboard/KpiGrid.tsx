@@ -65,7 +65,7 @@ export async function KpiGrid({
   const currency = scope.currency
 
   return (
-    <div className="kpi-grid" style={{ marginBottom: "1rem" }}>
+    <div className="kpi-grid">
       <KpiCard
         label="Net P&L"
         value={formatCurrency(metrics.netPnl, currency)}

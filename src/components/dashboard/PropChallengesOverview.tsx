@@ -59,7 +59,7 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
               onClick={() => router.push(`/challenges/${c.id}`)}
               style={{
                 background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
-                borderRadius: "12px", padding: "1rem", cursor: "pointer",
+                borderRadius: "var(--radius-card)", padding: "1rem", cursor: "pointer",
                 transition: "border-color 0.2s ease",
                 display: "flex", flexDirection: "column", gap: "0.6rem",
               }}
@@ -103,8 +103,8 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
                     {profitSign}{currentProfit.toLocaleString("en-US", { maximumFractionDigits: 0 })} · {Math.round(profitPct)}%
                   </span>
                 </div>
-                <div style={{ width: "100%", height: "5px", background: "var(--color-gray-800)", borderRadius: "3px", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${profitPct}%`, background: currentProfit >= 0 ? "var(--color-profit)" : "var(--color-loss)", borderRadius: "3px", transition: "width 0.4s ease" }} />
+                <div className="progress-bar" style={{ marginBottom: "0.25rem" }}>
+                  <div className="progress-bar-fill" style={{ width: `${profitPct}%`, background: currentProfit >= 0 ? "var(--color-profit)" : "var(--color-loss)" }} />
                 </div>
               </div>
 
@@ -113,8 +113,8 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
                   <span>Drawdown Used</span>
                   <span style={{ color: ddPct >= 80 ? "var(--color-warning)" : "var(--color-gray-300)" }}>{Math.round(ddPct)}%</span>
                 </div>
-                <div style={{ width: "100%", height: "5px", background: "var(--color-gray-800)", borderRadius: "3px", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${ddPct}%`, background: ddPct >= 80 ? "var(--color-warning)" : "var(--color-brand-500)", borderRadius: "3px", transition: "width 0.4s ease" }} />
+                <div className="progress-bar" style={{ marginBottom: "0.25rem" }}>
+                  <div className="progress-bar-fill" style={{ width: `${ddPct}%`, background: ddPct >= 80 ? "var(--color-warning)" : "var(--color-brand-500)" }} />
                 </div>
               </div>
 
@@ -124,8 +124,8 @@ export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
                     <span>Min Trading Days</span>
                     <span style={{ color: "var(--color-gray-300)" }}>{c.tradingDaysCount ?? 0}/{minDays}</span>
                   </div>
-                  <div style={{ width: "100%", height: "5px", background: "var(--color-gray-800)", borderRadius: "3px", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${daysPct}%`, background: "var(--color-gray-400)", borderRadius: "3px", transition: "width 0.4s ease" }} />
+                  <div className="progress-bar" style={{ marginBottom: "0.25rem" }}>
+                    <div className="progress-bar-fill" style={{ width: `${daysPct}%`, background: "var(--color-gray-400)" }} />
                   </div>
                 </div>
               )}

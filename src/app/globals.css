@@ -2563,6 +2563,36 @@
   transition: width 800ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Stagger animation for dashboard cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.kpi-grid .kpi-card,
+.chart-card,
+.card {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.kpi-grid .kpi-card:nth-child(1) { animation-delay: 0ms; }
+.kpi-grid .kpi-card:nth-child(2) { animation-delay: 50ms; }
+.kpi-grid .kpi-card:nth-child(3) { animation-delay: 100ms; }
+.kpi-grid .kpi-card:nth-child(4) { animation-delay: 150ms; }
+.kpi-grid .kpi-card:nth-child(5) { animation-delay: 200ms; }
+.kpi-grid .kpi-card:nth-child(6) { animation-delay: 250ms; }
+
+.dashboard-row-equal > *:nth-child(1) { animation-delay: 300ms; }
+.dashboard-row-equal > *:nth-child(2) { animation-delay: 350ms; }
+.dashboard-row-2-1 > *:nth-child(1) { animation-delay: 400ms; }
+.dashboard-row-2-1 > *:nth-child(2) { animation-delay: 450ms; }
+
 /* Heatmap custom tooltip */
 .heatmap-tooltip {
   position: fixed;
