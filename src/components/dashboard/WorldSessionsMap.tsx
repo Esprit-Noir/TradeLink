@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
+import { useTheme } from "next-themes"
 import createGlobe from "cobe"
 
 interface Session {
@@ -96,7 +97,7 @@ function hexToRgb(hex: string): [number, number, number] {
   ] : [1, 1, 1];
 }
 
-function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
+function CobeGlobe({ now, summer, isDark }: { now: Date, summer: boolean, isDark: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [wrapper, setWrapper] = useState<HTMLElement | null>(null)
   
@@ -124,13 +125,13 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
       height: w * 2,
       phi: 0,
       theta: 0,
-      dark: 1,
-      diffuse: 1.2,
+      dark: isDark ? 1 : 0,
+      diffuse: isDark ? 1.2 : 1.5,
       mapSamples: 20000,
-      mapBrightness: 6,
-      baseColor: [0.04, 0.08, 0.18],
+      mapBrightness: isDark ? 6 : 4,
+      baseColor: isDark ? [0.04, 0.08, 0.18] : [0.3, 0.5, 0.8],
       markerColor: [1, 1, 1],
-      glowColor: [0.1, 0.25, 0.55],
+      glowColor: isDark ? [0.1, 0.25, 0.55] : [0.4, 0.6, 0.9],
       markers: initialMarkers,
     } as any)
     
@@ -193,8 +194,8 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
                 opacity: var(--cobe-visible-${s.id}, 0);
                 transform: translate(-50%, -10px);
                 transition: opacity 0.3s ease;
-                background: rgba(10, 10, 12, 0.85);
-                border: 1px solid var(--color-gray-800);
+                background: ${isDark ? 'rgba(10, 10, 12, 0.85)' : 'rgba(255, 255, 255, 0.9)'};
+                border: 1px solid ${isDark ? 'var(--color-gray-800)' : 'var(--color-gray-200)'};
                 padding: 6px 10px;
                 border-radius: 8px;
                 display: flex;
@@ -206,8 +207,8 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
                 backdrop-filter: blur(4px);
               }
               .marker-label-${s.id}.is-open {
-                border-color: rgba(255, 255, 255, 0.2);
-                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+                border-color: ${isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)'};
+                box-shadow: 0 4px 20px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'};
               }
             `).join('\n')}
             @keyframes live-pulse {
@@ -224,9 +225,9 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
               <div key={s.id} className={`marker-label-${s.id} ${isOpen ? 'is-open' : ''}`}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
                   {isOpen && <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, boxShadow: `0 0 8px ${s.color}`, animation: 'live-pulse 2s infinite' }} />}
-                  <span style={{ color: isOpen ? s.color : 'var(--color-gray-400)' }}>{SESSION_NAMES[s.id].toUpperCase()}</span>
+                  <span style={{ color: isOpen ? s.color : (isDark ? 'var(--color-gray-400)' : 'var(--color-gray-600)') }}>{SESSION_NAMES[s.id].toUpperCase()}</span>
                 </div>
-                <div style={{ fontSize: '0.65rem', color: 'var(--color-gray-500)', fontWeight: 500 }}>
+                <div style={{ fontSize: '0.65rem', color: isDark ? 'var(--color-gray-500)' : 'var(--color-gray-500)', fontWeight: 500 }}>
                   {h.open.toString().padStart(2, '0')}:00 - {h.close.toString().padStart(2, '0')}:00 UTC
                 </div>
               </div>
@@ -242,6 +243,8 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
 export function WorldSessionsMap() {
   const [now, setNow] = useState(() => new Date())
   const [mounted, setMounted] = useState(false)
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === "dark"
 
   useEffect(() => {
     setMounted(true)
@@ -290,20 +293,24 @@ export function WorldSessionsMap() {
       {/* World Map Area */}
       <div style={{ 
         position: "relative", width: "100%", aspectRatio: "2/1", 
-        background: "radial-gradient(ellipse at center, #051008 0%, #030a04 70%, #010502 100%)", borderRadius: 12, 
-        border: "1px solid var(--color-gray-800)", overflow: "hidden", 
+        background: isDark 
+          ? "radial-gradient(ellipse at center, #051008 0%, #030a04 70%, #010502 100%)" 
+          : "radial-gradient(ellipse at center, #dce8f0 0%, #c8d8e8 70%, #b0c4d8 100%)", 
+        borderRadius: 12, 
+        border: `1px solid ${isDark ? "var(--color-gray-800)" : "var(--color-gray-200)"}`, 
+        overflow: "hidden", 
         marginBottom: 16 
       }}>
         {/* Grid pattern */}
         <div style={{
           position: "absolute", inset: 0, opacity: 0.3, pointerEvents: "none", zIndex: 5,
-          backgroundImage: "linear-gradient(var(--color-gray-700) 1px, transparent 1px), linear-gradient(90deg, var(--color-gray-700) 1px, transparent 1px)",
+          backgroundImage: `linear-gradient(${isDark ? "var(--color-gray-700)" : "var(--color-gray-300)"} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? "var(--color-gray-700)" : "var(--color-gray-300)"} 1px, transparent 1px)`,
           backgroundSize: "24px 24px"
         }} />
         
         {mounted && (
           <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
-            <CobeGlobe now={now} summer={summer} />
+            <CobeGlobe now={now} summer={summer} isDark={isDark} />
           </div>
         )}
       </div>
@@ -318,8 +325,8 @@ export function WorldSessionsMap() {
           return (
             <div key={session.id} className="card" style={{
               padding: "0.85rem",
-              borderColor: open ? `${session.color}40` : "var(--color-gray-800)",
-              background: open ? "var(--color-gray-900)" : "transparent",
+              borderColor: open ? `${session.color}40` : (isDark ? "var(--color-gray-800)" : "var(--color-gray-200)"),
+              background: open ? (isDark ? "var(--color-gray-900)" : "var(--color-gray-50)") : "transparent",
               position: "relative", overflow: "hidden"
             }}>
               {open && (
