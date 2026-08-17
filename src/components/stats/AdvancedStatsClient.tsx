@@ -72,30 +72,19 @@ export function AdvancedStatsClient() {
     if (patch.side !== undefined) setSide(patch.side)
   }, [])
 
-  if (loading) {
-    return (
-      <div style={{ display: "grid", gap: "1.5rem" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
-          {[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 90, borderRadius: "var(--radius-card)" }} />)}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
-          <div className="skeleton" style={{ height: 320, borderRadius: "var(--radius-card)" }} />
-          <div className="skeleton" style={{ height: 320, borderRadius: "var(--radius-card)" }} />
-        </div>
-      </div>
-    )
-  }
-
-  if (!data || data.empty) {
-    return (
-      <div>
-        <StatsFilters available={available} filters={{ period, symbol, setup, side }} apply={apply} />
-        <div className="empty-state" style={{ marginTop: "1rem" }}>No trading data available.</div>
-      </div>
-    )
-  }
-
-  const { kpis, streaks, drawdown, drawdownEpisodes, equityCurve, rrDistribution, dowPerformance, hourPerformance, monthlyPerformance, topSymbols, topSetups, symbols, setups } = data
+  const kpis = data?.kpis
+  const streaks = data?.streaks
+  const drawdown = data?.drawdown
+  const drawdownEpisodes = data?.drawdownEpisodes ?? []
+  const equityCurve = data?.equityCurve
+  const rrDistribution = data?.rrDistribution ?? {}
+  const dowPerformance = data?.dowPerformance ?? []
+  const hourPerformance = data?.hourPerformance ?? []
+  const monthlyPerformance = data?.monthlyPerformance ?? []
+  const topSymbols = data?.topSymbols
+  const topSetups = data?.topSetups
+  const symbols = data?.symbols ?? []
+  const setups = data?.setups ?? []
 
   const rrData = useMemo(() => Object.entries(rrDistribution).map(([name, value]) => ({ name, value })), [rrDistribution])
   const dowData = useMemo(() => dowPerformance.map((pnl: number, index: number) => ({
@@ -119,6 +108,29 @@ export function AdvancedStatsClient() {
     a.click()
     URL.revokeObjectURL(url)
   }, [symbols, setups])
+
+  if (loading) {
+    return (
+      <div style={{ display: "grid", gap: "1.5rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+          {[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 90, borderRadius: "var(--radius-card)" }} />)}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
+          <div className="skeleton" style={{ height: 320, borderRadius: "var(--radius-card)" }} />
+          <div className="skeleton" style={{ height: 320, borderRadius: "var(--radius-card)" }} />
+        </div>
+      </div>
+    )
+  }
+
+  if (!data || data.empty) {
+    return (
+      <div>
+        <StatsFilters available={available} filters={{ period, symbol, setup, side }} apply={apply} />
+        <div className="empty-state" style={{ marginTop: "1rem" }}>No trading data available.</div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
