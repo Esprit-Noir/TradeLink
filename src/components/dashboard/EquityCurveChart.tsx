@@ -65,7 +65,36 @@ function CustomTooltip({ active, payload, label, initialBalance }: any) {
   )
 }
 
-export function EquityCurveChart() {
+interface ChallengeSnapshot {
+  date: string
+  endBalance: number
+  lowestEquity: number
+  dailyPnl?: number
+  tradesCount?: number
+  dailyDDUsedPct?: number
+}
+
+interface EquityCurveChartProps {
+  snapshots?: ChallengeSnapshot[]
+  initialBalance?: number
+  currentBalance?: number
+  maxDrawdownPct?: number
+  profitTarget?: number
+  maxDDLevel?: number
+  showMaxDDLine?: boolean
+  showTargetLine?: boolean
+}
+
+export function EquityCurveChart({
+  snapshots,
+  initialBalance: propInitial,
+  currentBalance: propCurrent,
+  maxDrawdownPct,
+  profitTarget,
+  maxDDLevel,
+  showMaxDDLine = false,
+  showTargetLine = false,
+}: EquityCurveChartProps = {}) {
   const [rawData, setRawData] = useState<EquityData | null>(null)
   const [loading, setLoading] = useState(true)
   const [timeframe, setTimeframe] = useState("ALL")
@@ -73,6 +102,23 @@ export function EquityCurveChart() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    if (snapshots && snapshots.length > 0) {
+      let runningHigh = propInitial ?? snapshots[0].endBalance
+      const points: EquityPoint[] = snapshots.map(s => {
+        const anchor = maxDDLevel ?? (propInitial ?? s.endBalance)
+        const dd = anchor > 0 ? ((anchor - s.lowestEquity) / anchor) * 100 : 0
+        runningHigh = Math.max(runningHigh, s.endBalance)
+        return { date: s.date, equity: s.endBalance, drawdown: Math.max(0, dd) }
+      })
+      const initial = propInitial ?? points[0]?.equity ?? 0
+      const current = propCurrent ?? points[points.length - 1]?.equity ?? 0
+      const maxDD = points.reduce((m, p) => Math.max(m, p.drawdown ?? 0), 0)
+      const curDD = points.length > 0 ? (points[points.length - 1].drawdown ?? 0) : 0
+      setRawData({ data: points, initialBalance: initial, currentBalance: current, maxDrawdown: maxDD, currentDrawdown: curDD })
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     const params = new URLSearchParams()
     const period = searchParams.get("period")
@@ -98,7 +144,7 @@ export function EquityCurveChart() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [searchParams])
+  }, [snapshots, propInitial, propCurrent, maxDDLevel, searchParams])
 
   const filteredData = useMemo(() => {
     if (!rawData?.data.length) return []
@@ -296,6 +342,26 @@ export function EquityCurveChart() {
                   strokeOpacity={0.4}
                 />
               )}
+              {showMaxDDLine && maxDDLevel && maxDDLevel > 0 && (
+                <ReferenceLine
+                  y={maxDDLevel}
+                  stroke="var(--color-loss)"
+                  strokeDasharray="4 3"
+                  strokeWidth={1}
+                  strokeOpacity={0.5}
+                  label={{ value: "Max DD", position: "insideTopRight", fill: "var(--color-loss)", fontSize: 9 }}
+                />
+              )}
+              {showTargetLine && profitTarget && profitTarget > 0 && (
+                <ReferenceLine
+                  y={profitTarget}
+                  stroke="var(--color-profit)"
+                  strokeDasharray="4 3"
+                  strokeWidth={1}
+                  strokeOpacity={0.5}
+                  label={{ value: "Target", position: "insideTopRight", fill: "var(--color-profit)", fontSize: 9 }}
+                />
+              )}
               <Bar dataKey="Profit" fill="transparent" radius={[2, 2, 0, 0]} maxBarSize={3} opacity={0} />
               <Area
                 type="monotone"
@@ -359,6 +425,10 @@ export function EquityCurveChart() {
                 label={{ value: "5%", position: "insideTopRight", fill: "var(--color-warning)", fontSize: 9 }} />
               <ReferenceLine y={10} stroke="var(--color-loss)" strokeDasharray="4 2" strokeWidth={1} opacity={0.5}
                 label={{ value: "10%", position: "insideTopRight", fill: "var(--color-loss)", fontSize: 9 }} />
+              {maxDrawdownPct && maxDrawdownPct > 0 && (
+                <ReferenceLine y={maxDrawdownPct} stroke="var(--color-loss)" strokeDasharray="2 2" strokeWidth={1.5} opacity={0.7}
+                  label={{ value: `Max ${maxDrawdownPct.toFixed(0)}%`, position: "insideTopRight", fill: "var(--color-loss)", fontSize: 9 }} />
+              )}
               <Area
                 type="monotone"
                 dataKey="Drawdown"

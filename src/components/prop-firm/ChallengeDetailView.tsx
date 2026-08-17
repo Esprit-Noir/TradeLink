@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from "react"
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  BarChart, Bar, Cell, ReferenceLine,
   AreaChart, Area,
+  BarChart, Bar, Cell,
+  ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, ReferenceLine,
 } from "recharts"
 import { PropFirmGauges } from "./PropFirmGauges"
+import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
 
 const EVENT_LABELS: Record<string, string> = {
   alert_80pct: "80% Drawdown Warning",
@@ -163,45 +164,22 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
       {/* Grid Row: Chart (left) and Gauges (right) */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
-          <div style={{ flex: "2 1 500px", minWidth: 0, background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)", display: "flex", flexDirection: "column" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
-              <div style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-100)" }}>Equity Curve</div>
-              <div style={{ display: "flex", gap: "1rem", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                  <span style={{ width: 12, height: 4, borderRadius: 2, background: "var(--color-brand-500)", display: "inline-block" }} /> Equity
-                </span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                  <span style={{ width: 12, height: 4, borderRadius: 2, background: "var(--color-loss)", display: "inline-block" }} /> Max DD level
-                </span>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                  <span style={{ width: 12, height: 4, borderRadius: 2, background: "var(--color-profit)", display: "inline-block" }} /> Target
-                </span>
-              </div>
-            </div>
-            {series.length > 0 ? (
-              <div style={{ flex: 1, minHeight: "300px", display: "flex", flexDirection: "column" }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={series} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" />
-                    <XAxis dataKey="dateLabel" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={30} />
-                    <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} domain={['auto', 'auto']} width={55} />
-                    <Tooltip
-                      contentStyle={tooltipStyle}
-                      itemStyle={{ fontWeight: 600 }}
-                      labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.3rem" }}
-                      formatter={(value: any, name: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, name === "endBalance" ? "Equity" : name]}
-                    />
-                    <ReferenceLine y={profitTarget} stroke="var(--color-profit)" strokeDasharray="4 4" />
-                    <Line type="stepAfter" dataKey="maxDDLevel" stroke="var(--color-loss)" strokeWidth={1.5} strokeDasharray="5 4" dot={false} opacity={0.8} />
-                    <Line type="monotone" dataKey="endBalance" stroke="var(--color-brand-500)" strokeWidth={2} dot={{ r: 3, fill: "var(--color-gray-900)", stroke: "var(--color-brand-500)", strokeWidth: 2 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            ) : (
-              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-500)", fontSize: "0.85rem", minHeight: "300px" }}>
-                No performance data available yet.
-              </div>
-            )}
+          <div style={{ flex: "2 1 500px", minWidth: 0 }}>
+            <EquityCurveChart
+              snapshots={snapshots.map(s => ({
+                date: s.date,
+                endBalance: Number(s.endBalance),
+                lowestEquity: Number(s.lowestEquity),
+                dailyPnl: Number(s.dailyPnl || 0),
+              }))}
+              initialBalance={initial}
+              currentBalance={Number(challenge.currentEquity)}
+              maxDrawdownPct={maxDDPct}
+              profitTarget={profitTarget}
+              maxDDLevel={latestSnapshot?.maxDDLevel}
+              showMaxDDLine
+              showTargetLine
+            />
           </div>
 
           <div style={{ flex: "1 1 300px", minWidth: 0 }}>
