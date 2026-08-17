@@ -15,6 +15,7 @@ interface Props {
   onCloseManual: (id: string) => void
   onUpdateLevels: (id: string, levels: { stopLoss: number; takeProfit: number }) => void
   onDeleteTrade: (id: string) => void
+  onSaveTrade?: (trade: SimTrade) => void
 }
 
 export function PositionsStrip({
@@ -26,7 +27,15 @@ export function PositionsStrip({
   onCloseManual,
   onUpdateLevels,
   onDeleteTrade,
+  onSaveTrade,
 }: Props) {
+  const closedTrades = positions.filter(p => p.exitPrice != null)
+  const openPositions = positions.filter(p => p.exitPrice == null)
+  const totalPnl = closedTrades.reduce((s, t) => s + (t.netPnl ?? 0), 0)
+  const wins = closedTrades.filter(t => (t.netPnl ?? 0) > 0).length
+  const winRate = closedTrades.length > 0 ? (wins / closedTrades.length) * 100 : null
+  const rVals = closedTrades.map(t => t.rMultiple ?? 0)
+  const avgR = rVals.length > 0 ? rVals.reduce((s, r) => s + r, 0) / rVals.length : null
   if (positions.length === 0) {
     return (
       <>
@@ -46,8 +55,21 @@ export function PositionsStrip({
     <>
       <div className="tz-replay-positions-header">
         <div className="tz-replay-positions-title">
-          Positions <span style={{ background: "var(--color-gray-800)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>{positions.length}</span>
+          Positions
+          {openPositions.length > 0 && (
+            <span style={{ background: "var(--color-brand-500)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "white" }}>{openPositions.length} open</span>
+          )}
+          {closedTrades.length > 0 && (
+            <span style={{ background: "var(--color-gray-800)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>{closedTrades.length} closed</span>
+          )}
         </div>
+        {closedTrades.length > 0 && (
+          <div className="tz-replay-positions-summary">
+            <span>P&amp;L: <b style={{ color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>{totalPnl >= 0 ? "+" : ""}{totalPnl.toFixed(2)}</b></span>
+            {winRate !== null && <span>Win: <b style={{ color: winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)" }}>{winRate.toFixed(0)}%</b></span>}
+            {avgR !== null && <span>Avg R: <b style={{ color: avgR >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>{avgR >= 0 ? "+" : ""}{avgR.toFixed(2)}R</b></span>}
+          </div>
+        )}
       </div>
       <div className="tz-replay-positions-table">
         <table>
@@ -148,28 +170,62 @@ export function PositionsStrip({
                   <td className={pnlColor}>
                     {pnl === null ? "—" : formatCurrency(pnl, "USD", true)}
                   </td>
-                  <td style={{ color: isClosed && p.saved ? "var(--color-profit)" : "inherit" }}>{statusText}</td>
+                  <td style={{ color: isClosed && p.saved ? "var(--color-profit)" : "inherit" }}>
+                    {isClosed && p.saved ? (
+                      <span style={{ display: "flex", alignItems: "center", gap: "3px", fontSize: "0.72rem", color: "var(--color-profit)" }}>
+                        ✓ Saved
+                      </span>
+                    ) : statusText}
+                  </td>
                   <td>
-                    <button
-                      type="button"
-                      title={isClosed ? "Supprimer le trade" : "Fermer la position"}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (isClosed) {
-                          onDeleteTrade(p.id)
-                        } else {
-                          onCloseManual(p.id)
-                        }
-                      }}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--color-gray-400)",
-                        cursor: "pointer"
-                      }}
-                    >
-                      <X size={16} />
-                    </button>
+                    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                      {isClosed && !p.saved && onSaveTrade && (
+                        <button
+                          type="button"
+                          title="Save to journal"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onSaveTrade(p)
+                          }}
+                          disabled={p.saving}
+                          style={{
+                            background: "var(--color-gray-800)",
+                            border: "1px solid var(--color-gray-700)",
+                            color: "var(--color-brand-400)",
+                            cursor: "pointer",
+                            borderRadius: "4px",
+                            padding: "2px 6px",
+                            fontSize: "0.65rem",
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "3px",
+                          }}
+                        >
+                          {p.saving ? "..." : "Save"}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        title={isClosed ? "Supprimer le trade" : "Fermer la position"}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (isClosed) {
+                            onDeleteTrade(p.id)
+                          } else {
+                            onCloseManual(p.id)
+                          }
+                        }}
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          color: "var(--color-gray-400)",
+                          cursor: "pointer"
+                        }}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               )

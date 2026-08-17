@@ -339,17 +339,17 @@ function StatsFilters({ available, filters, apply }: { available: { symbols: str
 
       <div style={{ width: 1, height: 20, background: "var(--color-gray-800)" }} />
 
-      <select className="input select" value={filters.symbol} onChange={e => apply({ symbol: e.target.value })} style={{ fontSize: "0.78rem", padding: "0.3rem 0.5rem" }}>
+      <select className="input select" value={filters.symbol} onChange={e => apply({ symbol: e.target.value })} style={{ fontSize: "0.78rem", padding: "0.3rem 0.5rem", width: "140px" }}>
         <option value="">All symbols</option>
         {available.symbols.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
 
-      <select className="input select" value={filters.setup} onChange={e => apply({ setup: e.target.value })} style={{ fontSize: "0.78rem", padding: "0.3rem 0.5rem" }}>
+      <select className="input select" value={filters.setup} onChange={e => apply({ setup: e.target.value })} style={{ fontSize: "0.78rem", padding: "0.3rem 0.5rem", width: "140px" }}>
         <option value="">All setups</option>
         {available.setups.map(s => <option key={s} value={s}>{s}</option>)}
       </select>
 
-      <select className="input select" value={filters.side} onChange={e => apply({ side: e.target.value })} style={{ fontSize: "0.78rem", padding: "0.3rem 0.5rem" }}>
+      <select className="input select" value={filters.side} onChange={e => apply({ side: e.target.value })} style={{ fontSize: "0.78rem", padding: "0.3rem 0.5rem", width: "140px" }}>
         <option value="">All sides</option>
         <option value="LONG">Long</option>
         <option value="SHORT">Short</option>

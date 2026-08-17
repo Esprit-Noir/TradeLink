@@ -64,7 +64,7 @@ type Action =
   | { type: "SET_ENTRY_MODE"; mode: SimSide }
   | { type: "UPDATE_BALANCE"; balance: number }
   | { type: "UPDATE_RISK"; riskPct: number }
-  | { type: "PLACE_ORDER"; candle: Candle }
+  | { type: "PLACE_ORDER"; candle: Candle; stopLoss?: number; takeProfit?: number }
   | { type: "UPDATE_LEVELS"; id: string; stopLoss: number; takeProfit: number }
   | { type: "CLOSE_MANUAL"; id: string }
   | { type: "SELECT_POSITION"; id: string }
@@ -188,14 +188,16 @@ function reducer(state: ReplayState, action: Action): ReplayState {
       if (!candle) return state
       const atrValue = atrAt(state.data, idx, 14)
       const levels = atrBasedLevels(state.entryMode, candle.close, atrValue)
+      const sl = action.stopLoss ?? levels.sl
+      const tp = action.takeProfit ?? levels.tp
       const riskAmount = (state.balance * state.riskPct) / 100
-      const quantity = positionSizeFromRisk(state.balance, state.riskPct, candle.close, levels.sl)
+      const quantity = positionSizeFromRisk(state.balance, state.riskPct, candle.close, sl)
       const trade: SimTrade = {
         id: newId(),
         side: state.entryMode,
         entryPrice: candle.close,
-        stopLoss: levels.sl,
-        takeProfit: levels.tp,
+        stopLoss: sl,
+        takeProfit: tp,
         quantity,
         riskAmount,
         entryTime: candle.time,
@@ -487,14 +489,14 @@ export function ReplayWorkbench({
 
   // ── actions ──────────────────────────────────────────────────────────────────
   const handleOrder = useCallback(
-    (side: SimSide) => {
+    (side: SimSide, levels?: { stopLoss?: number; takeProfit?: number }) => {
       const candle = state.data[state.currentIndex]
       if (!candle) {
         toast.info("Chargement des données en cours…")
         return
       }
       dispatch({ type: "SET_ENTRY_MODE", mode: side })
-      dispatch({ type: "PLACE_ORDER", candle })
+      dispatch({ type: "PLACE_ORDER", candle, stopLoss: levels?.stopLoss, takeProfit: levels?.takeProfit })
     },
     [state.data, state.currentIndex],
   )
@@ -633,9 +635,16 @@ export function ReplayWorkbench({
       <div className="tz-replay-topbar">
         <div className="tz-replay-topbar-left">
           <Link href="/dashboard" className="tz-replay-logo">
-            <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "30px", objectFit: "contain" }} />
-            <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "30px", objectFit: "contain" }} />
+            <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "28px", objectFit: "contain" }} />
+            <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "28px", objectFit: "contain" }} />
           </Link>
+          {/* Session info badge */}
+          {!state.loading && !state.error && (
+            <div className="tz-session-info">
+              <span className="tz-session-symbol">{state.meta.symbol || config.symbol}</span>
+              <span className="tz-session-tf">{state.meta.timeframe || config.timeframe}</span>
+            </div>
+          )}
         </div>
 
         <div className="tz-replay-topbar-center">
@@ -644,6 +653,9 @@ export function ReplayWorkbench({
           </div>
           <div className="tz-replay-timeline-bar" title={`${Math.min(state.currentIndex + 1, state.data.length)} / ${state.data.length} bougies`}>
             <div className="tz-replay-timeline-fill" style={{ width: `${progress}%` }} />
+          </div>
+          <div style={{ fontSize: "0.62rem", color: "var(--color-gray-600)", fontVariantNumeric: "tabular-nums" }}>
+            {state.data.length > 0 ? `${Math.min(state.currentIndex + 1, state.data.length)} / ${state.data.length} candles` : "Loading…"}
           </div>
         </div>
 
@@ -660,17 +672,22 @@ export function ReplayWorkbench({
             onClick={handleSaveAll}
             disabled={state.closedTrades.length === 0}
             title="Enregistrer dans le journal"
+            style={{ position: "relative" }}
           >
-            <Save size={14} /> Save
+            <Save size={14} /> Save All
+            {state.closedTrades.filter(t => !t.saved).length > 0 && (
+              <span className="tz-save-badge">{state.closedTrades.filter(t => !t.saved).length}</span>
+            )}
           </button>
           <button className="tz-btn-close" onClick={handleExportPdf}>
-            <Share size={14} /> Share
+            <Share size={14} /> Export
           </button>
-          <Link href="/dashboard" className="tz-btn-close">
+          <Link href="/dashboard" className="tz-btn-close" title="Back to Dashboard">
             <X size={16} />
           </Link>
         </div>
       </div>
+
 
       {/* ── Main Area ── */}
       <div className="tz-replay-main">
@@ -777,6 +794,7 @@ export function ReplayWorkbench({
               onCloseManual={(id) => dispatch({ type: "CLOSE_MANUAL", id })}
               onDeleteTrade={(id) => dispatch({ type: "DELETE_TRADE", id })}
               onUpdateLevels={handleUpdateLevels}
+              onSaveTrade={handleSaveTrade}
             />
           </div>
         </div>

@@ -99,6 +99,52 @@
 }
 .tz-btn-close:hover { background: var(--color-gray-800); }
 
+/* ── Session info in topbar ── */
+.tz-session-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--color-gray-800);
+  border-radius: 20px;
+  border: 1px solid var(--color-gray-700);
+}
+.tz-session-symbol {
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--color-gray-100);
+  letter-spacing: -0.01em;
+}
+.tz-session-tf {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--color-brand-400);
+  text-transform: uppercase;
+  padding: 1px 6px;
+  background: color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+  border-radius: 4px;
+}
+
+/* ── Save badge counter ── */
+.tz-save-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: var(--color-loss);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+}
+
+
 /* ── Main Layout ── */
 .tz-replay-main {
   display: flex;
@@ -458,3 +504,233 @@
   width: 20px;
   height: 20px;
 }
+
+/* ── Session Stats Bar (top of sidebar) ── */
+.tz-sidebar-stats {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-gray-800);
+  background: var(--color-gray-950);
+  flex-shrink: 0;
+}
+.tz-sidebar-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  gap: 2px;
+}
+.tz-sidebar-stat-label {
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-gray-500);
+  white-space: nowrap;
+}
+.tz-sidebar-stat-value {
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-gray-100);
+}
+.tz-sidebar-stat-divider {
+  width: 1px;
+  background: var(--color-gray-800);
+  flex-shrink: 0;
+  margin: 6px 0;
+}
+
+/* ── Sidebar Tabs ── */
+.tz-replay-sidebar-tabs {
+  display: flex;
+  gap: 4px;
+}
+.tz-sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.tz-sidebar-tab:hover {
+  background: var(--color-gray-800);
+  color: var(--color-gray-200);
+}
+.tz-sidebar-tab.active {
+  background: color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+  color: var(--color-brand-400);
+}
+
+/* ── Custom input variants ── */
+.tz-input-profit:focus {
+  border-color: var(--color-profit) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-profit) 15%, transparent);
+}
+.tz-input-loss:focus {
+  border-color: var(--color-loss) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-loss) 15%, transparent);
+}
+.tz-replay-input:focus {
+  border-color: var(--color-brand-500);
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
+}
+
+/* ── Floating P&L indicator ── */
+.tz-sidebar-floating {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--color-gray-950);
+  border: 1px solid var(--color-gray-800);
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+
+/* ── Unsaved trades quick list ── */
+.tz-sidebar-unsaved {
+  padding: 10px 12px;
+  background: var(--color-gray-950);
+  border: 1px solid var(--color-gray-800);
+  border-radius: 8px;
+}
+.tz-unsaved-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--color-gray-800);
+  font-size: 0.78rem;
+}
+.tz-unsaved-row:last-child { border-bottom: none; }
+.tz-badge-buy {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--color-profit-muted);
+  color: var(--color-profit);
+}
+.tz-badge-sell {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: var(--color-loss-muted);
+  color: var(--color-loss);
+}
+.tz-unsaved-save-btn {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  border: 1px solid var(--color-gray-700);
+  background: transparent;
+  color: var(--color-gray-400);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tz-unsaved-save-btn:hover {
+  background: var(--color-brand-500);
+  border-color: var(--color-brand-500);
+  color: white;
+}
+
+/* ── Timeframe badge ── */
+.tz-tf-badge {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--color-gray-800);
+  color: var(--color-gray-400);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* ── Improved Buy/Sell buttons ── */
+.tz-replay-btn-buy {
+  flex: 1;
+  padding: 11px 8px;
+  background: var(--color-profit);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tz-replay-btn-buy:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-profit) 85%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-profit) 40%, transparent);
+}
+.tz-replay-btn-buy:active:not(:disabled) { transform: translateY(0); }
+.tz-replay-btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.tz-replay-btn-sell {
+  flex: 1;
+  padding: 11px 8px;
+  background: var(--color-loss);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tz-replay-btn-sell:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-loss) 85%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-loss) 40%, transparent);
+}
+.tz-replay-btn-sell:active:not(:disabled) { transform: translateY(0); }
+.tz-replay-btn-sell:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Improved risk buttons ── */
+.tz-replay-risk-btn {
+  transition: all 0.15s ease;
+}
+.tz-replay-risk-btn:hover:not(.active) {
+  background: var(--color-gray-800);
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-100);
+}
+
+/* ── Input focus improvements ── */
+.tz-replay-input {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* ── Topbar improvements ── */
+.tz-btn-share:hover {
+  background: color-mix(in srgb, var(--color-brand-500) 85%, white);
+}
+.tz-btn-close {
+  gap: 6px;
+  transition: all 0.15s;
+}
+
