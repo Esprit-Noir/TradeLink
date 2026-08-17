@@ -108,14 +108,14 @@ export function OverviewClient({ username }: { username?: string }) {
         })}
       </div>
 
-      {/* Market Overview */}
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-        <MarketOverview />
-      </div>
-
       {/* World Sessions Map */}
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
         <WorldSessionsMap />
+      </div>
+
+      {/* Market Overview */}
+      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+        <MarketOverview />
       </div>
 
       {/* Recent Trades + Quick Actions */}

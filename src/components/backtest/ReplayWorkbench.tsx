@@ -836,6 +836,7 @@ export function ReplayWorkbench({
           currentCandle={currentCandle}
           balance={state.balance}
           riskPct={state.riskPct}
+          backtestAccountId={backtestAccountId}
           positions={state.positions}
           closedTrades={state.closedTrades}
           indicators={state.indicators}
