@@ -111,7 +111,7 @@ function RealisticGlobe({ now, summer }: { now: Date, summer: boolean }) {
     globe.controls().enablePan = false
 
     // Point of view
-    globe.pointOfView({ lat: 20, lng: -30, altitude: 1.8 })
+    globe.pointOfView({ lat: 20, lng: -30, altitude: 1.5 })
   }, [])
 
   // Markers data
@@ -121,10 +121,40 @@ function RealisticGlobe({ now, summer }: { now: Date, summer: boolean }) {
       id: s.id,
       lat: s.location[0],
       lng: s.location[1],
-      size: isOpen ? 0.35 : 0.18,
+      size: isOpen ? 0.4 : 0.2,
       color: isOpen ? s.color : "#555555",
       isOpen,
       session: s,
+      label: SESSION_NAMES[s.id],
+    }
+  })
+
+  // HTML labels data
+  const labels = SESSIONS.map(s => {
+    const isOpen = isSessionOpen(s, now)
+    return {
+      id: `label-${s.id}`,
+      lat: s.location[0],
+      lng: s.location[1],
+      html: `<div style="
+        background: ${isOpen ? 'rgba(10,10,12,0.9)' : 'rgba(10,10,12,0.7)'};
+        border: 1px solid ${isOpen ? s.color + '80' : 'rgba(255,255,255,0.1)'};
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: ${isOpen ? s.color : '#888'};
+        white-space: nowrap;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+        text-transform: uppercase;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+      ">
+        ${s.flag} ${SESSION_NAMES[s.id]}
+        ${isOpen ? '<span style="margin-left:4px;font-size:8px;vertical-align:middle;">●</span>' : ''}
+      </div>`,
+      size: 1,
     }
   })
 
@@ -146,6 +176,11 @@ function RealisticGlobe({ now, summer }: { now: Date, summer: boolean }) {
         pointAltitude={0.02}
         pointRadius="size"
         pointsMerge={false}
+        htmlElementsData={labels}
+        htmlLat="lat"
+        htmlLng="lng"
+        htmlElement="html"
+        htmlAltitude={0.05}
         atmosphereColor="#3b82f6"
         atmosphereAltitude={0.25}
       />
@@ -203,7 +238,7 @@ export function WorldSessionsMap() {
 
       {/* World Map Area */}
       <div style={{ 
-        position: "relative", width: "100%", flex: "1 1 0", minHeight: 420,
+        position: "relative", width: "100%", flex: "1 1 0", minHeight: 520,
         borderRadius: 12, overflow: "hidden", marginBottom: 16 
       }}>
         {mounted && <RealisticGlobe now={now} summer={summer} />}
