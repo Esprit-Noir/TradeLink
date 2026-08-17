@@ -12,7 +12,7 @@ export function MarketingNav({ isLoggedIn }: { isLoggedIn?: boolean }) {
     <nav className="marketing-nav">
       <div className="marketing-nav-inner">
         <Link href="/" className="marketing-logo">
-          <Image src="/logo-light.png" alt="TradeLink" width={150} height={36} priority className="marketing-logo-img" />
+          <Image src="/logo-dark.png" alt="TradeLink" width={150} height={36} priority className="marketing-logo-img" />
         </Link>
 
         <div className="marketing-nav-links">
