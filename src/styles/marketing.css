@@ -131,9 +131,6 @@
   object-fit: contain;
 }
 
-.logo-light { display: block !important; }
-.logo-dark { display: none !important; }
-
 .marketing-nav-links {
   display: flex;
   align-items: center;
