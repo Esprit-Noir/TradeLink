@@ -76,6 +76,7 @@ interface ChallengeSnapshot {
 
 interface EquityCurveChartProps {
   snapshots?: ChallengeSnapshot[]
+  equityData?: EquityPoint[]
   initialBalance?: number
   currentBalance?: number
   maxDrawdownPct?: number
@@ -87,6 +88,7 @@ interface EquityCurveChartProps {
 
 export function EquityCurveChart({
   snapshots,
+  equityData,
   initialBalance: propInitial,
   currentBalance: propCurrent,
   maxDrawdownPct,
@@ -102,6 +104,16 @@ export function EquityCurveChart({
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    if (equityData && equityData.length > 0) {
+      const initial = propInitial ?? equityData[0]?.equity ?? 0
+      const current = propCurrent ?? equityData[equityData.length - 1]?.equity ?? 0
+      const maxDD = equityData.reduce((m, p) => Math.max(m, p.drawdown ?? 0), 0)
+      const curDD = equityData.length > 0 ? (equityData[equityData.length - 1].drawdown ?? 0) : 0
+      setRawData({ data: equityData, initialBalance: initial, currentBalance: current, maxDrawdown: maxDD, currentDrawdown: curDD })
+      setLoading(false)
+      return
+    }
+
     if (snapshots && snapshots.length > 0) {
       let runningHigh = propInitial ?? snapshots[0].endBalance
       const points: EquityPoint[] = snapshots.map(s => {
@@ -144,7 +156,7 @@ export function EquityCurveChart({
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [snapshots, propInitial, propCurrent, maxDDLevel, searchParams])
+  }, [equityData, snapshots, propInitial, propCurrent, maxDDLevel, searchParams])
 
   const filteredData = useMemo(() => {
     if (!rawData?.data.length) return []

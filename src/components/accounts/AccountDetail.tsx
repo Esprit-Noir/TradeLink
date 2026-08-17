@@ -182,11 +182,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
         </div>
       ) : (
         <EquityCurveChart
-          snapshots={equityCurve.map((p: any) => ({
-            date: p.date,
-            endBalance: Number(p.equity),
-            lowestEquity: Number(p.equity),
-          }))}
+          equityData={equityCurve}
           initialBalance={initialBalance}
           currentBalance={stats.currentEquity}
           maxDrawdownPct={stats.maxDrawdownPct}
