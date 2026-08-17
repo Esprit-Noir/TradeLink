@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { CalendarView } from "@/components/calendar/CalendarView"
 import { CalendarFilter } from "@/components/calendar/CalendarFilter"
@@ -16,7 +17,9 @@ export default async function CalendarPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const session = await auth()
-  if (!session?.user?.id) return null
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
 
   const searchParamsObj = await searchParams
   const accountIdParam = typeof searchParamsObj?.accountId === "string" ? searchParamsObj.accountId : "all"

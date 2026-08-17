@@ -20,7 +20,7 @@ export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibl
   const show = (key: string) => visibleColumns ? visibleColumns[key] !== false : true
 
   const handleRowClick = () => {
-    const params = new URLSearchParams(searchParams as any)
+    const params = new URLSearchParams(searchParams.toString())
     params.set("tradeId", trade.id)
     router.push(`${pathname}?${params.toString()}`)
   }
@@ -91,7 +91,10 @@ export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibl
       {show("setupTags") && (
         <td>
           {trade.setupTags && trade.setupTags.length > 0 ? (
-            <span className="badge badge-neutral" style={{ fontSize: "0.72rem" }}>{trade.setupTags[0]}</span>
+            <span className="badge badge-neutral" style={{ fontSize: "0.72rem" }}>
+              {trade.setupTags[0]}
+              {trade.setupTags.length > 1 && <span style={{ opacity: 0.6 }}> +{trade.setupTags.length - 1}</span>}
+            </span>
           ) : (
             <span style={{ color: "var(--color-gray-600)" }}>—</span>
           )}
