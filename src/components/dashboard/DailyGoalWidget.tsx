@@ -40,7 +40,7 @@ export function DailyGoalWidget({ todayPnl, initialGoal }: Props) {
     <div className="card" style={{ padding: "1.25rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
         <div>
-          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.25rem" }}>
+          <div className="section-label">
             Daily Objective
           </div>
           {goal !== null ? (
@@ -59,7 +59,8 @@ export function DailyGoalWidget({ todayPnl, initialGoal }: Props) {
           )}
           <button
             onClick={() => { setEditing(!editing); setEditValue(goal?.toString() || "") }}
-            style={{ background: "none", border: "1px solid var(--color-gray-800)", borderRadius: "6px", padding: "0.25rem 0.5rem", cursor: "pointer", fontSize: "0.75rem", color: "var(--color-gray-400)" }}
+            className="btn btn-secondary"
+            style={{ padding: "0.25rem 0.5rem", fontSize: "0.75rem" }}
           >
             {editing ? "Cancel" : goal !== null ? "Edit" : "Set goal"}
           </button>
@@ -87,17 +88,14 @@ export function DailyGoalWidget({ todayPnl, initialGoal }: Props) {
       {goal !== null && goal > 0 && (
         <>
           {/* Progress Bar */}
-          <div style={{ background: "var(--color-gray-800)", borderRadius: "6px", height: "8px", overflow: "hidden", marginBottom: "0.75rem" }}>
-            <div style={{
-              height: "100%",
+          <div className="progress-bar">
+            <div className="progress-bar-fill" style={{
               width: `${Math.max(0, progress)}%`,
-              borderRadius: "6px",
               background: isAchieved
                 ? "var(--color-profit)"
                 : isNegative
                 ? "var(--color-loss)"
                 : `linear-gradient(90deg, var(--color-brand-600), var(--color-brand-400))`,
-              transition: "width 800ms cubic-bezier(0.4, 0, 0.2, 1)",
             }} />
           </div>
 

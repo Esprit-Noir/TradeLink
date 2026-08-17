@@ -73,7 +73,7 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
           formatter={(value: any) => [formatCurrency(Number(value)), "P&L"]}
           labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.25rem" }}
         />
-        <Bar dataKey="pnl" radius={[4, 4, 4, 4]}>
+        <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
           {data.map((entry, index) => (
             <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
           ))}

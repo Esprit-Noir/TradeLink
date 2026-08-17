@@ -61,7 +61,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
   return (
     <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
       {showCustom && (
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", background: "var(--gray-900)", padding: "0.25rem 0.5rem", borderRadius: "8px", border: "1px solid var(--gray-800)" }}>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", background: "var(--color-gray-900)", padding: "0.25rem 0.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
           <input
             type="date"
             className="input"
@@ -69,7 +69,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
             value={startDate}
             onChange={e => setStartDate(e.target.value)}
           />
-          <span style={{ color: "var(--gray-500)", fontSize: "0.8rem" }}>to</span>
+          <span style={{ color: "var(--color-gray-500)", fontSize: "0.8rem" }}>to</span>
           <input
             type="date"
             className="input"
@@ -88,7 +88,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
         </div>
       )}
       {accounts.length > 1 && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
           <Wallet size={14} style={{ color: "var(--color-gray-500)" }} />
           <select
             className="input select"

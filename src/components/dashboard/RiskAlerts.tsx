@@ -31,7 +31,7 @@ export function RiskAlerts() {
   }, [])
 
   if (loading) {
-    return <div className="card loading-skeleton" style={{ height: "140px" }} />
+    return <div className="card skeleton" style={{ height: "140px" }} />
   }
 
   const icon = (sev: string) => {

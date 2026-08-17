@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { resolveAccountScope } from "@/lib/active-account"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { cookies } from "next/headers"
+import Link from "next/link"
 
 export async function RecentTradesTable({
   dateRange,
@@ -57,33 +58,41 @@ export async function RecentTradesTable({
           {trades.map((t) => (
             <tr key={t.id}>
               <td>
-                <div style={{ fontWeight: 500, color: "var(--color-gray-200)" }}>
-                  {formatDateWithTimezone(t.exitAt ?? t.entryAt, user?.timezone)}
-                </div>
-                <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-                  {new Date(t.exitAt ?? t.entryAt).toLocaleTimeString([], { timeZone: user?.timezone, hour: '2-digit', minute: '2-digit' })}
-                </div>
+                <Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <div style={{ fontWeight: 500, color: "var(--color-gray-200)" }}>
+                    {formatDateWithTimezone(t.exitAt ?? t.entryAt, user?.timezone)}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
+                    {new Date(t.exitAt ?? t.entryAt).toLocaleTimeString([], { timeZone: user?.timezone, hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </Link>
               </td>
               <td>
-                <span style={{ fontWeight: 600 }}>{t.symbol}</span>
-                <span style={{ marginLeft: "0.5rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
-                  {t.instrumentType}
-                </span>
+                <Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <span style={{ fontWeight: 600 }}>{t.symbol}</span>
+                  <span style={{ marginLeft: "0.5rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
+                    {t.instrumentType}
+                  </span>
+                </Link>
               </td>
               <td>
-                <span className={`badge ${t.side === 'LONG' ? 'badge-profit' : 'badge-loss'}`}>
-                  {t.side}
-                </span>
+                <Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <span className={`badge ${t.side === 'LONG' ? 'badge-profit' : 'badge-loss'}`}>
+                    {t.side}
+                  </span>
+                </Link>
               </td>
-              <td>{formatCurrency(Number(t.entryPrice), currency, false, 2)}</td>
-              <td>{t.exitPrice ? formatCurrency(Number(t.exitPrice), currency, false, 2) : "—"}</td>
+              <td><Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>{formatCurrency(Number(t.entryPrice), currency, false, 2)}</Link></td>
+              <td><Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>{t.exitPrice ? formatCurrency(Number(t.exitPrice), currency, false, 2) : "—"}</Link></td>
               <td style={{ textAlign: "right" }}>
-                <span style={{ 
-                  fontWeight: 600, 
-                  color: Number(t.netPnl) > 0 ? "var(--color-profit)" : Number(t.netPnl) < 0 ? "var(--color-loss)" : "inherit" 
-                }}>
-                  {formatCurrency(Number(t.netPnl), currency, true, 2)}
-                </span>
+                <Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>
+                  <span style={{ 
+                    fontWeight: 600, 
+                    color: Number(t.netPnl) > 0 ? "var(--color-profit)" : Number(t.netPnl) < 0 ? "var(--color-loss)" : "inherit" 
+                  }}>
+                    {formatCurrency(Number(t.netPnl), currency, true, 2)}
+                  </span>
+                </Link>
               </td>
             </tr>
           ))}

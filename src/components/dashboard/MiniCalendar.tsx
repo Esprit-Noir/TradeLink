@@ -51,19 +51,19 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
 
   const colors = isDark
     ? {
-        profitBg: "#064e3b",
-        profitBorder: "#047857",
-        profitText: "#34d399",
-        lossBg: "#7f1d1d",
-        lossBorder: "#b91c1c",
-        lossText: "#f87171",
+        profitBg: "rgba(16,185,129,0.12)",
+        profitBorder: "rgba(16,185,129,0.3)",
+        profitText: "var(--color-profit)",
+        lossBg: "rgba(239,68,68,0.12)",
+        lossBorder: "rgba(239,68,68,0.3)",
+        lossText: "var(--color-loss)",
       }
     : {
-        profitBg: "#d1fae5",
-        profitBorder: "#34d399",
+        profitBg: "rgba(16,185,129,0.1)",
+        profitBorder: "rgba(16,185,129,0.25)",
         profitText: "#065f46",
-        lossBg: "#fee2e2",
-        lossBorder: "#f87171",
+        lossBg: "rgba(239,68,68,0.1)",
+        lossBorder: "rgba(239,68,68,0.25)",
         lossText: "#991b1b",
       }
 
@@ -140,20 +140,17 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
             <div
               key={cell.key}
               onClick={() => router.push(`/calendar`)}
+              className="calendar-cell"
               style={{
                 background: bgColor,
                 border: cell.isToday ? "2px solid var(--color-brand-500)" : `1px solid ${borderColor}`,
                 borderRadius: "6px",
-                minHeight: "90px",
-                padding: "0.6rem 0.7rem",
+                minHeight: "72px",
+                padding: "0.5rem 0.6rem",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                cursor: "pointer",
-                transition: "transform 0.12s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)" }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)" }}
             >
               <span style={{ fontSize: "0.8rem", fontWeight: 600, color: cell.isToday ? "var(--color-brand-400)" : "var(--color-gray-500)", textAlign: "right" }}>
                 {cell.day}

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma"
 import { MS_PER_DAY } from "@/lib/constants"
 import { EquityCurveChart, SetupBarChart, HourHeatmap } from "@/components/dashboard/LazyCharts"
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar"
+import Link from "next/link"
 
 export const metadata = {
   title: "Dashboard",
@@ -186,23 +187,23 @@ export default async function DashboardPage({
       </Suspense>
 
       {/* Goals & Streak */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem", marginBottom: "1rem" }}>
+      <div className="dashboard-row-equal">
         <MonthlyGoalWidget monthPnl={monthPnl} initialGoal={monthlyGoal} monthLabel={monthLabel} />
 
         <div className="card" style={{ padding: "1.25rem" }}>
-          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "1rem" }}>
+          <div className="section-label" style={{ marginBottom: "1rem" }}>
             Month Stats — {monthLabel}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
             <div style={{ flex: "1 1 120px" }}>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>🔥 Green streak</div>
+              <div className="stat-label">🔥 Green streak</div>
               <div style={{ fontSize: "1.3rem", fontWeight: 800, color: streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)" }}>
                 {streak}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> day{streak !== 1 ? "s" : ""}</span>
               </div>
               <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>consecutive winning days</div>
             </div>
             <div style={{ flex: "1 1 120px" }}>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>🟢 Green days</div>
+              <div className="stat-label">🟢 Green days</div>
               <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--color-gray-100)" }}>
                 {greenDaysThisMonth}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> this month</span>
               </div>
@@ -211,7 +212,7 @@ export default async function DashboardPage({
               </div>
             </div>
             <div style={{ flex: "1 1 120px" }}>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>🏆 Best day</div>
+              <div className="stat-label">🏆 Best day</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-profit)" }}>
                 {bestDay ? `+$${bestDay.pnl.toFixed(2)}` : "—"}
               </div>
@@ -220,7 +221,7 @@ export default async function DashboardPage({
               </div>
             </div>
             <div style={{ flex: "1 1 120px" }}>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600, marginBottom: "0.25rem" }}>⚠️ Worst day</div>
+              <div className="stat-label">⚠️ Worst day</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-loss)" }}>
                 {worstDay ? `-$${Math.abs(worstDay.pnl).toFixed(2)}` : "—"}
               </div>
@@ -233,7 +234,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Charts Row 1: Daily P&L and Win Rate */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+      <div className="dashboard-row-2-1">
         <div className="chart-card">
           <div className="chart-title">Daily Net P&L</div>
           <div style={{ height: 260 }}>
@@ -256,7 +257,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Charts Row 2: Equity Curve & Setups */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+      <div className="dashboard-row-2-1">
         <Suspense fallback={
           <div className="chart-card">
             <div className="chart-title">Equity Curve</div>

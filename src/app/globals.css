@@ -2511,7 +2511,88 @@
 .bt-past-row span { color: var(--color-gray-500); font-size: 0.62rem; text-transform: uppercase; flex: 1; }
 .bt-past-row b { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-/* ── Responsive ── */
+/* ── Dashboard Utility Classes ──────────────────────────── */
+.section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--color-gray-500);
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-row-2-1 {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.dashboard-row-equal {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  background: var(--color-gray-800);
+  border-radius: 6px;
+  height: 6px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 800ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Heatmap custom tooltip */
+.heatmap-tooltip {
+  position: fixed;
+  z-index: 50;
+  pointer-events: none;
+  background: var(--color-gray-900);
+  border: 1px solid var(--color-gray-700);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--color-gray-200);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+}
+
+/* Calendar cell hover */
+.calendar-cell {
+  transition: transform 0.12s ease;
+  cursor: pointer;
+}
+.calendar-cell:hover {
+  transform: scale(1.05);
+}
+
+/* Chart card transitions */
+.chart-card {
+  transition: border-color 0.2s ease;
+}
+
+/* Responsive ── */
 @media (max-width: 1100px) {
   .bt-main { grid-template-columns: 1fr; }
   .bt-panel { max-height: none; }
@@ -2519,6 +2600,15 @@
 @media (max-width: 768px) {
   .bt-ohlc { display: none; }
   .bt-topbar { gap: 0.45rem; }
+  .dashboard-row-2-1 {
+    grid-template-columns: 1fr;
+  }
+  .dashboard-row-equal {
+    grid-template-columns: 1fr;
+  }
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* Theme logos */

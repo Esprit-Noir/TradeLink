@@ -1,8 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useSearchParams } from "next/navigation"
-import { Tooltip, ResponsiveContainer } from "recharts"
 
 type HeatmapCell = { day: number; hour: number; pnl: number }
 
@@ -11,6 +10,7 @@ const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 export function HourHeatmap() {
   const [data, setData] = useState<HeatmapCell[]>([])
   const [loading, setLoading] = useState(true)
+  const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -98,24 +98,30 @@ export function HourHeatmap() {
                 return (
                   <div 
                     key={`${d}-${h}`} 
-                    className="heatmap-block"
+                    className="heatmap-cell"
                     style={{ 
                       aspectRatio: "1/1",
-                      borderRadius: "2px",
+                      borderRadius: "3px",
                       background: pnl === 0 
                         ? "var(--color-gray-800)" 
                         : isProfit ? "var(--color-profit)" : "var(--color-loss)",
                       opacity: pnl === 0 ? 1 : intensity,
                       position: "relative",
                       cursor: "pointer",
-                      transition: "transform 0.1s"
+                      transition: "transform 0.1s, opacity 0.1s"
                     }}
-                    title={`${FULL_DAYS[d]} ${formatHour(h)}\n${formatCurrency(pnl)}`}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = "scale(1.2)"
+                      const rect = e.currentTarget.getBoundingClientRect()
+                      setTooltip({
+                        x: rect.left + rect.width / 2,
+                        y: rect.top - 8,
+                        text: `${FULL_DAYS[d]} ${formatHour(h)}\n${formatCurrency(pnl)}`
+                      })
+                      e.currentTarget.style.transform = "scale(1.3)"
                       e.currentTarget.style.zIndex = "10"
                     }}
                     onMouseLeave={(e) => {
+                      setTooltip(null)
                       e.currentTarget.style.transform = "scale(1)"
                       e.currentTarget.style.zIndex = "1"
                     }}
@@ -156,6 +162,24 @@ export function HourHeatmap() {
         <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-profit)", opacity: 0.35 }} />
         <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-profit)" }} />
       </div>
+
+      {/* Custom Tooltip */}
+      {tooltip && (
+        <div 
+          className="heatmap-tooltip"
+          style={{ 
+            left: tooltip.x,
+            top: tooltip.y,
+            transform: "translate(-50%, -100%)"
+          }}
+        >
+          {tooltip.text.split("\n").map((line, i) => (
+            <div key={i} style={{ color: i === 1 ? "var(--color-gray-100)" : "var(--color-gray-400)" }}>
+              {line}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
