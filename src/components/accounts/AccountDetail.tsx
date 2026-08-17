@@ -10,12 +10,7 @@ import {
 import { ArrowLeft, Wallet, TrendingUp, Target, Activity, Pencil, Check } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
 import { toast } from "sonner"
-import dynamic from "next/dynamic"
-
-const EquityCurveChart = dynamic(
-  () => import("@/components/dashboard/EquityCurveChart").then(m => ({ default: m.EquityCurveChart })),
-  { ssr: false }
-)
+import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
 
 export function AccountDetail({ accountId }: { accountId: string }) {
   const router = useRouter()
