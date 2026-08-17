@@ -127,10 +127,10 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
       dark: 1,
       diffuse: 1.2,
       mapSamples: 20000,
-      mapBrightness: 8,
-      baseColor: [0.04, 0.08, 0.18],
+      mapBrightness: 6,
+      baseColor: [0.15, 0.15, 0.3],
       markerColor: [1, 1, 1],
-      glowColor: [0.1, 0.25, 0.55],
+      glowColor: [0.2, 0.2, 0.6],
       markers: initialMarkers,
     } as any)
     
@@ -296,9 +296,9 @@ export function WorldSessionsMap() {
       }}>
         {/* Grid pattern */}
         <div style={{
-          position: "absolute", inset: 0, opacity: 0.2, pointerEvents: "none",
-          backgroundImage: "linear-gradient(var(--color-gray-800) 1px, transparent 1px), linear-gradient(90deg, var(--color-gray-800) 1px, transparent 1px)",
-          backgroundSize: "20px 20px"
+          position: "absolute", inset: 0, opacity: 0.3, pointerEvents: "none", zIndex: 5,
+          backgroundImage: "linear-gradient(var(--color-gray-700) 1px, transparent 1px), linear-gradient(90deg, var(--color-gray-700) 1px, transparent 1px)",
+          backgroundSize: "24px 24px"
         }} />
         
         {mounted && (
