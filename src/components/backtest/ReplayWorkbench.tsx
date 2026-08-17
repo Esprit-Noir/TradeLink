@@ -319,7 +319,7 @@ const INITIAL_STATE: ReplayState = {
 }
 
 /** Number of candles shown at once when a session loads/resets. */
-const INITIAL_WINDOW = 120
+const INITIAL_WINDOW = 249
 
 const DEFAULT_FROM = Math.floor(Date.now() / 1000) - 365 * 86400
 const DEFAULT_TO = Math.floor(Date.now() / 1000)
