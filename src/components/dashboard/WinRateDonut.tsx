@@ -35,6 +35,7 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
               cy="50%"
               innerRadius="65%"
               outerRadius="90%"
+              cornerRadius={8}
               stroke="none"
               dataKey="value"
               animationBegin={0}
