@@ -168,7 +168,7 @@ export function AdvancedStatsClient() {
                 <DrawdownStat label="Longest" value={drawdown.maxDrawdownDurationDays != null ? `${drawdown.maxDrawdownDurationDays}d` : "—"} sub={drawdown.maxDrawdownStart || ""} />
                 <DrawdownStat label="Recovered" value={drawdown.maxDrawdownRecovery || "Still in DD"} />
               </div>
-              <div style={{ maxHeight: "180px", overflowY: "auto" }}>
+              <div>
                 <table className="data-table compact">
                   <thead>
                     <tr>
@@ -179,7 +179,7 @@ export function AdvancedStatsClient() {
                     </tr>
                   </thead>
                   <tbody>
-                    {drawdownEpisodes.slice(0, 8).map((ep: any, i: number) => (
+                    {drawdownEpisodes.map((ep: any, i: number) => (
                       <tr key={i}>
                         <td style={{ fontSize: "0.78rem" }}>{ep.startDate || "—"}</td>
                         <td style={{ fontSize: "0.78rem", color: ep.endDate ? "var(--color-gray-500)" : "var(--color-warning)" }}>{ep.endDate || "active"}</td>

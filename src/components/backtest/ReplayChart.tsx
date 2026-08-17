@@ -106,6 +106,7 @@ export function ReplayChart({
   const dragRef = useRef<{ mode: "sl" | "tp" } | null>(null)
   const lastSelectedTradeIdRef = useRef<string | null>(null)
   const lastScrollTimeRef = useRef<number>(0)
+  const prevCandleLenRef = useRef<number>(0)
 
   // Live refs so subscription callbacks never read stale props
   const candlesRef = useRef(candles)
@@ -248,6 +249,44 @@ export function ReplayChart({
   useEffect(() => {
     const pal = PALETTES[theme]
     const cs = candleSeriesRef.current
+    const vs = volumeSeriesRef.current
+    const prevLen = prevCandleLenRef.current
+    const currLen = candles.length
+
+    // ── Incremental update (playback tick: new candles appended) ─────────────
+    // Use update() for each newly added candle to avoid the O(N) setData()
+    // overhead on every playback frame. Works for speed=1 and speed>1.
+    if (prevLen > 0 && currLen > prevLen && currLen > 0) {
+      for (let i = prevLen; i < currLen; i++) {
+        const c = candles[i]!
+        if (cs) {
+          cs.update({ time: c.time as Time, open: c.open, high: c.high, low: c.low, close: c.close })
+        }
+        if (vs && indicators.volume) {
+          vs.update({ time: c.time as Time, value: c.volume, color: c.close >= c.open ? pal.volUp : pal.volDown })
+        }
+        // Indicators: append point to each visible line
+        const lineMap = lineSeriesRef.current
+        const n = i
+        const indSpecs: (keyof IndicatorSeries)[] = ["ema9", "ema20", "ema50", "ema200", "vwap", "bbUpper", "bbMiddle", "bbLower"]
+        for (const key of indSpecs) {
+          const s = lineMap.get(key)
+          if (!s) continue
+          const v = indicatorData[key][n]
+          if (v != null) s.update({ time: c.time as Time, value: v })
+        }
+        const rs = rsiSeriesRef.current
+        if (rs && indicators.rsi) {
+          const rv = indicatorData.rsi[n]
+          if (rv != null) rs.update({ time: c.time as Time, value: rv })
+        }
+      }
+      prevCandleLenRef.current = currLen
+      return
+    }
+
+    // ── Full reload (initial load or scrub / reset) ───────────────────────────
+    prevCandleLenRef.current = currLen
     if (cs) {
       cs.setData(
         candles.map((c) => ({
@@ -259,7 +298,6 @@ export function ReplayChart({
         })),
       )
     }
-    const vs = volumeSeriesRef.current
     if (vs) {
       if (indicators.volume) {
         vs.setData(
@@ -362,25 +400,34 @@ export function ReplayChart({
       }
     }
 
-    // Scroll to newest bar during playback
+    // Scroll to newest bar after full reload
     const chart = chartRef.current
-    const lastTime = candles.length > 0 ? candles[candles.length - 1]!.time : 0
-    if (chart && lastTime > lastScrollTimeRef.current) {
+    if (chart && candles.length > 0) {
       chart.timeScale().scrollToRealTime()
     }
-    lastScrollTimeRef.current = Math.max(lastScrollTimeRef.current, lastTime)
   }, [candles, indicatorData, indicators, theme])
 
-  // ── scroll to follow playback ────────────────────────────────────────────────
+  // ── scroll to follow playback ─────────────────────────────────────────────────
+  // Uses scrollToPosition to keep the current candle in view while always
+  // leaving ~15 bars of empty space to the right for context.
   useLayoutEffect(() => {
     const chart = chartRef.current
     if (!chart || candles.length === 0 || playbackIndex == null) return
-    const total = candles.length
-    const idx = Math.min(playbackIndex, total - 1)
-    const windowSize = 200
-    const from = Math.max(0, idx - Math.floor(windowSize * 0.7))
-    const to = Math.min(total - 1, from + windowSize)
-    chart.timeScale().setVisibleLogicalRange({ from, to })
+    const ts = chart.timeScale()
+    const totalBars = candles.length
+    const idx = Math.min(playbackIndex, totalBars - 1)
+
+    // Work out how many bars fit on screen
+    const visRange = ts.getVisibleLogicalRange()
+    const windowSize = visRange ? Math.round(visRange.to - visRange.from) : 200
+    const rightPad = 15 // bars of empty space kept to the right of current bar
+
+    // The "target" position: current bar should sit windowSize - rightPad from the left edge
+    const targetFrom = idx - (windowSize - rightPad)
+    ts.setVisibleLogicalRange({
+      from: targetFrom,
+      to: targetFrom + windowSize,
+    })
   }, [playbackIndex])
 
   // ── markers (entries / exits) ────────────────────────────────────────────────

@@ -477,9 +477,13 @@ export function ReplayWorkbench({
   // ── derived display ──────────────────────────────────────────────────────────
   const cursorTime = state.data[state.currentIndex]?.time ?? null
   const useSub = !!config.subTf && state.subData.length > 0
-  const displayed = useSub
-    ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
-    : state.data
+  const displayed = useMemo(
+    () => useSub
+      ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
+      : state.data,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [useSub, state.subData, state.data, cursorTime]
+  )
 
   const mainInd = useMemo(() => computeIndicatorSeries(state.data), [state.data])
   const subInd = useMemo(() => (config.subTf ? computeIndicatorSeries(state.subData) : null), [state.subData, config.subTf])
