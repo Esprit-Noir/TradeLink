@@ -421,11 +421,12 @@ export function ReplayWorkbench({
       const tick = chartData[idx] ?? state.data[idx]
       if (tick) chart.updateTick(tick)
     } else {
-      // Slow path: jump (scrub, reset, step-back) → full setData
+      // Slow path: jump (scrub, reset, step-back, initial load) → full setData
       chart.setData(chartData.slice(0, idx + 1))
     }
     prevIndexRef.current = idx
-  }, [state.currentIndex, state.data, state.subData, config.subTf])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.currentIndex, state.data, state.subData, config.subTf, state.loadToken])
 
   // ── data loading ─────────────────────────────────────────────────────────────
   const load = useCallback(
@@ -767,7 +768,6 @@ export function ReplayWorkbench({
               ) : (
                 <ReplayChart
                   ref={chartRef}
-                  key={state.loadToken}
                   indicatorData={indicatorData}
                   indicators={state.indicators}
                   positions={state.positions}
