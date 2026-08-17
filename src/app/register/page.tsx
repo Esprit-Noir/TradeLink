@@ -41,7 +41,7 @@ export default function RegisterPage() {
       })
 
       if (!signInRes?.error) {
-        router.push("/dashboard")
+        router.push("/overview")
       } else {
         router.push("/login")
       }

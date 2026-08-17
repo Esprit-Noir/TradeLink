@@ -9,7 +9,7 @@ import { ArrowLeft } from "lucide-react"
 function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams?.get("callbackUrl") || "/dashboard"
+  const callbackUrl = searchParams?.get("callbackUrl") || "/overview"
   
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
