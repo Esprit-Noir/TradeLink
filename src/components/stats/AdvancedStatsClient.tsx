@@ -144,8 +144,7 @@ export function AdvancedStatsClient() {
 
       {/* Equity Curve + Drawdown Episodes */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
-        <div className="chart-card" style={{ padding: "1.25rem" }}>
-          <div className="chart-title" style={{ marginBottom: "1rem" }}>Equity Curve</div>
+        <div>
           {equityCurve && equityCurve.length > 1 ? (
             <EquityCurveChart
               equityData={equityCurve}
