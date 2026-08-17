@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState, Suspense } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
@@ -181,12 +181,14 @@ export function AccountDetail({ accountId }: { accountId: string }) {
           </div>
         </div>
       ) : (
-        <EquityCurveChart
-          equityData={equityCurve}
-          initialBalance={initialBalance}
-          currentBalance={stats.currentEquity}
-          maxDrawdownPct={stats.maxDrawdownPct}
-        />
+        <Suspense fallback={<div className="chart-card"><div className="chart-title">Equity Curve</div><div className="skeleton" style={{ height: 280 }} /></div>}>
+          <EquityCurveChart
+            equityData={equityCurve}
+            initialBalance={initialBalance}
+            currentBalance={stats.currentEquity}
+            maxDrawdownPct={stats.maxDrawdownPct}
+          />
+        </Suspense>
       )}
 
       {/* Daily P&L */}
