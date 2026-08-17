@@ -111,7 +111,7 @@ function RealisticGlobe({ now, summer }: { now: Date, summer: boolean }) {
     globe.controls().enablePan = false
 
     // Point of view
-    globe.pointOfView({ lat: 20, lng: -30, altitude: 2.2 })
+    globe.pointOfView({ lat: 20, lng: -30, altitude: 1.8 })
   }, [])
 
   // Markers data
@@ -203,7 +203,7 @@ export function WorldSessionsMap() {
 
       {/* World Map Area */}
       <div style={{ 
-        position: "relative", width: "100%", flex: "1 1 0", minHeight: 300,
+        position: "relative", width: "100%", flex: "1 1 0", minHeight: 420,
         borderRadius: 12, overflow: "hidden", marginBottom: 16 
       }}>
         {mounted && <RealisticGlobe now={now} summer={summer} />}
