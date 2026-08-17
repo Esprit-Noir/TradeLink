@@ -5,6 +5,7 @@ import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { TradesFilter } from "@/components/trades/TradesFilter"
 import { TradesTable } from "@/components/trades/TradesTable"
 import { TradeDetailsDrawer } from "@/components/trades/TradeDetailsDrawer"
+import { TradesEquityMini } from "@/components/trades/TradesEquityMini"
 import { cookies } from "next/headers"
 
 export const metadata = {
@@ -153,6 +154,10 @@ export default async function TradesPage({
 
       <Suspense fallback={<div className="skeleton" style={{ height: 80, marginBottom: "1.5rem" }} />}>
         <TradesFilter accounts={accounts} />
+      </Suspense>
+
+      <Suspense fallback={<div className="skeleton" style={{ height: 80, marginBottom: "1rem" }} />}>
+        <TradesEquityMini />
       </Suspense>
 
       <Suspense fallback={<div className="skeleton" style={{ height: 400, marginBottom: "1.5rem" }} />}>
