@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import { formatCurrency } from "@/lib/formatters"
 import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { TradesFilter } from "@/components/trades/TradesFilter"
 import { TradesTable } from "@/components/trades/TradesTable"
@@ -158,6 +159,33 @@ export default async function TradesPage({
       <Suspense fallback={<div className="skeleton" style={{ height: 80, marginBottom: "1.5rem" }} />}>
         <TradesFilter accounts={accounts} />
       </Suspense>
+
+      {/* Summary Bar */}
+      <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1rem", flexWrap: "wrap" }}>
+        <div className="card" style={{ padding: "0.75rem 1.25rem", flex: "1 1 120px", minWidth: 120 }}>
+          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, color: "var(--color-gray-500)", letterSpacing: "0.05em" }}>Trades</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{totals.count}</div>
+          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>{totals.wins}W / {totals.losses}L</div>
+        </div>
+        <div className="card" style={{ padding: "0.75rem 1.25rem", flex: "1 1 120px", minWidth: 120 }}>
+          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, color: "var(--color-gray-500)", letterSpacing: "0.05em" }}>Win Rate</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totals.count > 0 && (totals.wins / totals.count) >= 0.5 ? "var(--color-profit)" : "var(--color-loss)" }}>
+            {totals.count > 0 ? `${((totals.wins / totals.count) * 100).toFixed(1)}%` : "—"}
+          </div>
+        </div>
+        <div className="card" style={{ padding: "0.75rem 1.25rem", flex: "1 1 120px", minWidth: 120 }}>
+          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, color: "var(--color-gray-500)", letterSpacing: "0.05em" }}>Net P&L</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totals.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+            {formatCurrency(totals.netPnl, baseCurrency ?? "USD", true, 2)}
+          </div>
+        </div>
+        <div className="card" style={{ padding: "0.75rem 1.25rem", flex: "1 1 120px", minWidth: 120 }}>
+          <div style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, color: "var(--color-gray-500)", letterSpacing: "0.05em" }}>Avg / Trade</div>
+          <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totals.count > 0 && (totals.netPnl / totals.count) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+            {totals.count > 0 ? formatCurrency(totals.netPnl / totals.count, baseCurrency ?? "USD", true, 2) : "—"}
+          </div>
+        </div>
+      </div>
 
       <Suspense fallback={<div className="skeleton" style={{ height: 80, marginBottom: "1rem" }} />}>
         <TradesEquityMini />
