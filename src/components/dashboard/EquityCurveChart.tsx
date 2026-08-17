@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useMemo } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart, Bar,
@@ -86,7 +86,7 @@ interface EquityCurveChartProps {
   showTargetLine?: boolean
 }
 
-export function EquityCurveChart({
+export const EquityCurveChart = React.memo(function EquityCurveChart({
   snapshots,
   equityData,
   initialBalance: propInitial,
@@ -453,7 +453,7 @@ export function EquityCurveChart({
       </div>
     </div>
   )
-}
+})
 
 export function EquityCurveDashboard() {
   const searchParams = useSearchParams()

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useRef } from "react"
+import { useEffect, useLayoutEffect, useRef, memo } from "react"
 import {
   createChart,
   createSeriesMarkers,
@@ -77,7 +77,7 @@ function fmtPrice(p: number): string {
   return p.toFixed(8)
 }
 
-export function ReplayChart({
+export const ReplayChart = memo(function ReplayChart({
   candles,
   indicatorData,
   indicators,
@@ -107,12 +107,15 @@ export function ReplayChart({
   const lastSelectedTradeIdRef = useRef<string | null>(null)
   const lastScrollTimeRef = useRef<number>(0)
   const prevCandleLenRef = useRef<number>(0)
+  const rafRef = useRef<number | null>(null)
+  const userScrolledRef = useRef<boolean>(false)
 
   // Live refs so subscription callbacks never read stale props
   const candlesRef = useRef(candles)
   const activeTradeRef = useRef(selectedTrade)
   const onUpdateLevelsRef = useRef(onUpdateLevels)
   const indicatorsRef = useRef(indicators)
+  const pal = PALETTES[theme]
 
   useEffect(() => {
     candlesRef.current = candles
@@ -186,10 +189,18 @@ export function ReplayChart({
     })
     ro.observe(container)
 
+    // Detect manual scroll: mark so auto-follow pauses
+    const handleVisibleRangeChange = () => {
+      userScrolledRef.current = true
+    }
+    chart.timeScale().subscribeVisibleLogicalRangeChange(handleVisibleRangeChange)
+
     onChartReady?.(chart)
 
     return () => {
       ro.disconnect()
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
+      chart.timeScale().unsubscribeVisibleLogicalRangeChange(handleVisibleRangeChange)
       chart.remove()
       chartRef.current = null
       candleSeriesRef.current = null
@@ -620,7 +631,7 @@ export function ReplayChart({
     <div
       ref={containerRef}
       className="replay-chart"
-      style={{ width: "100%", height: "100%", position: "relative" }}
+      style={{ width: "100%", height: "100%", position: "relative", backgroundColor: "transparent" }}
     />
   )
-}
+})

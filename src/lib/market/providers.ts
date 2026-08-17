@@ -272,7 +272,7 @@ export const yahooProvider: MarketDataProvider = {
       interval,
     })) as { quotes?: YfQuoteRow[] }
 
-    const candles: Candle[] = (res.quotes ?? [])
+    const raw: Candle[] = (res.quotes ?? [])
       .filter((r) => r.date && r.open != null)
       .map((r) => ({
         time: Math.floor((r.date as Date).getTime() / 1000),
@@ -284,6 +284,31 @@ export const yahooProvider: MarketDataProvider = {
       }))
       .sort((a, b) => a.time - b.time)
       .filter((c) => c.time >= from && c.time <= to)
+
+    // ── Sanitize candles ───────────────────────────────────────────────────
+    // Yahoo sometimes emits candles with outlier high/low values (adjusted
+    // splits, corporate actions, missing bars) that appear as huge wicks.
+    // Reject any candle that fails basic OHLC sanity checks.
+    const seen = new Set<number>()
+    const candles: Candle[] = []
+    for (const c of raw) {
+      if (seen.has(c.time)) continue // dedupe
+      seen.add(c.time)
+      // All values must be finite and positive
+      if (!Number.isFinite(c.open) || !Number.isFinite(c.high) || !Number.isFinite(c.low) || !Number.isFinite(c.close)) continue
+      if (c.open <= 0 || c.high <= 0 || c.low <= 0 || c.close <= 0) continue
+      // OHLC invariant: high >= max(open, close) AND low <= min(open, close)
+      if (c.high < Math.max(c.open, c.close)) continue
+      if (c.low > Math.min(c.open, c.close)) continue
+      // Reject candles where the wick span exceeds 3× the body (extreme outlier)
+      const body = Math.abs(c.open - c.close)
+      const wick = c.high - c.low
+      if (body > 0 && wick > body * 50) continue // monstrous wick = bad data
+      // Reject if high/low spread is > 30% of close (likely an error for normal FX/index)
+      // Only applies for non-crypto (rough heuristic: price > 0.01)
+      if (c.close > 0.01 && wick / c.close > 0.30) continue
+      candles.push(c)
+    }
 
     return timeframe === "4h" ? aggregateCandles(candles, 4) : candles
   },

@@ -2639,6 +2639,59 @@
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  /* General */
+  .page-header { flex-direction: column; gap: 0.75rem; }
+  .page-title { font-size: 1.3rem; }
+  .page-subtitle { font-size: 0.78rem; }
+  .main-content { padding: 0.75rem; gap: 1rem; }
+
+  /* Charts */
+  .chart-card { padding: 1rem; }
+  .chart-title { font-size: 0.78rem; }
+
+  /* Stats page grids */
+  [style*="grid-template-columns: repeat(auto-fit, minmax(400px"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(auto-fit, minmax(300px"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(auto-fit, minmax(320px"] {
+    grid-template-columns: 1fr !important;
+  }
+  [style*="grid-template-columns: repeat(auto-fit, minmax(220px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  [style*="grid-template-columns: repeat(auto-fit, minmax(200px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  [style*="grid-template-columns: repeat(auto-fit, minmax(190px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  [style*="grid-template-columns: repeat(auto-fit, minmax(180px"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Equity curve chart height on mobile */
+  .chart-card [style*="height: 300"] {
+    height: 220px !important;
+  }
+
+  /* Tables */
+  .table-wrapper { overflow-x: auto; }
+  table.data-table { font-size: 0.78rem; }
+  table.data-table th,
+  table.data-table td { padding: 0.6rem 0.5rem; }
+
+  /* Stats filters */
+  [style*="padding: 0.75rem 1rem"][style*="border-radius: var(--radius-card)"] {
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.4rem !important;
+  }
+
+  /* KPI cards on stats */
+  .kpi-card { padding: 0.75rem; }
 }
 
 /* Theme logos */

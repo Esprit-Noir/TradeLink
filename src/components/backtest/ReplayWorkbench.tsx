@@ -492,6 +492,10 @@ export function ReplayWorkbench({
   const currentCandle = state.data[state.currentIndex]
 
   // ── actions ──────────────────────────────────────────────────────────────────
+  const handleChartReady = useCallback((chart: IChartApi) => {
+    chartRef.current = chart
+  }, [])
+
   const handleOrder = useCallback(
     (side: SimSide, levels?: { stopLoss?: number; takeProfit?: number }) => {
       const candle = state.data[state.currentIndex]
@@ -746,9 +750,7 @@ export function ReplayWorkbench({
                   closedTrades={state.closedTrades}
                   theme={theme}
                   playbackIndex={state.currentIndex}
-                  onChartReady={(chart) => {
-                    chartRef.current = chart
-                  }}
+                  onChartReady={handleChartReady}
                   onUpdateLevels={handleUpdateLevels}
                 />
               )}

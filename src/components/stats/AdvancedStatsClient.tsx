@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, AreaChart, Area } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
 import { Download, TrendingUp, TrendingDown, BarChart3, Target, Activity, AlertTriangle, Clock, Award } from "lucide-react"
@@ -65,12 +65,12 @@ export function AdvancedStatsClient() {
     load({ period, symbol, setup, side })
   }, [period, symbol, setup, side, load])
 
-  const apply = (patch: any) => {
+  const apply = useCallback((patch: any) => {
     if (patch.period !== undefined) setPeriod(patch.period)
     if (patch.symbol !== undefined) setSymbol(patch.symbol)
     if (patch.setup !== undefined) setSetup(patch.setup)
     if (patch.side !== undefined) setSide(patch.side)
-  }
+  }, [])
 
   if (loading) {
     return (
@@ -97,17 +97,17 @@ export function AdvancedStatsClient() {
 
   const { kpis, streaks, drawdown, drawdownEpisodes, equityCurve, rrDistribution, dowPerformance, hourPerformance, monthlyPerformance, topSymbols, topSetups, symbols, setups } = data
 
-  const rrData = Object.entries(rrDistribution).map(([name, value]) => ({ name, value }))
-  const dowData = dowPerformance.map((pnl: number, index: number) => ({
+  const rrData = useMemo(() => Object.entries(rrDistribution).map(([name, value]) => ({ name, value })), [rrDistribution])
+  const dowData = useMemo(() => dowPerformance.map((pnl: number, index: number) => ({
     name: dayNames[index].substring(0, 3),
     pnl,
-  })).filter((d: any, i: number) => !(d.pnl === 0 && (i === 0 || i === 6)))
-  const hourData = hourPerformance.map((pnl: number, h: number) => ({ hour: `${String(h).padStart(2, "0")}H`, pnl }))
-  const monthData = monthlyPerformance.map((m: any) => ({ name: m.month.slice(5), pnl: m.pnl }))
-  const worstSymbols = [...symbols].reverse().slice(0, 3)
-  const worstSetups = [...setups].reverse().slice(0, 3)
+  })).filter((d: any, i: number) => !(d.pnl === 0 && (i === 0 || i === 6))), [dowPerformance])
+  const hourData = useMemo(() => hourPerformance.map((pnl: number, h: number) => ({ hour: `${String(h).padStart(2, "0")}H`, pnl })), [hourPerformance])
+  const monthData = useMemo(() => monthlyPerformance.map((m: any) => ({ name: m.month.slice(5), pnl: m.pnl })), [monthlyPerformance])
+  const worstSymbols = useMemo(() => [...symbols].reverse().slice(0, 3), [symbols])
+  const worstSetups = useMemo(() => [...setups].reverse().slice(0, 3), [setups])
 
-  const exportBreakdown = () => {
+  const exportBreakdown = useCallback(() => {
     const rows = ["type,name,count,winRate%,netPnl"]
     symbols.forEach((s: any) => rows.push(`symbol,${s.name},${s.count},${s.winRate.toFixed(1)},${s.pnl.toFixed(2)}`))
     setups.forEach((s: any) => rows.push(`setup,${s.name},${s.count},${s.winRate.toFixed(1)},${s.pnl.toFixed(2)}`))
@@ -118,7 +118,7 @@ export function AdvancedStatsClient() {
     a.download = "stats-breakdown.csv"
     a.click()
     URL.revokeObjectURL(url)
-  }
+  }, [symbols, setups])
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>

@@ -15,11 +15,11 @@ const querySchema = z
   .refine((d) => d.to > d.from, { message: "to must be greater than from" })
 
 // Historical data is immutable, so cache entries never expire — only cap the size.
-const cache = new Map<string, Candle[]>()
+const memoryCache = new Map<string, Candle[]>()
 const CACHE_MAX = 800
 
 function cacheKey(q: MarketDataQuery): string {
-  return `${q.symbol}|${q.timeframe}|${q.from}|${q.to}`
+  return `v2|${q.symbol}|${q.timeframe}|${q.from}|${q.to}`
 }
 
 export async function GET(request: NextRequest) {
@@ -39,15 +39,15 @@ export async function GET(request: NextRequest) {
 
     const query: MarketDataQuery = parsed.data
     const key = cacheKey(query)
-    let candles = cache.get(key)
+    let candles = memoryCache.get(key)
     if (!candles) {
       const provider = getMarketDataProvider()
       candles = await provider.fetchCandles(query)
-      if (cache.size >= CACHE_MAX) {
-        const first = cache.keys().next().value
-        if (first !== undefined) cache.delete(first)
+      if (memoryCache.size >= CACHE_MAX) {
+        const first = memoryCache.keys().next().value
+        if (first !== undefined) memoryCache.delete(first)
       }
-      cache.set(key, candles)
+      memoryCache.set(key, candles)
     }
 
     const filtered = candles.filter((c) => c.time >= query.from && c.time <= query.to)

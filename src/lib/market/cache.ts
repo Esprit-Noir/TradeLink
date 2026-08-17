@@ -2,13 +2,13 @@ import { openDB, type IDBPDatabase } from "idb"
 import type { Candle } from "./types"
 
 const DB_NAME = "tradelink-market"
-const STORE = "candles"
+const STORE = "candles_v2"
 
 let dbPromise: Promise<IDBPDatabase> | null = null
 
 function getDb(): Promise<IDBPDatabase> {
   if (!dbPromise) {
-    dbPromise = openDB(DB_NAME, 1, {
+    dbPromise = openDB(DB_NAME, 2, {
       upgrade(db) {
         if (!db.objectStoreNames.contains(STORE)) {
           db.createObjectStore(STORE, { keyPath: "key" })
