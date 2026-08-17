@@ -39,6 +39,7 @@
     "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-globe.gl": "^2.38.0",
     "react-hook-form": "^7.85.0",
     "recharts": "^3.10.1",
     "sonner": "^2.0.8",
