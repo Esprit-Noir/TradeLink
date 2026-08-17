@@ -124,13 +124,13 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
       height: w * 2,
       phi: 0,
       theta: 0,
-      dark: 1,
-      diffuse: 1.2,
-      mapSamples: 16000,
-      mapBrightness: 6,
-      baseColor: [0.3, 0.3, 0.3],
+      dark: 0,
+      diffuse: 1.4,
+      mapSamples: 24000,
+      mapBrightness: 2.5,
+      baseColor: [0.15, 0.28, 0.52],
       markerColor: [1, 1, 1],
-      glowColor: [0.0, 0.4, 0.9], // Strong blue atmosphere/light
+      glowColor: [0.2, 0.4, 0.7],
       markers: initialMarkers,
     } as any)
     
@@ -175,7 +175,7 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', position: 'relative' }}>
       {/* Subtle blue ocean background light */}
-      <div style={{ position: 'absolute', width: '75%', height: '75%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(14,165,233,0.15) 0%, rgba(2,132,199,0.05) 50%, transparent 100%)', filter: 'blur(20px)', zIndex: 0 }} />
+      <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(30,100,200,0.12) 0%, rgba(20,60,140,0.04) 50%, transparent 100%)', filter: 'blur(25px)', zIndex: 0 }} />
       <canvas
         ref={canvasRef}
         style={{ width: "100%", height: "100%", objectFit: "contain", zIndex: 1 }}
@@ -290,16 +290,10 @@ export function WorldSessionsMap() {
       {/* World Map Area */}
       <div style={{ 
         position: "relative", width: "100%", aspectRatio: "2/1", 
-        background: "var(--color-gray-950)", borderRadius: 12, 
+        background: "radial-gradient(ellipse at center, #0c1a3a 0%, #060e1f 70%, #030810 100%)", borderRadius: 12, 
         border: "1px solid var(--color-gray-800)", overflow: "hidden", 
         marginBottom: 16 
       }}>
-        {/* Grid pattern */}
-        <div style={{
-          position: "absolute", inset: 0, opacity: 0.2, pointerEvents: "none",
-          backgroundImage: "linear-gradient(var(--color-gray-800) 1px, transparent 1px), linear-gradient(90deg, var(--color-gray-800) 1px, transparent 1px)",
-          backgroundSize: "20px 20px"
-        }} />
         
         {mounted && (
           <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
