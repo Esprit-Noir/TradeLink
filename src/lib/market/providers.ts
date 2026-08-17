@@ -304,9 +304,9 @@ export const yahooProvider: MarketDataProvider = {
       const body = Math.abs(c.open - c.close)
       const wick = c.high - c.low
       if (body > 0 && wick > body * 50) continue // monstrous wick = bad data
-      // Reject if high/low spread is > 30% of close (likely an error for normal FX/index)
+      // Reject if high/low spread is > 5% of close (likely an error for normal FX/index)
       // Only applies for non-crypto (rough heuristic: price > 0.01)
-      if (c.close > 0.01 && wick / c.close > 0.30) continue
+      if (c.close > 0.01 && wick / c.close > 0.05) continue
       candles.push(c)
     }
 

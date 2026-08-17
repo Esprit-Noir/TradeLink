@@ -145,7 +145,7 @@ export const ReplayChart = memo(function ReplayChart({
         vertLine: { color: pal.crosshair, width: 1, style: LineStyle.LargeDashed },
         horzLine: { color: pal.crosshair, width: 1, style: LineStyle.LargeDashed },
       },
-      rightPriceScale: { borderColor: pal.grid },
+      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.15, bottom: 0.15 } },
       timeScale: { borderColor: pal.grid, rightOffset: 20 },
       handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
       handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
@@ -223,7 +223,7 @@ export const ReplayChart = memo(function ReplayChart({
         vertLine: { color: pal.crosshair },
         horzLine: { color: pal.crosshair },
       },
-      rightPriceScale: { borderColor: pal.grid },
+      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.15, bottom: 0.15 } },
       timeScale: { borderColor: pal.grid },
     })
     candleSeriesRef.current?.applyOptions({
