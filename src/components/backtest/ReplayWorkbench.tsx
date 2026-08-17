@@ -150,7 +150,7 @@ function reducer(state: ReplayState, action: Action): ReplayState {
         meta: action.meta,
         data: action.data,
         subData: action.subData,
-        currentIndex: 0,
+        currentIndex: Math.min(INITIAL_WINDOW, Math.max(0, action.data.length - 1)),
         playing: false,
         positions: [],
         selectedPositionId: null,
@@ -375,7 +375,7 @@ export function ReplayWorkbench({
   const playingRef = useRef(state.playing)
   const indexRef = useRef(state.currentIndex)
   const lenRef = useRef(state.data.length)
-  const prevIndexRef = useRef(state.currentIndex)
+  const prevIndexRef = useRef(-1)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -407,7 +407,6 @@ export function ReplayWorkbench({
     const chart = chartRef.current
     if (!chart || state.data.length === 0) return
     const idx = state.currentIndex
-    const prevIdx = prevIndexRef.current
 
     // Determine data source: sub-data filtered by cursor time, or main data
     const useSubNow = !!config.subTf && state.subData.length > 0
@@ -416,12 +415,15 @@ export function ReplayWorkbench({
       ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
       : state.data
 
-    if (idx === prevIdx + 1 && idx < state.data.length) {
+    const prevIdx = prevIndexRef.current
+    const isSequential = idx === prevIdx + 1 && idx < chartData.length
+
+    if (isSequential) {
       // Fast path: sequential forward playback → incremental update
       const tick = chartData[idx] ?? state.data[idx]
       if (tick) chart.updateTick(tick)
     } else {
-      // Slow path: jump (scrub, reset, step-back, initial load) → full setData
+      // Slow path: jump, initial load, reset, step-back → full setData
       chart.setData(chartData.slice(0, idx + 1))
     }
     prevIndexRef.current = idx
