@@ -4,12 +4,13 @@ import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
   BarChart, Bar, Cell,
+  ResponsiveContainer, CartesianGrid, XAxis, YAxis, Tooltip, ReferenceLine,
 } from "recharts"
 import { ArrowLeft, Wallet, TrendingUp, Target, Activity, Pencil, Check } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
 import { toast } from "sonner"
+import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
 
 export function AccountDetail({ accountId }: { accountId: string }) {
   const router = useRouter()
@@ -92,6 +93,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
 
   const { account, challenge, stats, equityCurve, daily, symbols, setups, recentTrades } = data
   const ccy = account.baseCurrency || "USD"
+  const initialBalance = account.initialBalance || 0
 
   const openEdit = () =>
     setEditForm({
@@ -171,28 +173,25 @@ export function AccountDetail({ accountId }: { accountId: string }) {
       </div>
 
       {/* Equity curve */}
-      <div className="chart-card">
-        <div className="chart-title">Equity Curve</div>
-        {equityCurve.length <= 1 ? (
+      {equityCurve.length <= 1 ? (
+        <div className="chart-card">
+          <div className="chart-title">Equity Curve</div>
           <div className="empty-state" style={{ padding: "2rem" }}>
             <p style={{ fontSize: "0.85rem" }}>No closed trades on this account yet.</p>
           </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={equityCurve} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
-              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "var(--color-gray-500)" }} tickLine={false} axisLine={false} tickFormatter={(d: string) => `${Number(d.slice(5, 7))}/${Number(d.slice(8, 10))}`} />
-              <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} tickLine={false} axisLine={false} width={52} domain={["auto", "auto"]} tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`} />
-              <Tooltip
-                contentStyle={{ background: "var(--color-gray-800)", border: "1px solid var(--color-gray-700)", borderRadius: 8, fontSize: 12, color: "var(--color-gray-200)" }}
-                formatter={(value: any) => [`${formatCurrency(Number(value), ccy, false, 2)}`, "Equity"]}
-              />
-              <ReferenceLine y={account.initialBalance} stroke="var(--color-gray-700)" strokeDasharray="4 4" />
-              <Line type="monotone" dataKey="equity" stroke={stats.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} strokeWidth={2} dot={false} />
-            </LineChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+        </div>
+      ) : (
+        <EquityCurveChart
+          snapshots={equityCurve.map((p: any) => ({
+            date: p.date,
+            endBalance: Number(p.equity),
+            lowestEquity: Number(p.equity),
+          }))}
+          initialBalance={initialBalance}
+          currentBalance={stats.currentEquity}
+          maxDrawdownPct={stats.maxDrawdownPct}
+        />
+      )}
 
       {/* Daily P&L */}
       <div className="chart-card">
