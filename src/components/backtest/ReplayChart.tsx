@@ -419,25 +419,21 @@ export const ReplayChart = memo(function ReplayChart({
   }, [candles, indicatorData, indicators, theme])
 
   // ── scroll to follow playback ─────────────────────────────────────────────────
-  // Uses scrollToPosition to keep the current candle in view while always
-  // leaving ~15 bars of empty space to the right for context.
+  // Uses a fixed window of 120 bars so playback always shows a consistent zoom level.
   useLayoutEffect(() => {
     const chart = chartRef.current
     if (!chart || candles.length === 0 || playbackIndex == null) return
+    if (userScrolledRef.current && !playbackIndex) return
     const ts = chart.timeScale()
     const totalBars = candles.length
     const idx = Math.min(playbackIndex, totalBars - 1)
+    const windowSize = 120
+    const rightPad = 15
 
-    // Work out how many bars fit on screen
-    const visRange = ts.getVisibleLogicalRange()
-    const windowSize = visRange ? Math.round(visRange.to - visRange.from) : 200
-    const rightPad = 15 // bars of empty space kept to the right of current bar
-
-    // The "target" position: current bar should sit windowSize - rightPad from the left edge
     const targetFrom = idx - (windowSize - rightPad)
     ts.setVisibleLogicalRange({
-      from: targetFrom,
-      to: targetFrom + windowSize,
+      from: Math.max(0, targetFrom),
+      to: Math.max(windowSize, targetFrom + windowSize),
     })
   }, [playbackIndex])
 
