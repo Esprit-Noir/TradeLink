@@ -53,8 +53,7 @@ export function MarketingFooter() {
         <div className="marketing-footer-grid">
           <div className="marketing-footer-brand">
             <Link href="/" className="marketing-logo">
-              <Image src="/logo-light.png" alt="TradeLink" width={150} height={50} className="marketing-logo-img logo-light" />
-              <Image src="/logo-dark.png" alt="TradeLink" width={150} height={50} className="marketing-logo-img logo-dark" />
+              <Image src="/logo-dark.png" alt="TradeLink" width={150} height={36} className="marketing-logo-img" />
             </Link>
             <p className="marketing-footer-tagline">
               The modern trading journal for serious traders.
