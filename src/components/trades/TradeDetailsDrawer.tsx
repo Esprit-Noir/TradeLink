@@ -48,7 +48,7 @@ export function TradeDetailsDrawer() {
   // Load setups for the edit dropdown
   useEffect(() => {
     if (editMode && availableSetups.length === 0) {
-      fetch("/api/setups").then(r => r.json()).then(d => setAvailableSetups(d)).catch(console.error)
+      fetch("/api/setups").then(r => r.json()).then(d => setAvailableSetups(d)).catch(() => toast.error("Failed to load setups"))
     }
   }, [editMode, availableSetups.length])
 

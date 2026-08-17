@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ProfileManager } from "./ProfileManager"
 import { AchievementsSection } from "@/components/achievements/AchievementsSection"
@@ -13,13 +14,17 @@ export const metadata = {
 
 export default async function ProfilePage() {
   const session = await auth()
-  if (!session?.user?.id) return null
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id }
   })
 
-  if (!user) return null
+  if (!user) {
+    redirect("/login")
+  }
 
   const role = (session.user as unknown as Record<string, unknown>).role as string | undefined
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN"

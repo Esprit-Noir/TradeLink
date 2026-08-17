@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { TradesFilter } from "@/components/trades/TradesFilter"
@@ -30,7 +31,9 @@ export default async function TradesPage({
   searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; status?: string; tradeId?: string; sort?: string; dir?: string; accountId?: string }>
 }) {
   const session = await auth()
-  if (!session?.user?.id) return null
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
 

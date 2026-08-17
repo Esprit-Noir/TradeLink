@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 import { CFD_SYMBOLS } from "@/lib/market/symbols"
 
 export function AddTradeModal() {
@@ -14,7 +15,7 @@ export function AddTradeModal() {
 
   useEffect(() => {
     if (isOpen && setups.length === 0) {
-      fetch("/api/setups").then(r => r.json()).then(data => setSetups(data)).catch(console.error)
+      fetch("/api/setups").then(r => r.json()).then(data => setSetups(data)).catch(() => toast.error("Failed to load setups"))
     }
   }, [isOpen, setups.length])
 

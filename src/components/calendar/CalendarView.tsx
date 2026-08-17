@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, X, CalendarDays, List } from "lucide-react"
 import { useTheme } from "next-themes"
+import { formatCurrency } from "@/lib/formatters"
 
 type DayDetail = {
   date: string
@@ -296,7 +297,7 @@ export function CalendarView({
           <span style={{ fontSize: "0.85rem", opacity: hasJournal || propPnl !== undefined ? 1 : 0, display: "flex", gap: "0.25rem" }}>
             {hasJournal && <span title="Journal entry">📝</span>}
             {propPnl !== undefined && (
-              <span title={`Prop firm P&L: ${propPnl > 0 ? "+" : ""}$${propPnl.toFixed(2)}`} style={{ cursor: "help" }}>🎯</span>
+              <span title={`Prop firm P&L: ${formatCurrency(propPnl, "USD", true)}`} style={{ cursor: "help" }}>🎯</span>
             )}
           </span>
           <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isToday ? "var(--color-brand-400)" : colors.cellText }}>
@@ -306,7 +307,7 @@ export function CalendarView({
         {pnl !== undefined && (
           <div style={{ textAlign: "center", marginTop: "auto" }}>
             <span style={{ display: "block", fontWeight: 700, fontSize: "1rem", color: textColor, textShadow: isDark ? "0 2px 10px rgba(0,0,0,0.5)" : "none" }}>
-              {pnl > 0 ? "+" : ""}${Number(pnl).toFixed(2)}
+              {formatCurrency(Number(pnl), "USD", true)}
             </span>
             {(() => {
               const count = dailyTradeCount[dateStr] ?? 0
@@ -332,14 +333,14 @@ export function CalendarView({
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* Month summary strip */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", padding: "1rem", background: colors.cellBg, border: `1px solid ${colors.cellBorder}`, borderRadius: "var(--radius-card)" }}>
-        <Stat label="Month P&L" value={`${monthSummary.total >= 0 ? "+" : ""}$${monthSummary.total.toFixed(2)}`} color={monthSummary.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+        <Stat label="Month P&L" value={formatCurrency(monthSummary.total, "USD", true)} color={monthSummary.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
         <Stat label="Trading days" value={`${monthSummary.count}`} color={isDark ? "#ededf0" : "#18181b"} />
         <Stat label="Win days" value={`${monthSummary.green}`} color="var(--color-profit)" />
         <Stat label="Loss days" value={`${monthSummary.red}`} color="var(--color-loss)" />
-        <Stat label="Avg / day" value={`${monthSummary.avg >= 0 ? "+" : ""}$${monthSummary.avg.toFixed(2)}`} color={monthSummary.avg >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+        <Stat label="Avg / day" value={formatCurrency(monthSummary.avg, "USD", true)} color={monthSummary.avg >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
         <Stat label="Green streak" value={`${streak}d`} color={streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)"} />
-        <Stat label="Best day" value={monthSummary.best ? `+$${monthSummary.best.pnl.toFixed(2)}` : "—"} color="var(--color-profit)" />
-        <Stat label="Worst day" value={monthSummary.worst ? `-$${Math.abs(monthSummary.worst.pnl).toFixed(2)}` : "—"} color="var(--color-loss)" />
+        <Stat label="Best day" value={monthSummary.best ? formatCurrency(monthSummary.best.pnl, "USD", true) : "—"} color="var(--color-profit)" />
+        <Stat label="Worst day" value={monthSummary.worst ? formatCurrency(monthSummary.worst.pnl, "USD", true) : "—"} color="var(--color-loss)" />
       </div>
 
       {/* Header */}
@@ -411,7 +412,7 @@ export function CalendarView({
             <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem" }}>
               <span style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#ededf0" : "#18181b" }}>{year}</span>
               <span style={{ fontSize: "1rem", fontWeight: 700, color: yearStats.total >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-                {yearStats.total >= 0 ? "+" : ""}${yearStats.total.toFixed(2)}
+                {formatCurrency(yearStats.total, "USD", true)}
               </span>
             </div>
             <div style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>
@@ -444,7 +445,7 @@ export function CalendarView({
                       return (
                         <div
                           key={di}
-                          title={`${day.date}: ${day.pnl > 0 ? "+" : ""}$${day.pnl.toFixed(2)}`}
+                          title={`${day.date}: ${formatCurrency(day.pnl, "USD", true)}`}
                           onClick={() => inYear && openDay(day.date)}
                           style={{
                             width: YCELL, height: YCELL, borderRadius: 3, cursor: inYear ? "pointer" : "default",
@@ -511,7 +512,7 @@ export function CalendarView({
                 </div>
                 {detail && (
                   <div style={{ fontSize: "0.9rem", fontWeight: 700, color: detail.dayPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-                    {detail.dayPnl >= 0 ? "+" : ""}${detail.dayPnl.toFixed(2)}
+                    {formatCurrency(detail.dayPnl, "USD", true)}
                   </div>
                 )}
               </div>
@@ -551,7 +552,7 @@ export function CalendarView({
                             {new Date(t.entryAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                           <span style={{ fontSize: "0.85rem", fontWeight: 700, color: t.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-                            {t.netPnl >= 0 ? "+" : ""}${t.netPnl.toFixed(2)}
+                            {formatCurrency(t.netPnl, "USD", true)}
                           </span>
                         </div>
                       ))}
@@ -570,7 +571,7 @@ export function CalendarView({
                         <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0.6rem", background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)", fontSize: "0.82rem" }}>
                           <span style={{ color: "var(--color-gray-200)" }}>{s.firmName} · {s.accountName}</span>
                           <span style={{ fontWeight: 600, color: s.dailyPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-                            {s.dailyPnl >= 0 ? "+" : ""}${s.dailyPnl.toFixed(2)}
+                            {formatCurrency(s.dailyPnl, "USD", true)}
                           </span>
                         </div>
                       ))}

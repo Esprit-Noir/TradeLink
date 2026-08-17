@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ChallengeCompare } from "@/components/prop-firm/ChallengeCompare"
 
@@ -8,7 +9,9 @@ export const metadata = {
 
 export default async function ComparePage() {
   const session = await auth()
-  if (!session?.user?.id) return null
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
 
   const challenges = await prisma.propChallenge.findMany({
     where: { userId: session.user.id },

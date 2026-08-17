@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { toast } from "sonner"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, AreaChart, Area } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
 import { Download, TrendingUp, TrendingDown, BarChart3, Target, Activity, AlertTriangle, Clock, Award } from "lucide-react"
@@ -55,7 +56,7 @@ export function AdvancedStatsClient() {
         }))
       }
     } catch (e) {
-      console.error(e)
+      toast.error("Failed to load stats")
     } finally {
       setLoading(false)
     }

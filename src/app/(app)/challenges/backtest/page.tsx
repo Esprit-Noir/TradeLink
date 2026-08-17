@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { BacktestRunner } from "@/components/prop-firm/BacktestRunner"
 
@@ -8,7 +9,9 @@ export const metadata = {
 
 export default async function BacktestPage() {
   const session = await auth()
-  if (!session?.user?.id) return null
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
 
   const [templates, accounts] = await Promise.all([
     prisma.propFirmTemplate.findMany({

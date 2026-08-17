@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { JournalForm } from "@/components/journal/JournalForm"
 import { TradeRow } from "@/components/trades/TradeRow"
@@ -14,7 +15,9 @@ export async function generateMetadata({ params }: { params: Promise<{ date: str
 
 export default async function JournalDatePage({ params }: { params: Promise<{ date: string }> }) {
   const session = await auth()
-  if (!session?.user?.id) return null
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
 
   const { date } = await params
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
