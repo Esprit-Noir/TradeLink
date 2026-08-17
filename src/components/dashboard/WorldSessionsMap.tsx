@@ -128,9 +128,9 @@ function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
       diffuse: 1.2,
       mapSamples: 20000,
       mapBrightness: 6,
-      baseColor: [0.15, 0.15, 0.3],
+      baseColor: [0.1, 0.25, 0.12],
       markerColor: [1, 1, 1],
-      glowColor: [0.2, 0.2, 0.6],
+      glowColor: [0.1, 0.35, 0.15],
       markers: initialMarkers,
     } as any)
     
