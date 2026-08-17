@@ -290,7 +290,7 @@ export function WorldSessionsMap() {
       {/* World Map Area */}
       <div style={{ 
         position: "relative", width: "100%", aspectRatio: "2/1", 
-        background: "radial-gradient(ellipse at center, #0a2012 0%, #061208 70%, #030a05 100%)", borderRadius: 12, 
+        background: "radial-gradient(ellipse at center, #051008 0%, #030a04 70%, #010502 100%)", borderRadius: 12, 
         border: "1px solid var(--color-gray-800)", overflow: "hidden", 
         marginBottom: 16 
       }}>
