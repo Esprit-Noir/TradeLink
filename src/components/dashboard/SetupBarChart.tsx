@@ -32,18 +32,18 @@ export function SetupBarChart() {
   }, [searchParams])
 
   return (
-    <div className="chart-card" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+    <div className="chart-card" style={{ display: "flex", flexDirection: "column" }}>
       <div className="chart-title">P&L by Setup</div>
       
       {loading ? (
-        <div className="skeleton" style={{ flex: 1, minHeight: 200 }} />
+        <div className="skeleton" style={{ flex: 1, minHeight: 220 }} />
       ) : data.length === 0 ? (
-        <div className="empty-state" style={{ flex: 1, padding: "1.5rem", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="empty-state" style={{ padding: "1.5rem", minHeight: 220, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <p style={{ fontSize: "0.85rem" }}>Tag your trades to see this chart.</p>
         </div>
       ) : (
-        <div style={{ flex: 1, minHeight: 0 }}>
-          <ResponsiveContainer width="100%" height="100%">
+        <div style={{ minHeight: 220 }}>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <XAxis 
                 dataKey="name" 

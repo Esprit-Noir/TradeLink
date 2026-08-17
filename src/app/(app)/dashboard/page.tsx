@@ -236,7 +236,7 @@ export default async function DashboardPage({
       <div className="dashboard-row-2-1">
         <div className="chart-card" style={{ display: "flex", flexDirection: "column" }}>
           <div className="chart-title">Daily Net P&L</div>
-          <div style={{ flex: 1, minHeight: 0 }}>
+          <div style={{ flex: 1, minHeight: 220 }}>
             <Suspense fallback={<ChartSkeleton height={260} />}>
               <DailyPnlChartServer dateRange={dateRange} accountId={selectedAccountId} />
             </Suspense>
@@ -245,7 +245,7 @@ export default async function DashboardPage({
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div className="chart-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <div className="chart-title">Win Rate</div>
-            <div style={{ flex: 1, minHeight: 0 }}>
+            <div style={{ flex: 1, minHeight: 160 }}>
               <Suspense fallback={<ChartSkeleton height={160} />}>
                 <WinRateChartServer dateRange={dateRange} accountId={selectedAccountId} />
               </Suspense>
