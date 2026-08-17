@@ -143,8 +143,8 @@ export function AdvancedStatsClient() {
       </div>
 
       {/* Equity Curve + Drawdown Episodes */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
-        <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", alignItems: "stretch" }}>
+        <div className="chart-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column" }}>
           {equityCurve && equityCurve.length > 1 ? (
             <EquityCurveChart
               equityData={equityCurve}
@@ -155,7 +155,7 @@ export function AdvancedStatsClient() {
           )}
         </div>
 
-        <div className="chart-card" style={{ padding: "1.25rem" }}>
+        <div className="chart-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1 }}>
           <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Drawdown Episodes</div>
           {drawdownEpisodes.length === 0 ? (
             <div className="empty-state">No drawdown episodes.</div>
@@ -167,7 +167,7 @@ export function AdvancedStatsClient() {
                 <DrawdownStat label="Longest" value={drawdown.maxDrawdownDurationDays != null ? `${drawdown.maxDrawdownDurationDays}d` : "—"} sub={drawdown.maxDrawdownStart || ""} />
                 <DrawdownStat label="Recovered" value={drawdown.maxDrawdownRecovery || "Still in DD"} />
               </div>
-              <div>
+              <div style={{ flex: 1 }}>
                 <table className="data-table compact">
                   <thead>
                     <tr>
