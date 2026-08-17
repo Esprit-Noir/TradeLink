@@ -294,6 +294,12 @@ export function WorldSessionsMap() {
         border: "1px solid var(--color-gray-800)", overflow: "hidden", 
         marginBottom: 16 
       }}>
+        {/* Grid pattern */}
+        <div style={{
+          position: "absolute", inset: 0, opacity: 0.2, pointerEvents: "none",
+          backgroundImage: "linear-gradient(var(--color-gray-800) 1px, transparent 1px), linear-gradient(90deg, var(--color-gray-800) 1px, transparent 1px)",
+          backgroundSize: "20px 20px"
+        }} />
         
         {mounted && (
           <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
