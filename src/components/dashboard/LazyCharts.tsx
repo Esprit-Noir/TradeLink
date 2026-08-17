@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic"
 
 export const EquityCurveChart = dynamic(
-  () => import("@/components/dashboard/EquityCurveChart").then(m => ({ default: m.EquityCurveChart })),
+  () => import("@/components/dashboard/EquityCurveChart").then(m => ({ default: m.EquityCurveDashboard })),
   { ssr: false }
 )
 

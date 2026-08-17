@@ -1,12 +1,12 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { useSearchParams } from "next/navigation"
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart, Bar,
 } from "recharts"
 import { Activity, BarChart2 } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 import type { EquityPoint } from "@/lib/metrics"
 
 type ViewMode = "balance" | "drawdown"
@@ -101,7 +101,6 @@ export function EquityCurveChart({
   const [loading, setLoading] = useState(true)
   const [timeframe, setTimeframe] = useState("ALL")
   const [viewMode, setViewMode] = useState<ViewMode>("balance")
-  const searchParams = useSearchParams()
 
   useEffect(() => {
     if (equityData && equityData.length > 0) {
@@ -131,32 +130,8 @@ export function EquityCurveChart({
       return
     }
 
-    setLoading(true)
-    const params = new URLSearchParams()
-    const period = searchParams.get("period")
-    const accountId = searchParams.get("accountId")
-    const from = searchParams.get("from")
-    const to = searchParams.get("to")
-    if (period) params.set("period", period)
-    if (accountId) params.set("accountId", accountId)
-    if (from) params.set("from", from)
-    if (to) params.set("to", to)
-
-    const qs = params.toString()
-    fetch(`/api/metrics/equity-curve${qs ? `?${qs}` : ""}`)
-      .then((r) => r.json())
-      .then((d) => {
-        setRawData({
-          data: d.data || [],
-          initialBalance: d.initialBalance || 0,
-          currentBalance: d.currentBalance || 0,
-          maxDrawdown: d.maxDrawdown || 0,
-          currentDrawdown: d.currentDrawdown || 0,
-        })
-        setLoading(false)
-      })
-      .catch(() => setLoading(false))
-  }, [equityData, snapshots, propInitial, propCurrent, maxDDLevel, searchParams])
+    setLoading(false)
+  }, [equityData, snapshots, propInitial, propCurrent, maxDDLevel])
 
   const filteredData = useMemo(() => {
     if (!rawData?.data.length) return []
@@ -471,10 +446,6 @@ export function EquityCurveChart({
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--color-gray-500)" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-profit)", display: "inline-block" }} />
-            {chartData.filter(d => d.Balance > 0).length} W
-          </span>
-          <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-loss)", display: "inline-block" }} />
             {chartData.filter(d => d.Balance < 0).length} L
           </span>
@@ -482,4 +453,63 @@ export function EquityCurveChart({
       </div>
     </div>
   )
+}
+
+export function EquityCurveDashboard() {
+  const searchParams = useSearchParams()
+  const [data, setData] = useState<EquityData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const params = new URLSearchParams()
+    const period = searchParams.get("period")
+    const accountId = searchParams.get("accountId")
+    const from = searchParams.get("from")
+    const to = searchParams.get("to")
+    if (period) params.set("period", period)
+    if (accountId) params.set("accountId", accountId)
+    if (from) params.set("from", from)
+    if (to) params.set("to", to)
+
+    const qs = params.toString()
+    fetch(`/api/metrics/equity-curve${qs ? `?${qs}` : ""}`)
+      .then((r) => r.json())
+      .then((d) => {
+        setData({
+          data: d.data || [],
+          initialBalance: d.initialBalance || 0,
+          currentBalance: d.currentBalance || 0,
+          maxDrawdown: d.maxDrawdown || 0,
+          currentDrawdown: d.currentDrawdown || 0,
+        })
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [searchParams])
+
+  if (loading) {
+    return (
+      <div className="chart-card">
+        <div className="chart-title">Equity Curve</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1rem 1.5rem" }}>
+          {[95, 70, 88, 55, 80, 65].map((w, i) => (
+            <div key={i} className="skeleton" style={{ height: 8, borderRadius: 4, width: `${w}%` }} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (!data || data.data.length === 0) {
+    return (
+      <div className="chart-card">
+        <div className="chart-title">Equity Curve</div>
+        <div className="empty-state" style={{ padding: "3rem" }}>
+          <p style={{ fontSize: "0.85rem" }}>Import or add trades to see your equity curve.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return <EquityCurveChart equityData={data.data} initialBalance={data.initialBalance} currentBalance={data.currentBalance} />
 }
