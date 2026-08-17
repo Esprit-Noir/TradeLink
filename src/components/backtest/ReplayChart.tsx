@@ -365,7 +365,7 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
         }
       }
       updateIndicators(candles.length, candles)
-      chartRef.current?.timeScale().fitContent()
+      chartRef.current?.timeScale().scrollToRealTime()
     },
 
     updateTick: (candle: Candle) => {

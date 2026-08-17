@@ -150,7 +150,7 @@ function reducer(state: ReplayState, action: Action): ReplayState {
         meta: action.meta,
         data: action.data,
         subData: action.subData,
-        currentIndex: Math.max(0, action.data.length - 1),
+        currentIndex: Math.min(INITIAL_WINDOW, Math.max(0, action.data.length - 1)),
         playing: false,
         positions: [],
         selectedPositionId: null,
