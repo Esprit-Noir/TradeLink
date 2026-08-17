@@ -42,7 +42,7 @@
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
 
   /* Spacing */
-  --radius-card: 12px;
+  --radius-card: 16px;
   --radius-button: 8px;
   --radius-sm: 6px;
 }
