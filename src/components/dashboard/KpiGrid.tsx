@@ -102,11 +102,11 @@ export async function KpiGrid({
         id="kpi-max-drawdown"
       />
       <KpiCard
-        label="Avg R:R"
-        value={metrics.avgRR !== 0 ? metrics.avgRR.toFixed(2) : "—"}
-        sub="Risk to Reward"
-        type={metrics.avgRR >= 1.5 ? "profit" : "neutral"}
-        id="kpi-avg-rr"
+        label="Total Trades"
+        value={`${trades.length}`}
+        sub={`${metrics.winningTrades}W / ${metrics.losingTrades}L`}
+        type="neutral"
+        id="kpi-total-trades"
       />
     </div>
   )

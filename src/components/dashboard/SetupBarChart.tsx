@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
 export function SetupBarChart() {
-  const [data, setData] = useState<{name: string, pnl: number}[]>([])
+  const [data, setData] = useState<{name: string, pnl: number, count: number, winRate: number}[]>([])
   const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
 
@@ -33,7 +33,7 @@ export function SetupBarChart() {
 
   return (
     <div className="chart-card" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <div className="chart-title">P&L by Setup</div>
+      <div className="chart-title">Performance by Setup</div>
       
       {loading ? (
         <div className="skeleton" style={{ flex: 1 }} />
@@ -50,6 +50,8 @@ export function SetupBarChart() {
                 tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
+                interval={0}
+                tickFormatter={(v: string) => v.length > 12 ? `${v.slice(0, 10)}…` : v}
               />
               <YAxis 
                 tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
@@ -67,7 +69,10 @@ export function SetupBarChart() {
                   color: "var(--color-gray-200)",
                 }}
                 itemStyle={{ color: "var(--color-gray-100)" }}
-                formatter={(value: any) => [`$${Number(value).toFixed(2)}`, "Net P&L"]}
+                formatter={(value: any, name: any, props: any) => {
+                  const { count, winRate } = props.payload
+                  return [`$${Number(value).toFixed(2)}`, `${count} trades · ${winRate}% WR`]
+                }}
               />
               <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
                 {data.map((entry, index) => (

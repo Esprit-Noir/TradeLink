@@ -173,15 +173,17 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
       </div>
 
       {/* Summary */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)", fontSize: "0.7rem" }}>
-        <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{greenDays} green days</span>
-        <span style={{ color: "var(--color-gray-500)" }}>{tradingDays} trading days</span>
-        <span style={{ color: monthPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 700, fontSize: "0.8rem" }}>
-          {monthPnl >= 0 ? "+" : ""}${monthPnl.toFixed(2)}
-        </span>
-        <span style={{ color: "var(--color-gray-500)" }}>{Math.round((greenDays / Math.max(tradingDays, 1)) * 100)}% win days</span>
-        <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{redDays} red days</span>
-      </div>
+      {tradingDays > 0 && (
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)", fontSize: "0.7rem" }}>
+          <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{greenDays} green days</span>
+          <span style={{ color: "var(--color-gray-500)" }}>{tradingDays} trading days</span>
+          <span style={{ color: monthPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 700, fontSize: "0.8rem" }}>
+            {monthPnl >= 0 ? "+" : ""}${monthPnl.toFixed(2)}
+          </span>
+          <span style={{ color: "var(--color-gray-500)" }}>{Math.round((greenDays / Math.max(tradingDays, 1)) * 100)}% win days</span>
+          <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{redDays} red days</span>
+        </div>
+      )}
     </div>
   )
 }

@@ -85,7 +85,7 @@ export async function GET(request: Request) {
     })
 
     // 1. Calculate P&L by Setup Tag
-    const setupMap: Record<string, number> = {}
+    const setupMap: Record<string, { pnl: number; count: number; wins: number }> = {}
     
     // 2. Calculate P&L by Hour of Day (1D)
     const hourlyMap: Record<string, number> = {}
@@ -103,14 +103,21 @@ export async function GET(request: Request) {
 
     trades.forEach(t => {
       const pnl = Number(t.netPnl)
+      const isWin = pnl > 0
       
       // Setups
       if (t.setupTags && t.setupTags.length > 0) {
         t.setupTags.forEach(tag => {
-          setupMap[tag] = (setupMap[tag] || 0) + pnl
+          if (!setupMap[tag]) setupMap[tag] = { pnl: 0, count: 0, wins: 0 }
+          setupMap[tag].pnl += pnl
+          setupMap[tag].count++
+          if (isWin) setupMap[tag].wins++
         })
       } else {
-        setupMap["Untagged"] = (setupMap["Untagged"] || 0) + pnl
+        if (!setupMap["Untagged"]) setupMap["Untagged"] = { pnl: 0, count: 0, wins: 0 }
+        setupMap["Untagged"].pnl += pnl
+        setupMap["Untagged"].count++
+        if (isWin) setupMap["Untagged"].wins++
       }
 
       // Hour (1D)
@@ -127,7 +134,7 @@ export async function GET(request: Request) {
 
     // Format for Recharts / UI
     const setupData = Object.entries(setupMap)
-      .map(([name, pnl]) => ({ name, pnl }))
+      .map(([name, { pnl, count, wins }]) => ({ name, pnl, count, winRate: count > 0 ? Math.round((wins / count) * 100) : 0 }))
       .sort((a, b) => b.pnl - a.pnl) // sort highest to lowest
 
     const hourlyData = Object.entries(hourlyMap)
