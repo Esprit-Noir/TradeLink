@@ -5,12 +5,11 @@ import dynamic from "next/dynamic"
 import { useTheme } from "next-themes"
 import { toast } from "sonner"
 import { Loader2, RefreshCcw, Save, FileDown, FileText, TriangleAlert, Play, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, Share, X } from "lucide-react"
-import type { IChartApi } from "lightweight-charts"
 import type { Candle, MarketTimeframe } from "@/lib/market/types"
 import { MARKET_TIMEFRAMES } from "@/lib/market/types"
 import { fetchCandles } from "@/lib/market/client"
 import { CFD_SYMBOLS } from "@/lib/market/symbols"
-import { ReplayChart } from "./ReplayChart"
+import { ReplayChart, type ReplayChartRef } from "./ReplayChart"
 import { ReplayControls } from "./ReplayControls"
 import { PositionsStrip } from "./PositionsStrip"
 import { TradesTimeline } from "./TradesTimeline"
@@ -340,7 +339,7 @@ export function ReplayWorkbench({
 }) {
   const { resolvedTheme } = useTheme()
   const theme = resolvedTheme === "light" ? "light" : "dark"
-  const chartRef = useRef<IChartApi | null>(null)
+  const chartRef = useRef<ReplayChartRef | null>(null)
   const processedTradesRef = useRef<Set<string>>(new Set())
 
   const [fullscreen, setFullscreen] = useState(false)
@@ -376,6 +375,8 @@ export function ReplayWorkbench({
   const playingRef = useRef(state.playing)
   const indexRef = useRef(state.currentIndex)
   const lenRef = useRef(state.data.length)
+  const prevIndexRef = useRef(state.currentIndex)
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     speedRef.current = state.speed
@@ -384,19 +385,47 @@ export function ReplayWorkbench({
     lenRef.current = state.data.length
   })
 
+  // ── playback timer (blackwealthtracking pattern) ─────────────────────────────
   useEffect(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
     if (!state.playing) return
-    const acc = { v: 0 }
-    const iv = setInterval(() => {
-      acc.v += speedRef.current
-      const step = Math.floor(acc.v)
-      acc.v -= step
-      if (step <= 0) return
-      if (indexRef.current >= lenRef.current - 1) return
-      dispatch({ type: "ADVANCE", delta: Math.min(step, lenRef.current - 1 - indexRef.current) })
-    }, 100)
-    return () => clearInterval(iv)
-  }, [state.playing])
+    const ms = Math.max(50, 1000 / speedRef.current)
+    timerRef.current = setInterval(() => {
+      if (indexRef.current >= lenRef.current - 1) {
+        dispatch({ type: "TOGGLE_PLAY" })
+        return
+      }
+      dispatch({ type: "ADVANCE", delta: 1 })
+    }, ms)
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [state.playing, state.speed])
+
+  // ── chart update on index change (dual-path: updateTick vs setData) ──────────
+  useEffect(() => {
+    const chart = chartRef.current
+    if (!chart || state.data.length === 0) return
+    const idx = state.currentIndex
+    const prevIdx = prevIndexRef.current
+
+    // Determine data source: sub-data filtered by cursor time, or main data
+    const useSubNow = !!config.subTf && state.subData.length > 0
+    const cursorTime = state.data[idx]?.time ?? null
+    const chartData = useSubNow
+      ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
+      : state.data
+
+    if (idx === prevIdx + 1 && idx < state.data.length) {
+      // Fast path: sequential forward playback → incremental update
+      const tick = chartData[idx] ?? state.data[idx]
+      if (tick) chart.updateTick(tick)
+    } else {
+      // Slow path: jump (scrub, reset, step-back) → full setData
+      chart.setData(chartData.slice(0, idx + 1))
+    }
+    prevIndexRef.current = idx
+  }, [state.currentIndex, state.data, state.subData, config.subTf])
 
   // ── data loading ─────────────────────────────────────────────────────────────
   const load = useCallback(
@@ -484,23 +513,7 @@ export function ReplayWorkbench({
   }, [state.lastClosed, state.meta.symbol])
 
   // ── derived display ──────────────────────────────────────────────────────────
-  const cursorTime = state.data[state.currentIndex]?.time ?? null
   const useSub = !!config.subTf && state.subData.length > 0
-  const displayed = useMemo(
-    () => {
-      const base = useSub
-        ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
-        : state.data
-      // During playback, only show candles up to currentIndex
-      if (state.playing || state.currentIndex < base.length - 1) {
-        return base.slice(0, state.currentIndex + 1)
-      }
-      return base
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [useSub, state.subData, state.data, cursorTime, state.currentIndex, state.playing]
-  )
-
   const mainInd = useMemo(() => computeIndicatorSeries(state.data), [state.data])
   const subInd = useMemo(() => (config.subTf ? computeIndicatorSeries(state.subData) : null), [state.subData, config.subTf])
   const indicatorData = useSub && subInd ? subInd : mainInd
@@ -508,10 +521,6 @@ export function ReplayWorkbench({
   const currentCandle = state.data[state.currentIndex]
 
   // ── actions ──────────────────────────────────────────────────────────────────
-  const handleChartReady = useCallback((chart: IChartApi) => {
-    chartRef.current = chart
-  }, [])
-
   const handleOrder = useCallback(
     (side: SimSide, levels?: { stopLoss?: number; takeProfit?: number }) => {
       const candle = state.data[state.currentIndex]
@@ -757,16 +766,14 @@ export function ReplayWorkbench({
                 </div>
               ) : (
                 <ReplayChart
+                  ref={chartRef}
                   key={state.loadToken}
-                  candles={displayed}
                   indicatorData={indicatorData}
                   indicators={state.indicators}
                   positions={state.positions}
                   selectedPositionId={state.selectedPositionId}
                   closedTrades={state.closedTrades}
                   theme={theme}
-                  playbackIndex={state.currentIndex}
-                  onChartReady={handleChartReady}
                   onUpdateLevels={handleUpdateLevels}
                 />
               )}

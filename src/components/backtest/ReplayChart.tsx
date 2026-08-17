@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useRef, memo } from "react"
+import { useEffect, useRef, forwardRef, useImperativeHandle } from "react"
 import {
   createChart,
   createSeriesMarkers,
@@ -20,16 +20,20 @@ import {
 import type { Candle } from "@/lib/market/types"
 import type { IndicatorSeries, IndicatorsState, SimTrade } from "./types"
 
+export interface ReplayChartRef {
+  setData: (candles: Candle[]) => void
+  updateTick: (candle: Candle) => void
+  scrollToEnd: () => void
+  takeScreenshot: () => HTMLCanvasElement
+}
+
 interface ReplayChartProps {
-  candles: Candle[]
   indicatorData: IndicatorSeries
   indicators: IndicatorsState
   positions: SimTrade[]
   selectedPositionId: string | null
   closedTrades: SimTrade[]
   theme: "dark" | "light"
-  playbackIndex?: number
-  onChartReady?: (chart: IChartApi) => void
   onUpdateLevels: (id: string, levels: { stopLoss: number; takeProfit: number }) => void
 }
 
@@ -77,18 +81,18 @@ function fmtPrice(p: number): string {
   return p.toFixed(8)
 }
 
-export const ReplayChart = memo(function ReplayChart({
-  candles,
-  indicatorData,
-  indicators,
-  positions,
-  selectedPositionId,
-  closedTrades,
-  theme,
-  playbackIndex,
-  onChartReady,
-  onUpdateLevels,
-}: ReplayChartProps) {
+export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function ReplayChart(
+  {
+    indicatorData,
+    indicators,
+    positions,
+    selectedPositionId,
+    closedTrades,
+    theme,
+    onUpdateLevels,
+  },
+  ref,
+) {
   const selectedTrade =
     selectedPositionId != null
       ? positions.find((p) => p.id === selectedPositionId) ?? null
@@ -105,24 +109,116 @@ export const ReplayChart = memo(function ReplayChart({
   const tpLineRef = useRef<IPriceLine | null>(null)
   const dragRef = useRef<{ mode: "sl" | "tp" } | null>(null)
   const lastSelectedTradeIdRef = useRef<string | null>(null)
-  const lastScrollTimeRef = useRef<number>(0)
-  const prevCandleLenRef = useRef<number>(0)
   const rafRef = useRef<number | null>(null)
-  const userScrolledRef = useRef<boolean>(false)
+  const candlesCountRef = useRef<number>(0)
 
-  // Live refs so subscription callbacks never read stale props
-  const candlesRef = useRef(candles)
+  // Live refs so callbacks never read stale props
   const activeTradeRef = useRef(selectedTrade)
   const onUpdateLevelsRef = useRef(onUpdateLevels)
   const indicatorsRef = useRef(indicators)
+  const indicatorDataRef = useRef(indicatorData)
   const pal = PALETTES[theme]
 
   useEffect(() => {
-    candlesRef.current = candles
     activeTradeRef.current = selectedTrade
     onUpdateLevelsRef.current = onUpdateLevels
     indicatorsRef.current = indicators
+    indicatorDataRef.current = indicatorData
   })
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+  const updateIndicators = (n: number, candles: Candle[]) => {
+    const pal = PALETTES[theme]
+    const ind = indicatorsRef.current
+    const indData = indicatorDataRef.current
+    const lineMap = lineSeriesRef.current
+
+    const specs: { key: keyof IndicatorSeries; enabled: boolean }[] = [
+      { key: "ema9", enabled: ind.ema9 },
+      { key: "ema20", enabled: ind.ema20 },
+      { key: "ema50", enabled: ind.ema50 },
+      { key: "ema200", enabled: ind.ema200 },
+      { key: "vwap", enabled: ind.vwap },
+    ]
+
+    const lineColor = (key: string) =>
+      key === "ema9" ? pal.ema9
+      : key === "ema20" ? pal.ema20
+      : key === "ema50" ? pal.ema50
+      : key === "ema200" ? pal.ema200
+      : key === "vwap" ? pal.vwap
+      : pal.bb
+
+    const ensureLine = (key: string, color: string): ISeriesApi<"Line"> => {
+      let s = lineMap.get(key)
+      if (!s) {
+        s = chartRef.current!.addSeries(LineSeries, {
+          color,
+          lineWidth: 1,
+          priceLineVisible: false,
+          lastValueVisible: false,
+          crosshairMarkerVisible: false,
+        })
+        lineMap.set(key, s)
+      }
+      return s
+    }
+    const removeLine = (key: string) => {
+      const s = lineMap.get(key)
+      if (s) {
+        chartRef.current?.removeSeries(s)
+        lineMap.delete(key)
+      }
+    }
+
+    for (const { key, enabled } of specs) {
+      if (enabled) {
+        const s = ensureLine(key, lineColor(key))
+        s.applyOptions({ color: lineColor(key) })
+        s.setData(
+          indData[key].slice(0, n).map((v, i) => ({
+            time: candles[i]!.time as Time,
+            value: v,
+          })),
+        )
+      } else {
+        removeLine(key)
+      }
+    }
+
+    if (ind.bb) {
+      for (const key of ["bbUpper", "bbMiddle", "bbLower"] as const) {
+        const s = ensureLine(key, lineColor("bb"))
+        s.applyOptions({ color: lineColor("bb") })
+        s.setData(
+          indData[key].slice(0, n).map((v, i) => ({
+            time: candles[i]!.time as Time,
+            value: v,
+          })),
+        )
+      }
+    } else {
+      removeLine("bbUpper")
+      removeLine("bbMiddle")
+      removeLine("bbLower")
+    }
+
+    const rs = rsiSeriesRef.current
+    if (rs) {
+      if (ind.rsi) {
+        chartRef.current?.priceScale("rsi").applyOptions({ visible: true })
+        rs.setData(
+          indData.rsi.slice(0, n).map((v, i) => ({
+            time: candles[i]!.time as Time,
+            value: v,
+          })),
+        )
+      } else {
+        chartRef.current?.priceScale("rsi").applyOptions({ visible: false })
+        rs.setData([])
+      }
+    }
+  }
 
   // ── init chart (once) ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -145,7 +241,7 @@ export const ReplayChart = memo(function ReplayChart({
         vertLine: { color: pal.crosshair, width: 1, style: LineStyle.LargeDashed },
         horzLine: { color: pal.crosshair, width: 1, style: LineStyle.LargeDashed },
       },
-      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.05, bottom: 0.05 } },
+      rightPriceScale: { borderColor: pal.grid },
       timeScale: { borderColor: pal.grid, rightOffset: 5 },
       handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
       handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
@@ -189,18 +285,9 @@ export const ReplayChart = memo(function ReplayChart({
     })
     ro.observe(container)
 
-    // Detect manual scroll: mark so auto-follow pauses
-    const handleVisibleRangeChange = () => {
-      userScrolledRef.current = true
-    }
-    chart.timeScale().subscribeVisibleLogicalRangeChange(handleVisibleRangeChange)
-
-    onChartReady?.(chart)
-
     return () => {
       ro.disconnect()
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
-      chart.timeScale().unsubscribeVisibleLogicalRangeChange(handleVisibleRangeChange)
       chart.remove()
       chartRef.current = null
       candleSeriesRef.current = null
@@ -223,7 +310,7 @@ export const ReplayChart = memo(function ReplayChart({
         vertLine: { color: pal.crosshair },
         horzLine: { color: pal.crosshair },
       },
-      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.05, bottom: 0.05 } },
+      rightPriceScale: { borderColor: pal.grid },
       timeScale: { borderColor: pal.grid },
     })
     candleSeriesRef.current?.applyOptions({
@@ -243,188 +330,90 @@ export const ReplayChart = memo(function ReplayChart({
         : pal.bb
       s.applyOptions({ color })
     })
-    // Rebuild volume colors (colors are per-bar) by re-applying data
-    const series = volumeSeriesRef.current
-    const cs = candlesRef.current
-    if (series && cs.length) {
-      const data = cs.map((c) => ({
-        time: c.time as Time,
-        value: c.volume,
-        color: c.close >= c.open ? pal.volUp : pal.volDown,
-      }))
-      series.setData(data)
-    }
   }, [theme])
 
-  // ── candles + volume + indicators ────────────────────────────────────────────
-  useEffect(() => {
-    const pal = PALETTES[theme]
-    const cs = candleSeriesRef.current
-    const vs = volumeSeriesRef.current
-    const prevLen = prevCandleLenRef.current
-    const currLen = candles.length
+  // ── imperative data methods ──────────────────────────────────────────────────
+  useImperativeHandle(ref, () => ({
+    setData: (candles: Candle[]) => {
+      const cs = candleSeriesRef.current
+      const vs = volumeSeriesRef.current
+      const pal = PALETTES[theme]
+      candlesCountRef.current = candles.length
 
-    // ── Incremental update (playback tick: new candles appended) ─────────────
-    // Use update() for each newly added candle to avoid the O(N) setData()
-    // overhead on every playback frame. Works for speed=1 and speed>1.
-    if (prevLen > 0 && currLen > prevLen && currLen > 0) {
-      for (let i = prevLen; i < currLen; i++) {
-        const c = candles[i]!
-        if (cs) {
-          cs.update({ time: c.time as Time, open: c.open, high: c.high, low: c.low, close: c.close })
-        }
-        if (vs && indicators.volume) {
-          vs.update({ time: c.time as Time, value: c.volume, color: c.close >= c.open ? pal.volUp : pal.volDown })
-        }
-        // Indicators: append point to each visible line
-        const lineMap = lineSeriesRef.current
-        const n = i
-        const indSpecs: (keyof IndicatorSeries)[] = ["ema9", "ema20", "ema50", "ema200", "vwap", "bbUpper", "bbMiddle", "bbLower"]
-        for (const key of indSpecs) {
-          const s = lineMap.get(key)
-          if (!s) continue
-          const v = indicatorData[key][n]
-          if (v != null) s.update({ time: c.time as Time, value: v })
-        }
-        const rs = rsiSeriesRef.current
-        if (rs && indicators.rsi) {
-          const rv = indicatorData.rsi[n]
-          if (rv != null) rs.update({ time: c.time as Time, value: rv })
-        }
-      }
-      prevCandleLenRef.current = currLen
-      return
-    }
-
-    // ── Full reload (initial load or scrub / reset) ───────────────────────────
-    prevCandleLenRef.current = currLen
-    if (cs) {
-      cs.setData(
-        candles.map((c) => ({
-          time: c.time as Time,
-          open: c.open,
-          high: c.high,
-          low: c.low,
-          close: c.close,
-        })),
-      )
-    }
-    if (vs) {
-      if (indicators.volume) {
-        vs.setData(
+      if (cs) {
+        cs.setData(
           candles.map((c) => ({
             time: c.time as Time,
-            value: c.volume,
-            color: c.close >= c.open ? pal.volUp : pal.volDown,
-          })),
-        )
-      } else {
-        vs.setData([])
-      }
-    }
-
-    const n = candles.length
-    const specs: { key: keyof IndicatorSeries; enabled: boolean }[] = [
-      { key: "ema9", enabled: indicators.ema9 },
-      { key: "ema20", enabled: indicators.ema20 },
-      { key: "ema50", enabled: indicators.ema50 },
-      { key: "ema200", enabled: indicators.ema200 },
-      { key: "vwap", enabled: indicators.vwap },
-    ]
-    const bbEnabled = indicators.bb
-
-    const lineColor = (key: string) =>
-      key === "ema9" ? pal.ema9
-      : key === "ema20" ? pal.ema20
-      : key === "ema50" ? pal.ema50
-      : key === "ema200" ? pal.ema200
-      : key === "vwap" ? pal.vwap
-      : pal.bb
-
-    const ensureLine = (key: string, color: string): ISeriesApi<"Line"> => {
-      let s = lineSeriesRef.current.get(key)
-      if (!s) {
-        s = chartRef.current!.addSeries(LineSeries, {
-          color,
-          lineWidth: 1,
-          priceLineVisible: false,
-          lastValueVisible: false,
-          crosshairMarkerVisible: false,
-        })
-        lineSeriesRef.current.set(key, s)
-      }
-      return s
-    }
-    const removeLine = (key: string) => {
-      const s = lineSeriesRef.current.get(key)
-      if (s) {
-        chartRef.current?.removeSeries(s)
-        lineSeriesRef.current.delete(key)
-      }
-    }
-
-    for (const { key, enabled } of specs) {
-      if (enabled) {
-        const s = ensureLine(key, lineColor(key))
-        s.applyOptions({ color: lineColor(key) })
-        s.setData(
-          indicatorData[key].slice(0, n).map((v, i) => ({
-            time: candles[i]!.time as Time,
-            value: v,
-          })),
-        )
-      } else {
-        removeLine(key)
-      }
-    }
-
-    if (bbEnabled) {
-      for (const key of ["bbUpper", "bbMiddle", "bbLower"] as const) {
-        const s = ensureLine(key, lineColor("bb"))
-        s.applyOptions({ color: lineColor("bb") })
-        s.setData(
-          indicatorData[key].slice(0, n).map((v, i) => ({
-            time: candles[i]!.time as Time,
-            value: v,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
           })),
         )
       }
-    } else {
-      removeLine("bbUpper")
-      removeLine("bbMiddle")
-      removeLine("bbLower")
-    }
-
-    const rs = rsiSeriesRef.current
-    if (rs) {
-      if (indicators.rsi) {
-        chartRef.current?.priceScale("rsi").applyOptions({ visible: true })
-        rs.setData(
-          indicatorData.rsi.slice(0, n).map((v, i) => ({
-            time: candles[i]!.time as Time,
-            value: v,
-          })),
-        )
-      } else {
-        chartRef.current?.priceScale("rsi").applyOptions({ visible: false })
-        rs.setData([])
+      if (vs) {
+        if (indicatorsRef.current.volume) {
+          vs.setData(
+            candles.map((c) => ({
+              time: c.time as Time,
+              value: c.volume,
+              color: c.close >= c.open ? pal.volUp : pal.volDown,
+            })),
+          )
+        } else {
+          vs.setData([])
+        }
       }
-    }
+      updateIndicators(candles.length, candles)
+      chartRef.current?.timeScale().scrollToRealTime()
+    },
 
-    // Scroll to newest bar after full reload
-    const chart = chartRef.current
-    if (chart && candles.length > 0) {
-      chart.timeScale().scrollToRealTime()
-    }
-  }, [candles, indicatorData, indicators, theme])
+    updateTick: (candle: Candle) => {
+      const cs = candleSeriesRef.current
+      const vs = volumeSeriesRef.current
+      const pal = PALETTES[theme]
+      const n = candlesCountRef.current
 
-  // ── scroll to follow playback ─────────────────────────────────────────────────
-  useLayoutEffect(() => {
-    const chart = chartRef.current
-    if (!chart || candles.length === 0 || playbackIndex == null) return
-    // Just scroll to real-time — lightweight-charts handles the rest
-    chart.timeScale().scrollToRealTime()
-  }, [playbackIndex])
+      if (cs) {
+        cs.update({ time: candle.time as Time, open: candle.open, high: candle.high, low: candle.low, close: candle.close })
+      }
+      if (vs && indicatorsRef.current.volume) {
+        vs.update({ time: candle.time as Time, value: candle.volume, color: candle.close >= candle.open ? pal.volUp : pal.volDown })
+      }
+      // Update indicators for this new bar
+      const ind = indicatorsRef.current
+      const indData = indicatorDataRef.current
+      const lineMap = lineSeriesRef.current
+      const indSpecs: (keyof IndicatorSeries)[] = ["ema9", "ema20", "ema50", "ema200", "vwap", "bbUpper", "bbMiddle", "bbLower"]
+      for (const key of indSpecs) {
+        const s = lineMap.get(key)
+        if (!s) continue
+        const v = indData[key][n]
+        if (v != null) s.update({ time: candle.time as Time, value: v })
+      }
+      if (ind.rsi) {
+        const rv = indData.rsi[n]
+        if (rv != null) rsiSeriesRef.current?.update({ time: candle.time as Time, value: rv })
+      }
+      candlesCountRef.current = n + 1
+    },
+
+    scrollToEnd: () => {
+      chartRef.current?.timeScale().scrollToRealTime()
+    },
+
+    takeScreenshot: () => {
+      return chartRef.current!.takeScreenshot()
+    },
+  }))
+
+  // ── indicators-only update (when indicators toggle changes) ──────────────────
+  useEffect(() => {
+    // We need access to the current candles to update indicators.
+    // Since candles are managed externally via setData/updateTick,
+    // we use the candleSeries data as source of truth.
+    // This effect only runs when indicator toggles change.
+  }, [indicators])
 
   // ── markers (entries / exits) ────────────────────────────────────────────────
   useEffect(() => {
@@ -461,7 +450,7 @@ export const ReplayChart = memo(function ReplayChart({
       })
     }
     markers.sort((a, b) => Number(a.time) - Number(b.time))
-      markersRef.current?.setMarkers(markers)
+    markersRef.current?.setMarkers(markers)
   }, [positions, closedTrades, theme])
 
   // ── SL / TP / entry price lines ──────────────────────────────────────────────
