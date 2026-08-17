@@ -36,14 +36,14 @@ export function SetupBarChart() {
       <div className="chart-title">P&L by Setup</div>
       
       {loading ? (
-        <div className="skeleton" style={{ flex: 1, minHeight: 280 }} />
+        <div className="skeleton" style={{ height: 220 }} />
       ) : data.length === 0 ? (
-        <div className="empty-state" style={{ padding: "1.5rem", minHeight: 280, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div className="empty-state" style={{ padding: "1.5rem", height: 220, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <p style={{ fontSize: "0.85rem" }}>Tag your trades to see this chart.</p>
         </div>
       ) : (
-        <div style={{ minHeight: 280 }}>
-          <ResponsiveContainer width="100%" height={280}>
+        <div style={{ height: 220 }}>
+          <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <XAxis 
                 dataKey="name" 
