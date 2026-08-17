@@ -163,26 +163,28 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
 
       {/* Grid Row: Chart (left) and Gauges (right) */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
-          <div style={{ flex: "2 1 500px", minWidth: 0 }}>
-            <EquityCurveChart
-              snapshots={snapshots.map(s => ({
-                date: s.date,
-                endBalance: Number(s.endBalance),
-                lowestEquity: Number(s.lowestEquity),
-                dailyPnl: Number(s.dailyPnl || 0),
-              }))}
-              initialBalance={initial}
-              currentBalance={Number(challenge.currentEquity)}
-              maxDrawdownPct={maxDDPct}
-              profitTarget={profitTarget}
-              maxDDLevel={latestSnapshot?.maxDDLevel}
-              showMaxDDLine
-              showTargetLine
-            />
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", alignItems: "stretch" }}>
+          <div style={{ flex: "2 1 500px", minWidth: 0, display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+              <EquityCurveChart
+                snapshots={snapshots.map(s => ({
+                  date: s.date,
+                  endBalance: Number(s.endBalance),
+                  lowestEquity: Number(s.lowestEquity),
+                  dailyPnl: Number(s.dailyPnl || 0),
+                }))}
+                initialBalance={initial}
+                currentBalance={Number(challenge.currentEquity)}
+                maxDrawdownPct={maxDDPct}
+                profitTarget={profitTarget}
+                maxDDLevel={latestSnapshot?.maxDDLevel}
+                showMaxDDLine
+                showTargetLine
+              />
+            </div>
           </div>
 
-          <div style={{ flex: "1 1 300px", minWidth: 0 }}>
+          <div style={{ flex: "1 1 300px", minWidth: 0, display: "flex", flexDirection: "column" }}>
             <PropFirmGauges challenge={challenge} />
           </div>
         </div>

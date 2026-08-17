@@ -211,7 +211,7 @@ export function EquityCurveChart({
   }
 
   return (
-    <div className="chart-card" style={{ padding: "1.25rem" }}>
+    <div className="chart-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1 }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
         <div>
@@ -294,7 +294,7 @@ export function EquityCurveChart({
       </div>
 
       {/* Chart */}
-      <div style={{ height: 300 }}>
+      <div style={{ flex: 1, minHeight: 300 }}>
         {viewMode === "balance" ? (
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
