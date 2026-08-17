@@ -145,8 +145,8 @@ export const ReplayChart = memo(function ReplayChart({
         vertLine: { color: pal.crosshair, width: 1, style: LineStyle.LargeDashed },
         horzLine: { color: pal.crosshair, width: 1, style: LineStyle.LargeDashed },
       },
-      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.15, bottom: 0.15 } },
-      timeScale: { borderColor: pal.grid, rightOffset: 20 },
+      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.05, bottom: 0.05 } },
+      timeScale: { borderColor: pal.grid, rightOffset: 5 },
       handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
       handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true },
     })
@@ -223,7 +223,7 @@ export const ReplayChart = memo(function ReplayChart({
         vertLine: { color: pal.crosshair },
         horzLine: { color: pal.crosshair },
       },
-      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.15, bottom: 0.15 } },
+      rightPriceScale: { borderColor: pal.grid, scaleMargins: { top: 0.05, bottom: 0.05 } },
       timeScale: { borderColor: pal.grid },
     })
     candleSeriesRef.current?.applyOptions({
@@ -419,18 +419,17 @@ export const ReplayChart = memo(function ReplayChart({
   }, [candles, indicatorData, indicators, theme])
 
   // ── scroll to follow playback ─────────────────────────────────────────────────
-  // Uses a fixed window of 120 bars so playback always shows a consistent zoom level.
   useLayoutEffect(() => {
     const chart = chartRef.current
     if (!chart || candles.length === 0 || playbackIndex == null) return
-    if (userScrolledRef.current && !playbackIndex) return
     const ts = chart.timeScale()
-    const totalBars = candles.length
-    const idx = Math.min(playbackIndex, totalBars - 1)
-    const windowSize = 120
-    const rightPad = 15
+    const idx = Math.min(playbackIndex, candles.length - 1)
 
+    // Keep 80 bars visible with current candle near the right edge
+    const windowSize = 80
+    const rightPad = 10
     const targetFrom = idx - (windowSize - rightPad)
+
     ts.setVisibleLogicalRange({
       from: Math.max(0, targetFrom),
       to: Math.max(windowSize, targetFrom + windowSize),
