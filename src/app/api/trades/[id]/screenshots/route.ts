@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 const screenshotSchema = z.object({
-  storageUrl: z.string().url(),
+  storageUrl: z.string().min(1).max(2048),
   fileName: z.string().max(255).optional(),
 })
 
