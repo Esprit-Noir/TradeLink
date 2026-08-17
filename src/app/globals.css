@@ -2540,6 +2540,7 @@
   grid-template-columns: 2fr 1fr;
   gap: 1rem;
   margin-bottom: 1rem;
+  align-items: stretch;
 }
 
 .dashboard-row-equal {

@@ -256,7 +256,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Charts Row 2: Equity Curve & Setups */}
-      <div className="dashboard-row-2-1">
+      <div className="dashboard-row-2-1" style={{ alignItems: "stretch" }}>
         <Suspense fallback={
           <div className="chart-card">
             <div className="chart-title">Equity Curve</div>
@@ -267,7 +267,7 @@ export default async function DashboardPage({
         </Suspense>
         
         <Suspense fallback={
-          <div className="chart-card">
+          <div className="chart-card" style={{ minHeight: 300 }}>
             <div className="chart-title">Performance by Setup</div>
             <ChartSkeleton height={260} />
           </div>
