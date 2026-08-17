@@ -1,10 +1,9 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
-import dynamic from "next/dynamic"
-
-const Globe = dynamic(() => import("react-globe.gl"), { ssr: false })
+import createGlobe from "cobe"
 
 interface Session {
   id: string
@@ -88,69 +87,154 @@ function getSessionProgress(session: Session, now: Date): number {
   return 0
 }
 
-function RealisticGlobe({ now, summer }: { now: Date, summer: boolean }) {
-  const globeRef = useRef<any>(null)
-  const [dimensions, setDimensions] = useState({ width: 400, height: 400 })
-  const containerRef = useRef<HTMLDivElement>(null)
+function hexToRgb(hex: string): [number, number, number] {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? [
+    parseInt(result[1], 16) / 255,
+    parseInt(result[2], 16) / 255,
+    parseInt(result[3], 16) / 255
+  ] : [1, 1, 1];
+}
 
+function CobeGlobe({ now, summer }: { now: Date, summer: boolean }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [wrapper, setWrapper] = useState<HTMLElement | null>(null)
+  
   useEffect(() => {
-    if (containerRef.current) {
-      const { offsetWidth, offsetHeight } = containerRef.current
-      setDimensions({ width: offsetWidth, height: offsetHeight })
+    let phi = 0
+    if (!canvasRef.current) return
+    
+    // Fallback to a fixed width if offsetWidth is 0
+    const w = Math.min(canvasRef.current.offsetWidth, canvasRef.current.offsetHeight) || 400
+    
+    // Initial markers for setup
+    const initialMarkers = SESSIONS.map(s => {
+      const isOpen = isSessionOpen(s, now)
+      return {
+        id: s.id,
+        location: s.location as [number, number],
+        size: isOpen ? 0.08 : 0.05,
+        color: isOpen ? hexToRgb(s.color) : [0.5, 0.5, 0.5] as [number, number, number]
+      }
+    })
+    
+    const globe = createGlobe(canvasRef.current, {
+      devicePixelRatio: 2,
+      width: w * 2,
+      height: w * 2,
+      phi: 0,
+      theta: 0,
+      dark: 1,
+      diffuse: 1.2,
+      mapSamples: 20000,
+      mapBrightness: 8,
+      baseColor: [0.04, 0.08, 0.18],
+      markerColor: [1, 1, 1],
+      glowColor: [0.1, 0.25, 0.55],
+      markers: initialMarkers,
+    } as any)
+    
+    let animationId: number
+    const render = () => {
+      phi += 0.005
+      
+      const currentTime = new Date()
+      // Create animated markers for pulsating effect
+      const animatedMarkers = SESSIONS.map(s => {
+        const isOpen = isSessionOpen(s, currentTime)
+        // Pulsate between 0.05 and 0.11 size for active sessions
+        const size = isOpen 
+          ? 0.08 + Math.sin(Date.now() / 250) * 0.03
+          : 0.04
+          
+        return {
+          id: s.id,
+          location: s.location as [number, number],
+          size: size,
+          color: isOpen ? hexToRgb(s.color) : [0.4, 0.4, 0.4] as [number, number, number]
+        }
+      })
+      
+      if (globe && typeof globe.update === 'function') {
+        globe.update({ phi: phi, markers: animatedMarkers })
+      }
+      
+      animationId = requestAnimationFrame(render)
     }
-  }, [])
-
-  useEffect(() => {
-    if (!globeRef.current) return
-    const globe = globeRef.current
-
-    // Set up controls
-    globe.controls().autoRotate = true
-    globe.controls().autoRotateSpeed = 0.3
-    globe.controls().enableZoom = false
-    globe.controls().enablePan = false
-
-    // Point of view
-    globe.pointOfView({ lat: 20, lng: -30, altitude: 1.5 })
-  }, [])
-
-  // Markers data
-  const markers = SESSIONS.map(s => {
-    const isOpen = isSessionOpen(s, now)
-    return {
-      id: s.id,
-      lat: s.location[0],
-      lng: s.location[1],
-      size: isOpen ? 0.4 : 0.2,
-      color: isOpen ? s.color : "#555555",
-      isOpen,
-      session: s,
-      label: `${s.flag} ${SESSION_NAMES[s.id]}`,
+    render()
+    
+    // The canvas parent becomes the cobe-created relative div (Z in source)
+    setWrapper(canvasRef.current.parentElement)
+    
+    return () => {
+      cancelAnimationFrame(animationId)
+      if (globe) globe.destroy()
     }
-  })
-
-  const globeSize = Math.min(dimensions.width, dimensions.height)
-
+  }, [now, summer])
+  
   return (
-    <div ref={containerRef} style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }}>
-      <Globe
-        ref={globeRef}
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-        backgroundImageUrl=""
-        backgroundColor="rgba(0,0,0,0)"
-        width={globeSize}
-        height={globeSize}
-        pointsData={markers}
-        pointLat="lat"
-        pointLng="lng"
-        pointColor="color"
-        pointAltitude={0.02}
-        pointRadius="size"
-        pointsMerge={false}
-        pointLabel="label"
-        atmosphereColor="#3b82f6"
-        atmosphereAltitude={0.25}
+    <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', position: 'relative' }}>
+      {/* Subtle blue ocean background light */}
+      <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(30,100,200,0.12) 0%, rgba(20,60,140,0.04) 50%, transparent 100%)', filter: 'blur(25px)', zIndex: 0 }} />
+      <canvas
+        ref={canvasRef}
+        style={{ width: "100%", height: "100%", objectFit: "contain", zIndex: 1 }}
       />
+      
+      {wrapper && createPortal(
+        <>
+          <style>{`
+            ${SESSIONS.map(s => `
+              .marker-label-${s.id} {
+                position: absolute;
+                position-anchor: --cobe-${s.id};
+                bottom: anchor(top);
+                left: anchor(center);
+                opacity: var(--cobe-visible-${s.id}, 0);
+                transform: translate(-50%, -10px);
+                transition: opacity 0.3s ease;
+                background: rgba(10, 10, 12, 0.85);
+                border: 1px solid var(--color-gray-800);
+                padding: 6px 10px;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+                pointer-events: none;
+                z-index: 20;
+                backdrop-filter: blur(4px);
+              }
+              .marker-label-${s.id}.is-open {
+                border-color: rgba(255, 255, 255, 0.2);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+              }
+            `).join('\n')}
+            @keyframes live-pulse {
+              0% { transform: scale(0.95); opacity: 1; }
+              50% { transform: scale(1.6); opacity: 0.5; }
+              100% { transform: scale(0.95); opacity: 1; }
+            }
+          `}</style>
+          
+          {SESSIONS.map(s => {
+            const isOpen = isSessionOpen(s, now)
+            const h = getSessionHours(s, summer)
+            return (
+              <div key={s.id} className={`marker-label-${s.id} ${isOpen ? 'is-open' : ''}`}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  {isOpen && <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, boxShadow: `0 0 8px ${s.color}`, animation: 'live-pulse 2s infinite' }} />}
+                  <span style={{ color: isOpen ? s.color : 'var(--color-gray-400)' }}>{SESSION_NAMES[s.id].toUpperCase()}</span>
+                </div>
+                <div style={{ fontSize: '0.65rem', color: 'var(--color-gray-500)', fontWeight: 500 }}>
+                  {h.open.toString().padStart(2, '0')}:00 - {h.close.toString().padStart(2, '0')}:00 UTC
+                </div>
+              </div>
+            )
+          })}
+        </>,
+        wrapper
+      )}
     </div>
   )
 }
@@ -205,10 +289,17 @@ export function WorldSessionsMap() {
 
       {/* World Map Area */}
       <div style={{ 
-        position: "relative", width: "100%", flex: "1 1 0", minHeight: 520,
-        borderRadius: 12, overflow: "hidden", marginBottom: 16 
+        position: "relative", width: "100%", aspectRatio: "2/1", 
+        background: "radial-gradient(ellipse at center, #0c1a3a 0%, #060e1f 70%, #030810 100%)", borderRadius: 12, 
+        border: "1px solid var(--color-gray-800)", overflow: "hidden", 
+        marginBottom: 16 
       }}>
-        {mounted && <RealisticGlobe now={now} summer={summer} />}
+        
+        {mounted && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
+            <CobeGlobe now={now} summer={summer} />
+          </div>
+        )}
       </div>
 
       {/* Session Cards */}
