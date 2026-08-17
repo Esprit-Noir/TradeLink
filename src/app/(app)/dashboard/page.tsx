@@ -289,7 +289,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Mini Calendar */}
-      <div className="chart-card">
+      <div className="chart-card" style={{ marginBottom: "1.5rem" }}>
         <div className="chart-title">Trading Calendar</div>
         <MiniCalendar dailyPnl={dailyPnlForCalendar} dailyTradeCount={dailyTradeCountForCalendar} />
       </div>
