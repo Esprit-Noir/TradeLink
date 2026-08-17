@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowRight, Play } from "lucide-react"
+import { ArrowRight, Play, LayoutDashboard } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 
 function AnimatedCounter({ end, suffix = "", duration = 2000, decimals = 0 }: { end: number; suffix?: string; duration?: number; decimals?: number }) {
@@ -39,7 +39,7 @@ const TRUSTED_LOGOS = [
   "FTMO", "MyForexFunds", "The5ers", "Fidelcrest", "True Forex Funds", "E8 Funding", "Surge Trader", "Apex"
 ]
 
-export function MarketingHero() {
+export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
   return (
     <section className="marketing-hero-tz">
       <div className="marketing-hero-tz-bg">
@@ -66,10 +66,17 @@ export function MarketingHero() {
           </p>
 
           <div className="marketing-hero-tz-actions" data-animate="fade-up" data-delay="3">
-            <Link href="/register" className="marketing-hero-tz-btn-primary">
-              Start Free — No Card Needed
-              <ArrowRight size={18} />
-            </Link>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="marketing-hero-tz-btn-primary">
+                Go to Dashboard
+                <LayoutDashboard size={18} />
+              </Link>
+            ) : (
+              <Link href="/register" className="marketing-hero-tz-btn-primary">
+                Start Free — No Card Needed
+                <ArrowRight size={18} />
+              </Link>
+            )}
             <Link href="#features" className="marketing-hero-tz-btn-secondary">
               <Play size={16} fill="currentColor" />
               See How It Works

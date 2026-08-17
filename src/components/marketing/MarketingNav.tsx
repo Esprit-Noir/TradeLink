@@ -2,10 +2,10 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { Menu, X } from "lucide-react"
+import { Menu, X, LayoutDashboard, LogOut } from "lucide-react"
 import Image from "next/image"
 
-export function MarketingNav() {
+export function MarketingNav({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -23,8 +23,17 @@ export function MarketingNav() {
         </div>
 
         <div className="marketing-nav-actions">
-          <Link href="/login" className="btn btn-ghost">Log in</Link>
-          <Link href="/register" className="btn btn-primary">Start Free</Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/dashboard" className="btn btn-ghost"><LayoutDashboard size={16} /> Dashboard</Link>
+              <Link href="/api/auth/signout" className="btn btn-primary"><LogOut size={16} /> Log Out</Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="btn btn-ghost">Log in</Link>
+              <Link href="/register" className="btn btn-primary">Start Free</Link>
+            </>
+          )}
         </div>
 
         <button className="marketing-mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
@@ -37,8 +46,17 @@ export function MarketingNav() {
           <a href="#features" onClick={() => setMobileOpen(false)}>Features</a>
           <a href="#pricing" onClick={() => setMobileOpen(false)}>Pricing</a>
           <a href="#testimonials" onClick={() => setMobileOpen(false)}>Reviews</a>
-          <Link href="/login" onClick={() => setMobileOpen(false)}>Log in</Link>
-          <Link href="/register" className="btn btn-primary" onClick={() => setMobileOpen(false)}>Start Free</Link>
+          {isLoggedIn ? (
+            <>
+              <Link href="/dashboard" onClick={() => setMobileOpen(false)}>Dashboard</Link>
+              <Link href="/api/auth/signout" className="btn btn-primary" onClick={() => setMobileOpen(false)}>Log Out</Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" onClick={() => setMobileOpen(false)}>Log in</Link>
+              <Link href="/register" className="btn btn-primary" onClick={() => setMobileOpen(false)}>Start Free</Link>
+            </>
+          )}
         </div>
       )}
     </nav>

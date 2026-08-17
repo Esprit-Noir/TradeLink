@@ -1,3 +1,4 @@
+import { auth } from "@/lib/auth"
 import { MarketingHero } from "@/components/marketing/MarketingHero"
 import { MarketingHowItWorks } from "@/components/marketing/MarketingHowItWorks"
 import { MarketingFeatures } from "@/components/marketing/MarketingFeatures"
@@ -16,19 +17,22 @@ export const metadata = {
     "The professional trading journal that analyzes your performance, detects destructive patterns, and helps you build unbreakable discipline. Free to start.",
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth()
+  const isLoggedIn = !!session?.user?.id
+
   return (
     <div className="marketing-page">
       <MarketingAnimations />
-      <MarketingNav />
-      <MarketingHero />
+      <MarketingNav isLoggedIn={isLoggedIn} />
+      <MarketingHero isLoggedIn={isLoggedIn} />
       <MarketingHowItWorks />
       <MarketingFeatures />
       <MarketingIntegrations />
       <MarketingPricing />
       <MarketingTestimonials />
       <MarketingFaq />
-      <MarketingCta />
+      <MarketingCta isLoggedIn={isLoggedIn} />
       <MarketingFooter />
     </div>
   )

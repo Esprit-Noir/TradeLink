@@ -1,7 +1,7 @@
-import { ArrowRight, Shield, Clock, CreditCard } from "lucide-react"
+import { ArrowRight, Shield, Clock, CreditCard, LayoutDashboard } from "lucide-react"
 import Link from "next/link"
 
-export function MarketingCta() {
+export function MarketingCta({ isLoggedIn }: { isLoggedIn?: boolean }) {
   return (
     <section className="marketing-cta">
       <div className="marketing-section-inner">
@@ -29,10 +29,17 @@ export function MarketingCta() {
             </div>
           </div>
 
-          <Link href="/register" className="btn btn-primary btn-lg marketing-cta-button" data-animate="fade-up" data-delay="2">
-            Start Free — No Card Required
-            <ArrowRight size={18} />
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard" className="btn btn-primary btn-lg marketing-cta-button" data-animate="fade-up" data-delay="2">
+              Go to Dashboard
+              <LayoutDashboard size={18} />
+            </Link>
+          ) : (
+            <Link href="/register" className="btn btn-primary btn-lg marketing-cta-button" data-animate="fade-up" data-delay="2">
+              Start Free — No Card Required
+              <ArrowRight size={18} />
+            </Link>
+          )}
 
           <p className="marketing-cta-note">
             Free forever. No credit card required. Cancel anytime.
