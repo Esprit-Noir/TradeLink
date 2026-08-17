@@ -260,7 +260,7 @@ export default async function DashboardPage({
         <Suspense fallback={
           <div className="chart-card">
             <div className="chart-title">Equity Curve</div>
-            <ChartSkeleton height={260} />
+            <ChartSkeleton height={300} />
           </div>
         }>
           <EquityCurveChart />

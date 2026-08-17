@@ -83,7 +83,20 @@ export async function GET(request: Request) {
     })
 
     const data = computeEquityCurve(trades, scope.baseBalance, user?.timezone ?? "UTC")
-    return NextResponse.json({ data })
+
+    // Compute metadata for the stats bar
+    const initialBalance = scope.baseBalance
+    const currentBalance = data.length > 0 ? data[data.length - 1].equity : initialBalance
+    const maxDrawdown = data.length > 0 ? Math.max(...data.map(p => p.drawdown)) : 0
+    const currentDrawdown = data.length > 0 ? data[data.length - 1].drawdown : 0
+
+    return NextResponse.json({
+      data,
+      initialBalance,
+      currentBalance,
+      maxDrawdown: Math.round(maxDrawdown * 100) / 100,
+      currentDrawdown: Math.round(currentDrawdown * 100) / 100,
+    })
   } catch (error) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
