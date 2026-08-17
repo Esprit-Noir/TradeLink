@@ -1,5 +1,6 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
+import Google from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
@@ -12,6 +13,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     Credentials({
       name: "credentials",
       credentials: {
@@ -51,6 +56,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      // For OAuth providers, create default trading account on first login
+      if (account?.provider === "google" && user?.id) {
+        const existingAccount = await prisma.tradingAccount.findFirst({
+          where: { userId: user.id },
+        })
+
+        if (!existingAccount) {
+          await prisma.tradingAccount.create({
+            data: {
+              userId: user.id,
+              name: "Main Account",
+              baseCurrency: "USD",
+              initialBalance: 10000,
+              isDefault: true,
+            },
+          })
+        }
+
+        // Update lastLoginAt
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        })
+      }
+
+      return true
+    },
     async jwt({ token, user }) {
       // On sign-in, set the id
       if (user) {
