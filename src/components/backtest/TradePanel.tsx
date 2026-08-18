@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { fmtPrice } from "@/lib/formatters"
 import {
   Save,
   Loader2,
@@ -47,14 +48,6 @@ const INDICATOR_TOGGLES: { key: keyof IndicatorsState; label: string }[] = [
   { key: "rsi", label: "RSI" },
   { key: "volume", label: "Vol" },
 ]
-
-function fmtPrice(v: number): string {
-  const a = Math.abs(v)
-  if (a >= 1000) return v.toLocaleString("en-US", { maximumFractionDigits: 2 })
-  if (a >= 1) return v.toFixed(2)
-  if (a >= 0.01) return v.toFixed(4)
-  return v.toFixed(6)
-}
 
 export function TradePanel({
   symbol,

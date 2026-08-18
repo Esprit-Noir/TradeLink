@@ -650,14 +650,6 @@ export function ReplayWorkbench({
     )
   }
 
-  const fmtPrice = (v: number | undefined | null) => {
-    if (v == null) return "—"
-    const a = Math.abs(v)
-    if (a >= 1000) return v.toLocaleString("en-US", { maximumFractionDigits: 2 })
-    if (a >= 1) return v.toFixed(2)
-    if (a >= 0.01) return v.toFixed(4)
-    return v.toFixed(6)
-  }
 
   const progress = state.data.length > 1 ? (state.currentIndex / (state.data.length - 1)) * 100 : 0
 

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, forwardRef, useImperativeHandle } from "react"
+import { fmtPrice } from "@/lib/formatters"
 import {
   createChart,
   createSeriesMarkers,
@@ -72,13 +73,6 @@ const PALETTES = {
     vwap: "#a16207",
     bb: "#64748b",
   },
-}
-
-function fmtPrice(p: number): string {
-  if (p >= 1000) return p.toLocaleString("en-US", { maximumFractionDigits: 2 })
-  if (p >= 1) return p.toFixed(2)
-  if (p >= 0.01) return p.toFixed(4)
-  return p.toFixed(8)
 }
 
 export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function ReplayChart(

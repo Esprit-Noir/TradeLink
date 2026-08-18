@@ -2,6 +2,7 @@
 
 import type { Candle } from "@/lib/market/types"
 import { unrealizedPnl } from "@/lib/market/simulator"
+import { fmtPrice } from "@/lib/formatters"
 import type { SimTrade } from "./types"
 import { X } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
@@ -243,12 +244,4 @@ function fmt(n: number): string {
 
 function fmtQty(n: number): string {
   return n.toLocaleString("en-US", { maximumFractionDigits: 4 })
-}
-
-function fmtPrice(v: number): string {
-  const a = Math.abs(v)
-  if (a >= 1000) return v.toLocaleString("en-US", { maximumFractionDigits: 2 })
-  if (a >= 1) return v.toFixed(2)
-  if (a >= 0.01) return v.toFixed(4)
-  return v.toFixed(6)
 }

@@ -51,7 +51,7 @@ function GaugeChart({ score }: { score: number }) {
         <g style={{ transformOrigin: "100px 100px", transform: `rotate(${angle}deg)`, transition: "transform 1s cubic-bezier(0.4, 0, 0.2, 1)" }}>
           <polygon points="96,100 104,100 100,30" fill="url(#needleGrad)" />
         </g>
-        <circle cx="100" cy="100" r="6" fill="#3B82F6" />
+        <circle cx="100" cy="100" r="6" fill="var(--color-brand-500)" />
       </svg>
     </div>
   )

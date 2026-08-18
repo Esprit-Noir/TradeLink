@@ -122,7 +122,6 @@ export function TradeDetailsDrawer() {
         throw new Error(blob.error)
       }
     } catch (err: any) {
-      console.error("Upload failed", err)
       setUploadError(err.message || "Failed to upload image")
       toast.error(`Upload failed: ${err.message || "Unknown error"}`)
     } finally {
@@ -168,7 +167,6 @@ export function TradeDetailsDrawer() {
       setEditMode(false)
       router.refresh()
     } catch (error) {
-      console.error("Failed to save details", error)
       toast.error("Failed to save changes. Please try again.")
     } finally {
       setSaving(false)

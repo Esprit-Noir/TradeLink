@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
+import { fmtPrice } from "@/lib/formatters"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Menu, Plus, X, Search, Loader2, Star, TrendingUp, TrendingDown, Minus } from "lucide-react"
@@ -19,13 +20,6 @@ const CATEGORIES: (SymbolCategory | "all")[] = [
   "Crypto",
   "Actions",
 ]
-
-function fmtPrice(p: number): string {
-  if (p >= 1000) return p.toLocaleString("en-US", { maximumFractionDigits: 2 })
-  if (p >= 1) return p.toFixed(2)
-  if (p >= 0.01) return p.toFixed(4)
-  return p.toFixed(8)
-}
 
 function fmtChange(p: number): string {
   const a = Math.abs(p)
