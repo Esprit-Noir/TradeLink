@@ -52,12 +52,12 @@ export function Sidebar({
   const pathname = usePathname()
   const [stats, setStats] = useState<SidebarStats | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("sidebar_collapsed") === "true"
-    }
-    return false
-  })
+  const [collapsed, setCollapsed] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem("sidebar_collapsed")
+    if (stored === "true") setCollapsed(true)
+  }, [])
 
   const isOpen = open ?? mobileOpen
   const closeSidebar = () => {
@@ -136,7 +136,7 @@ export function Sidebar({
 
       {mobileOpen && <div className="sidebar-backdrop" onClick={closeSidebar} />}
 
-      <aside role="dialog" aria-modal="true" className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
+      <aside {...(asDrawer ? { role: "dialog", "aria-modal": "true" } : {})} className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
         {/* Mobile close */}
         <button className="sidebar-close" onClick={closeSidebar} aria-label="Close navigation">
           <X size={18} />
