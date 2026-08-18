@@ -45,7 +45,8 @@ export async function GET() {
       eventTypes: { ...DEFAULT_EVENT_TYPES, ...(prefs.eventTypes || {}) },
       defaults: { ...DEFAULT_PREFS.defaults, ...(prefs.defaults || {}) },
     })
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error fetching notification preferences:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -80,7 +81,8 @@ export async function PATCH(request: Request) {
     })
 
     return NextResponse.json(merged)
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error updating notification preferences:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

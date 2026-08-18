@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(accountsWithStats)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error fetching accounts:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 })
   }
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(newAccount)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating account:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to create account" }, { status: 500 })
   }

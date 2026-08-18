@@ -125,7 +125,7 @@ export function TradesTable({
   }
 
   const handleSort = (key: string) => {
-    const params = new URLSearchParams(searchParams as any)
+    const params = new URLSearchParams(searchParams.toString())
     if (params.get("sort") === key) {
       params.set("dir", params.get("dir") === "asc" ? "desc" : "asc")
     } else {
@@ -161,7 +161,7 @@ export function TradesTable({
   }
 
   const exportCsv = async () => {
-    const params = new URLSearchParams(searchParams as any)
+    const params = new URLSearchParams(searchParams.toString())
     params.delete("page")
     params.delete("tradeId")
     try {
@@ -407,7 +407,7 @@ function LinkBtn({ href, children }: { href: string; children: React.ReactNode }
 }
 
 function pageHref(page: number, searchParams: URLSearchParams, pathname: string) {
-  const params = new URLSearchParams(searchParams as any)
+  const params = new URLSearchParams(searchParams.toString())
   params.set("page", String(page))
   return `${pathname}?${params.toString()}`
 }

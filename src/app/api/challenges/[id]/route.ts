@@ -3,6 +3,22 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
+interface AlertConfig {
+  stopTradingPct?: number
+  profitGoalPct?: number
+  enableStopTrading?: boolean
+  enableProfitGoal?: boolean
+}
+
+interface ChallengeMetadata {
+  steps?: string
+  phase1Target?: number | null
+  phase2Target?: number | null
+  fundedTarget?: number | null
+  payoutSplit?: string | null
+  [key: string]: unknown
+}
+
 const alertConfigSchema = z.object({
   stopTradingPct: z.union([z.string(), z.number()]).optional(),
   profitGoalPct: z.union([z.string(), z.number()]).optional(),
@@ -60,7 +76,7 @@ export async function PATCH(
     if (parsed.data.cost !== undefined) dataToUpdate.cost = parsed.data.cost === null || parsed.data.cost === "" ? null : parseFloat(String(parsed.data.cost))
 
     if (parsed.data.alertConfig !== undefined) {
-      const currentAlertConfig = (challenge.alertConfig as any) || {}
+      const currentAlertConfig = (challenge.alertConfig as AlertConfig) || {}
       dataToUpdate.alertConfig = {
         stopTradingPct: parsed.data.alertConfig.stopTradingPct !== undefined ? Number(parsed.data.alertConfig.stopTradingPct) : (currentAlertConfig.stopTradingPct ?? 85),
         profitGoalPct: parsed.data.alertConfig.profitGoalPct !== undefined ? Number(parsed.data.alertConfig.profitGoalPct) : (currentAlertConfig.profitGoalPct ?? 50),
@@ -69,7 +85,7 @@ export async function PATCH(
       }
     }
 
-    const currentMetadata = (challenge.metadata as any) || {}
+    const currentMetadata = (challenge.metadata as ChallengeMetadata) || {}
     const newMetadata = {
       ...currentMetadata,
       steps: parsed.data.steps ?? currentMetadata.steps ?? "2",
@@ -106,7 +122,7 @@ export async function PATCH(
     })
 
     return NextResponse.json(updated)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error updating challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to update challenge" }, { status: 500 })
   }
@@ -140,7 +156,7 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error deleting challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to delete challenge" }, { status: 500 })
   }

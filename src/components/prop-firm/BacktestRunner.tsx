@@ -422,7 +422,7 @@ function Simulator({ templates }: { templates: Template[] }) {
                 <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} tickFormatter={(v: any) => `${v}%`} />
                 <Tooltip
                   contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
-                  formatter={(val: any, name: any) => [`${Number(val).toFixed(1)}%`, name === "median" ? "Median" : name === "low" ? "P10 (worst)" : "P90 (best)"]}
+                   formatter={(val, name) => [`${Number(val).toFixed(1)}%`, name === "median" ? "Median" : name === "low" ? "P10 (worst)" : "P90 (best)"]}
                 />
                 <Area type="monotone" dataKey="high" stroke="none" fill="var(--color-brand-500)" fillOpacity={0.08} />
                 <Area type="monotone" dataKey="low" stroke="none" fill="var(--color-gray-900)" />

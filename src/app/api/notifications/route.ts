@@ -39,7 +39,8 @@ export async function GET(request: Request) {
     })
 
     return NextResponse.json({ events, unreadCount })
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error fetching notifications:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -65,7 +66,8 @@ export async function PATCH() {
     }
 
     return NextResponse.json({ ok: true })
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error marking notifications read:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

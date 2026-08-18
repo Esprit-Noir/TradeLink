@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import { toast } from "sonner"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, AreaChart, Area } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
+import type { EquityPoint } from "@/lib/metrics"
+import type { Formatter } from "recharts/types/component/DefaultTooltipContent"
 import { Download, TrendingUp, TrendingDown, BarChart3, Target, Activity, AlertTriangle, Clock, Award } from "lucide-react"
 import dynamic from "next/dynamic"
 
@@ -11,6 +13,76 @@ const EquityCurveChart = dynamic(
   () => import("@/components/dashboard/EquityCurveChart").then(m => ({ default: m.EquityCurveChart })),
   { ssr: false }
 )
+
+interface BreakdownItem {
+  name: string
+  count: number
+  winRate: number
+  pnl: number
+}
+
+interface DrawdownEpisode {
+  startDate: string
+  endDate: string
+  depth: number
+  durationDays: number | null
+}
+
+interface Kpis {
+  profitFactor: number
+  expectancy: number
+  avgWin: number
+  avgLoss: number
+  sortino: number
+}
+
+interface Streaks {
+  longestWinStreak: number
+  longestLossStreak: number
+  currentWinStreak: number
+  currentLossStreak: number
+}
+
+interface Drawdown {
+  maxDrawdown: number
+  maxDrawdownPct: number
+  currentDrawdown: number
+  currentDrawdownPct: number
+  maxDrawdownDurationDays: number | null
+  maxDrawdownStart: string
+  maxDrawdownRecovery: string
+}
+
+interface AdvancedStatsData {
+  empty?: boolean
+  symbols?: BreakdownItem[]
+  setups?: BreakdownItem[]
+  kpis: Kpis
+  streaks: Streaks
+  drawdown: Drawdown
+  drawdownEpisodes: DrawdownEpisode[]
+  equityCurve: EquityPoint[]
+  rrDistribution: Record<string, number>
+  dowPerformance: number[]
+  hourPerformance: number[]
+  monthlyPerformance: { month: string; pnl: number }[]
+  topSymbols: BreakdownItem[]
+  topSetups: BreakdownItem[]
+}
+
+type FilterPatch = {
+  period?: string
+  symbol?: string
+  setup?: string
+  side?: string
+}
+
+interface FilterState {
+  period: string
+  symbol: string
+  setup: string
+  side: string
+}
 
 const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
 const PERIODS = [
@@ -28,8 +100,10 @@ const tooltipStyle = {
   boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
 }
 
+const pnlFormatter: Formatter = (val) => [formatCurrency(Number(val), "USD", true, 2), "P&L"]
+
 export function AdvancedStatsClient() {
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<AdvancedStatsData | null>(null)
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState("all")
   const [symbol, setSymbol] = useState("")
@@ -51,8 +125,8 @@ export function AdvancedStatsClient() {
       setData(d)
       if (!d.empty && d.symbols) {
         setAvailable(prev => ({
-          symbols: prev.symbols.length ? prev.symbols : d.symbols.map((s: any) => s.name),
-          setups: prev.setups.length ? prev.setups : d.setups.map((s: any) => s.name),
+          symbols: prev.symbols.length ? prev.symbols : d.symbols.map((s: BreakdownItem) => s.name),
+          setups: prev.setups.length ? prev.setups : d.setups.map((s: BreakdownItem) => s.name),
         }))
       }
     } catch (e) {
@@ -66,41 +140,41 @@ export function AdvancedStatsClient() {
     load({ period, symbol, setup, side })
   }, [period, symbol, setup, side, load])
 
-  const apply = useCallback((patch: any) => {
+  const apply = useCallback((patch: FilterPatch) => {
     if (patch.period !== undefined) setPeriod(patch.period)
     if (patch.symbol !== undefined) setSymbol(patch.symbol)
     if (patch.setup !== undefined) setSetup(patch.setup)
     if (patch.side !== undefined) setSide(patch.side)
   }, [])
 
-  const kpis = data?.kpis
-  const streaks = data?.streaks
-  const drawdown = data?.drawdown
-  const drawdownEpisodes = data?.drawdownEpisodes ?? []
-  const equityCurve = data?.equityCurve
-  const rrDistribution = data?.rrDistribution ?? {}
-  const dowPerformance = data?.dowPerformance ?? []
-  const hourPerformance = data?.hourPerformance ?? []
-  const monthlyPerformance = data?.monthlyPerformance ?? []
-  const topSymbols = data?.topSymbols
-  const topSetups = data?.topSetups
-  const symbols = data?.symbols ?? []
-  const setups = data?.setups ?? []
+  const kpis = data!.kpis
+  const streaks = data!.streaks
+  const drawdown = data!.drawdown
+  const drawdownEpisodes = data!.drawdownEpisodes ?? []
+  const equityCurve = data!.equityCurve
+  const rrDistribution = data!.rrDistribution ?? {}
+  const dowPerformance = data!.dowPerformance ?? []
+  const hourPerformance = data!.hourPerformance ?? []
+  const monthlyPerformance = data!.monthlyPerformance ?? []
+  const topSymbols = data!.topSymbols
+  const topSetups = data!.topSetups
+  const symbols = data!.symbols ?? []
+  const setups = data!.setups ?? []
 
   const rrData = useMemo(() => Object.entries(rrDistribution).map(([name, value]) => ({ name, value })), [rrDistribution])
   const dowData = useMemo(() => dowPerformance.map((pnl: number, index: number) => ({
     name: dayNames[index].substring(0, 3),
     pnl,
-  })).filter((d: any, i: number) => !(d.pnl === 0 && (i === 0 || i === 6))), [dowPerformance])
+  })).filter((d: { name: string; pnl: number }, i: number) => !(d.pnl === 0 && (i === 0 || i === 6))), [dowPerformance])
   const hourData = useMemo(() => hourPerformance.map((pnl: number, h: number) => ({ hour: `${String(h).padStart(2, "0")}H`, pnl })), [hourPerformance])
-  const monthData = useMemo(() => monthlyPerformance.map((m: any) => ({ name: m.month.slice(5), pnl: m.pnl })), [monthlyPerformance])
+  const monthData = useMemo(() => monthlyPerformance.map((m: { month: string; pnl: number }) => ({ name: m.month.slice(5), pnl: m.pnl })), [monthlyPerformance])
   const worstSymbols = useMemo(() => [...symbols].reverse().slice(0, 3), [symbols])
   const worstSetups = useMemo(() => [...setups].reverse().slice(0, 3), [setups])
 
   const exportBreakdown = useCallback(() => {
     const rows = ["type,name,count,winRate%,netPnl"]
-    symbols.forEach((s: any) => rows.push(`symbol,${s.name},${s.count},${s.winRate.toFixed(1)},${s.pnl.toFixed(2)}`))
-    setups.forEach((s: any) => rows.push(`setup,${s.name},${s.count},${s.winRate.toFixed(1)},${s.pnl.toFixed(2)}`))
+    symbols.forEach((s: BreakdownItem) => rows.push(`symbol,${s.name},${s.count},${s.winRate.toFixed(1)},${s.pnl.toFixed(2)}`))
+    setups.forEach((s: BreakdownItem) => rows.push(`setup,${s.name},${s.count},${s.winRate.toFixed(1)},${s.pnl.toFixed(2)}`))
     const blob = new Blob([rows.join("\n")], { type: "text/csv" })
     const url = URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -191,7 +265,7 @@ export function AdvancedStatsClient() {
                     </tr>
                   </thead>
                   <tbody>
-                    {drawdownEpisodes.map((ep: any, i: number) => (
+                    {drawdownEpisodes.map((ep: DrawdownEpisode, i: number) => (
                       <tr key={i}>
                         <td style={{ fontSize: "0.78rem" }}>{ep.startDate || "—"}</td>
                         <td style={{ fontSize: "0.78rem", color: ep.endDate ? "var(--color-gray-500)" : "var(--color-warning)" }}>{ep.endDate || "active"}</td>
@@ -230,10 +304,10 @@ export function AdvancedStatsClient() {
               <BarChart data={dowData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} dy={8} />
                 <YAxis hide />
-                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} formatter={(val: any) => [formatCurrency(Number(val), "USD", true, 2), "P&L"]} contentStyle={tooltipStyle} />
+                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} formatter={pnlFormatter} contentStyle={tooltipStyle} />
                 <ReferenceLine y={0} stroke="var(--color-gray-800)" />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-                  {dowData.map((entry: any, index: number) => (
+                  {dowData.map((entry: { name: string; pnl: number }, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                   ))}
                 </Bar>
@@ -252,10 +326,10 @@ export function AdvancedStatsClient() {
               <BarChart data={hourData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 9 }} interval={2} dy={6} />
                 <YAxis hide />
-                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} formatter={(val: any) => [formatCurrency(Number(val), "USD", true, 2), "P&L"]} contentStyle={tooltipStyle} />
+                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} formatter={pnlFormatter} contentStyle={tooltipStyle} />
                 <ReferenceLine y={0} stroke="var(--color-gray-800)" />
                 <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
-                  {hourData.map((entry: any, index: number) => (
+                  {hourData.map((entry: { hour: string; pnl: number }, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                   ))}
                 </Bar>
@@ -271,10 +345,10 @@ export function AdvancedStatsClient() {
               <BarChart data={monthData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 10, fontWeight: 600 }} dy={8} />
                 <YAxis hide />
-                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} formatter={(val: any) => [formatCurrency(Number(val), "USD", true, 2), "P&L"]} contentStyle={tooltipStyle} />
+                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} formatter={pnlFormatter} contentStyle={tooltipStyle} />
                 <ReferenceLine y={0} stroke="var(--color-gray-800)" />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-                  {monthData.map((entry: any, index: number) => (
+                  {monthData.map((entry: { name: string; pnl: number }, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                   ))}
                 </Bar>
@@ -325,7 +399,7 @@ function KpiStat({ icon, label, value, color, sub }: { icon: React.ReactNode; la
   )
 }
 
-function StatsFilters({ available, filters, apply }: { available: { symbols: string[]; setups: string[] }; filters: any; apply: (p: any) => void }) {
+function StatsFilters({ available, filters, apply }: { available: { symbols: string[]; setups: string[] }; filters: FilterState; apply: (p: FilterPatch) => void }) {
   const hasFilters = filters.period !== "all" || filters.symbol || filters.setup || filters.side
   return (
     <div style={{
@@ -386,7 +460,7 @@ function DrawdownStat({ label, value, sub }: { label: string; value: string; sub
   )
 }
 
-function BreakdownCard({ title, items, icon }: { title: string; items: any[]; icon?: React.ReactNode }) {
+function BreakdownCard({ title, items, icon }: { title: string; items: BreakdownItem[]; icon?: React.ReactNode }) {
   return (
     <div className="chart-card" style={{ padding: "1.25rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
@@ -397,7 +471,7 @@ function BreakdownCard({ title, items, icon }: { title: string; items: any[]; ic
         <div className="empty-state">No data</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-          {items.map((item: any, i: number) => (
+          {items.map((item: BreakdownItem, i: number) => (
             <div key={item.name} style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               padding: "0.6rem 0.75rem",
@@ -429,7 +503,7 @@ function BreakdownCard({ title, items, icon }: { title: string; items: any[]; ic
   )
 }
 
-function BreakdownTable({ title, rows }: { title: string; rows: any[] }) {
+function BreakdownTable({ title, rows }: { title: string; rows: BreakdownItem[] }) {
   return (
     <div className="chart-card" style={{ padding: "1.25rem" }}>
       <div className="chart-title" style={{ marginBottom: "0.75rem" }}>{title}</div>
@@ -447,7 +521,7 @@ function BreakdownTable({ title, rows }: { title: string; rows: any[] }) {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r: any) => (
+              {rows.map((r: BreakdownItem) => (
                 <tr key={r.name}>
                   <td style={{ fontWeight: 600, fontSize: "0.82rem" }}>{r.name}</td>
                   <td style={{ textAlign: "right", color: "var(--color-gray-400)", fontSize: "0.82rem" }}>{r.count}</td>

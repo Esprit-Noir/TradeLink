@@ -5,6 +5,22 @@ import { useRouter } from "next/navigation"
 import { Check, Eye, Undo2, AlertTriangle, Download, Loader2, UploadCloud, FileSpreadsheet, Award } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
 
+interface AccountWithChallenge {
+  id: string
+  name: string
+  type: string
+  isDefault: boolean
+  propChallenge: {
+    firmName: string
+    status: string
+  } | null
+}
+
+interface Setup {
+  name: string
+  isDefault: boolean
+}
+
 const FIELDS = [
   { key: "symbol", label: "Symbol", required: true, hint: "e.g. AAPL, BTCUSDT" },
   { key: "side", label: "Side", required: true, hint: "LONG / SHORT" },
@@ -35,7 +51,7 @@ export default function ImportPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [defaultSetupName, setDefaultSetupName] = useState<string | null>(null)
-  const [accounts, setAccounts] = useState<any[]>([])
+  const [accounts, setAccounts] = useState<AccountWithChallenge[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState("")
 
   // Generic CSV mapping
@@ -44,13 +60,13 @@ export default function ImportPage() {
 
   // Preview + undo
   const [preview, setPreview] = useState<PreviewData | null>(null)
-  const [undoToken, setUndoToken] = useState<any>(null)
+  const [undoToken, setUndoToken] = useState<string | null>(null)
   const [undoing, setUndoing] = useState(false)
 
   useEffect(() => {
     fetch("/api/setups")
       .then(r => r.json())
-      .then((setups: any[]) => {
+      .then((setups: Setup[]) => {
         const def = setups.find(s => s.isDefault)
         if (def) setDefaultSetupName(def.name)
       })
@@ -58,9 +74,9 @@ export default function ImportPage() {
 
     fetch("/api/accounts")
       .then(r => r.json())
-      .then((list: any[]) => {
+      .then((list: AccountWithChallenge[]) => {
         setAccounts(list)
-        const def = list.find((a: any) => a.isDefault) || list[0]
+        const def = list.find((a) => a.isDefault) || list[0]
         if (def) setSelectedAccountId(def.id)
       })
       .catch(console.error)
@@ -157,8 +173,8 @@ export default function ImportPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to parse file")
       setPreview(data)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to parse file")
     } finally {
       setLoading(false)
     }
@@ -195,8 +211,8 @@ export default function ImportPage() {
 
       const fileInput = document.getElementById("csv-file") as HTMLInputElement
       if (fileInput) fileInput.value = ""
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to import trades")
     } finally {
       setLoading(false)
     }
@@ -216,8 +232,8 @@ export default function ImportPage() {
       setUndoToken(null)
       setSuccess(`Rolled back ${data.deleted} imported trade(s).`)
       router.refresh()
-    } catch (err: any) {
-      setError(err.message || "Failed to undo import")
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to undo import")
     } finally {
       setUndoing(false)
     }

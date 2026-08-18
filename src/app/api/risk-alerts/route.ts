@@ -3,6 +3,17 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { dayKey, nextMidnightInTz } from "@/lib/dates"
 
+interface NotificationPrefs {
+  eventTypes?: Record<string, boolean>
+}
+
+interface AlertConfig {
+  stopTradingPct?: number
+  profitGoalPct?: number
+  enableStopTrading?: boolean
+  enableProfitGoal?: boolean
+}
+
 type Alert = {
   type: string
   severity: "info" | "warning" | "critical"
@@ -23,7 +34,7 @@ export async function GET() {
       where: { id: session.user.id },
       select: { notificationPrefs: true, timezone: true },
     })
-    const prefs = (user?.notificationPrefs as any) || {}
+    const prefs = (user?.notificationPrefs as NotificationPrefs) || {}
     const eventMap = prefs.eventTypes || {}
 
     const activeChallenges = await prisma.propChallenge.findMany({
@@ -98,8 +109,8 @@ export async function GET() {
         alerts.push({ type: "dd_80", severity: "warning", challengeId: c.id, challengeName: name, message: `${Math.round(ddUsedPct)}% of max drawdown used.`, value: `${Math.round(ddUsedPct)}%` })
       }
 
-      const stopPct = Number((c.alertConfig as any)?.stopTradingPct ?? 85)
-      if ((c.alertConfig as any)?.enableStopTrading !== false && ddUsedPct >= stopPct && eventMap.stop_trading !== false) {
+      const stopPct = Number((c.alertConfig as AlertConfig)?.stopTradingPct ?? 85)
+      if ((c.alertConfig as AlertConfig)?.enableStopTrading !== false && ddUsedPct >= stopPct && eventMap.stop_trading !== false) {
         alerts.push({ type: "stop_trading", severity: "critical", challengeId: c.id, challengeName: name, message: `Stop-trading threshold reached (${stopPct}% of max DD used). Consider stopping for the day.`, value: `${Math.round(ddUsedPct)}%` })
       }
 
@@ -107,7 +118,7 @@ export async function GET() {
         alerts.push({ type: "daily_dd", severity: "warning", challengeId: c.id, challengeName: name, message: `${Math.round(dailyUsedPct)}% of today's daily drawdown budget used.`, value: `${Math.round(dailyUsedPct)}%` })
       }
 
-      const goalPct = Number((c.alertConfig as any)?.profitGoalPct ?? 50)
+      const goalPct = Number((c.alertConfig as AlertConfig)?.profitGoalPct ?? 50)
       if (profitProgressPct >= goalPct && eventMap.goal_reached !== false) {
         alerts.push({ type: "goal", severity: "info", challengeId: c.id, challengeName: name, message: `${Math.round(profitProgressPct)}% of profit target reached.`, value: `${Math.round(profitProgressPct)}%` })
       }

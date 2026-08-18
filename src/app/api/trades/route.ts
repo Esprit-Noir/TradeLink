@@ -103,7 +103,8 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ success: true, trade })
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error creating trade:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

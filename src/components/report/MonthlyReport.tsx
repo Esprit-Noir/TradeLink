@@ -10,6 +10,99 @@ import { jsPDF } from "jspdf"
 import { autoTable } from "jspdf-autotable"
 import { Download, FileText } from "lucide-react"
 
+interface DailyItem {
+  date: string
+  pnl: number
+  pnlUsd: number
+  cumPnl: number
+  trades: number
+}
+
+interface SetupItem {
+  name: string
+  count: number
+  wins: number
+  pnl: number
+}
+
+interface SymbolItem {
+  symbol: string
+  count: number
+  pnl: number
+}
+
+interface HourItem {
+  hour: number
+  count: number
+  wins: number
+  pnl: number
+}
+
+interface DowItem {
+  dow: string
+  name: string
+  count: number
+  wins: number
+  pnl: number
+}
+
+interface PayoutItem {
+  firmName: string
+  accountName: string
+  amount: number
+  status: string
+  requestedAt: string
+  logoUrl: string
+}
+
+interface ChallengeSummary {
+  startedCount: number
+  startedCost: number
+  passed: number
+  breached: number
+  active: number
+}
+
+interface PayoutsTotals {
+  amount: number
+  paidAmount: number
+}
+
+interface TradeSummary {
+  totalPnl: number
+  totalPnlUsd: number
+  total: number
+  winRate: number
+  wins: number
+  losses: number
+  breakeven: number
+  profitFactor: number
+  expectancy: number
+  avgR: number
+  avgWin: number
+  avgLoss: number
+  best: number
+  worst: number
+  tradingDays: number
+  avgTradesPerDay: number
+}
+
+interface MonthlyReportData {
+  trades: TradeSummary
+  daily: DailyItem[]
+  setups: SetupItem[]
+  symbols: SymbolItem[]
+  hours: HourItem[]
+  dow: DowItem[]
+  payouts: PayoutItem[]
+  challenges: ChallengeSummary
+  payoutsTotals: PayoutsTotals
+}
+
+interface JspdfWithAutoTable {
+  lastAutoTable: { finalY: number }
+}
+
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -51,7 +144,7 @@ type PdfSection = (typeof PDF_SECTIONS)[number]["key"]
 
 export function MonthlyReport() {
   const [month, setMonth] = useState(currentMonth)
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<MonthlyReportData | null>(null)
   const [loading, setLoading] = useState(true)
   const [pdfSections, setPdfSections] = useState<PdfSection[]>(PDF_SECTIONS.map(s => s.key))
   const [showPdfOptions, setShowPdfOptions] = useState(false)
@@ -77,7 +170,7 @@ export function MonthlyReport() {
     if (!data) return
     const rows = [
       ["date", "pnl", "pnl_usd", "trades"],
-      ...data.daily.filter((d: any) => d.trades > 0).map((d: any) => [d.date, d.pnl, d.pnlUsd, d.trades]),
+      ...data.daily.filter((d: DailyItem) => d.trades > 0).map((d: DailyItem) => [d.date, d.pnl, d.pnlUsd, d.trades]),
     ]
     const csv = rows.map(r => r.join(",")).join("\n")
     const blob = new Blob([csv], { type: "text/csv" })
@@ -133,7 +226,7 @@ export function MonthlyReport() {
         columnStyles: { 0: { cellWidth: 130 }, 1: { cellWidth: 210 }, 2: { cellWidth: 130 }, 3: { cellWidth: 210 } },
       })
 
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as unknown as JspdfWithAutoTable).lastAutoTable.finalY + 22
     }
 
     if (incl("daily")) {
@@ -142,8 +235,8 @@ export function MonthlyReport() {
       doc.text("Daily P&L", 40, y)
       y += 8
       const dayRows = data.daily
-        .filter((d: any) => d.trades > 0)
-        .map((d: any) => [
+        .filter((d: DailyItem) => d.trades > 0)
+        .map((d: DailyItem) => [
           d.date,
           `${d.pnl >= 0 ? "+" : ""}$${d.pnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
           `${d.cumPnl >= 0 ? "+" : ""}$${d.cumPnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
@@ -159,7 +252,7 @@ export function MonthlyReport() {
         columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 150, halign: "right" }, 2: { cellWidth: 150, halign: "right" }, 3: { cellWidth: 70, halign: "right" } },
       })
 
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as unknown as JspdfWithAutoTable).lastAutoTable.finalY + 22
     }
 
     if (incl("setups") && data.setups.length > 0) {
@@ -170,13 +263,13 @@ export function MonthlyReport() {
       autoTable(doc, {
         startY: y,
         head: [["Setup", "Trades", "Wins", "Win rate", "P&L"]],
-        body: data.setups.map((s: any) => [s.name, String(s.count), String(s.wins), s.count > 0 ? `${((s.wins / s.count) * 100).toFixed(0)}%` : "—", fmtMoney(s.pnl, true)]),
+        body: data.setups.map((s: SetupItem) => [s.name, String(s.count), String(s.wins), s.count > 0 ? `${((s.wins / s.count) * 100).toFixed(0)}%` : "—", fmtMoney(s.pnl, true)]),
         theme: "striped",
         styles: { fontSize: 8.5, cellPadding: 4 },
         headStyles: { fillColor: [80, 70, 229], textColor: 255 },
         columnStyles: { 0: { cellWidth: 200 }, 1: { cellWidth: 70, halign: "right" }, 2: { cellWidth: 70, halign: "right" }, 3: { cellWidth: 70, halign: "right" }, 4: { cellWidth: 110, halign: "right" } },
       })
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as unknown as JspdfWithAutoTable).lastAutoTable.finalY + 22
     }
 
     if (incl("symbols") && data.symbols.length > 0) {
@@ -187,13 +280,13 @@ export function MonthlyReport() {
       autoTable(doc, {
         startY: y,
         head: [["Symbol", "Trades", "P&L"]],
-        body: data.symbols.map((s: any) => [s.symbol, String(s.count), fmtMoney(s.pnl, true)]),
+        body: data.symbols.map((s: SymbolItem) => [s.symbol, String(s.count), fmtMoney(s.pnl, true)]),
         theme: "striped",
         styles: { fontSize: 8.5, cellPadding: 4 },
         headStyles: { fillColor: [80, 70, 229], textColor: 255 },
         columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 90, halign: "right" }, 2: { cellWidth: 130, halign: "right" } },
       })
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as unknown as JspdfWithAutoTable).lastAutoTable.finalY + 22
     }
 
     if (incl("hours") && data.hours.length > 0) {
@@ -204,13 +297,13 @@ export function MonthlyReport() {
       autoTable(doc, {
         startY: y,
         head: [["Hour", "Trades", "Wins", "P&L"]],
-        body: data.hours.map((h: any) => [`${h.hour}:00`, String(h.count), String(h.wins), fmtMoney(h.pnl, true)]),
+        body: data.hours.map((h: HourItem) => [`${h.hour}:00`, String(h.count), String(h.wins), fmtMoney(h.pnl, true)]),
         theme: "striped",
         styles: { fontSize: 8.5, cellPadding: 4 },
         headStyles: { fillColor: [80, 70, 229], textColor: 255 },
         columnStyles: { 0: { cellWidth: 90 }, 1: { cellWidth: 90, halign: "right" }, 2: { cellWidth: 90, halign: "right" }, 3: { cellWidth: 130, halign: "right" } },
       })
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as unknown as JspdfWithAutoTable).lastAutoTable.finalY + 22
     }
 
     if (incl("dow") && data.dow.length > 0) {
@@ -221,13 +314,13 @@ export function MonthlyReport() {
       autoTable(doc, {
         startY: y,
         head: [["Day", "Trades", "Wins", "P&L"]],
-        body: data.dow.map((d: any) => [d.name, String(d.count), String(d.wins), fmtMoney(d.pnl, true)]),
+        body: data.dow.map((d: DowItem) => [d.name, String(d.count), String(d.wins), fmtMoney(d.pnl, true)]),
         theme: "striped",
         styles: { fontSize: 8.5, cellPadding: 4 },
         headStyles: { fillColor: [80, 70, 229], textColor: 255 },
         columnStyles: { 0: { cellWidth: 110 }, 1: { cellWidth: 90, halign: "right" }, 2: { cellWidth: 90, halign: "right" }, 3: { cellWidth: 130, halign: "right" } },
       })
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as unknown as JspdfWithAutoTable).lastAutoTable.finalY + 22
     }
 
     if (incl("payouts") && data.payouts.length > 0) {
@@ -238,7 +331,7 @@ export function MonthlyReport() {
       autoTable(doc, {
         startY: y,
         head: [["Firm", "Account", "Amount", "Status", "Date"]],
-        body: data.payouts.map((p: any) => [
+        body: data.payouts.map((p: PayoutItem) => [
           p.firmName,
           p.accountName,
           fmtMoney(p.amount),
@@ -260,9 +353,9 @@ export function MonthlyReport() {
     setPdfSections(prev => (prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]))
   }
 
-  const t = data?.trades
+  const t = data!.trades
   const daily = data?.daily || []
-  const dayShort = (daily as any[]).map(d => ({
+  const dayShort = (daily as DailyItem[]).map(d => ({
     ...d,
     label: d.date.slice(5),
   }))
@@ -393,7 +486,7 @@ export function MonthlyReport() {
                 <Tooltip
                   contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
                   labelStyle={{ color: "var(--color-gray-300)" }}
-                  formatter={(value: any, name: any) => [
+                  formatter={(value, name) => [
                     fmtMoney(Number(value), true),
                     name === "cumPnl" ? "Cumulative" : "Daily P&L",
                   ]}
@@ -417,7 +510,7 @@ export function MonthlyReport() {
                 <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No setups this month.</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {data.setups.slice(0, 8).map((s: any) => (
+                  {data.setups.slice(0, 8).map((s: SetupItem) => (
                     <div key={s.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
                       <span style={{ fontSize: "0.85rem", color: "var(--color-gray-300)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {s.name}
@@ -439,7 +532,7 @@ export function MonthlyReport() {
                 <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No symbols this month.</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {data.symbols.slice(0, 8).map((s: any) => (
+                  {data.symbols.slice(0, 8).map((s: SymbolItem) => (
                     <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
                       <span style={{ fontSize: "0.85rem", color: "var(--color-gray-300)", whiteSpace: "nowrap" }}>
                         {s.symbol}
@@ -470,11 +563,11 @@ export function MonthlyReport() {
                     <Tooltip
                       contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
                       labelStyle={{ color: "var(--color-gray-300)" }}
-                      labelFormatter={(v: any) => `${v}:00`}
-                      formatter={(value: any, name: any) => [fmtMoney(Number(value), true), name === "wins" ? "Wins" : "P&L"]}
+                      labelFormatter={(v) => `${v}:00`}
+                      formatter={(value, name) => [fmtMoney(Number(value), true), name === "wins" ? "Wins" : "P&L"]}
                     />
                     <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
-                      {data.hours.map((h: any, i: number) => (
+                      {data.hours.map((h: HourItem, i: number) => (
                         <Cell key={i} fill={h.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                       ))}
                     </Bar>
@@ -488,14 +581,14 @@ export function MonthlyReport() {
                 <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No trades this month.</div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {data.dow.map((d: any) => (
+                  {data.dow.map((d: DowItem) => (
                     <div key={d.dow} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                       <span style={{ width: 90, fontSize: "0.85rem", color: "var(--color-gray-300)", flexShrink: 0 }}>{d.name}</span>
                       <div style={{ flex: 1, height: 16, background: "var(--color-gray-800)", borderRadius: 4, overflow: "hidden", position: "relative" }}>
                         <div
                           style={{
                             height: "100%", borderRadius: 4,
-                            width: `${Math.max(2, Math.min(100, (Math.abs(d.pnl) / Math.max(...data.dow.map((x: any) => Math.abs(x.pnl)))) * 100))}%`,
+                            width: `${Math.max(2, Math.min(100, (Math.abs(d.pnl) / Math.max(...data.dow.map((x: DowItem) => Math.abs(x.pnl)))) * 100))}%`,
                             background: d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",
                             opacity: 0.85,
                           }}
@@ -554,7 +647,7 @@ export function MonthlyReport() {
                       <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--color-profit)" }}>{fmtMoney(data.payoutsTotals.paidAmount)}</div>
                     </div>
                   </div>
-                  {data.payouts.slice(0, 6).map((p: any, i: number) => {
+                  {data.payouts.slice(0, 6).map((p: PayoutItem, i: number) => {
                     const st = P_STATUS[p.status] || { label: p.status, color: "var(--color-gray-400)" }
                     return (
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>

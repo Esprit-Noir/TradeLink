@@ -34,7 +34,8 @@ export async function GET() {
       maxConsecutiveLosses: prefs.maxConsecutiveLosses ?? DEFAULT_RISK_PREFS.maxConsecutiveLosses,
       maxRiskPerTradePct: prefs.maxRiskPerTradePct ?? DEFAULT_RISK_PREFS.maxRiskPerTradePct,
     })
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error fetching risk preferences:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -71,7 +72,8 @@ export async function PATCH(request: Request) {
     })
 
     return NextResponse.json(merged)
-  } catch (error: any) {
+  } catch (error) {
+    console.error("Error updating risk preferences:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

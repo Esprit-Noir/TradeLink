@@ -9,6 +9,73 @@ import {
 import { PropFirmGauges } from "./PropFirmGauges"
 import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
 
+interface ChallengeEvent {
+  id: string
+  eventType: string
+  severity: string
+  message?: string | null
+  metadata?: unknown
+  createdAt: string
+}
+
+interface Snapshot {
+  id: string
+  date: string
+  startBalance: number | string
+  endBalance: number | string
+  lowestEquity: number | string
+  dailyPnl: number | string
+  tradesCount: number
+  dailyDDUsedPct?: number | string | null
+}
+
+interface ChallengeTemplate {
+  firmName?: string
+  programName?: string
+  logoUrl?: string | null
+  drawdownType: string
+  dailyDDPct?: number | string | null
+  maxDDPct: number | string
+  dailyResetTimezone: string
+  profitTargetPhase1Pct?: number | string | null
+  profitTargetPhase2Pct?: number | string | null
+  minTradingDays?: number | null
+  maxTradingDays?: number | null
+  consistencyRulePct?: number | string | null
+  weekendHoldingAllowed: boolean
+  newsTradingAllowed: boolean
+}
+
+interface ChallengeDetailViewProps {
+  id: string
+  userId: string
+  accountId: string
+  templateId: string
+  initialBalance: number | string
+  dailyDDPct: number | string
+  maxDDPct: number | string
+  profitTargetPct: number | string
+  minTradingDays?: number | null
+  maxTradingDays?: number | null
+  phase: string
+  status: string
+  startedAt: string
+  deadlineAt?: string | null
+  breachedAt?: string | null
+  breachReason?: string | null
+  currentBalance?: number | string | null
+  currentEquity?: number | string | null
+  highestBalance?: number | string | null
+  highestEquity?: number | string | null
+  todayStartBalance?: number | string | null
+  todayResetAt?: string | null
+  createdAt: string
+  updatedAt: string
+  metadata?: { steps?: string } | null
+  template: ChallengeTemplate
+  events?: ChallengeEvent[]
+}
+
 const EVENT_LABELS: Record<string, string> = {
   alert_80pct: "80% Drawdown Warning",
   alert_90pct: "90% Drawdown Critical",
@@ -43,8 +110,8 @@ function formatDate(iso: string): string {
   }
 }
 
-export function ChallengeDetailView({ challenge }: { challenge: any }) {
-  const [snapshots, setSnapshots] = useState<any[]>([])
+export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailViewProps }) {
+  const [snapshots, setSnapshots] = useState<Snapshot[]>([])
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 10
 
@@ -69,7 +136,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
     ? Math.ceil((new Date(challenge.deadlineAt).getTime() - now) / 86400000)
     : null
 
-  const events: any[] = Array.isArray(challenge.events) ? challenge.events : []
+  const events: ChallengeEvent[] = Array.isArray(challenge.events) ? challenge.events : []
   const initial = Number(challenge.initialBalance)
   const maxDDPct = Number(challenge.maxDDPct)
   const targetPct = Number(challenge.profitTargetPct || 0)
@@ -117,7 +184,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
   }
 
   const latestSnapshot = series.length > 0 ? series[series.length - 1] : null
-  const todayPnl = latestSnapshot ? latestSnapshot.dailyPnl : 0
+  const todayPnl = latestSnapshot ? Number(latestSnapshot.dailyPnl) : 0
 
   return (
     <div>
@@ -206,7 +273,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
                     contentStyle={tooltipStyle}
                     itemStyle={{ fontWeight: 600 }}
                     labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.3rem" }}
-                    formatter={(value: any, name: any) => [name === "Max allowed" ? "100%" : `${Number(value).toFixed(1)}%`, name === "ddUsedPct" ? "Drawdown used" : name]}
+                    formatter={(value, name) => [name === "Max allowed" ? "100%" : `${Number(value).toFixed(1)}%`, name === "ddUsedPct" ? "Drawdown used" : name]}
                   />
                   <Area type="monotone" dataKey="ddUsedPct" stroke="var(--color-warning)" strokeWidth={2} fill="var(--color-warning)" fillOpacity={0.15} />
                   <ReferenceLine y={100} stroke="var(--color-loss)" strokeDasharray="4 4" />
@@ -226,7 +293,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
                   contentStyle={tooltipStyle}
                   itemStyle={{ fontWeight: 600 }}
                   labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.3rem" }}
-                  formatter={(value: any) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, "P&L"]}
+                  formatter={(value) => [`$${Number(value).toLocaleString("en-US", { minimumFractionDigits: 2 })}`, "P&L"]}
                 />
                 <Bar dataKey="dailyPnl" radius={[2, 2, 0, 0]}>
                   {series.map((s, i) => (
@@ -389,13 +456,13 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
                     <td style={{ padding: "1rem", textAlign: "right" }}>{s.tradesCount}</td>
                     <td style={{ padding: "1rem", textAlign: "right" }}>
                       <span style={{ 
-                        color: (s.dailyDDUsedPct ?? 0) >= 80 ? "var(--color-warning)" : "var(--color-gray-400)", 
-                        background: (s.dailyDDUsedPct ?? 0) >= 80 ? "rgba(245, 158, 11, 0.1)" : "transparent",
-                        padding: (s.dailyDDUsedPct ?? 0) >= 80 ? "0.2rem 0.5rem" : "0",
+                        color: Number(s.dailyDDUsedPct ?? 0) >= 80 ? "var(--color-warning)" : "var(--color-gray-400)", 
+                        background: Number(s.dailyDDUsedPct ?? 0) >= 80 ? "rgba(245, 158, 11, 0.1)" : "transparent",
+                        padding: Number(s.dailyDDUsedPct ?? 0) >= 80 ? "0.2rem 0.5rem" : "0",
                         borderRadius: "4px",
-                        fontWeight: (s.dailyDDUsedPct ?? 0) >= 80 ? 600 : 400
+                        fontWeight: Number(s.dailyDDUsedPct ?? 0) >= 80 ? 600 : 400
                       }}>
-                        {s.dailyDDUsedPct != null ? `${Math.round(s.dailyDDUsedPct)}%` : "—"}
+                        {s.dailyDDUsedPct != null ? `${Math.round(Number(s.dailyDDUsedPct))}%` : "—"}
                       </span>
                     </td>
                   </tr>
@@ -436,7 +503,7 @@ export function ChallengeDetailView({ challenge }: { challenge: any }) {
   )
 }
 
-function ConsistencySection({ snapshots, challenge }: { snapshots: any[]; challenge: any }) {
+function ConsistencySection({ snapshots, challenge }: { snapshots: Snapshot[]; challenge: ChallengeDetailViewProps }) {
   const [simBiggest, setSimBiggest] = useState<number | null>(null)
   if (!snapshots || snapshots.length === 0) return null
 
@@ -517,8 +584,8 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: any[]; challe
   )
 }
 
-function TimelineSection({ challenge }: { challenge: any }) {
-  const events: any[] = Array.isArray(challenge.events) ? challenge.events : []
+function TimelineSection({ challenge }: { challenge: ChallengeDetailViewProps }) {
+  const events: ChallengeEvent[] = Array.isArray(challenge.events) ? challenge.events : []
 
   const milestones: { date: Date; label: string; sub: string; kind: string; severity?: string }[] = []
 
@@ -529,7 +596,7 @@ function TimelineSection({ challenge }: { challenge: any }) {
     kind: "info",
   })
 
-  const kindForEvent = (e: any) => {
+  const kindForEvent = (e: ChallengeEvent) => {
     if (e.eventType === "breached") return "danger"
     if (e.severity === "critical") return "danger"
     if (e.severity === "warning") return "warning"

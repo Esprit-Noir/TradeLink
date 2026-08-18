@@ -6,6 +6,81 @@ import { toast } from "sonner"
 import { CreateChallengeDrawer } from "@/components/prop-firm/CreateChallengeDrawer"
 import { TemplateManager } from "@/components/prop-firm/TemplateManager"
 
+interface ChallengeEvent {
+  id: string
+  eventType: string
+  severity: string
+  message: string | null
+  createdAt: string
+}
+
+interface ChallengeTemplate {
+  id: string
+  firmName: string
+  programName: string
+  logoUrl: string | null
+  drawdownType: string
+  dailyDDPct: number | null
+  maxDDPct: number | null
+  dailyResetTimezone: string
+  profitTargetPhase1Pct: number | null
+  profitTargetPhase2Pct: number | null
+  minTradingDays: number | null
+  maxTradingDays: number | null
+  consistencyRulePct: number | null
+  weekendHoldingAllowed: boolean
+  newsTradingAllowed: boolean
+  isActive: boolean
+}
+
+interface ChallengeAccount {
+  id: string
+  name: string
+  broker: string | null
+  type: string
+  baseCurrency: string
+  fxRateToUsd: number
+  initialBalance: number | null
+  isDefault: boolean
+  userId: string
+  createdAt: Date
+}
+
+interface ChallengeData {
+  id: string
+  userId: string
+  accountId: string
+  templateId: string
+  initialBalance: number
+  dailyDDPct: number
+  maxDDPct: number
+  profitTargetPct: number
+  minTradingDays: number | null
+  maxTradingDays: number | null
+  cost: number | null
+  phase: string
+  status: string
+  startedAt: Date
+  deadlineAt: Date | null
+  breachedAt: Date | null
+  breachReason: string | null
+  metadata: Record<string, unknown> | null
+  alertConfig: unknown
+  currentBalance: number
+  currentEquity: number
+  highestBalance: number
+  highestEquity: number
+  todayStartBalance: number
+  todayResetAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  template: ChallengeTemplate
+  account: ChallengeAccount
+  events: ChallengeEvent[]
+}
+
+type TemplateData = ChallengeTemplate
+
 const BREACH_LABELS: Record<string, string> = {
   max_dd: "MAX DD",
   daily_dd: "DAILY DD",
@@ -26,15 +101,15 @@ export function ChallengesManager({
   templates, 
   challenges 
 }: { 
-  accounts: any[]
-  templates: any[]
-  challenges: any[]
+  accounts: ChallengeAccount[]
+  templates: TemplateData[]
+  challenges: ChallengeData[]
 }) {
   const router = useRouter()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editingChallenge, setEditingChallenge] = useState<any | null>(null)
+  const [editingChallenge, setEditingChallenge] = useState<ChallengeData | null>(null)
   const [recalculating, setRecalculating] = useState<string | null>(null)
-  const [templateList, setTemplateList] = useState<any[]>(templates)
+  const [templateList, setTemplateList] = useState<TemplateData[]>(templates)
   const [statusFilter, setStatusFilter] = useState<string>("all")
 
   // Track previous state to fire notifications on status transitions / new events
@@ -94,7 +169,7 @@ export function ChallengesManager({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [challenges])
 
-  const handleCreateSubmit = async (data: any) => {
+  const handleCreateSubmit = async (data: Partial<ChallengeData> & Record<string, unknown>) => {
     const res = await fetch("/api/challenges", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -109,7 +184,7 @@ export function ChallengesManager({
     router.refresh()
   }
 
-  const handleEditSubmit = async (data: any) => {
+  const handleEditSubmit = async (data: Partial<ChallengeData> & { id: string }) => {
     const res = await fetch(`/api/challenges/${data.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -124,9 +199,9 @@ export function ChallengesManager({
     router.refresh()
   }
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Partial<ChallengeData> & Record<string, unknown>) => {
     if (data.id) {
-      await handleEditSubmit(data)
+      await handleEditSubmit(data as Partial<ChallengeData> & { id: string })
     } else {
       await handleCreateSubmit(data)
     }

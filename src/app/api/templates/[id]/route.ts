@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
+interface AdminSession {
+  user?: { id?: string; role?: string }
+}
+
 const updateTemplateSchema = z.object({
   firmName: z.string().max(100).optional(),
   programName: z.string().max(100).optional(),
@@ -32,7 +36,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth() as any
+    const session = await auth() as AdminSession
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -86,7 +90,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth() as any
+    const session = await auth() as AdminSession
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
