@@ -167,7 +167,7 @@ export function CreateChallengeDrawer({
         style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 40 }}
         onClick={onClose}
       />
-      <div style={{
+      <div role="dialog" aria-modal="true" style={{
         position: "fixed", top: 0, right: 0, height: "100vh", width: "100%", maxWidth: "500px",
         background: "var(--color-gray-950)", zIndex: 50, borderLeft: "1px solid var(--color-gray-800)",
         display: "flex", flexDirection: "column",
@@ -175,7 +175,7 @@ export function CreateChallengeDrawer({
       }}>
         <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-gray-800)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>{isEditing ? "Edit Challenge" : "Create Prop Challenge"}</h2>
-          <button onClick={onClose} style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.5rem" }}>&times;</button>
+          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.5rem" }}>&times;</button>
         </div>
 
         <div style={{ padding: "1.5rem", paddingBottom: "4rem", flex: 1, overflowY: "auto" }}>

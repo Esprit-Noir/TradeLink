@@ -65,7 +65,7 @@ export function CreateAccountModal({
         onClick={onClose} 
       />
       <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 50, padding: "1rem" }}>
-        <div style={{
+        <div role="dialog" aria-modal="true" style={{
           background: "var(--color-gray-950)",
           width: "100%", maxWidth: "450px",
           borderRadius: "16px",
@@ -74,7 +74,7 @@ export function CreateAccountModal({
         }}>
           <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-gray-800)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>Create New Account</h2>
-            <button onClick={onClose} style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.5rem" }}>&times;</button>
+            <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.5rem" }}>&times;</button>
           </div>
           
           <form onSubmit={handleSubmit} style={{ padding: "1.5rem" }}>

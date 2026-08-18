@@ -289,7 +289,7 @@ export function SetupsManager() {
               style={{ width: 180, padding: "0", border: "none", background: "transparent", fontSize: "0.82rem", boxShadow: "none", outline: "none" }}
             />
             {query && (
-              <button onClick={() => setQuery("")} className="btn btn-ghost btn-sm" style={{ padding: "0.15rem" }} title="Clear">
+              <button onClick={() => setQuery("")} className="btn btn-ghost btn-sm" style={{ padding: "0.35rem" }} title="Clear">
                 <X size={13} />
               </button>
             )}

@@ -289,7 +289,7 @@ export function TemplateManager({
           }}>
             <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-gray-800)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>{editing ? "Edit Template" : "New Template"}</h2>
-              <button onClick={() => setFormOpen(false)} style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.5rem" }}>&times;</button>
+              <button onClick={() => setFormOpen(false)} aria-label="Close" style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.5rem" }}>&times;</button>
             </div>
 
             <div style={{ padding: "1.5rem", paddingBottom: "4rem", flex: 1, overflowY: "auto" }}>

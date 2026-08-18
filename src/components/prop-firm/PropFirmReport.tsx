@@ -164,7 +164,7 @@ export function PropFirmReport() {
                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                         {f.logoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={f.logoUrl} alt="" style={{ width: 16, height: 16, objectFit: "contain", borderRadius: 2 }} />
+                          <img src={f.logoUrl} alt={f.firmName} style={{ width: 16, height: 16, objectFit: "contain", borderRadius: 2 }} />
                         ) : (
                           <div style={{ width: 16, height: 16, borderRadius: 2, background: "var(--color-gray-800)" }} />
                         )}

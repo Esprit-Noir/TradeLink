@@ -276,7 +276,7 @@ export function PayoutsManager() {
                           {p.logoUrl && (
                             <span style={{ width: 18, height: 18, borderRadius: 4, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={p.logoUrl} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                              <img src={p.logoUrl} alt={p.firmName} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
                             </span>
                           )}
                           <span style={{ fontWeight: 600, color: "var(--color-gray-100)" }}>{p.firmName}</span>

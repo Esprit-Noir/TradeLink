@@ -136,7 +136,7 @@ export function Sidebar({
 
       {mobileOpen && <div className="sidebar-backdrop" onClick={closeSidebar} />}
 
-      <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
+      <aside role="dialog" aria-modal="true" className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
         {/* Mobile close */}
         <button className="sidebar-close" onClick={closeSidebar} aria-label="Close navigation">
           <X size={18} />

@@ -140,7 +140,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
                   opacity: !selected.includes(c.id) && selected.length >= 4 ? 0.5 : 1,
                 }}
               >
-                {c.logoUrl && <img src={c.logoUrl} alt="" style={{ width: "14px", height: "14px", objectFit: "contain", borderRadius: "3px" }} />}
+                {c.logoUrl && <img src={c.logoUrl} alt={c.firmName} style={{ width: "14px", height: "14px", objectFit: "contain", borderRadius: "3px" }} />}
                 {c.firmName} · {c.phase.replace('_', ' ')}
               </button>
             ))}
@@ -175,7 +175,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
                     return (
                       <div key={c.id} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                         <div style={{ flex: "0 0 130px", display: "flex", alignItems: "center", gap: "0.4rem", minWidth: 0 }}>
-                          {c.logoUrl && <img src={c.logoUrl} alt="" style={{ width: "16px", height: "16px", objectFit: "contain", borderRadius: "3px" }} />}
+                          {c.logoUrl && <img src={c.logoUrl} alt={c.firmName} style={{ width: "16px", height: "16px", objectFit: "contain", borderRadius: "3px" }} />}
                           <span style={{ fontSize: "0.78rem", fontWeight: 500, color: "var(--color-gray-200)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.firmName}</span>
                         </div>
                         <div style={{ flex: 1, background: "var(--color-gray-800)", borderRadius: "4px", height: "10px", overflow: "hidden", position: "relative" }}>
@@ -221,7 +221,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "space-between" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", minWidth: 0 }}>
-                    {c.logoUrl && <img src={c.logoUrl} alt="" style={{ width: "22px", height: "22px", objectFit: "contain", borderRadius: "4px" }} />}
+                    {c.logoUrl && <img src={c.logoUrl} alt={c.firmName} style={{ width: "22px", height: "22px", objectFit: "contain", borderRadius: "4px" }} />}
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: "0.85rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.firmName}</div>
                       <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.accountName}</div>

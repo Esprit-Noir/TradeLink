@@ -210,7 +210,7 @@ export function NotificationsCenter() {
                     {e.challenge.template?.logoUrl && (
                       <span style={{ width: 14, height: 14, borderRadius: 3, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={e.challenge.template.logoUrl} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                        <img src={e.challenge.template.logoUrl} alt={e.challenge.template?.firmName || "Firm"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
                       </span>
                     )}
                     <span>{e.challenge.template?.firmName || "Prop Firm"}</span>

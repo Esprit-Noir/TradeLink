@@ -23,7 +23,7 @@ export function DeleteTradeButton({ id }: { id: string }) {
     <button 
       onClick={handleDelete}
       className="btn btn-ghost btn-sm"
-      style={{ color: "var(--color-loss)", padding: "0.25rem 0.5rem" }}
+      style={{ color: "var(--color-loss)", padding: "0.4rem 0.65rem" }}
       title="Delete Trade"
     >
       ✕
