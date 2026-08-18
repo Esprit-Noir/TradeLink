@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react"
 import dynamic from "next/dynamic"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/ThemeProvider"
 import { toast } from "sonner"
 import { Loader2, RefreshCcw, Save, FileDown, FileText, TriangleAlert, Play, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, Share, X } from "lucide-react"
 import type { Candle, MarketTimeframe } from "@/lib/market/types"

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/ThemeProvider"
 import createGlobe from "cobe"
 
 interface Session {

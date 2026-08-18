@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, X, CalendarDays, List } from "lucide-react"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/ThemeProvider"
 import { formatCurrency } from "@/lib/formatters"
 
 type DayDetail = {

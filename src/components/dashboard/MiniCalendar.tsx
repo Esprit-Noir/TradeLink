@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { useTheme } from "next-themes"
+import { useTheme } from "@/components/ThemeProvider"
 import { formatCurrency } from "@/lib/formatters"
 
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"]
