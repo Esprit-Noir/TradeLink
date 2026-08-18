@@ -166,11 +166,11 @@ export function Sidebar({
         </div>
 
         {/* Account Switcher - hide when collapsed */}
-        {!collapsed && <AccountSwitcher />}
+        {!collapsed && <div className="sidebar-account-switcher"><AccountSwitcher /></div>}
 
         {/* Challenge Status Widget - hide when collapsed */}
         {!collapsed && stats?.challengeStatus && (
-          <div style={{
+          <div className="sidebar-challenge-status" style={{
             margin: "0.5rem 0.5rem 0",
             padding: "0.6rem 0.75rem",
             borderRadius: "var(--radius-card)",
