@@ -23,21 +23,25 @@ export async function GET(request: NextRequest) {
       where: { userId: session.user.id },
       include: {
         propChallenge: true,
-        trades: {
-          select: {
-            netPnl: true,
-            netPnlUsd: true,
-            status: true
-          }
+        _count: {
+          select: { trades: { where: { status: "closed" } } }
         }
       },
       orderBy: { createdAt: 'desc' }
     })
 
+    const accountIds = accounts.map(a => a.id)
+    const aggregates = await prisma.trade.groupBy({
+      by: ["accountId"],
+      where: { accountId: { in: accountIds }, status: "closed" },
+      _sum: { netPnl: true, netPnlUsd: true },
+    })
+    const aggMap = new Map(aggregates.map(a => [a.accountId, a]))
+
     const accountsWithStats = accounts.map(acc => {
-      const closedTrades = acc.trades.filter(t => t.status === 'closed')
-      const totalPnl = closedTrades.reduce((sum, t) => sum + Number(t.netPnl || 0), 0)
-      const totalPnlUsd = closedTrades.reduce((sum, t) => sum + Number(t.netPnlUsd ?? (t.netPnl || 0)), 0)
+      const agg = aggMap.get(acc.id)
+      const totalPnl = Number(agg?._sum.netPnl || 0)
+      const totalPnlUsd = Number((agg?._sum.netPnlUsd ?? agg?._sum.netPnl) || 0)
       
       return {
         id: acc.id,
@@ -55,7 +59,7 @@ export async function GET(request: NextRequest) {
           initialBalance: acc.propChallenge.initialBalance ? Number(acc.propChallenge.initialBalance) : 0,
         } : null,
         stats: {
-          tradesCount: acc.trades.length,
+          tradesCount: acc._count.trades,
           totalPnl,
           totalPnlUsd,
         }

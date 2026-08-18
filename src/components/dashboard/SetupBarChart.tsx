@@ -11,6 +11,7 @@ export function SetupBarChart() {
 
   useEffect(() => {
     setLoading(true)
+    const controller = new AbortController()
     const params = new URLSearchParams()
     const period = searchParams.get("period")
     const accountId = searchParams.get("accountId")
@@ -22,13 +23,14 @@ export function SetupBarChart() {
     if (to) params.set("to", to)
 
     const qs = params.toString()
-    fetch(`/api/metrics/charts${qs ? `?${qs}` : ""}`)
+    fetch(`/api/metrics/charts${qs ? `?${qs}` : ""}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         setData(d.setupData || [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
+    return () => controller.abort()
   }, [searchParams])
 
   return (

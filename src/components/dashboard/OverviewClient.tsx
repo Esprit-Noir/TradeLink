@@ -43,11 +43,13 @@ export function OverviewClient({ username }: { username?: string }) {
   })
 
   useEffect(() => {
-    fetch("/api/overview/stats?accountId=all")
+    const controller = new AbortController()
+    fetch("/api/overview/stats?accountId=all", { signal: controller.signal })
       .then(r => r.json())
       .then(setStats)
       .catch(() => {})
       .finally(() => setLoading(false))
+    return () => controller.abort()
   }, [])
 
   const today = new Date()

@@ -460,6 +460,7 @@ export function EquityCurveDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const controller = new AbortController()
     const params = new URLSearchParams()
     const period = searchParams.get("period")
     const accountId = searchParams.get("accountId")
@@ -471,7 +472,7 @@ export function EquityCurveDashboard() {
     if (to) params.set("to", to)
 
     const qs = params.toString()
-    fetch(`/api/metrics/equity-curve${qs ? `?${qs}` : ""}`)
+    fetch(`/api/metrics/equity-curve${qs ? `?${qs}` : ""}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         setData({
@@ -484,6 +485,7 @@ export function EquityCurveDashboard() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
+    return () => controller.abort()
   }, [searchParams])
 
   if (loading) {

@@ -34,6 +34,20 @@ export async function GET() {
 
     const alerts: Alert[] = []
 
+    // Batch fetch all trades for active challenges in one query
+    const accountIds = activeChallenges.map(c => c.accountId)
+    const allTrades = accountIds.length > 0 ? await prisma.trade.findMany({
+      where: { accountId: { in: accountIds }, status: "closed" },
+      select: { accountId: true, exitAt: true, netPnl: true },
+      orderBy: { exitAt: "asc" },
+    }) : []
+    const tradesByAccount = new Map<string, typeof allTrades>()
+    for (const t of allTrades) {
+      const arr = tradesByAccount.get(t.accountId) || []
+      arr.push(t)
+      tradesByAccount.set(t.accountId, arr)
+    }
+
     // ── Per-challenge risk alerts ─────────────────────────────────────────
     for (const c of activeChallenges) {
       const timezone = c.template.dailyResetTimezone || "UTC"
@@ -42,10 +56,7 @@ export async function GET() {
       const maxDDPct = Number(c.maxDDPct)
       const dailyDDPct = Number(c.dailyDDPct)
 
-      const trades = await prisma.trade.findMany({
-        where: { accountId: c.accountId, status: "closed" },
-        orderBy: { exitAt: "asc" },
-      })
+      const trades = tradesByAccount.get(c.accountId) || []
 
       let currentBalance = initialBalance
       let highestBalance = initialBalance
