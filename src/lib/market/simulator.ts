@@ -31,8 +31,9 @@ export type SimResult = SimClose | { closed: false }
  * (SL or TP). When a candle touches both levels we pick the one nearest to the
  * entry in price distance (a best-effort approximation of intra-candle path).
  */
-export function simulateClose(position: SimPosition, candles: Candle[]): SimResult {
-  for (let i = position.entryIndex; i < candles.length; i++) {
+export function simulateClose(position: SimPosition, candles: Candle[], endIndex?: number): SimResult {
+  const limit = endIndex != null ? Math.min(endIndex + 1, candles.length) : candles.length
+  for (let i = position.entryIndex; i < limit; i++) {
     const c = candles[i]
     if (position.side === "long") {
       const hitTp = c.high >= position.takeProfit

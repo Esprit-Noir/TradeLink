@@ -5,7 +5,7 @@ import { z } from "zod"
 
 const createPayoutSchema = z.object({
   amount: z.string().or(z.number()),
-  status: z.string().optional(),
+  status: z.enum(["requested", "approved", "paid", "rejected"]).optional(),
   requestedAt: z.string().optional(),
   note: z.string().max(500).optional(),
 })

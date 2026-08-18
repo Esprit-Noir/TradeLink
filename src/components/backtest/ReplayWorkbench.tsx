@@ -103,7 +103,7 @@ function advanceTo(state: ReplayState, to: number): ReplayState {
   const newlyClosed: SimTrade[] = []
   const remaining: SimTrade[] = []
   for (const pos of state.positions) {
-    const res = simulateClose(pos, state.data)
+    const res = simulateClose(pos, state.data, clamped)
     if (res.closed && res.exitIndex <= clamped) {
       newlyClosed.push(
         closeTrade(pos, {

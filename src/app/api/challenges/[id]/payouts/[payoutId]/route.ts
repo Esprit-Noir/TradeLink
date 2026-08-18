@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 const updatePayoutSchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(["requested", "approved", "paid", "rejected"]).optional(),
   amount: z.union([z.string(), z.number()]).optional(),
 })
 
@@ -13,7 +13,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; payoutId: string }> }
 ) {
   try {
-    const session = await auth()
+    const session = await auth() as any
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
@@ -38,7 +38,13 @@ export async function PATCH(
     }
 
     const data: any = {}
-    if (parsed.data.status !== undefined) data.status = parsed.data.status
+    if (parsed.data.status !== undefined) {
+      // Only admins can change payout status
+      if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {
+        return NextResponse.json({ error: "Only admins can change payout status" }, { status: 403 })
+      }
+      data.status = parsed.data.status
+    }
     if (parsed.data.amount !== undefined && !isNaN(parseFloat(String(parsed.data.amount)))) data.amount = parseFloat(String(parsed.data.amount))
 
     const updated = await prisma.propPayout.update({
@@ -58,7 +64,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; payoutId: string }> }
 ) {
   try {
-    const session = await auth()
+    const session = await auth() as any
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

@@ -40,12 +40,6 @@ function LoginContent() {
     }
   }
 
-  // Utilisation temporaire du mode "Démo" ou Inscription
-  const handleDemoLogin = () => {
-    setEmail("demo@tradelink.com")
-    setPassword("password123")
-  }
-
   return (
     <div style={{
       minHeight: "100vh",
@@ -175,16 +169,6 @@ function LoginContent() {
               Sign up
             </Link>
           </p>
-          <div style={{ marginTop: "1rem", borderTop: "1px solid var(--color-gray-800)", paddingTop: "1rem" }}>
-            <button 
-              type="button" 
-              onClick={handleDemoLogin}
-              className="btn btn-ghost btn-sm"
-              style={{ width: "100%" }}
-            >
-              Fill Demo Credentials
-            </button>
-          </div>
         </div>
       </div>
     </div>
