@@ -1,13 +1,11 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
-import { PrismaAdapter } from "@auth/prisma-adapter"
 import { authPrisma } from "@/lib/prisma"
 import { z } from "zod"
 import bcrypt from "bcryptjs"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(authPrisma),
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
@@ -55,15 +53,57 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "google" && user?.id) {
+      if (account?.provider === "google" && user?.email) {
+        // Find or create user by email
+        let dbUser = await authPrisma.user.findUnique({
+          where: { email: user.email },
+        })
+
+        if (!dbUser) {
+          // Create new user from Google OAuth
+          dbUser = await authPrisma.user.create({
+            data: {
+              email: user.email,
+              name: user.name || "",
+            },
+          })
+        }
+
+        // Link OAuth account if not already linked
+        const existingOAuth = await authPrisma.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+        })
+
+        if (!existingOAuth) {
+          await authPrisma.account.create({
+            data: {
+              userId: dbUser.id,
+              type: account.type,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              access_token: account.access_token,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              expires_at: account.expires_at,
+            },
+          })
+        }
+
+        // Create default trading account if none exists
         const existingAccount = await authPrisma.tradingAccount.findFirst({
-          where: { userId: user.id },
+          where: { userId: dbUser.id },
         })
 
         if (!existingAccount) {
           await authPrisma.tradingAccount.create({
             data: {
-              userId: user.id,
+              userId: dbUser.id,
               name: "Main Account",
               baseCurrency: "USD",
               initialBalance: 10000,
@@ -73,9 +113,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         await authPrisma.user.update({
-          where: { id: user.id },
+          where: { id: dbUser.id },
           data: { lastLoginAt: new Date() },
         })
+
+        // Attach the DB user id to the JWT
+        user.id = dbUser.id
       }
 
       return true
