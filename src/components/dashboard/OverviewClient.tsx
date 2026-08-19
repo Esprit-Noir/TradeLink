@@ -117,7 +117,7 @@ export function OverviewClient({ username }: { username?: string }) {
       </div>
 
       {/* Row 1: Market Sessions & Quick Actions */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", alignItems: "flex-start" }}>
         {/* World Sessions Map (Takes up ~66% space) */}
         <div className="card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <WorldSessionsMap />
@@ -180,7 +180,7 @@ export function OverviewClient({ username }: { username?: string }) {
       </div>
 
       {/* Row 2: Market Overview & Recent Trades */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", alignItems: "flex-start" }}>
         {/* Market Overview */}
         <div className="card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <MarketOverview />
