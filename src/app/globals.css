@@ -2791,9 +2791,8 @@
   backdrop-filter: blur(4px);
   z-index: 100;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: 15vh;
   animation: fadeIn 0.15s ease-out;
 }
 .cmd-k-dialog {
