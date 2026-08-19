@@ -117,14 +117,14 @@ export function OverviewClient({ username }: { username?: string }) {
       </div>
 
       {/* Row 1: Market Sessions & Quick Actions */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
         {/* World Sessions Map (Takes up ~66% space) */}
         <div className="card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <WorldSessionsMap />
         </div>
 
         {/* Quick Actions + At a Glance (Takes up ~33% space) */}
-        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem", justifyContent: "space-between" }}>
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: "1rem" }}>&#9889;</span>
