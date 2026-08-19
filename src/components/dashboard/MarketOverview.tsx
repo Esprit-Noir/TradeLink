@@ -139,6 +139,8 @@ export function MarketOverview() {
   const [time, setTime] = useState("")
   const [selectedSymbols, setSelectedSymbols] = useState<string[]>(["EURUSD", "GBPJPY", "NAS100", "XAUUSD"])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [allData, setAllData] = useState<SymbolData[]>(AVAILABLE_SYMBOLS)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     const saved = localStorage.getItem("market_overview_symbols")
@@ -153,12 +155,54 @@ export function MarketOverview() {
     return () => clearInterval(interval)
   }, [])
 
+  const fetchRealData = async () => {
+    try {
+      setLoading(true)
+      // Yahoo finance symbols corresponding to the hardcoded list
+      const yahooSymbols = ["EURUSD=X", "GBPJPY=X", "^NDX", "GC=F", "BTC-USD", "^DJI", "ETH-USD", "JPY=X"]
+      const res = await fetch(`/api/market-quotes?symbols=${yahooSymbols.join(",")}`)
+      if (!res.ok) throw new Error("Failed to fetch")
+      const result = await res.json()
+      const quotes = result.quotes || []
+      
+      const updatedData = AVAILABLE_SYMBOLS.map((item, i) => {
+        const quote = quotes[i]
+        if (!quote) return item
+        
+        const price = quote.last ? (quote.last > 1000 ? quote.last.toFixed(1) : quote.last.toFixed(4)) : item.price
+        const change = quote.changePct !== null ? Number(quote.changePct.toFixed(2)) : item.change
+        
+        const trend = change > 0.5 ? "BULLISH" : change < -0.5 ? "BEARISH" : "NEUTRAL"
+        const signal = change > 0.5 ? "BUY" : change < -0.5 ? "SELL" : "NEUTRAL"
+        
+        return {
+          ...item,
+          price: String(price),
+          change: change,
+          trend: trend as any,
+          signal: signal as any,
+        }
+      })
+      setAllData(updatedData)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchRealData()
+    const interval = setInterval(fetchRealData, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
   const saveSymbols = (symbols: string[]) => {
     setSelectedSymbols(symbols)
     localStorage.setItem("market_overview_symbols", JSON.stringify(symbols))
   }
 
-  const displayedSymbols = AVAILABLE_SYMBOLS.filter(s => selectedSymbols.includes(s.symbol))
+  const displayedSymbols = allData.filter(s => selectedSymbols.includes(s.symbol))
 
   return (
     <div style={{ padding: "1.25rem" }}>
@@ -171,8 +215,8 @@ export function MarketOverview() {
           <button onClick={() => setIsModalOpen(true)} style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
             <Settings size={14} />
           </button>
-          <button style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
-            <RefreshCcw size={14} />
+          <button onClick={fetchRealData} disabled={loading} style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
+            <RefreshCcw size={14} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
       </div>
@@ -190,8 +234,10 @@ export function MarketOverview() {
           </button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
-          {displayedSymbols.map(sym => <SymbolCard key={sym.symbol} data={sym} />)}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+          {displayedSymbols.map(item => (
+            <SymbolCard key={item.symbol} data={item} />
+          ))}
         </div>
       )}
 
@@ -210,7 +256,7 @@ export function MarketOverview() {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, maxHeight: 240, overflowY: "auto", marginBottom: 16 }}>
-              {AVAILABLE_SYMBOLS.map(sym => {
+              {allData.map(sym => {
                 const isChecked = selectedSymbols.includes(sym.symbol)
                 return (
                   <button key={sym.symbol} onClick={() => saveSymbols(isChecked ? selectedSymbols.filter(s => s !== sym.symbol) : [...selectedSymbols, sym.symbol])}
