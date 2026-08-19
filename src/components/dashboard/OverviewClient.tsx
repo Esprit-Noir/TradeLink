@@ -116,72 +116,15 @@ export function OverviewClient({ username }: { username?: string }) {
         })}
       </div>
 
-      {/* World Sessions Map & Market Overview (Side by Side on desktop) */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "1.5rem" }}>
-        <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <WorldSessionsMap />
-        </div>
-        <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
-          <MarketOverview />
-        </div>
-      </div>
-
-      {/* Recent Trades + Quick Actions */}
+      {/* Row 1: Market Sessions & Quick Actions */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
-        {/* Recent Trades (Takes up ~66% space) */}
-        <div className="card" style={{ flex: "2 1 450px" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Clock size={16} style={{ color: "var(--color-brand-500)" }} />
-              <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Recent Trades</h3>
-            </div>
-            <Link href="/trades" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: "var(--color-brand-500)", textDecoration: "none" }}>
-              View all <ArrowRight size={12} />
-            </Link>
-          </div>
-          {!stats || stats.recentTrades.length === 0 ? (
-            <div style={{ padding: "2rem 0", textAlign: "center" }}>
-              <Upload size={32} style={{ color: "var(--color-gray-600)", margin: "0 auto 12px" }} />
-              <p style={{ fontSize: "0.875rem", color: "var(--color-gray-400)" }}>No trades yet</p>
-              <Link href="/import" className="btn btn-primary" style={{ marginTop: 12, fontSize: "0.8rem" }}>
-                <Upload size={14} /> Import Trades
-              </Link>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              {stats.recentTrades.map(trade => (
-                <Link key={trade.id} href={`/trades?tradeId=${trade.id}`} style={{
-                  display: "flex", alignItems: "center", gap: 12, padding: 10, borderRadius: 8,
-                  background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)",
-                  textDecoration: "none", transition: "border-color 0.15s",
-                }}>
-                  <div style={{
-                    padding: 6, borderRadius: 8,
-                    background: trade.side === "LONG" ? "var(--color-profit-muted)" : "var(--color-loss-muted)",
-                  }}>
-                    <TrendingUp size={14} style={{ color: trade.side === "LONG" ? "var(--color-profit)" : "var(--color-loss)", transform: trade.side === "SHORT" ? "rotate(180deg)" : "none" }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--color-gray-200)" }}>{trade.symbol}</span>
-                      <span className={`badge ${trade.side === "LONG" ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.6rem" }}>{trade.side}</span>
-                    </div>
-                    <p style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: 2 }}>
-                      {trade.entryAt ? formatDateWithTimezone(trade.entryAt, "UTC") : "—"}
-                    </p>
-                  </div>
-                  <span style={{ fontSize: "0.85rem", fontWeight: 600, fontVariantNumeric: "tabular-nums", color: trade.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
-                    {formatCurrency(trade.netPnl, "USD", true)}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          )}
+        {/* World Sessions Map (Takes up ~66% space) */}
+        <div className="card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <WorldSessionsMap />
         </div>
 
         {/* Quick Actions + At a Glance (Takes up ~33% space) */}
         <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-          
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: "1rem" }}>&#9889;</span>
@@ -231,6 +174,65 @@ export function OverviewClient({ username }: { username?: string }) {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Row 2: Market Overview & Recent Trades */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+        {/* Market Overview */}
+        <div className="card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <MarketOverview />
+        </div>
+
+        {/* Recent Trades */}
+        <div className="card" style={{ flex: "1 1 350px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Clock size={16} style={{ color: "var(--color-brand-500)" }} />
+              <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Recent Trades</h3>
+            </div>
+            <Link href="/trades" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: "0.75rem", color: "var(--color-brand-500)", textDecoration: "none" }}>
+              View all <ArrowRight size={12} />
+            </Link>
+          </div>
+          {!stats || stats.recentTrades.length === 0 ? (
+            <div style={{ padding: "2rem 0", textAlign: "center" }}>
+              <Upload size={32} style={{ color: "var(--color-gray-600)", margin: "0 auto 12px" }} />
+              <p style={{ fontSize: "0.875rem", color: "var(--color-gray-400)" }}>No trades yet</p>
+              <Link href="/import" className="btn btn-primary" style={{ marginTop: 12, fontSize: "0.8rem" }}>
+                <Upload size={14} /> Import Trades
+              </Link>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {stats.recentTrades.map(trade => (
+                <Link key={trade.id} href={`/trades?tradeId=${trade.id}`} style={{
+                  display: "flex", alignItems: "center", gap: 12, padding: 10, borderRadius: 8,
+                  background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)",
+                  textDecoration: "none", transition: "border-color 0.15s",
+                }}>
+                  <div style={{
+                    padding: 6, borderRadius: 8,
+                    background: trade.side === "LONG" ? "var(--color-profit-muted)" : "var(--color-loss-muted)",
+                  }}>
+                    <TrendingUp size={14} style={{ color: trade.side === "LONG" ? "var(--color-profit)" : "var(--color-loss)", transform: trade.side === "SHORT" ? "rotate(180deg)" : "none" }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--color-gray-200)" }}>{trade.symbol}</span>
+                      <span className={`badge ${trade.side === "LONG" ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.6rem" }}>{trade.side}</span>
+                    </div>
+                    <p style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: 2 }}>
+                      {trade.entryAt ? formatDateWithTimezone(trade.entryAt, "UTC") : "—"}
+                    </p>
+                  </div>
+                  <span style={{ fontSize: "0.85rem", fontWeight: 600, fontVariantNumeric: "tabular-nums", color: trade.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                    {formatCurrency(trade.netPnl, "USD", true)}
+                  </span>
+                </Link>
+              ))}
             </div>
           )}
         </div>
