@@ -7,6 +7,7 @@ import { Sidebar } from "./Sidebar"
 import { PageTransition } from "./PageTransition"
 import { BacktestShell } from "./BacktestShell"
 import { NotificationBell } from "./NotificationBell"
+import { CommandPalette } from "./CommandPalette"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -29,7 +30,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           >
             <Menu size={20} />
           </button>
-          <div className="topbar-spacer" />
+          <div className="topbar-spacer">
+            <CommandPalette />
+          </div>
           <NotificationBell />
           <ThemeToggle />
         </div>

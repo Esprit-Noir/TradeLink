@@ -217,11 +217,27 @@ export function OverviewClient({ username }: { username?: string }) {
             </Link>
           </div>
           {!stats || stats.recentTrades.length === 0 ? (
-            <div style={{ padding: "2rem 0", textAlign: "center" }}>
-              <Upload size={32} style={{ color: "var(--color-gray-600)", margin: "0 auto 12px" }} />
-              <p style={{ fontSize: "0.875rem", color: "var(--color-gray-400)" }}>No trades yet</p>
-              <Link href="/import" className="btn btn-primary" style={{ marginTop: 12, fontSize: "0.8rem" }}>
-                <Upload size={14} /> Import Trades
+            <div style={{
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              padding: "3rem 1rem", background: "linear-gradient(180deg, rgba(59, 130, 246, 0.03) 0%, transparent 100%)",
+              border: "1px dashed var(--color-gray-800)", borderRadius: 12, position: "relative", overflow: "hidden"
+            }}>
+              <div style={{
+                position: "absolute", top: "20%", left: "50%", transform: "translate(-50%, -50%)",
+                width: 120, height: 120, background: "var(--color-brand-500)", filter: "blur(60px)", opacity: 0.2, borderRadius: "50%"
+              }} />
+              <div style={{
+                width: 48, height: 48, borderRadius: 12, background: "rgba(59, 130, 246, 0.1)", border: "1px solid rgba(59, 130, 246, 0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16, position: "relative", zIndex: 1
+              }}>
+                <Upload size={24} style={{ color: "var(--color-brand-500)" }} />
+              </div>
+              <p style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-200)", marginBottom: 4, position: "relative", zIndex: 1 }}>No recent trades</p>
+              <p style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: 20, textAlign: "center", maxWidth: 220, position: "relative", zIndex: 1 }}>
+                Import your trading history to unlock powerful analytics and insights.
+              </p>
+              <Link href="/import" className="btn btn-primary" style={{ position: "relative", zIndex: 1, padding: "0.6rem 1.25rem", fontSize: "0.8rem", borderRadius: 8 }}>
+                Import Trades
               </Link>
             </div>
           ) : (

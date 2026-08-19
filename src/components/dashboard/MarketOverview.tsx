@@ -3,26 +3,42 @@
 import { useState, useEffect } from "react"
 import { Settings, RefreshCcw, X, Check } from "lucide-react"
 
+import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts"
+
 interface SymbolData {
   symbol: string
   name: string
+  price: string
+  change: number
   signal: "BUY" | "SELL" | "NEUTRAL"
   score: number
   short: number
   medium: number
   long: number
   trend: "BULLISH" | "BEARISH" | "NEUTRAL"
+  history: { value: number }[]
+}
+
+const generateHistory = (trend: string, start: number) => {
+  const data = []
+  let current = start
+  for (let i = 0; i < 20; i++) {
+    const change = (Math.random() - (trend === "BULLISH" ? 0.3 : trend === "BEARISH" ? 0.7 : 0.5)) * (start * 0.002)
+    current += change
+    data.push({ value: current })
+  }
+  return data
 }
 
 const AVAILABLE_SYMBOLS: SymbolData[] = [
-  { symbol: "EURUSD", name: "Euro / US Dollar", signal: "SELL", score: -43.5, short: -23, medium: -33, long: -65, trend: "BEARISH" },
-  { symbol: "GBPJPY", name: "Pound / Yen", signal: "NEUTRAL", score: -6.75, short: -47, medium: -37, long: 38, trend: "BEARISH" },
-  { symbol: "NAS100", name: "NAS100 Index", signal: "NEUTRAL", score: 12.5, short: 15, medium: 5, long: 25, trend: "BULLISH" },
-  { symbol: "XAUUSD", name: "Gold / USD", signal: "SELL", score: -65.2, short: -80, medium: -60, long: -55, trend: "BEARISH" },
-  { symbol: "BTCUSD", name: "Bitcoin / USD", signal: "BUY", score: 85.0, short: 90, medium: 75, long: 90, trend: "BULLISH" },
-  { symbol: "US30", name: "Dow Jones Index", signal: "BUY", score: 45.2, short: 30, medium: 55, long: 50, trend: "BULLISH" },
-  { symbol: "ETHUSD", name: "Ethereum / USD", signal: "NEUTRAL", score: 10.5, short: -10, medium: 15, long: 25, trend: "NEUTRAL" },
-  { symbol: "USDJPY", name: "US Dollar / Yen", signal: "BUY", score: 30.0, short: 20, medium: 35, long: 35, trend: "BULLISH" },
+  { symbol: "EURUSD", name: "Euro / US Dollar", price: "1.0854", change: -0.23, signal: "SELL", score: -43.5, short: -23, medium: -33, long: -65, trend: "BEARISH", history: generateHistory("BEARISH", 1.0880) },
+  { symbol: "GBPJPY", name: "Pound / Yen", price: "188.45", change: -0.05, signal: "NEUTRAL", score: -6.75, short: -47, medium: -37, long: 38, trend: "BEARISH", history: generateHistory("BEARISH", 188.50) },
+  { symbol: "NAS100", name: "NAS100 Index", price: "17850.5", change: 1.25, signal: "NEUTRAL", score: 12.5, short: 15, medium: 5, long: 25, trend: "BULLISH", history: generateHistory("BULLISH", 17600) },
+  { symbol: "XAUUSD", name: "Gold / USD", price: "2345.10", change: -0.85, signal: "SELL", score: -65.2, short: -80, medium: -60, long: -55, trend: "BEARISH", history: generateHistory("BEARISH", 2365) },
+  { symbol: "BTCUSD", name: "Bitcoin / USD", price: "64230.00", change: 3.45, signal: "BUY", score: 85.0, short: 90, medium: 75, long: 90, trend: "BULLISH", history: generateHistory("BULLISH", 62000) },
+  { symbol: "US30", name: "Dow Jones Index", price: "39150.2", change: 0.45, signal: "BUY", score: 45.2, short: 30, medium: 55, long: 50, trend: "BULLISH", history: generateHistory("BULLISH", 38900) },
+  { symbol: "ETHUSD", name: "Ethereum / USD", price: "3450.20", change: 1.15, signal: "NEUTRAL", score: 10.5, short: -10, medium: 15, long: 25, trend: "NEUTRAL", history: generateHistory("NEUTRAL", 3410) },
+  { symbol: "USDJPY", name: "US Dollar / Yen", price: "151.20", change: 0.15, signal: "BUY", score: 30.0, short: 20, medium: 35, long: 35, trend: "BULLISH", history: generateHistory("BULLISH", 150.90) },
 ]
 
 function GaugeChart({ score }: { score: number }) {
@@ -60,11 +76,38 @@ function GaugeChart({ score }: { score: number }) {
 function SymbolCard({ data }: { data: SymbolData }) {
   const signalClass = data.signal === "BUY" ? "badge-profit" : data.signal === "SELL" ? "badge-loss" : "badge-neutral"
   const trendColor = data.trend === "BULLISH" ? "var(--color-profit)" : data.trend === "BEARISH" ? "var(--color-loss)" : "var(--color-gray-400)"
+  const changeColor = data.change >= 0 ? "var(--color-profit)" : "var(--color-loss)"
 
   return (
     <div className="card card-hover" style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "1.25rem" }}>
-      <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-gray-200)", letterSpacing: "0.05em", marginBottom: 2 }}>{data.symbol}</div>
-      <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>{data.name}</div>
+      <div style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-gray-200)", letterSpacing: "0.05em", marginBottom: 2 }}>{data.symbol}</div>
+          <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{data.name}</div>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--color-gray-200)", fontVariantNumeric: "tabular-nums" }}>{data.price}</div>
+          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: changeColor, fontVariantNumeric: "tabular-nums" }}>
+            {data.change > 0 ? "+" : ""}{data.change}%
+          </div>
+        </div>
+      </div>
+
+      <div style={{ width: "100%", height: 40, marginBottom: 16 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data.history}>
+            <YAxis domain={["dataMin", "dataMax"]} hide />
+            <Line 
+              type="monotone" 
+              dataKey="value" 
+              stroke={changeColor} 
+              strokeWidth={2} 
+              dot={false} 
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
       <span className={`badge ${signalClass}`} style={{ marginBottom: 20, fontSize: "0.6rem", padding: "4px 14px" }}>
         {data.signal}
