@@ -124,13 +124,13 @@ export function OverviewClient({ username }: { username?: string }) {
         </div>
 
         {/* Quick Actions + At a Glance (Takes up ~33% space) */}
-        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem", justifyContent: "space-between" }}>
-          <div className="card">
+        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: "1rem" }}>&#9889;</span>
               <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Quick Actions</h3>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, justifyContent: "space-evenly" }}>
               {[
                 { href: "/trades", icon: Plus, color: "var(--color-profit)", bg: "var(--color-profit-muted)", label: "New Trade", desc: "Log a trade" },
                 { href: `/journal/${today.toISOString().split("T")[0]}`, icon: BookOpen, color: "var(--color-info)", bg: "rgba(59,130,246,0.12)", label: "Journal Entry", desc: "Write a note" },
@@ -154,12 +154,12 @@ export function OverviewClient({ username }: { username?: string }) {
           </div>
 
           {(stats?.totalTrades ?? 0) > 0 && (
-            <div className="card">
+            <div className="card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
                 <Award size={16} style={{ color: "var(--color-brand-500)" }} />
                 <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)" }}>At a Glance</h3>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6, flex: 1, justifyContent: "space-evenly" }}>
                 {[
                   { label: "Avg Win", value: avgWin > 0 ? formatCurrency(avgWin) : "—", color: "var(--color-profit)" },
                   { label: "Avg Loss", value: avgLoss > 0 ? formatCurrency(avgLoss) : "—", color: "var(--color-loss)" },
