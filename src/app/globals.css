@@ -393,6 +393,7 @@
   padding: 1rem 0;
   flex-shrink: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
   /* Force dark colors inside sidebar even in light mode */
   --color-gray-100: #ededf0;
   --color-gray-200: #d9d9df;
@@ -405,6 +406,9 @@
   --color-gray-900: #08080a;
 }
 
+.light .sidebar {
+  background: rgba(10, 10, 12, 0.95);
+}
 .sidebar-logo {
   padding: 0.5rem 1.25rem 1.25rem;
   display: flex;
