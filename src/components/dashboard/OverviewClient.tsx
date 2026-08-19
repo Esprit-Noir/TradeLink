@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { MarketOverview } from "./MarketOverview"
 import { WorldSessionsMap } from "./WorldSessionsMap"
-import { EquityCurveDashboard } from "./EquityCurveChart"
 import { TrendingUp, BarChart3, Target, Activity, ArrowRight, Plus, BookOpen, Calendar, LineChart, Clock, Award, Upload } from "lucide-react"
 import Link from "next/link"
 
@@ -115,11 +114,6 @@ export function OverviewClient({ username }: { username?: string }) {
             </div>
           )
         })}
-      </div>
-
-      {/* Main Equity Curve */}
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-        <EquityCurveDashboard />
       </div>
 
       {/* World Sessions Map & Market Overview (Side by Side on desktop) */}
