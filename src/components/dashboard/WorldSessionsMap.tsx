@@ -1,10 +1,8 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { createPortal } from "react-dom"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useTheme } from "@/components/ThemeProvider"
-import createGlobe from "cobe"
 
 interface Session {
   id: string
@@ -14,15 +12,14 @@ interface Session {
   top: string
   left: string
   color: string
-  location: [number, number]
 }
 
 // Summer hours (UTC), winter hours are +1 for London/NY
 const SESSIONS: Session[] = [
-  { id: "sydney", flag: "\u{1F1E6}\u{1F1FA}", openHour: 22, closeHour: 7, top: "75%", left: "85%", color: "#8b5cf6", location: [-33.8688, 151.2093] },
-  { id: "tokyo", flag: "\u{1F1EF}\u{1F1F5}", openHour: 0, closeHour: 9, top: "40%", left: "82%", color: "#ef4444", location: [35.6762, 139.6503] },
-  { id: "london", flag: "\u{1F1EC}\u{1F1E7}", openHour: 7, closeHour: 16, top: "30%", left: "47%", color: "#38bdf8", location: [51.5072, -0.1276] },
-  { id: "new_york", flag: "\u{1F1FA}\u{1F1F8}", openHour: 12, closeHour: 21, top: "38%", left: "22%", color: "#ec4899", location: [40.7128, -74.006] },
+  { id: "sydney", flag: "\u{1F1E6}\u{1F1FA}", openHour: 22, closeHour: 7, top: "75%", left: "85%", color: "#8b5cf6" },
+  { id: "tokyo", flag: "\u{1F1EF}\u{1F1F5}", openHour: 0, closeHour: 9, top: "40%", left: "82%", color: "#ef4444" },
+  { id: "london", flag: "\u{1F1EC}\u{1F1E7}", openHour: 7, closeHour: 16, top: "30%", left: "47%", color: "#38bdf8" },
+  { id: "new_york", flag: "\u{1F1FA}\u{1F1F8}", openHour: 12, closeHour: 21, top: "38%", left: "22%", color: "#ec4899" },
 ]
 
 const SESSION_NAMES: Record<string, string> = {
@@ -88,154 +85,59 @@ function getSessionProgress(session: Session, now: Date): number {
   return 0
 }
 
-function hexToRgb(hex: string): [number, number, number] {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? [
-    parseInt(result[1], 16) / 255,
-    parseInt(result[2], 16) / 255,
-    parseInt(result[3], 16) / 255
-  ] : [1, 1, 1];
-}
-
-function CobeGlobe({ now, summer, isDark }: { now: Date, summer: boolean, isDark: boolean }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [wrapper, setWrapper] = useState<HTMLElement | null>(null)
-  
-  useEffect(() => {
-    let phi = 0
-    if (!canvasRef.current) return
-    
-    // Fallback to a fixed width if offsetWidth is 0
-    const w = Math.min(canvasRef.current.offsetWidth, canvasRef.current.offsetHeight) || 400
-    
-    // Initial markers for setup
-    const initialMarkers = SESSIONS.map(s => {
-      const isOpen = isSessionOpen(s, now)
-      return {
-        id: s.id,
-        location: s.location as [number, number],
-        size: isOpen ? 0.08 : 0.05,
-        color: isOpen ? hexToRgb(s.color) : [0.5, 0.5, 0.5] as [number, number, number]
-      }
-    })
-    
-    const globe = createGlobe(canvasRef.current, {
-      devicePixelRatio: 2,
-      width: w * 2,
-      height: w * 2,
-      phi: 0,
-      theta: 0,
-      dark: isDark ? 1 : 0,
-      diffuse: isDark ? 1.2 : 1.5,
-      mapSamples: 20000,
-      mapBrightness: isDark ? 6 : 4,
-      baseColor: isDark ? [0.04, 0.08, 0.18] : [0.3, 0.5, 0.8],
-      markerColor: [1, 1, 1],
-      glowColor: isDark ? [0.1, 0.25, 0.55] : [0.4, 0.6, 0.9],
-      markers: initialMarkers,
-    } as any)
-    
-    let animationId: number
-    const render = () => {
-      phi += 0.005
-      
-      const currentTime = new Date()
-      // Create animated markers for pulsating effect
-      const animatedMarkers = SESSIONS.map(s => {
-        const isOpen = isSessionOpen(s, currentTime)
-        // Pulsate between 0.05 and 0.11 size for active sessions
-        const size = isOpen 
-          ? 0.08 + Math.sin(Date.now() / 250) * 0.03
-          : 0.04
-          
-        return {
-          id: s.id,
-          location: s.location as [number, number],
-          size: size,
-          color: isOpen ? hexToRgb(s.color) : [0.4, 0.4, 0.4] as [number, number, number]
-        }
-      })
-      
-      if (globe && typeof globe.update === 'function') {
-        globe.update({ phi: phi, markers: animatedMarkers })
-      }
-      
-      animationId = requestAnimationFrame(render)
-    }
-    render()
-    
-    // The canvas parent becomes the cobe-created relative div (Z in source)
-    setWrapper(canvasRef.current.parentElement)
-    
-    return () => {
-      cancelAnimationFrame(animationId)
-      if (globe) globe.destroy()
-    }
-  }, [now, summer])
-  
+function MapPin({ session, now, summer, isDark }: { session: Session; now: Date; summer: boolean; isDark: boolean }) {
+  const open = isSessionOpen(session, now)
+  const h = getSessionHours(session, summer)
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', position: 'relative' }}>
-      {/* Subtle blue ocean background light */}
-      <div style={{ position: 'absolute', width: '80%', height: '80%', borderRadius: '50%', background: 'radial-gradient(circle, rgba(30,100,200,0.12) 0%, rgba(20,60,140,0.04) 50%, transparent 100%)', filter: 'blur(25px)', zIndex: 0 }} />
-      <canvas
-        ref={canvasRef}
-        style={{ width: "100%", height: "100%", objectFit: "contain", zIndex: 1 }}
-      />
-      
-      {wrapper && createPortal(
-        <>
-          <style>{`
-            ${SESSIONS.map(s => `
-              .marker-label-${s.id} {
-                position: absolute;
-                position-anchor: --cobe-${s.id};
-                bottom: anchor(top);
-                left: anchor(center);
-                opacity: var(--cobe-visible-${s.id}, 0);
-                transform: translate(-50%, -10px);
-                transition: opacity 0.3s ease;
-                background: ${isDark ? 'rgba(10, 10, 12, 0.85)' : 'rgba(255, 255, 255, 0.9)'};
-                border: 1px solid ${isDark ? 'var(--color-gray-800)' : 'var(--color-gray-200)'};
-                padding: 6px 10px;
-                border-radius: 8px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 2px;
-                pointer-events: none;
-                z-index: 20;
-                backdrop-filter: blur(4px);
-              }
-              .marker-label-${s.id}.is-open {
-                border-color: ${isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.15)'};
-                box-shadow: 0 4px 20px ${isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.1)'};
-              }
-            `).join('\n')}
-            @keyframes live-pulse {
-              0% { transform: scale(0.95); opacity: 1; }
-              50% { transform: scale(1.6); opacity: 0.5; }
-              100% { transform: scale(0.95); opacity: 1; }
-            }
-          `}</style>
-          
-          {SESSIONS.map(s => {
-            const isOpen = isSessionOpen(s, now)
-            const h = getSessionHours(s, summer)
-            return (
-              <div key={s.id} className={`marker-label-${s.id} ${isOpen ? 'is-open' : ''}`}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.05em' }}>
-                  {isOpen && <div style={{ width: 6, height: 6, borderRadius: '50%', background: s.color, boxShadow: `0 0 8px ${s.color}`, animation: 'live-pulse 2s infinite' }} />}
-                  <span style={{ color: isOpen ? s.color : (isDark ? 'var(--color-gray-400)' : 'var(--color-gray-600)') }}>{SESSION_NAMES[s.id].toUpperCase()}</span>
-                </div>
-                <div style={{ fontSize: '0.65rem', color: isDark ? 'var(--color-gray-500)' : 'var(--color-gray-500)', fontWeight: 500 }}>
-                  {h.open.toString().padStart(2, '0')}:00 - {h.close.toString().padStart(2, '0')}:00 UTC
-                </div>
-              </div>
-            )
-          })}
-        </>,
-        wrapper
-      )}
+    <div style={{
+      position: "absolute", left: session.left, top: session.top,
+      transform: "translate(-50%, -50%)", zIndex: open ? 10 : 1,
+    }}>
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        
+        {/* Radar Ping Effect */}
+        {open && (
+          <>
+            <motion.div
+              style={{ position: "absolute", borderRadius: "50%", background: session.color, width: 14, height: 14 }}
+              animate={{ scale: [1, 6], opacity: [0.7, 0] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
+            />
+            <motion.div
+              style={{ position: "absolute", borderRadius: "50%", background: session.color, width: 14, height: 14 }}
+              animate={{ scale: [1, 6], opacity: [0.7, 0] }}
+              transition={{ duration: 2.5, delay: 1.25, repeat: Infinity, ease: "easeOut" }}
+            />
+          </>
+        )}
+
+        {/* Core Dot */}
+        <div style={{
+          width: 14, height: 14, borderRadius: "50%",
+          background: open ? session.color : (isDark ? "var(--color-gray-600)" : "var(--color-gray-400)"),
+          boxShadow: open ? `0 0 15px 2px ${session.color}, 0 0 30px ${session.color}` : "none",
+          position: "relative", zIndex: 10,
+        }} />
+
+        {/* Label */}
+        <div style={{
+          position: "absolute", top: 22, left: "50%", transform: "translateX(-50%)",
+          display: "flex", flexDirection: "column", alignItems: "center",
+          background: isDark ? "rgba(10, 10, 12, 0.85)" : "rgba(255, 255, 255, 0.9)", padding: "4px 8px", borderRadius: 6,
+          border: `1px solid ${open ? session.color : (isDark ? 'var(--color-gray-800)' : 'var(--color-gray-200)')}`,
+          boxShadow: open ? `0 4px 12px rgba(0,0,0,0.5), 0 0 10px ${session.color}40` : "0 4px 12px rgba(0,0,0,0.1)",
+          pointerEvents: "none",
+          backdropFilter: "blur(4px)",
+          opacity: open ? 1 : (isDark ? 0.6 : 0.8),
+        }}>
+          <span style={{ fontSize: "0.7rem", fontWeight: 800, color: open ? session.color : (isDark ? "var(--color-gray-300)" : "var(--color-gray-700)"), textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            {SESSION_NAMES[session.id]}
+          </span>
+          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: open ? (isDark ? "#ffffff" : "#000000") : (isDark ? "var(--color-gray-400)" : "var(--color-gray-500)"), marginTop: -1 }}>
+            {String(h.open).padStart(2, "0")}:00 - {String(h.close).padStart(2, "0")}:00
+          </span>
+        </div>
+      </div>
     </div>
   )
 }
@@ -294,8 +196,8 @@ export function WorldSessionsMap() {
       <div style={{ 
         position: "relative", width: "100%", aspectRatio: "2/1", 
         background: isDark 
-          ? "radial-gradient(ellipse at center, #051008 0%, #030a04 70%, #010502 100%)" 
-          : "radial-gradient(ellipse at center, #dce8f0 0%, #c8d8e8 70%, #b0c4d8 100%)", 
+          ? "var(--color-gray-950)" 
+          : "var(--color-gray-50)", 
         borderRadius: 12, 
         border: `1px solid ${isDark ? "var(--color-gray-800)" : "var(--color-gray-200)"}`, 
         overflow: "hidden", 
@@ -308,11 +210,25 @@ export function WorldSessionsMap() {
           backgroundSize: "24px 24px"
         }} />
         
-        {mounted && (
-          <div style={{ position: "absolute", inset: 0, zIndex: 10 }}>
-            <CobeGlobe now={now} summer={summer} isDark={isDark} />
-          </div>
-        )}
+        {/* Colored Map using CSS Mask */}
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundColor: isDark ? "var(--color-brand-500)" : "var(--color-brand-600)",
+          opacity: isDark ? 0.15 : 0.25,
+          maskImage: "url(/world.svg)",
+          WebkitMaskImage: "url(/world.svg)",
+          maskSize: "contain",
+          WebkitMaskSize: "contain",
+          maskRepeat: "no-repeat",
+          WebkitMaskRepeat: "no-repeat",
+          maskPosition: "center",
+          WebkitMaskPosition: "center",
+          zIndex: 6
+        }} />
+        
+        {mounted && SESSIONS.map(session => (
+          <MapPin key={session.id} session={session} now={now} summer={summer} isDark={isDark} />
+        ))}
       </div>
 
       {/* Session Cards */}
@@ -326,7 +242,7 @@ export function WorldSessionsMap() {
             <div key={session.id} className="card" style={{
               padding: "0.85rem",
               borderColor: open ? `${session.color}40` : (isDark ? "var(--color-gray-800)" : "var(--color-gray-200)"),
-              background: open ? (isDark ? "var(--color-gray-900)" : "var(--color-gray-50)") : "transparent",
+              background: open ? (isDark ? "var(--color-gray-900)" : "var(--color-brand-50)") : "transparent",
               position: "relative", overflow: "hidden"
             }}>
               {open && (
