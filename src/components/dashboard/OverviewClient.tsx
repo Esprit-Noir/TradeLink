@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { MarketOverview } from "./MarketOverview"
 import { WorldSessionsMap } from "./WorldSessionsMap"
+import { EquityCurveDashboard } from "./EquityCurveChart"
 import { TrendingUp, BarChart3, Target, Activity, ArrowRight, Plus, BookOpen, Calendar, LineChart, Clock, Award, Upload } from "lucide-react"
 import Link from "next/link"
 
@@ -63,6 +64,12 @@ export function OverviewClient({ username }: { username?: string }) {
     { label: "Profit Factor", value: stats?.profitFactor != null ? stats.profitFactor.toFixed(2) : "—", icon: Activity, color: "#8B5CF6" },
   ]
 
+  const winnersCount = stats?.totalTrades ? Math.round(stats.totalTrades * (stats.winRate / 100)) : 0
+  const losersCount = (stats?.totalTrades || 0) - winnersCount
+  const avgWin = winnersCount > 0 && stats ? stats.grossProfit / winnersCount : 0
+  const avgLoss = losersCount > 0 && stats ? stats.grossLoss / losersCount : 0
+  const riskReward = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : (avgWin > 0 ? "99" : "0")
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* Hero Greeting */}
@@ -110,20 +117,25 @@ export function OverviewClient({ username }: { username?: string }) {
         })}
       </div>
 
-      {/* World Sessions Map */}
+      {/* Main Equity Curve */}
       <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-        <WorldSessionsMap />
+        <EquityCurveDashboard />
       </div>
 
-      {/* Market Overview */}
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
-        <MarketOverview />
+      {/* World Sessions Map & Market Overview (Side by Side on desktop) */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(450px, 1fr))", gap: "1.5rem" }}>
+        <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <WorldSessionsMap />
+        </div>
+        <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+          <MarketOverview />
+        </div>
       </div>
 
       {/* Recent Trades + Quick Actions */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
-        {/* Recent Trades */}
-        <div className="card">
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+        {/* Recent Trades (Takes up ~66% space) */}
+        <div className="card" style={{ flex: "2 1 450px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Clock size={16} style={{ color: "var(--color-brand-500)" }} />
@@ -173,8 +185,9 @@ export function OverviewClient({ username }: { username?: string }) {
           )}
         </div>
 
-        {/* Quick Actions + At a Glance */}
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        {/* Quick Actions + At a Glance (Takes up ~33% space) */}
+        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          
           <div className="card">
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: "1rem" }}>&#9889;</span>
@@ -211,9 +224,9 @@ export function OverviewClient({ username }: { username?: string }) {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 {[
-                  { label: "Profit Factor", value: stats?.profitFactor?.toFixed(2) ?? "—", color: (stats?.profitFactor ?? 0) >= 1.5 ? "var(--color-profit)" : "var(--color-warning)" },
-                  { label: "Gross Profit", value: stats?.grossProfit != null ? formatCurrency(stats.grossProfit) : "—", color: "var(--color-profit)" },
-                  { label: "Gross Loss", value: stats?.grossLoss != null ? formatCurrency(stats.grossLoss) : "—", color: "var(--color-loss)" },
+                  { label: "Avg Win", value: avgWin > 0 ? formatCurrency(avgWin) : "—", color: "var(--color-profit)" },
+                  { label: "Avg Loss", value: avgLoss > 0 ? formatCurrency(avgLoss) : "—", color: "var(--color-loss)" },
+                  { label: "Risk / Reward", value: riskReward !== "0" ? `1 : ${riskReward}` : "—", color: "var(--color-info)" },
                 ].map(item => (
                   <div key={item.label} style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.6rem 0.75rem",
