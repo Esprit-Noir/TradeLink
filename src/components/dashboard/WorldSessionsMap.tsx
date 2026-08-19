@@ -204,13 +204,6 @@ export function WorldSessionsMap() {
         overflow: "hidden", 
         marginBottom: 16 
       }}>
-        {/* Grid pattern */}
-        <div style={{
-          position: "absolute", inset: 0, opacity: 0.3, pointerEvents: "none", zIndex: 5,
-          backgroundImage: `linear-gradient(${isDark ? "var(--color-gray-700)" : "var(--color-gray-300)"} 1px, transparent 1px), linear-gradient(90deg, ${isDark ? "var(--color-gray-700)" : "var(--color-gray-300)"} 1px, transparent 1px)`,
-          backgroundSize: "24px 24px"
-        }} />
-        
         {/* Colored Map using CSS Mask */}
         <div style={{
           position: "absolute", inset: 0,
