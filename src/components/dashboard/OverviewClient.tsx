@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { MarketOverview } from "./MarketOverview"
 import { WorldSessionsMap } from "./WorldSessionsMap"
@@ -30,6 +31,19 @@ interface OverviewStats {
     netPnl: number
     instrumentType: string
   }[]
+}
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+}
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
 }
 
 export function OverviewClient({ username }: { username?: string }) {
@@ -70,9 +84,14 @@ export function OverviewClient({ username }: { username?: string }) {
   const riskReward = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : (avgWin > 0 ? "99" : "0")
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <motion.div 
+      initial="hidden" 
+      animate="show" 
+      variants={containerVariants}
+      style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+    >
       {/* Hero Greeting */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <motion.div variants={itemVariants} className="card" style={{ padding: "1.5rem" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-400)", fontWeight: 600, marginBottom: 6 }}>
@@ -94,10 +113,10 @@ export function OverviewClient({ username }: { username?: string }) {
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* KPI Cards */}
-      <div className="kpi-grid" style={{ marginBottom: 0 }}>
+      <motion.div variants={itemVariants} className="kpi-grid" style={{ marginBottom: 0 }}>
         {quickStats.map(s => {
           const Icon = s.icon
           return (
@@ -114,10 +133,10 @@ export function OverviewClient({ username }: { username?: string }) {
             </div>
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Row 1: Market Sessions & Quick Actions */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+      <motion.div variants={itemVariants} style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
         {/* World Sessions Map (Takes up ~66% space) */}
         <div className="card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <WorldSessionsMap />
@@ -177,10 +196,10 @@ export function OverviewClient({ username }: { username?: string }) {
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Row 2: Market Overview & Recent Trades */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", alignItems: "flex-start" }}>
+      <motion.div variants={itemVariants} style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", alignItems: "flex-start" }}>
         {/* Market Overview */}
         <div className="card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <MarketOverview />
@@ -208,10 +227,10 @@ export function OverviewClient({ username }: { username?: string }) {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {stats.recentTrades.map(trade => (
-                <Link key={trade.id} href={`/trades?tradeId=${trade.id}`} style={{
+                <Link key={trade.id} href={`/trades?tradeId=${trade.id}`} className="card-hover" style={{
                   display: "flex", alignItems: "center", gap: 12, padding: 10, borderRadius: 8,
                   background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)",
-                  textDecoration: "none", transition: "border-color 0.15s",
+                  textDecoration: "none",
                 }}>
                   <div style={{
                     padding: 6, borderRadius: 8,
@@ -236,7 +255,7 @@ export function OverviewClient({ username }: { username?: string }) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
