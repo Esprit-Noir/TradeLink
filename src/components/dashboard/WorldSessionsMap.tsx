@@ -129,6 +129,7 @@ function MapPin({ session, now, summer, isDark }: { session: Session; now: Date;
           pointerEvents: "none",
           backdropFilter: "blur(4px)",
           opacity: open ? 1 : (isDark ? 0.6 : 0.8),
+          whiteSpace: "nowrap",
         }}>
           <span style={{ fontSize: "0.7rem", fontWeight: 800, color: open ? session.color : (isDark ? "var(--color-gray-300)" : "var(--color-gray-700)"), textTransform: "uppercase", letterSpacing: "0.05em" }}>
             {SESSION_NAMES[session.id]}
