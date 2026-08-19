@@ -175,12 +175,22 @@ export function MarketOverview() {
         const trend = change > 0.5 ? "BULLISH" : change < -0.5 ? "BEARISH" : "NEUTRAL"
         const signal = change > 0.5 ? "BUY" : change < -0.5 ? "SELL" : "NEUTRAL"
         
+        const baseScore = Math.max(-100, Math.min(100, change * 40))
+        const score = Number(baseScore.toFixed(1))
+        const short = Math.max(-100, Math.min(100, Math.round(score + (Math.random() * 40 - 20))))
+        const medium = Math.max(-100, Math.min(100, Math.round(score * 0.8 + (Math.random() * 30 - 15))))
+        const long = Math.max(-100, Math.min(100, Math.round(score * 0.5 + (Math.random() * 20 - 10))))
+        
         return {
           ...item,
           price: String(price),
           change: change,
           trend: trend as any,
           signal: signal as any,
+          score,
+          short,
+          medium,
+          long,
         }
       })
       setAllData(updatedData)
