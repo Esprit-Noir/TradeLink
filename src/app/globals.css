@@ -572,7 +572,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
-  margin: -1.75rem -1.75rem 1rem -1.75rem;
+  margin: -1.75rem -1.75rem 1.75rem -1.75rem;
   padding: 1rem 1.75rem;
   position: sticky;
   top: 0;
