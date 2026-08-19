@@ -35,7 +35,7 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
 
   if (data.length === 0) {
     return (
-      <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-500)" }}>
+      <div className="h-full flex items-center justify-center text-[var(--color-gray-500)]">
         No data yet
       </div>
     )
@@ -82,3 +82,4 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
     </ResponsiveContainer>
   )
 }
+

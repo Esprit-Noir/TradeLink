@@ -164,24 +164,19 @@ export function CreateChallengeDrawer({
   return (
     <>
       <div
-        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 40 }}
+        className="fixed inset-0 bg-black/50 z-40"
         onClick={onClose}
       />
-      <div role="dialog" aria-modal="true" style={{
-        position: "fixed", top: 0, right: 0, height: "100vh", width: "100%", maxWidth: "500px",
-        background: "var(--color-gray-950)", zIndex: 50, borderLeft: "1px solid var(--color-gray-800)",
-        display: "flex", flexDirection: "column",
-        boxShadow: "-10px 0 30px rgba(0,0,0,0.5)"
-      }}>
-        <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-gray-800)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: "1.2rem", fontWeight: 600 }}>{isEditing ? "Edit Challenge" : "Create Prop Challenge"}</h2>
-          <button onClick={onClose} aria-label="Close" style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.5rem" }}>&times;</button>
+      <div role="dialog" aria-modal="true" className="fixed top-0 right-0 h-screen w-full max-w-[500px] bg-[var(--color-gray-950)] z-50 border-l border-[var(--color-gray-800)] flex flex-col shadow-2xl transition-transform">
+        <div className="p-6 border-b border-[var(--color-gray-800)] flex justify-between items-center">
+          <h2 className="text-xl font-semibold">{isEditing ? "Edit Challenge" : "Create Prop Challenge"}</h2>
+          <button onClick={onClose} aria-label="Close" className="bg-transparent border-none text-[var(--color-gray-400)] cursor-pointer text-2xl hover:text-white">&times;</button>
         </div>
 
-        <div style={{ padding: "1.5rem", paddingBottom: "4rem", flex: 1, overflowY: "auto" }}>
+        <div className="p-6 pb-16 flex-1 overflow-y-auto">
           <form id="create-challenge-form" onSubmit={handleSubmit}>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1.5rem" }}>
+            <div className="grid grid-cols-2 gap-4 mb-6">
               <div>
                 <label className="label">Challenge Name</label>
                 <input type="text" className="input" value={challengeName} onChange={e => setChallengeName(e.target.value)} placeholder="e.g. Stellar 25k" required />
@@ -192,7 +187,7 @@ export function CreateChallengeDrawer({
               </div>
             </div>
 
-            <div style={{ marginBottom: "1.5rem" }}>
+            <div className="mb-6">
               <label className="label">Challenge Framework (Drawdown Type)</label>
               <select className="input" value={selectedTemplateId} onChange={handleTemplateChange} required>
                 <option value="" disabled>Select a base framework...</option>
@@ -202,40 +197,32 @@ export function CreateChallengeDrawer({
               </select>
             </div>
 
-            <div style={{ marginBottom: "1.5rem" }}>
+            <div className="mb-6">
               <label className="label">Prop Firm Logo</label>
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <div className="flex items-center gap-4">
                 {logoUrl ? (
-                  <div style={{
-                    width: "56px", height: "56px", borderRadius: "10px",
-                    background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
-                    display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0,
-                  }}>
+                  <div className="w-14 h-14 rounded-lg bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] flex items-center justify-center overflow-hidden shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={logoUrl} alt="Prop firm logo" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                    <img src={logoUrl} alt="Prop firm logo" className="max-w-full max-h-full object-contain" />
                   </div>
                 ) : (
-                  <div style={{
-                    width: "56px", height: "56px", borderRadius: "10px",
-                    background: "var(--color-gray-900)", border: "1px dashed var(--color-gray-700)",
-                    display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-600)", flexShrink: 0,
-                  }}>
-                    <span style={{ fontSize: "0.65rem", textAlign: "center", lineHeight: 1.2 }}>No logo</span>
+                  <div className="w-14 h-14 rounded-lg bg-[var(--color-gray-900)] border border-dashed border-[var(--color-gray-700)] flex items-center justify-center text-[var(--color-gray-600)] shrink-0">
+                    <span className="text-[0.65rem] text-center leading-[1.2]">No logo</span>
                   </div>
                 )}
-                <label style={{ flex: 1, cursor: "pointer" }}>
-                  <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleLogoChange} style={{ display: "none" }} />
-                  <div className="btn btn-outline" style={{ textAlign: "center", fontSize: "0.85rem", padding: "0.5rem" }}>
+                <label className="flex-1 cursor-pointer">
+                  <input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" onChange={handleLogoChange} className="hidden" />
+                  <div className="btn btn-outline text-center text-[0.85rem] p-2">
                     {logoFile ? "Replace logo" : logoUrl ? "Change logo" : "Upload logo"}
                   </div>
                 </label>
               </div>
-              <p style={{ fontSize: "0.7rem", color: "var(--color-gray-600)", marginTop: "0.4rem" }}>PNG, JPG, SVG or WebP — max 5MB.</p>
+              <p className="text-[0.7rem] text-[var(--color-gray-600)] mt-1.5">PNG, JPG, SVG or WebP — max 5MB.</p>
             </div>
 
-            <h3 style={{ fontSize: "0.95rem", color: "var(--color-gray-300)", marginBottom: "1rem", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.5rem" }}>Phases & Targets</h3>
+            <h3 className="text-[0.95rem] text-[var(--color-gray-300)] mb-4 border-b border-[var(--color-gray-800)] pb-2">Phases & Targets</h3>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="label">Structure</label>
                 <select className="input" value={steps} onChange={e => handleStepsChange(e.target.value)}>
@@ -250,7 +237,7 @@ export function CreateChallengeDrawer({
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="label">Phase 1 Target (%)</label>
                 <input type="number" step="0.1" className="input" value={profitTargetPct} onChange={e => setProfitTargetPct(e.target.value)} required />
@@ -270,12 +257,12 @@ export function CreateChallengeDrawer({
             </div>
 
             {steps === "1" && (
-              <p style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1rem" }}>
+              <p className="text-xs text-[var(--color-gray-500)] mb-4">
                 Single-phase challenge — once the Phase 1 target is hit, the account moves directly to funded.
               </p>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="label">Max Loss (%)</label>
                 <input type="number" step="0.1" className="input" value={maxDDPct} onChange={e => setMaxDDPct(e.target.value)} required />
@@ -286,7 +273,7 @@ export function CreateChallengeDrawer({
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+            <div className="grid grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="label">Min Trading Days</label>
                 <input type="number" className="input" value={minTradingDays} onChange={e => setMinTradingDays(e.target.value)} required />
@@ -306,7 +293,7 @@ export function CreateChallengeDrawer({
           </form>
         </div>
 
-        <div style={{ padding: "1.5rem", borderTop: "1px solid var(--color-gray-800)", display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+        <div className="p-6 border-t border-[var(--color-gray-800)] flex justify-end gap-4 bg-[var(--color-gray-950)]">
           <button type="button" onClick={onClose} className="btn btn-outline" disabled={isSubmitting}>Cancel</button>
           <button type="submit" form="create-challenge-form" className="btn btn-primary" disabled={isSubmitting}>
             {isSubmitting ? "Saving..." : isEditing ? "Save Changes" : "Start Challenge"}

@@ -1,4 +1,7 @@
+"use client"
+
 import { Star, BadgeCheck, TrendingUp, Shield } from "lucide-react"
+import { motion, Variants } from "framer-motion"
 
 const TESTIMONIALS = [
   {
@@ -93,53 +96,87 @@ const TESTIMONIALS = [
   },
 ]
 
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+}
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: "spring", stiffness: 50, damping: 15 }
+  }
+}
+
 export function MarketingTestimonials() {
   return (
-    <section className="marketing-testimonials" id="testimonials">
-      <div className="marketing-section-inner">
-        <div className="marketing-section-header" data-animate="fade-up">
-          <span className="marketing-badge">Testimonials</span>
-          <h2 className="marketing-section-title">
-            Trusted by <span className="text-gradient">10,000+ Traders</span>
+    <section className="py-32 bg-black border-y border-white/5" id="testimonials">
+      <div className="max-w-[1200px] mx-auto px-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16 flex flex-col items-center"
+        >
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 mb-6 text-[10px] font-bold text-[var(--color-brand-500)] uppercase tracking-widest">
+            Testimonials
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
+            Trusted by <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent">10,000+ Traders</span>
           </h2>
-          <p className="marketing-section-subtitle">
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Real results from real traders. See how TradeLink is transforming
             trading careers worldwide.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="marketing-testimonials-grid">
-          {TESTIMONIALS.map((t, i) => (
-            <div key={t.name} className="marketing-testimonial-card glass-card" data-animate="fade-up" data-delay={String((i % 3) + 1)}>
-              <div className="marketing-testimonial-top">
-                <div className="marketing-testimonial-stars">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6"
+        >
+          {TESTIMONIALS.map((t) => (
+            <motion.div variants={itemVariants} key={t.name} className="break-inside-avoid bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-gray-700 transition-colors">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex gap-1">
                   {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} size={14} fill="#facc15" color="#facc15" />
+                    <Star key={j} size={14} className="fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
                 {t.metric && (
-                  <span className="marketing-testimonial-metric">{t.metric}</span>
+                  <span className="px-2 py-1 bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] text-[10px] font-bold uppercase tracking-wider rounded-md">
+                    {t.metric}
+                  </span>
                 )}
               </div>
-              <p className="marketing-testimonial-quote">&ldquo;{t.quote}&rdquo;</p>
-              <div className="marketing-testimonial-author">
-                <div className="marketing-testimonial-avatar">
+              <p className="text-gray-300 text-sm leading-relaxed mb-6">
+                &ldquo;{t.quote}&rdquo;
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center font-bold text-gray-400">
                   {t.name.charAt(0)}
                 </div>
-                <div className="marketing-testimonial-info">
-                  <div className="marketing-testimonial-name">
+                <div>
+                  <div className="flex items-center gap-1.5 text-sm font-bold text-white">
                     {t.name}
-                    {t.verified && (
-                      <BadgeCheck size={14} className="marketing-testimonial-verified" />
-                    )}
+                    {t.verified && <BadgeCheck size={14} className="text-blue-400" />}
                   </div>
-                  <span className="marketing-testimonial-role">{t.role}</span>
-                  <span className="marketing-testimonial-firm">{t.firm}</span>
+                  <div className="text-xs text-gray-500 font-medium">
+                    {t.role} • {t.firm}
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   )

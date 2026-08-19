@@ -1,51 +1,91 @@
+"use client"
+
 import { ArrowRight, Shield, Clock, CreditCard, LayoutDashboard } from "lucide-react"
 import Link from "next/link"
+import { motion, Variants } from "framer-motion"
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.15, delayChildren: 0.1 }
+  }
+}
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: "spring", stiffness: 50, damping: 15 }
+  }
+}
 
 export function MarketingCta({ isLoggedIn }: { isLoggedIn?: boolean }) {
   return (
-    <section className="marketing-cta">
-      <div className="marketing-section-inner">
-        <div className="marketing-cta-card" data-animate="fade-up">
-          <h2 className="marketing-cta-title">
-            Ready to Transform Your Trading?
-          </h2>
-          <p className="marketing-cta-subtitle">
+    <section className="py-32 bg-black border-t border-white/5 relative overflow-hidden">
+      {/* Background accents */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-[var(--color-brand-500)] blur-[120px] opacity-10 pointer-events-none" />
+      <div 
+        className="absolute inset-0 pointer-events-none opacity-20" 
+        style={{
+          backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)`,
+          backgroundSize: '40px 40px',
+          maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 70%)'
+        }}
+      />
+      
+      <motion.div 
+        className="relative z-10 max-w-[1200px] mx-auto px-6 text-center"
+        variants={containerVariants}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-100px" }}
+      >
+        <div className="max-w-3xl mx-auto flex flex-col items-center">
+          <motion.h2 variants={itemVariants} className="text-5xl md:text-6xl font-bold mb-6 text-white tracking-tight leading-tight">
+            Ready to Transform <br />Your Trading?
+          </motion.h2>
+          <motion.p variants={itemVariants} className="text-xl text-gray-400 mb-12 leading-relaxed">
             Join 10,000+ traders who use TradeLink to analyze performance,
             build discipline, and improve their edge. Start free today.
-          </p>
+          </motion.p>
 
-          <div className="marketing-cta-trust" data-animate="fade-up" data-delay="1">
-            <div className="marketing-cta-trust-item">
-              <Shield size={16} />
-              <span>Free Forever</span>
+          <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-6 mb-12">
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
+              <Shield size={16} className="text-[var(--color-brand-500)]" />
+              <span>Free Forever Plan</span>
             </div>
-            <div className="marketing-cta-trust-item">
-              <CreditCard size={16} />
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
+              <CreditCard size={16} className="text-[var(--color-brand-500)]" />
               <span>No Credit Card</span>
             </div>
-            <div className="marketing-cta-trust-item">
-              <Clock size={16} />
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
+              <Clock size={16} className="text-[var(--color-brand-500)]" />
               <span>2-Minute Setup</span>
             </div>
-          </div>
+          </motion.div>
 
-          {isLoggedIn ? (
-            <Link href="/dashboard" className="btn btn-primary btn-lg marketing-cta-button" data-animate="fade-up" data-delay="2">
-              Go to Dashboard
-              <LayoutDashboard size={18} />
-            </Link>
-          ) : (
-            <Link href="/register" className="btn btn-primary btn-lg marketing-cta-button" data-animate="fade-up" data-delay="2">
-              Start Free — No Card Required
-              <ArrowRight size={18} />
-            </Link>
-          )}
+          <motion.div variants={itemVariants}>
+            {isLoggedIn ? (
+              <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[var(--color-brand-500)] hover:bg-[var(--color-brand-400)] text-black font-semibold rounded-lg transition-colors">
+                Go to Dashboard
+                <LayoutDashboard size={18} />
+              </Link>
+            ) : (
+              <Link href="/register" className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[var(--color-brand-500)] hover:bg-[var(--color-brand-400)] text-black font-semibold rounded-lg transition-colors">
+                Start Free — No Card Needed
+                <ArrowRight size={18} />
+              </Link>
+            )}
+          </motion.div>
 
-          <p className="marketing-cta-note">
-            Free forever. No credit card required. Cancel anytime.
-          </p>
+          <motion.p variants={itemVariants} className="mt-8 text-sm text-gray-500 font-medium">
+            Join now. Upgrade when you need to. Cancel anytime.
+          </motion.p>
         </div>
-      </div>
+      </motion.div>
     </section>
   )
 }

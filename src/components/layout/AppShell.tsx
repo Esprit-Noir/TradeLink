@@ -1,6 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import { usePathname } from "next/navigation"
+import { Menu } from "lucide-react"
 import { Sidebar } from "./Sidebar"
 import { PageTransition } from "./PageTransition"
 import { BacktestShell } from "./BacktestShell"
@@ -8,6 +10,7 @@ import { NotificationBell } from "./NotificationBell"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
 
   if (pathname.startsWith("/backtest")) {
@@ -16,9 +19,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-layout">
-      <Sidebar />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="main-content">
         <div className="topbar-actions">
+          <button 
+            className="sidebar-toggle-btn"
+            onClick={() => setSidebarOpen(true)}
+            aria-label="Open navigation"
+          >
+            <Menu size={20} />
+          </button>
+          <div className="topbar-spacer" />
           <NotificationBell />
           <ThemeToggle />
         </div>

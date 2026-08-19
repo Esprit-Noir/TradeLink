@@ -601,8 +601,7 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
   return (
     <div
       ref={containerRef}
-      className="replay-chart"
-      style={{ width: "100%", height: "100%", position: "relative", backgroundColor: "transparent" }}
+      className="replay-chart w-full h-full relative bg-transparent"
     />
   )
 })

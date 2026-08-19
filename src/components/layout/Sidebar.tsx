@@ -53,11 +53,24 @@ export function Sidebar({
   const [stats, setStats] = useState<SidebarStats | null>(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isTablet, setIsTablet] = useState(false)
 
   useEffect(() => {
+    const checkMedia = () => {
+      setIsMobile(window.innerWidth <= 640)
+      setIsTablet(window.innerWidth > 640 && window.innerWidth <= 1024)
+    }
+    checkMedia()
+    window.addEventListener("resize", checkMedia)
+
     const stored = localStorage.getItem("sidebar_collapsed")
     if (stored === "true") setCollapsed(true)
+
+    return () => window.removeEventListener("resize", checkMedia)
   }, [])
+
+  const effectiveCollapsed = (isMobile || isTablet) ? false : collapsed
 
   const isOpen = open ?? mobileOpen
   const closeSidebar = () => {
@@ -125,18 +138,9 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile top bar */}
-      <div className="mobile-topbar">
-        <div className="mobile-actions">
-          <button className="mobile-hamburger" onClick={() => setMobileOpen(true)} aria-label="Open navigation">
-            <Menu size={20} />
-          </button>
-        </div>
-      </div>
-
       {mobileOpen && <div className="sidebar-backdrop" onClick={closeSidebar} />}
 
-      <aside {...(asDrawer ? { role: "dialog", "aria-modal": "true" } : {})} className={`sidebar ${collapsed ? "sidebar--collapsed" : ""} ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
+      <aside {...(asDrawer ? { role: "dialog", "aria-modal": "true" } : {})} className={`sidebar ${effectiveCollapsed ? "sidebar--collapsed" : ""} ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
         {/* Mobile close */}
         <button className="sidebar-close" onClick={closeSidebar} aria-label="Close navigation">
           <X size={18} />
@@ -144,7 +148,7 @@ export function Sidebar({
 
         {/* Logo + collapse toggle */}
         <div className="sidebar-logo">
-          {!collapsed ? (
+          {!effectiveCollapsed ? (
             <Link href="/overview" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
               <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "42px", objectFit: "contain" }} />
               <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "42px", objectFit: "contain" }} />
@@ -159,17 +163,17 @@ export function Sidebar({
             onClick={() => setCollapsed(!collapsed)}
             className="sidebar-collapse-btn"
             style={{ marginLeft: "auto" }}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+            {effectiveCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
           </button>
         </div>
 
         {/* Account Switcher - hide when collapsed */}
-        {!collapsed && <div className="sidebar-account-switcher"><AccountSwitcher /></div>}
+        {!effectiveCollapsed && <div className="sidebar-account-switcher"><AccountSwitcher /></div>}
 
         {/* Challenge Status Widget - hide when collapsed */}
-        {!collapsed && stats?.challengeStatus && (
+        {!effectiveCollapsed && stats?.challengeStatus && (
           <div className="sidebar-challenge-status" style={{
             margin: "0.5rem 0.5rem 0",
             padding: "0.6rem 0.75rem",
@@ -218,8 +222,8 @@ export function Sidebar({
         <nav className="sidebar-nav">
           {navigation.map((section) => (
             <div key={section.section}>
-              {!collapsed && <div className="nav-section-label">{section.section}</div>}
-              {collapsed && <div style={{ height: 8 }} />}
+              {!effectiveCollapsed && <div className="nav-section-label">{section.section}</div>}
+              {effectiveCollapsed && <div style={{ height: 8 }} />}
               {section.items.map((item) => {
                 const Icon = item.icon
                 const isActive = item.href === "/challenges"
@@ -231,10 +235,10 @@ export function Sidebar({
                     href={item.href}
                     onClick={closeOnNav}
                     className={`nav-item ${isActive ? "active" : ""}`}
-                    title={collapsed ? item.label : undefined}
+                    title={effectiveCollapsed ? item.label : undefined}
                   >
                     <Icon />
-                    {!collapsed && <span>{item.label}</span>}
+                    {!effectiveCollapsed && <span>{item.label}</span>}
                   </Link>
                 )
               })}
@@ -244,18 +248,18 @@ export function Sidebar({
 
         {/* Footer */}
         <div className="sidebar-footer">
-          <Link href="/profile" onClick={closeOnNav} className={`nav-item ${pathname === "/profile" ? "active" : ""}`} title={collapsed ? "Profile" : undefined}>
+          <Link href="/profile" onClick={closeOnNav} className={`nav-item ${pathname === "/profile" ? "active" : ""}`} title={effectiveCollapsed ? "Profile" : undefined}>
             <Settings {...iconProps} />
-            {!collapsed && <span>Profile</span>}
+            {!effectiveCollapsed && <span>Profile</span>}
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="nav-item"
-            title={collapsed ? "Logout" : undefined}
+            title={effectiveCollapsed ? "Logout" : undefined}
             style={{ color: "var(--color-gray-400)" }}
           >
             <LogOut {...iconProps} />
-            {!collapsed && <span>Logout</span>}
+            {!effectiveCollapsed && <span>Logout</span>}
           </button>
         </div>
       </aside>

@@ -56,14 +56,11 @@ export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
   const hasActiveFilters = accountId || symbol || side || result || date
 
   return (
-    <form onSubmit={handleApply} style={{
-      display: "flex", flexWrap: "wrap", gap: "1rem", alignItems: "flex-end", marginBottom: "1.5rem",
-      background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)",
-    }}>
+    <form onSubmit={handleApply} className="flex flex-wrap gap-4 items-end mb-6 bg-[var(--color-gray-900)] p-5 rounded-[var(--radius-card)] border border-[var(--color-gray-800)]">
       
       {accounts.length > 1 && (
-        <div className="form-group" style={{ flex: 1, minWidth: "170px", margin: 0 }}>
-          <label className="label" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 700 }}>
+        <div className="flex-1 min-w-[170px] m-0">
+          <label className="label text-xs uppercase tracking-wider text-[var(--color-gray-500)] mb-2 font-bold">
             Account
           </label>
           <select 
@@ -79,24 +76,23 @@ export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
         </div>
       )}
 
-      <div className="form-group" style={{ flex: 1, minWidth: "200px", margin: 0 }}>
-        <label className="label" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 700 }}>
+      <div className="flex-1 min-w-[200px] m-0">
+        <label className="label text-xs uppercase tracking-wider text-[var(--color-gray-500)] mb-2 font-bold">
           Symbol
         </label>
-        <div style={{ position: "relative" }}>
-          <Search style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--color-gray-500)" }} size={16} />
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-gray-500)]" size={16} />
           <input 
             value={symbol} 
             onChange={(e) => setSymbol(e.target.value)} 
             placeholder="e.g. AAPL, BTCUSDT" 
-            className="input"
-            style={{ paddingLeft: "36px" }}
+            className="input pl-9"
           />
         </div>
       </div>
 
-      <div className="form-group" style={{ flex: 1, minWidth: "150px", margin: 0 }}>
-        <label className="label" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 700 }}>
+      <div className="flex-1 min-w-[150px] m-0">
+        <label className="label text-xs uppercase tracking-wider text-[var(--color-gray-500)] mb-2 font-bold">
           Trade Side
         </label>
         <select 
@@ -110,8 +106,8 @@ export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
         </select>
       </div>
       
-      <div className="form-group" style={{ flex: 1, minWidth: "150px", margin: 0 }}>
-        <label className="label" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 700 }}>
+      <div className="flex-1 min-w-[150px] m-0">
+        <label className="label text-xs uppercase tracking-wider text-[var(--color-gray-500)] mb-2 font-bold">
           Result
         </label>
         <select 
@@ -126,8 +122,8 @@ export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
         </select>
       </div>
       
-      <div className="form-group" style={{ flex: 1, minWidth: "150px", margin: 0 }}>
-        <label className="label" style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 700 }}>
+      <div className="flex-1 min-w-[150px] m-0">
+        <label className="label text-xs uppercase tracking-wider text-[var(--color-gray-500)] mb-2 font-bold">
           Timeframe
         </label>
         <select 
@@ -143,12 +139,12 @@ export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
         </select>
       </div>
 
-      <div style={{ display: "flex", gap: "0.75rem" }}>
-        <button type="submit" className="btn btn-primary" style={{ padding: "0 1.5rem", height: "42px", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <div className="flex gap-3">
+        <button type="submit" className="btn btn-primary px-6 h-[42px] flex items-center gap-2">
           <SlidersHorizontal size={16} /> Filter
         </button>
         {hasActiveFilters && (
-          <button type="button" onClick={handleClear} className="btn btn-outline" style={{ padding: "0 1rem", height: "42px", display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-400)" }}>
+          <button type="button" onClick={handleClear} className="btn btn-outline px-4 h-[42px] flex items-center gap-2 text-[var(--color-gray-400)]">
             <X size={16} /> Clear
           </button>
         )}
@@ -156,3 +152,4 @@ export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
     </form>
   )
 }
+

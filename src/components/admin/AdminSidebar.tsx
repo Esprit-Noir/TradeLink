@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   LayoutDashboard,
   Users,
@@ -29,12 +29,36 @@ const navigation = [
 export function AdminSidebar() {
   const pathname = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isTablet, setIsTablet] = useState(false)
+
+  useEffect(() => {
+    const checkMedia = () => {
+      setIsMobile(window.innerWidth <= 640)
+      setIsTablet(window.innerWidth > 640 && window.innerWidth <= 1024)
+    }
+    checkMedia()
+    window.addEventListener("resize", checkMedia)
+
+    const stored = localStorage.getItem("admin_sidebar_collapsed")
+    if (stored === "true") setCollapsed(true)
+
+    return () => window.removeEventListener("resize", checkMedia)
+  }, [])
+
+  const effectiveCollapsed = (isMobile || isTablet) ? false : collapsed
+
+  const handleToggle = () => {
+    const next = !collapsed
+    setCollapsed(next)
+    localStorage.setItem("admin_sidebar_collapsed", String(next))
+  }
 
   return (
-    <aside className={`sidebar ${collapsed ? "sidebar--collapsed" : ""}`} style={{ borderRight: "1px solid var(--color-gray-800)", background: "var(--color-gray-900)" }}>
+    <aside className={`sidebar ${effectiveCollapsed ? "sidebar--collapsed" : ""}`} style={{ borderRight: "1px solid var(--color-gray-800)", background: "var(--color-gray-900)" }}>
       {/* Logo */}
       <div className="sidebar-logo">
-        {!collapsed ? (
+        {!effectiveCollapsed ? (
           <Link href="/admin" style={{ display: "flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}>
             <div style={{
               width: 30, height: 30, minWidth: 30,
@@ -55,17 +79,17 @@ export function AdminSidebar() {
           </Link>
         ) : <div />}
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={handleToggle}
           className="sidebar-collapse-btn"
           style={{ marginLeft: "auto" }}
-          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+          {effectiveCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
         </button>
       </div>
 
       {/* Admin Badge */}
-      {!collapsed && (
+      {!effectiveCollapsed && (
         <div style={{ margin: "0 0.5rem", padding: "0.4rem 0.6rem", borderRadius: 6, background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", display: "flex", alignItems: "center", gap: 6 }}>
           <Shield size={12} style={{ color: "#8b5cf6" }} />
           <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -86,10 +110,10 @@ export function AdminSidebar() {
               key={item.href}
               href={item.href}
               className={`nav-item ${isActive ? "active" : ""}`}
-              title={collapsed ? item.label : undefined}
+              title={effectiveCollapsed ? item.label : undefined}
             >
               <Icon />
-              {!collapsed && <span>{item.label}</span>}
+              {!effectiveCollapsed && <span>{item.label}</span>}
             </Link>
           )
         })}
@@ -97,18 +121,18 @@ export function AdminSidebar() {
 
       {/* Footer */}
       <div className="sidebar-footer">
-        <Link href="/dashboard" className="nav-item" title={collapsed ? "Back to App" : undefined}>
+        <Link href="/dashboard" className="nav-item" title={effectiveCollapsed ? "Back to App" : undefined}>
           <LayoutDashboard {...iconProps} />
-          {!collapsed && <span>Back to App</span>}
+          {!effectiveCollapsed && <span>Back to App</span>}
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/login" })}
           className="nav-item"
-          title={collapsed ? "Logout" : undefined}
+          title={effectiveCollapsed ? "Logout" : undefined}
           style={{ color: "var(--color-gray-400)" }}
         >
           <LogOut {...iconProps} />
-          {!collapsed && <span>Logout</span>}
+          {!effectiveCollapsed && <span>Logout</span>}
         </button>
       </div>
     </aside>

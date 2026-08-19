@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { formatCurrency } from "@/lib/formatters"
+import { X, UploadCloud } from "lucide-react"
 
 type Trade = {
   id: string
@@ -144,7 +145,8 @@ export function TradeDetailsDrawer() {
     }
   }
 
-  const handleSaveDetails = async () => {    if (!tradeId) return
+  const handleSaveDetails = async () => {
+    if (!tradeId) return
     setSaving(true)
     try {
       const payload = {
@@ -179,93 +181,80 @@ export function TradeDetailsDrawer() {
     <>
       {/* Backdrop */}
       <div 
-        style={{
-          position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-          zIndex: 40,
-        }}
+        className="fixed inset-0 bg-black/50 z-40 transition-opacity"
         onClick={closeDrawer}
       />
       
       {/* Drawer */}
       <div 
-        style={{
-          position: "fixed", top: 0, right: 0, height: "100vh",
-          width: "450px", maxWidth: "100%",
-          backgroundColor: "var(--color-gray-950)",
-          borderLeft: "1px solid var(--color-gray-800)",
-          boxShadow: "-4px 0 24px rgba(0,0,0,0.5)",
-          zIndex: 50,
-          display: "flex", flexDirection: "column",
-          animation: "slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
-        }}
+        className="fixed top-0 right-0 h-screen w-[450px] max-w-full bg-[var(--color-gray-950)] border-l border-[var(--color-gray-800)] shadow-2xl z-50 flex flex-col animate-in slide-in-from-right duration-300"
       >
-        <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--color-gray-800)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>Trade Details</h2>
-          <button onClick={closeDrawer} style={{ background: "none", border: "none", color: "var(--gray-400)", cursor: "pointer" }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        <div className="p-6 border-b border-[var(--color-gray-800)] flex justify-between items-center shrink-0">
+          <h2 className="text-xl font-semibold">Trade Details</h2>
+          <button onClick={closeDrawer} className="bg-transparent border-none text-[var(--color-gray-400)] cursor-pointer hover:text-white transition-colors">
+            <X size={24} />
           </button>
         </div>
 
-        <div style={{ padding: "1.5rem", paddingBottom: "4rem", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: "2rem" }}>
+        <div className="p-6 pb-16 overflow-y-auto flex-1 flex flex-col gap-8">
           {loading || !trade ? (
-            <div className="skeleton" style={{ height: 200 }} />
+            <div className="skeleton h-[200px]" />
           ) : (
             <>
               {/* Header Info */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div className="flex justify-between items-start">
                 <div>
-                  <div style={{ fontSize: "1.5rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <div className="text-2xl font-bold flex items-center gap-2">
                     {trade.symbol}
                     <span className={`badge ${trade.side === 'LONG' ? 'badge-profit' : 'badge-loss'}`}>{trade.side}</span>
                   </div>
-                  <div style={{ color: "var(--gray-400)", fontSize: "0.9rem", marginTop: "0.25rem" }}>{trade.instrumentType}</div>
+                  <div className="text-[var(--color-gray-400)] text-sm mt-1">{trade.instrumentType}</div>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: "1.5rem", fontWeight: 700, color: Number(trade.netPnl) > 0 ? "var(--color-profit)" : Number(trade.netPnl) < 0 ? "var(--color-loss)" : "inherit" }}>
+                <div className="text-right">
+                  <div className={`text-2xl font-bold ${Number(trade.netPnl) > 0 ? "text-[var(--color-profit)]" : Number(trade.netPnl) < 0 ? "text-[var(--color-loss)]" : "text-inherit"}`}>
                     {formatCurrency(Number(trade.netPnl), "USD", true, 2)}
                   </div>
-                  <div style={{ color: "var(--gray-400)", fontSize: "0.9rem", marginTop: "0.25rem" }}>Net P&L</div>
+                  <div className="text-[var(--color-gray-400)] text-sm mt-1">Net P&L</div>
                 </div>
               </div>
 
               {/* Metrics Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", background: "var(--gray-900)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--gray-800)" }}>
+              <div className="grid grid-cols-2 gap-4 bg-[var(--color-gray-900)] p-4 rounded-xl border border-[var(--color-gray-800)]">
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Entry Date</div>
-                  <div style={{ fontWeight: 500 }}>{new Date(trade.entryAt).toLocaleString()}</div>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">Entry Date</div>
+                  <div className="font-medium">{new Date(trade.entryAt).toLocaleString()}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Exit Date</div>
-                  <div style={{ fontWeight: 500 }}>{trade.exitAt ? new Date(trade.exitAt).toLocaleString() : "—"}</div>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">Exit Date</div>
+                  <div className="font-medium">{trade.exitAt ? new Date(trade.exitAt).toLocaleString() : "—"}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Entry Price</div>
-                  <div style={{ fontWeight: 500 }}>{formatCurrency(Number(trade.entryPrice), "USD", false, 2)}</div>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">Entry Price</div>
+                  <div className="font-medium">{formatCurrency(Number(trade.entryPrice), "USD", false, 2)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Exit Price</div>
-                  <div style={{ fontWeight: 500 }}>{trade.exitPrice ? formatCurrency(Number(trade.exitPrice), "USD", false, 2) : "—"}</div>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">Exit Price</div>
+                  <div className="font-medium">{trade.exitPrice ? formatCurrency(Number(trade.exitPrice), "USD", false, 2) : "—"}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Quantity</div>
-                  <div style={{ fontWeight: 500 }}>{Number(trade.quantity).toString()}</div>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">Quantity</div>
+                  <div className="font-medium">{Number(trade.quantity).toString()}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>Fees</div>
-                  <div style={{ fontWeight: 500 }}>{formatCurrency(Number(trade.fees), "USD", true, 2)}</div>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">Fees</div>
+                  <div className="font-medium">{formatCurrency(Number(trade.fees), "USD", true, 2)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>R Multiple</div>
-                  <div style={{ fontWeight: 700, color: Number(trade.netPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">R Multiple</div>
+                  <div className={`font-bold ${Number(trade.netPnl) >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
                     {trade.riskAmount && Number(trade.riskAmount) > 0
                       ? `${Number(trade.netPnl) / Number(trade.riskAmount) >= 0 ? "+" : ""}${(Number(trade.netPnl) / Number(trade.riskAmount)).toFixed(2)}R`
                       : "—"}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: "0.25rem" }}>P&L (USD)</div>
-                  <div style={{ fontWeight: 500, color: (Number(trade.netPnlUsd ?? trade.netPnl) || 0) > 0 ? "var(--color-profit)" : (Number(trade.netPnlUsd ?? trade.netPnl) || 0) < 0 ? "var(--color-loss)" : "inherit" }}>
+                  <div className="text-xs text-[var(--color-gray-500)] mb-1">P&L (USD)</div>
+                  <div className={`font-medium ${(Number(trade.netPnlUsd ?? trade.netPnl) || 0) > 0 ? "text-[var(--color-profit)]" : (Number(trade.netPnlUsd ?? trade.netPnl) || 0) < 0 ? "text-[var(--color-loss)]" : "text-inherit"}`}>
                     {trade.netPnlUsd != null && trade.netPnlUsd !== trade.netPnl
                       ? formatCurrency(Number(trade.netPnlUsd), "USD", true, 2)
                       : "—"}
@@ -274,31 +263,28 @@ export function TradeDetailsDrawer() {
               </div>
 
               {/* Analysis (Editable Tags & Notes) */}
-              <div style={{ marginTop: "1.5rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-                  <h3 style={{ fontWeight: 600, fontSize: "0.95rem" }}>Analysis</h3>
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="font-semibold text-[0.95rem]">Analysis</h3>
                   {!editMode ? (
                     <button 
                       onClick={() => setEditMode(true)}
-                      className="btn btn-outline" 
-                      style={{ padding: "0.25rem 0.75rem", fontSize: "0.85rem", height: "auto" }}
+                      className="btn btn-outline py-1 px-3 text-sm h-auto" 
                     >
                       ✏️ Edit
                     </button>
                   ) : (
-                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <div className="flex gap-2">
                       <button 
                         onClick={() => setEditMode(false)}
-                        className="btn" 
-                        style={{ padding: "0.25rem 0.75rem", fontSize: "0.85rem", height: "auto", background: "transparent", border: "1px solid var(--color-gray-700)" }}
+                        className="btn py-1 px-3 text-sm h-auto bg-transparent border border-[var(--color-gray-700)]" 
                       >
                         Cancel
                       </button>
                       <button 
                         onClick={handleSaveDetails}
                         disabled={saving}
-                        className="btn btn-primary" 
-                        style={{ padding: "0.25rem 0.75rem", fontSize: "0.85rem", height: "auto" }}
+                        className="btn btn-primary py-1 px-3 text-sm h-auto" 
                       >
                         {saving ? "Saving..." : "Save Changes"}
                       </button>
@@ -307,9 +293,9 @@ export function TradeDetailsDrawer() {
                 </div>
 
                 {editMode ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                  <div className="flex flex-col gap-4">
                     <div>
-                      <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem", color: "var(--color-gray-400)" }}>
+                      <label className="block text-sm mb-1 text-[var(--color-gray-400)]">
                         Setup
                       </label>
                       <select
@@ -324,7 +310,7 @@ export function TradeDetailsDrawer() {
                       </select>
                     </div>
                     <div>
-                      <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem", color: "var(--color-gray-400)" }}>
+                      <label className="block text-sm mb-1 text-[var(--color-gray-400)]">
                         Emotion Tags (comma separated)
                       </label>
                       <input 
@@ -336,51 +322,42 @@ export function TradeDetailsDrawer() {
                       />
                     </div>
                     <div>
-                      <label style={{ display: "block", fontSize: "0.85rem", marginBottom: "0.25rem", color: "var(--color-gray-400)" }}>
+                      <label className="block text-sm mb-1 text-[var(--color-gray-400)]">
                         Post-Trade Notes
                       </label>
                       <textarea 
-                        className="input"
+                        className="input resize-y"
                         value={editedNotes}
                         onChange={e => setEditedNotes(e.target.value)}
                         rows={4}
                         placeholder="What went well? What could be improved?"
-                        style={{ resize: "vertical" }}
                       />
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>Setup Tags</span>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm text-[var(--color-gray-500)]">Setup Tags</span>
+                      <div className="flex flex-wrap gap-2">
                         {trade.setupTags && trade.setupTags.length > 0 ? trade.setupTags.map((tag: string) => (
-                          <span key={tag} className="badge" style={{ background: "var(--color-gray-800)" }}>{tag}</span>
-                        )) : <span style={{ fontSize: "0.85rem", color: "var(--color-gray-600)" }}>No setup tags</span>}
+                          <span key={tag} className="badge bg-[var(--color-gray-800)]">{tag}</span>
+                        )) : <span className="text-sm text-[var(--color-gray-600)]">No setup tags</span>}
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>Emotion Tags</span>
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm text-[var(--color-gray-500)]">Emotion Tags</span>
+                      <div className="flex flex-wrap gap-2">
                         {trade.emotionTags && trade.emotionTags.length > 0 ? trade.emotionTags.map((tag: string) => (
-                          <span key={tag} className="badge" style={{ background: "var(--color-gray-800)" }}>{tag}</span>
-                        )) : <span style={{ fontSize: "0.85rem", color: "var(--color-gray-600)" }}>No emotion tags</span>}
+                          <span key={tag} className="badge bg-[var(--color-gray-800)]">{tag}</span>
+                        )) : <span className="text-sm text-[var(--color-gray-600)]">No emotion tags</span>}
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>Post-Trade Notes</span>
-                      <div style={{ 
-                        background: "var(--color-gray-900)", 
-                        padding: "1rem", 
-                        borderRadius: "8px", 
-                        border: "1px solid var(--color-gray-800)",
-                        fontSize: "0.9rem",
-                        lineHeight: 1.5,
-                        color: "var(--color-gray-300)"
-                      }}>
-                        {trade.notesPost || <span style={{ color: "var(--color-gray-600)" }}>No notes added.</span>}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-sm text-[var(--color-gray-500)]">Post-Trade Notes</span>
+                      <div className="bg-[var(--color-gray-900)] p-4 rounded-lg border border-[var(--color-gray-800)] text-sm leading-relaxed text-[var(--color-gray-300)]">
+                        {trade.notesPost || <span className="text-[var(--color-gray-600)]">No notes added.</span>}
                       </div>
                     </div>
                   </div>
@@ -389,11 +366,10 @@ export function TradeDetailsDrawer() {
 
               {/* Screenshots */}
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
-                  <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--gray-300)" }}>Screenshots</h3>
+                <div className="flex justify-between items-center mb-3">
+                  <h3 className="text-base font-semibold text-[var(--color-gray-300)]">Screenshots</h3>
                   <button 
-                    className="btn btn-secondary" 
-                    style={{ padding: "0.25rem 0.75rem", fontSize: "0.8rem", height: "auto" }}
+                    className="btn btn-secondary py-1 px-3 text-sm h-auto" 
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploading}
                   >
@@ -403,33 +379,32 @@ export function TradeDetailsDrawer() {
                     type="file" 
                     accept="image/*" 
                     ref={fileInputRef} 
-                    style={{ display: "none" }} 
+                    className="hidden" 
                     onChange={handleFileUpload} 
                   />
                 </div>
 
                 {trade.screenshots?.length > 0 ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+                  <div className="grid grid-cols-2 gap-4">
                     {trade.screenshots.map((s: any) => (
-                      <a key={s.id} href={s.storageUrl} target="_blank" rel="noopener noreferrer" style={{ display: "block", borderRadius: "8px", overflow: "hidden", border: "1px solid var(--gray-800)" }}>
+                      <a key={s.id} href={s.storageUrl} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-[var(--color-gray-800)]">
                         {/* Using standard img tag because next/image requires host config for external URLs */}
-                        <img src={s.storageUrl} alt="Screenshot" style={{ width: "100%", height: "120px", objectFit: "cover", display: "block" }} />
+                        <img src={s.storageUrl} alt="Screenshot" className="w-full h-[120px] object-cover block" />
                       </a>
                     ))}
                   </div>
                 ) : (
-                  <div style={{ padding: "2rem", textAlign: "center", background: "var(--gray-900)", borderRadius: "12px", border: "1px dashed var(--gray-700)" }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--gray-500)", margin: "0 auto 0.5rem" }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                    <div style={{ color: "var(--gray-400)", fontSize: "0.9rem" }}>No screenshots uploaded</div>
+                  <div className="p-8 text-center bg-[var(--color-gray-900)] rounded-xl border border-dashed border-[var(--color-gray-700)]">
+                    <UploadCloud className="w-6 h-6 text-[var(--color-gray-500)] mx-auto mb-2" />
+                    <div className="text-[var(--color-gray-400)] text-sm">No screenshots uploaded</div>
                   </div>
                 )}
               </div>
 
               {/* Delete */}
-              <div style={{ borderTop: "1px solid var(--color-gray-800)", paddingTop: "1.25rem" }}>
+              <div className="border-t border-[var(--color-gray-800)] pt-5">
                 <button
-                  className="btn"
-                  style={{ width: "100%", padding: "0.5rem", background: "transparent", border: "1px solid rgba(239,68,68,0.35)", color: "var(--color-loss)" }}
+                  className="btn w-full p-2 bg-transparent border border-red-500/35 text-[var(--color-loss)] hover:bg-red-500/10"
                   onClick={handleDeleteTrade}
                 >
                   Delete trade
@@ -439,12 +414,7 @@ export function TradeDetailsDrawer() {
           )}
         </div>
       </div>
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes slideIn {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-      `}} />
     </>
   )
 }
+

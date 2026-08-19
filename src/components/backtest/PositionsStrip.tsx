@@ -42,10 +42,10 @@ export function PositionsStrip({
       <>
         <div className="tz-replay-positions-header">
           <div className="tz-replay-positions-title">
-            Positions <span style={{ background: "var(--color-gray-800)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>0</span>
+            Positions <span className="bg-[var(--color-gray-800)] px-2 py-0.5 rounded-full text-xs text-[var(--color-gray-400)]">0</span>
           </div>
         </div>
-        <div className="tz-replay-positions-table" style={{ display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-400)", fontSize: "0.85rem" }}>
+        <div className="tz-replay-positions-table flex items-center justify-center text-[var(--color-gray-400)] text-[0.85rem]">
           No open positions.
         </div>
       </>
@@ -58,17 +58,17 @@ export function PositionsStrip({
         <div className="tz-replay-positions-title">
           Positions
           {openPositions.length > 0 && (
-            <span style={{ background: "var(--color-brand-500)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "white" }}>{openPositions.length} open</span>
+            <span className="bg-[var(--color-brand-500)] px-2 py-0.5 rounded-full text-xs text-white">{openPositions.length} open</span>
           )}
           {closedTrades.length > 0 && (
-            <span style={{ background: "var(--color-gray-800)", padding: "2px 8px", borderRadius: "10px", fontSize: "0.75rem", color: "var(--color-gray-400)" }}>{closedTrades.length} closed</span>
+            <span className="bg-[var(--color-gray-800)] px-2 py-0.5 rounded-full text-xs text-[var(--color-gray-400)]">{closedTrades.length} closed</span>
           )}
         </div>
         {closedTrades.length > 0 && (
           <div className="tz-replay-positions-summary">
-            <span>P&amp;L: <b style={{ color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>{totalPnl >= 0 ? "+" : ""}{totalPnl.toFixed(2)}</b></span>
-            {winRate !== null && <span>Win: <b style={{ color: winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)" }}>{winRate.toFixed(0)}%</b></span>}
-            {avgR !== null && <span>Avg R: <b style={{ color: avgR >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>{avgR >= 0 ? "+" : ""}{avgR.toFixed(2)}R</b></span>}
+            <span>P&amp;L: <b className={totalPnl >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}>{totalPnl >= 0 ? "+" : ""}{totalPnl.toFixed(2)}</b></span>
+            {winRate !== null && <span>Win: <b className={winRate >= 50 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}>{winRate.toFixed(0)}%</b></span>}
+            {avgR !== null && <span>Avg R: <b className={avgR >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}>{avgR >= 0 ? "+" : ""}{avgR.toFixed(2)}R</b></span>}
           </div>
         )}
       </div>
@@ -106,7 +106,7 @@ export function PositionsStrip({
                 <tr
                   key={p.id}
                   onClick={() => onSelect(p.id)}
-                  style={{ background: active ? "var(--color-gray-800)" : "transparent", cursor: "pointer", opacity: isClosed ? 0.7 : 1 }}
+                  className={`cursor-pointer ${active ? "bg-[var(--color-gray-800)]" : "bg-transparent"} ${isClosed ? "opacity-70" : "opacity-100"}`}
                 >
                   <td>{i + 1}</td>
                   <td>{symbol}</td>
@@ -128,17 +128,7 @@ export function PositionsStrip({
                         onChange={(e) =>
                           onUpdateLevels(p.id, { stopLoss: Number(e.target.value), takeProfit: p.takeProfit })
                         }
-                        style={{
-                          width: "80px",
-                          height: "24px",
-                          background: "transparent",
-                          border: "1px solid var(--color-gray-300)",
-                          borderRadius: "4px",
-                          padding: "0 0.4rem",
-                          fontSize: "0.75rem",
-                          outline: "none",
-                          color: "inherit"
-                        }}
+                        className="w-[80px] h-[24px] bg-transparent border border-[var(--color-gray-300)] rounded px-1.5 text-xs outline-none text-inherit"
                       />
                     )}
                   </td>
@@ -154,32 +144,22 @@ export function PositionsStrip({
                         onChange={(e) =>
                           onUpdateLevels(p.id, { stopLoss: p.stopLoss, takeProfit: Number(e.target.value) })
                         }
-                        style={{
-                          width: "80px",
-                          height: "24px",
-                          background: "transparent",
-                          border: "1px solid var(--color-gray-300)",
-                          borderRadius: "4px",
-                          padding: "0 0.4rem",
-                          fontSize: "0.75rem",
-                          outline: "none",
-                          color: "inherit"
-                        }}
+                        className="w-[80px] h-[24px] bg-transparent border border-[var(--color-gray-300)] rounded px-1.5 text-xs outline-none text-inherit"
                       />
                     )}
                   </td>
                   <td className={pnlColor}>
                     {pnl === null ? "—" : formatCurrency(pnl, "USD", true)}
                   </td>
-                  <td style={{ color: isClosed && p.saved ? "var(--color-profit)" : "inherit" }}>
+                  <td className={isClosed && p.saved ? "text-[var(--color-profit)]" : "text-inherit"}>
                     {isClosed && p.saved ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: "3px", fontSize: "0.72rem", color: "var(--color-profit)" }}>
+                      <span className="flex items-center gap-1 text-[0.72rem] text-[var(--color-profit)]">
                         ✓ Saved
                       </span>
                     ) : statusText}
                   </td>
                   <td>
-                    <div style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                    <div className="flex gap-1 items-center">
                       {isClosed && !p.saved && onSaveTrade && (
                         <button
                           type="button"
@@ -189,19 +169,7 @@ export function PositionsStrip({
                             onSaveTrade(p)
                           }}
                           disabled={p.saving}
-                          style={{
-                            background: "var(--color-gray-800)",
-                            border: "1px solid var(--color-gray-700)",
-                            color: "var(--color-brand-400)",
-                            cursor: "pointer",
-                            borderRadius: "4px",
-                            padding: "2px 6px",
-                            fontSize: "0.65rem",
-                            fontWeight: 700,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "3px",
-                          }}
+                          className="bg-[var(--color-gray-800)] border border-[var(--color-gray-700)] text-[var(--color-brand-400)] cursor-pointer rounded px-1.5 py-0.5 text-[0.65rem] font-bold flex items-center gap-1"
                         >
                           {p.saving ? "..." : "Save"}
                         </button>
@@ -217,12 +185,7 @@ export function PositionsStrip({
                             onCloseManual(p.id)
                           }
                         }}
-                        style={{
-                          background: "transparent",
-                          border: "none",
-                          color: "var(--color-gray-400)",
-                          cursor: "pointer"
-                        }}
+                        className="bg-transparent border-none text-[var(--color-gray-400)] cursor-pointer"
                       >
                         <X size={16} />
                       </button>
@@ -245,3 +208,4 @@ function fmt(n: number): string {
 function fmtQty(n: number): string {
   return n.toLocaleString("en-US", { maximumFractionDigits: 4 })
 }
+

@@ -18,15 +18,15 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
 
   if (total === 0) {
     return (
-      <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-500)" }}>
+      <div className="h-full flex items-center justify-center text-[var(--color-gray-500)]">
         No data yet
       </div>
     )
   }
 
   return (
-    <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-      <div style={{ flex: 1, position: "relative" }}>
+    <div className="h-full flex flex-col">
+      <div className="flex-1 relative">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -56,34 +56,29 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
             />
           </PieChart>
         </ResponsiveContainer>
-        <div style={{
-          position: "absolute",
-          top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          textAlign: "center",
-          pointerEvents: "none"
-        }}>
-          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-gray-100)", lineHeight: 1 }}>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+          <div className="text-3xl font-bold text-[var(--color-gray-100)] leading-none">
             {winRate.toFixed(0)}%
           </div>
-          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: "0.25rem" }}>
+          <div className="text-[0.7rem] text-[var(--color-gray-500)] mt-1">
             Win Rate
           </div>
         </div>
       </div>
       {/* Win/Loss counts */}
-      <div style={{ display: "flex", justifyContent: "center", gap: "1.5rem", paddingTop: "0.5rem", fontSize: "0.75rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-profit)", display: "inline-block" }} />
-          <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{wins}</span>
-          <span style={{ color: "var(--color-gray-500)" }}>wins</span>
+      <div className="flex justify-center gap-6 pt-2 text-xs">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[var(--color-profit)] inline-block" />
+          <span className="text-[var(--color-profit)] font-semibold">{wins}</span>
+          <span className="text-[var(--color-gray-500)]">wins</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--color-loss)", display: "inline-block" }} />
-          <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{losses}</span>
-          <span style={{ color: "var(--color-gray-500)" }}>losses</span>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[var(--color-loss)] inline-block" />
+          <span className="text-[var(--color-loss)] font-semibold">{losses}</span>
+          <span className="text-[var(--color-gray-500)]">losses</span>
         </div>
       </div>
     </div>
   )
 }
+

@@ -48,11 +48,11 @@ function NeedleGauge({ label, used, total, isBreached, formatCurrency = true, re
   const gradientId = reverseColors ? `profit-grad-${label.replace(/\s+/g, '')}` : `dd-grad-${label.replace(/\s+/g, '')}`;
 
   return (
-    <div style={{ background: "var(--color-gray-950)", padding: "1.25rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "0.5rem", textAlign: "center" }}>{label}</div>
+    <div className="bg-[var(--color-gray-950)] p-5 rounded-lg border border-[var(--color-gray-800)] flex flex-col items-center">
+      <div className="text-xs text-[var(--color-gray-400)] uppercase font-semibold tracking-wider mb-2 text-center">{label}</div>
       
-      <div style={{ width: "100%", maxWidth: "180px", position: "relative", marginTop: "1rem" }}>
-        <svg viewBox="0 0 200 100" style={{ width: "100%", height: "auto", overflow: "visible" }}>
+      <div className="w-full max-w-[180px] relative mt-4">
+        <svg viewBox="0 0 200 100" className="w-full h-auto overflow-visible">
           <defs>
             <linearGradient id={`dd-grad-${label.replace(/\s+/g, '')}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#10b981" />
@@ -94,7 +94,7 @@ function NeedleGauge({ label, used, total, isBreached, formatCurrency = true, re
                 x={tick.textX}
                 y={tick.textY}
                 fill="var(--color-gray-500)"
-                style={{ fontSize: "10px", fontWeight: 600 }}
+                className="text-[10px] font-semibold"
                 textAnchor="middle"
                 dominantBaseline="middle"
               >
@@ -121,19 +121,19 @@ function NeedleGauge({ label, used, total, isBreached, formatCurrency = true, re
           <circle cx="100" cy="100" r="2" fill="var(--color-gray-950)" />
         </svg>
 
-        <div style={{ position: "absolute", bottom: "-24px", left: "0", right: "0", textAlign: "center" }}>
-          <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-100)", lineHeight: 1 }}>{pct.toFixed(1)}<span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>%</span></div>
+        <div className="absolute -bottom-6 inset-x-0 text-center">
+          <div className="text-xl font-bold text-[var(--color-gray-100)] leading-none">{pct.toFixed(1)}<span className="text-[0.85rem] text-[var(--color-gray-500)] ml-0.5">%</span></div>
         </div>
       </div>
 
-      <div style={{ marginTop: "2.5rem", display: "flex", justifyContent: "space-between", width: "100%", borderTop: "1px solid var(--color-gray-800)", paddingTop: "0.75rem" }}>
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontSize: "0.6rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Used</span>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-100)" }}>{formattedUsed}</span>
+      <div className="mt-10 flex justify-between w-full border-t border-[var(--color-gray-800)] pt-3">
+        <div className="flex flex-col">
+          <span className="text-[0.6rem] text-[var(--color-gray-500)] uppercase font-semibold">Used</span>
+          <span className="text-[0.85rem] font-semibold text-[var(--color-gray-100)]">{formattedUsed}</span>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", textAlign: "right" }}>
-          <span style={{ fontSize: "0.6rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Limit</span>
-          <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-400)" }}>{formattedTotal}</span>
+        <div className="flex flex-col text-right">
+          <span className="text-[0.6rem] text-[var(--color-gray-500)] uppercase font-semibold">Limit</span>
+          <span className="text-[0.85rem] font-semibold text-[var(--color-gray-400)]">{formattedTotal}</span>
         </div>
       </div>
     </div>
@@ -160,10 +160,10 @@ export function PropFirmGauges({ challenge }: { challenge: any }) {
   const currentProfit = Number(challenge.currentBalance) - Number(challenge.initialBalance)
 
   return (
-    <div style={{ background: "var(--color-gray-900)", padding: "1.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)", height: "100%", display: "flex", flexDirection: "column" }}>
-      <h3 style={{ fontSize: "0.95rem", fontWeight: 600, marginBottom: "1.25rem", color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem", flexShrink: 0 }}>Objectives & Limits</h3>
+    <div className="bg-[var(--color-gray-900)] p-6 rounded-lg border border-[var(--color-gray-800)] h-full flex flex-col">
+      <h3 className="text-[0.95rem] font-semibold mb-5 text-[var(--color-gray-100)] border-b border-[var(--color-gray-800)] pb-3 shrink-0">Objectives & Limits</h3>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", flex: 1 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 flex-1">
         <NeedleGauge 
           label="Daily Drawdown" 
           used={Math.max(0, dailyDdUsed)} 
@@ -209,4 +209,5 @@ export function PropFirmGauges({ challenge }: { challenge: any }) {
     </div>
   )
 }
+
 

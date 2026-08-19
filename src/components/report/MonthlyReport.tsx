@@ -353,9 +353,9 @@ export function MonthlyReport() {
     setPdfSections(prev => (prev.includes(k) ? prev.filter(x => x !== k) : [...prev, k]))
   }
 
-  const t = data!.trades
+  const t = data?.trades as TradeSummary
   const daily = data?.daily || []
-  const dayShort = (daily as DailyItem[]).map(d => ({
+  const dayShort = daily.map(d => ({
     ...d,
     label: d.date.slice(5),
   }))

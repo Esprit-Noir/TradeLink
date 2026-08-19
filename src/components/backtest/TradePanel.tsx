@@ -103,8 +103,7 @@ export function TradePanel({
           <div className="tz-sidebar-stat">
             <span className="tz-sidebar-stat-label">P&amp;L</span>
             <span
-              className="tz-sidebar-stat-value"
-              style={{ color: total === 0 ? "inherit" : totalClosed >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}
+              className={`tz-sidebar-stat-value ${total === 0 ? "" : totalClosed >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}
             >
               {total > 0 ? formatCurrency(totalClosed, "USD", true) : "—"}
             </span>
@@ -112,14 +111,14 @@ export function TradePanel({
           <div className="tz-sidebar-stat-divider" />
           <div className="tz-sidebar-stat">
             <span className="tz-sidebar-stat-label">Win%</span>
-            <span className="tz-sidebar-stat-value" style={{ color: total > 0 ? (winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)") : "inherit" }}>
+            <span className={`tz-sidebar-stat-value ${total > 0 ? (winRate >= 50 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]") : ""}`}>
               {total > 0 ? `${winRate.toFixed(0)}%` : "—"}
             </span>
           </div>
           <div className="tz-sidebar-stat-divider" />
           <div className="tz-sidebar-stat">
             <span className="tz-sidebar-stat-label">Avg R</span>
-            <span className="tz-sidebar-stat-value" style={{ color: total > 0 ? (avgR >= 0 ? "var(--color-profit)" : "var(--color-loss)") : "inherit" }}>
+            <span className={`tz-sidebar-stat-value ${total > 0 ? (avgR >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]") : ""}`}>
               {total > 0 ? `${avgR >= 0 ? "+" : ""}${avgR.toFixed(2)}R` : "—"}
             </span>
           </div>
@@ -168,10 +167,9 @@ export function TradePanel({
                 <div className="tz-replay-input-wrapper">
                   <input
                     type="number"
-                    className="tz-replay-input"
+                    className="tz-replay-input text-[var(--color-loss)] font-semibold"
                     value={riskAmount.toFixed(2)}
                     readOnly
-                    style={{ color: "var(--color-loss)", fontWeight: 600 }}
                   />
                   <span className="tz-replay-input-suffix">USD</span>
                 </div>
@@ -179,10 +177,10 @@ export function TradePanel({
               <div className="tz-replay-input-group">
                 <label className="tz-replay-input-label">Market price</label>
                 <div className="tz-replay-price-display">
-                  <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700 }}>
+                  <span className="tabular-nums font-bold">
                     {price ? fmtPrice(price) : "—"}
                   </span>
-                  <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)" }}>
+                  <span className="text-[0.65rem] text-[var(--color-gray-500)]">
                     {symbol.split("/")[0] || symbol}
                   </span>
                 </div>
@@ -192,8 +190,8 @@ export function TradePanel({
             {/* Custom TP / SL */}
             <div className="tz-replay-row-2">
               <div className="tz-replay-input-group">
-                <label className="tz-replay-input-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <Target size={11} style={{ color: "var(--color-profit)" }} />
+                <label className="tz-replay-input-label flex items-center gap-1">
+                  <Target size={11} className="text-[var(--color-profit)]" />
                   Take Profit
                 </label>
                 <div className="tz-replay-input-wrapper">
@@ -208,8 +206,8 @@ export function TradePanel({
                 </div>
               </div>
               <div className="tz-replay-input-group">
-                <label className="tz-replay-input-label" style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                  <ShieldAlert size={11} style={{ color: "var(--color-loss)" }} />
+                <label className="tz-replay-input-label flex items-center gap-1">
+                  <ShieldAlert size={11} className="text-[var(--color-loss)]" />
                   Stop Loss
                 </label>
                 <div className="tz-replay-input-wrapper">
@@ -228,13 +226,12 @@ export function TradePanel({
             {/* Indicators */}
             <div className="tz-replay-input-group">
               <label className="tz-replay-input-label">Indicators</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              <div className="flex flex-wrap gap-1.5">
                 {INDICATOR_TOGGLES.map((t) => (
                   <button
                     key={t.key}
-                    className={`tz-replay-risk-btn ${indicators[t.key] ? "active" : ""}`}
+                    className={`tz-replay-risk-btn px-2 py-1 text-[0.72rem] min-w-[42px] ${indicators[t.key] ? "active" : ""}`}
                     onClick={() => onSetIndicators({ [t.key]: !indicators[t.key] })}
-                    style={{ padding: "4px 8px", fontSize: "0.72rem", minWidth: "42px" }}
                   >
                     {t.label}
                   </button>
@@ -246,7 +243,7 @@ export function TradePanel({
             {positions.length > 0 && (
               <div className="tz-sidebar-floating">
                 <span className="tz-sidebar-stat-label">Floating P&amp;L ({positions.length} open)</span>
-                <span style={{ fontWeight: 700, fontSize: "0.9rem", color: floating >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                <span className={`font-bold text-[0.9rem] ${floating >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
                   {formatCurrency(floating, "USD", true)}
                 </span>
               </div>
@@ -255,7 +252,7 @@ export function TradePanel({
             {/* Unsaved trades — quick save list */}
             {closedTrades.filter(t => !t.saved && !t.saving).length > 0 && (
               <div className="tz-sidebar-unsaved">
-                <div className="tz-sidebar-stat-label" style={{ marginBottom: "6px" }}>
+                <div className="tz-sidebar-stat-label mb-1.5">
                   Unsaved ({closedTrades.filter(t => !t.saved).length})
                 </div>
                 {closedTrades.filter(t => !t.saved).slice(0, 3).map(t => (
@@ -263,7 +260,7 @@ export function TradePanel({
                     <span className={t.side === "long" ? "tz-badge-buy" : "tz-badge-sell"}>
                       {t.side === "long" ? "BUY" : "SELL"}
                     </span>
-                    <span style={{ fontVariantNumeric: "tabular-nums", fontSize: "0.8rem" }}>
+                    <span className="tabular-nums text-[0.8rem]">
                       {t.netPnl != null ? formatCurrency(t.netPnl, "USD", true) : "—"}
                     </span>
                     <button
@@ -282,7 +279,7 @@ export function TradePanel({
         ) : (
           <div className="tz-replay-order-body">
             {pastSessions.length === 0 ? (
-              <div style={{ color: "var(--color-gray-500)", fontSize: "0.82rem", textAlign: "center", paddingTop: "2rem", lineHeight: 1.6 }}>
+              <div className="text-[var(--color-gray-500)] text-[0.82rem] text-center pt-8 leading-relaxed">
                 No past sessions yet.<br />Place and save trades to<br />build your history.
               </div>
             ) : (
@@ -290,14 +287,14 @@ export function TradePanel({
                 {pastSessions.map((s) => (
                   <div key={s.id} className="backtest-past-row">
                     <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <strong style={{ fontFamily: "var(--font-mono)", fontSize: "0.82rem" }}>{s.symbol}</strong>
+                      <div className="flex items-center gap-2">
+                        <strong className="font-mono text-[0.82rem]">{s.symbol}</strong>
                         <span className="tz-tf-badge">{s.timeframe}</span>
                       </div>
                       <div className="backtest-past-sub">
                         {s.tradesCount} trade{s.tradesCount !== 1 ? "s" : ""}
                         {s.closedPnl != null && (
-                          <span style={{ marginLeft: "0.5rem", color: s.closedPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600 }}>
+                          <span className={`ml-2 font-semibold ${s.closedPnl >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
                             {s.closedPnl >= 0 ? "+" : ""}{s.closedPnl.toFixed(2)}
                           </span>
                         )}
@@ -340,7 +337,7 @@ export function TradePanel({
           <PlusCircle size={20} />Order
         </div>
         <div
-          className="tz-replay-vtab"
+          className="tz-replay-vtab cursor-pointer"
           onClick={() => {
             if (backtestAccountId) {
               router.push(`/accounts/${backtestAccountId}`)
@@ -348,7 +345,6 @@ export function TradePanel({
               router.push("/accounts")
             }
           }}
-          style={{ cursor: "pointer" }}
         >
           <List size={20} />Details
         </div>

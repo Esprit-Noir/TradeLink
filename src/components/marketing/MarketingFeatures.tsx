@@ -1,166 +1,185 @@
 "use client"
 
 import {
-  Brain, BarChart3, Shield, Zap, Target, Play, Activity, TrendingUp,
-  Clock, AlertTriangle, Eye, LineChart, PieChart, Users, FileText
+  Brain, BarChart3, Shield, Play, Activity, Clock, AlertTriangle, Eye, LineChart, PieChart, Target, FileText
 } from "lucide-react"
+import { motion, Variants } from "framer-motion"
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    }
+  }
+}
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: "spring", stiffness: 40, damping: 15 }
+  }
+}
 
 export function MarketingFeatures() {
   return (
-    <section className="marketing-features" id="features">
-      <div className="marketing-section-inner">
-        <div className="marketing-section-header" data-animate="fade-up">
-          <span className="marketing-badge">The Arsenal</span>
-          <h2 className="marketing-section-title">
+    <section className="py-32 bg-[#0a0a0a]" id="features">
+      <div className="max-w-[1200px] mx-auto px-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16 flex flex-col items-center"
+        >
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 mb-6 text-[10px] font-bold text-[var(--color-brand-500)] uppercase tracking-widest">
+            The Arsenal
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
             Everything You Need to<br />
-            <span className="text-gradient">Scale Your Edge</span>
+            <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent">Scale Your Edge</span>
           </h2>
-          <p className="marketing-section-subtitle">
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
             From AI-powered behavioral coaching to real-time risk management — TradeLink gives
             funded traders the tools to pass challenges and keep their accounts alive.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="marketing-bento-grid">
+        {/* Bento Grid */}
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+          className="grid grid-cols-1 md:grid-cols-3 auto-rows-[minmax(220px,auto)] gap-4"
+        >
           {/* AI Behavioral Coaching - Large */}
-          <div className="marketing-bento-card large" data-animate="fade-up" data-delay="1">
-            <div className="marketing-bento-glow green" />
-            <div className="marketing-bento-content">
-              <div className="marketing-bento-icon"><Brain size={24} /></div>
-              <h3>AI Behavioral Coaching</h3>
-              <p>Detects revenge trading, tilt, overtrading, and emotional spirals before they blow your account. Our AI cross-references your entry timing, position sizing, and P&L patterns to identify destructive behaviors — then gives you a personalized action plan to fix them.</p>
-              
-              <div className="marketing-bento-features">
-                <div className="marketing-bento-feature-item">
-                  <AlertTriangle size={14} />
-                  <span>Real-time tilt detection</span>
-                </div>
-                <div className="marketing-bento-feature-item">
-                  <Eye size={14} />
-                  <span>Pattern recognition across 50+ metrics</span>
-                </div>
-                <div className="marketing-bento-feature-item">
-                  <FileText size={14} />
-                  <span>Personalized weekly action plans</span>
-                </div>
-              </div>
-              
-              <div className="marketing-bento-visual">
-                <div className="bento-mockup-alert">
-                  <span className="dot red" />
-                  <div>
-                    <strong>Tilt Warning</strong>
-                    <span>You&apos;ve lost 3 trades in 15 mins. Your avg position size just increased 2.4x. Step away.</span>
-                  </div>
-                </div>
-                <div className="bento-mockup-alert" style={{ marginTop: "0.5rem", background: "rgba(16, 185, 129, 0.08)", borderColor: "rgba(16, 185, 129, 0.2)" }}>
-                  <span className="dot" style={{ background: "var(--color-brand-500)" }} />
-                  <div>
-                    <strong style={{ color: "var(--color-brand-light)" }}>Insight</strong>
-                    <span>Your win rate drops 18% after 2pm London. Consider closing positions earlier.</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Deep Analytics - Medium */}
-          <div className="marketing-bento-card medium" data-animate="fade-up" data-delay="2">
-            <div className="marketing-bento-glow blue" />
-            <div className="marketing-bento-content">
-              <div className="marketing-bento-icon" style={{ background: "rgba(59, 130, 246, 0.1)", color: "#60a5fa" }}><BarChart3 size={24} /></div>
-              <h3>50+ Quant Reports</h3>
-              <p>Every metric a professional quant would track — profit factor, expectancy, Sortino ratio, drawdown analysis, hourly performance, day-of-week breakdowns, and more.</p>
-              
-              <div className="marketing-bento-visual bottom">
-                <div className="bento-mockup-chart">
-                  <div className="bar" style={{ height: "30%", background: "rgba(59, 130, 246, 0.3)" }} />
-                  <div className="bar" style={{ height: "55%", background: "rgba(59, 130, 246, 0.4)" }} />
-                  <div className="bar" style={{ height: "45%", background: "rgba(59, 130, 246, 0.35)" }} />
-                  <div className="bar" style={{ height: "80%", background: "rgba(59, 130, 246, 0.6)" }} />
-                  <div className="bar" style={{ height: "65%", background: "rgba(59, 130, 246, 0.5)" }} />
-                  <div className="bar" style={{ height: "95%", background: "var(--color-brand-500)" }} />
-                  <div className="bar" style={{ height: "70%", background: "rgba(59, 130, 246, 0.55)" }} />
-                  <div className="bar" style={{ height: "50%", background: "rgba(59, 130, 246, 0.4)" }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Prop Firm Tracking */}
-          <div className="marketing-bento-card small" data-animate="fade-left" data-delay="3">
-            <div className="marketing-bento-content centered">
-              <div className="marketing-bento-icon large" style={{ background: "rgba(168, 85, 247, 0.1)", color: "#c084fc" }}><Target size={32} /></div>
-              <h3>Prop Firm Tracking</h3>
-              <p>Real-time drawdown, daily loss, and profit target tracking for FTMO, MyForexFunds, and 10+ firms.</p>
-              <div className="marketing-bento-tag">Pass rate: 73%</div>
-            </div>
-          </div>
-
-          {/* Risk Rules */}
-          <div className="marketing-bento-card small" data-animate="fade-left" data-delay="4">
-            <div className="marketing-bento-content centered">
-              <div className="marketing-bento-icon large"><Shield size={32} /></div>
-              <h3>Risk Management</h3>
-              <p>Auto-enforced risk rules. Never exceed your max risk per trade or daily loss limit again.</p>
-              <div className="marketing-bento-tag">1% risk per trade</div>
-            </div>
-          </div>
-
-          {/* Trade Replay - Wide */}
-          <div className="marketing-bento-card wide" data-animate="fade-up" data-delay="5">
-             <div className="marketing-bento-glow purple" />
-             <div className="marketing-bento-content row">
-               <div className="text-content">
-                 <div className="marketing-bento-icon" style={{ background: "rgba(168, 85, 247, 0.1)", color: "#c084fc" }}><Play size={24} /></div>
-                 <h3>Trade Replay</h3>
-                 <p>Rewatch your entries and exits tick-by-tick on real charts. See exactly where you entered, where you exited, and where you should have held. Learn from mistakes instantly — not months later.</p>
-                 <div className="marketing-bento-features" style={{ marginTop: "1rem" }}>
-                   <div className="marketing-bento-feature-item">
-                     <Activity size={14} />
-                     <span>Real candlestick data from Yahoo Finance</span>
-                   </div>
-                   <div className="marketing-bento-feature-item">
-                     <Clock size={14} />
-                     <span>Adjustable playback speed</span>
+          <motion.div variants={itemVariants} className="col-span-1 md:col-span-2 md:row-span-2 relative bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden group hover:-translate-y-1 hover:border-gray-700 transition-all duration-300">
+             <div className="absolute -top-[60%] -right-[40%] w-[400px] h-[400px] rounded-full bg-[var(--color-brand-500)] blur-[100px] opacity-10 pointer-events-none" />
+             <div className="relative p-8 h-full flex flex-col">
+               <div className="w-12 h-12 rounded-xl bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] flex items-center justify-center mb-6">
+                 <Brain size={24} />
+               </div>
+               <h3 className="text-2xl font-bold text-white mb-3">AI Behavioral Coaching</h3>
+               <p className="text-gray-400 leading-relaxed mb-8 max-w-md">Detects revenge trading, tilt, overtrading, and emotional spirals before they blow your account. Our AI cross-references your entry timing, position sizing, and P&L patterns to identify destructive behaviors.</p>
+               
+               <div className="flex flex-col gap-3 mb-8">
+                 <div className="flex items-center gap-3 text-sm text-gray-300"><AlertTriangle size={16} className="text-amber-500" /> Real-time tilt detection</div>
+                 <div className="flex items-center gap-3 text-sm text-gray-300"><Eye size={16} className="text-blue-500" /> Pattern recognition across 50+ metrics</div>
+                 <div className="flex items-center gap-3 text-sm text-gray-300"><FileText size={16} className="text-purple-500" /> Personalized weekly action plans</div>
+               </div>
+               
+               <div className="mt-auto flex flex-col gap-3 relative">
+                 <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-4">
+                   <div className="w-2 h-2 rounded-full bg-red-500 mt-1.5 flex-shrink-0 animate-pulse" />
+                   <div>
+                     <div className="text-red-400 font-bold text-sm mb-1">Tilt Warning</div>
+                     <div className="text-xs text-red-200/70">You&apos;ve lost 3 trades in 15 mins. Your avg position size just increased 2.4x. Step away.</div>
                    </div>
                  </div>
-               </div>
-               <div className="visual-content">
-                 <div className="bento-mockup-video">
-                   <div className="play-button"><Play size={20} fill="currentColor" /></div>
+                 <div className="p-4 rounded-xl bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 flex gap-4">
+                   <div className="w-2 h-2 rounded-full bg-[var(--color-brand-500)] mt-1.5 flex-shrink-0" />
+                   <div>
+                     <div className="text-[var(--color-brand-500)] font-bold text-sm mb-1">Insight</div>
+                     <div className="text-emerald-200/70 text-xs">Your win rate drops 18% after 2pm London. Consider closing positions earlier.</div>
+                   </div>
                  </div>
                </div>
              </div>
-          </div>
+          </motion.div>
 
-          {/* Equity Curve */}
-          <div className="marketing-bento-card small" data-animate="fade-up" data-delay="6">
-            <div className="marketing-bento-content centered">
-              <div className="marketing-bento-icon large" style={{ background: "rgba(59, 130, 246, 0.1)", color: "#60a5fa" }}><LineChart size={32} /></div>
-              <h3>Equity Curve</h3>
-              <p>Track your account growth over time. Compare performance across accounts and strategies.</p>
-            </div>
-          </div>
+          {/* Deep Analytics - Medium */}
+          <motion.div variants={itemVariants} className="col-span-1 md:row-span-2 relative bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden group hover:-translate-y-1 hover:border-gray-700 transition-all duration-300">
+             <div className="absolute -top-[60%] -right-[40%] w-[400px] h-[400px] rounded-full bg-blue-500 blur-[100px] opacity-10 pointer-events-none" />
+             <div className="relative p-8 h-full flex flex-col">
+               <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-6">
+                 <BarChart3 size={24} />
+               </div>
+               <h3 className="text-xl font-bold text-white mb-3">50+ Quant Reports</h3>
+               <p className="text-gray-400 text-sm leading-relaxed">Every metric a professional quant would track — profit factor, expectancy, Sortino ratio, drawdown analysis, hourly performance, day-of-week breakdowns, and more.</p>
+               
+               <div className="mt-auto pt-8 flex items-end gap-1.5 h-32 opacity-80">
+                  <div className="w-full bg-blue-500/30 rounded-t-sm h-[30%]" />
+                  <div className="w-full bg-blue-500/40 rounded-t-sm h-[55%]" />
+                  <div className="w-full bg-blue-500/35 rounded-t-sm h-[45%]" />
+                  <div className="w-full bg-blue-500/60 rounded-t-sm h-[80%]" />
+                  <div className="w-full bg-blue-500/50 rounded-t-sm h-[65%]" />
+                  <div className="w-full bg-[var(--color-brand-500)] rounded-t-sm h-[95%]" />
+                  <div className="w-full bg-blue-500/55 rounded-t-sm h-[70%]" />
+                  <div className="w-full bg-blue-500/40 rounded-t-sm h-[50%]" />
+               </div>
+             </div>
+          </motion.div>
 
-          {/* Session Analytics */}
-          <div className="marketing-bento-card small" data-animate="fade-up" data-delay="6">
-            <div className="marketing-bento-content centered">
-              <div className="marketing-bento-icon large" style={{ background: "rgba(251, 191, 36, 0.1)", color: "#fbbf24" }}><Clock size={32} /></div>
-              <h3>Session Analytics</h3>
-              <p>Discover which hours and days you perform best. Stop trading when your edge disappears.</p>
-            </div>
-          </div>
+          {/* Trade Replay - Wide */}
+          <motion.div variants={itemVariants} className="col-span-1 md:col-span-3 relative bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden group hover:-translate-y-1 hover:border-gray-700 transition-all duration-300">
+             <div className="absolute -bottom-[60%] -left-[20%] w-[500px] h-[500px] rounded-full bg-purple-500 blur-[120px] opacity-10 pointer-events-none" />
+             <div className="relative p-8 flex flex-col md:flex-row gap-8 items-center h-full">
+               <div className="flex-1">
+                 <div className="w-12 h-12 rounded-xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-6">
+                   <Play size={24} />
+                 </div>
+                 <h3 className="text-2xl font-bold text-white mb-3">Trade Replay</h3>
+                 <p className="text-gray-400 leading-relaxed mb-6">Rewatch your entries and exits tick-by-tick on real charts. See exactly where you entered, where you exited, and where you should have held. Learn from mistakes instantly — not months later.</p>
+                 <div className="flex flex-col gap-3">
+                   <div className="flex items-center gap-3 text-sm text-gray-300"><Activity size={16} className="text-emerald-400" /> Real candlestick data from Yahoo Finance</div>
+                   <div className="flex items-center gap-3 text-sm text-gray-300"><Clock size={16} className="text-blue-400" /> Adjustable playback speed</div>
+                 </div>
+               </div>
+               
+               <div className="w-full md:w-[45%] aspect-video bg-black/50 border border-gray-800 rounded-xl relative overflow-hidden flex items-center justify-center group-hover:border-gray-600 transition-colors">
+                  <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm cursor-pointer group-hover:bg-[var(--color-brand-500)] group-hover:text-black transition-all">
+                    <Play size={24} className="fill-current" />
+                  </div>
+                  {/* Abstract Chart Background */}
+                  <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <path d="M0,80 L10,70 L20,75 L30,50 L40,60 L50,30 L60,40 L70,20 L80,35 L90,10 L100,15" fill="none" stroke="currentColor" strokeWidth="1" className="text-purple-500" />
+                  </svg>
+               </div>
+             </div>
+          </motion.div>
 
-          {/* Setup Tagging */}
-          <div className="marketing-bento-card small" data-animate="fade-up" data-delay="6">
-            <div className="marketing-bento-content centered">
-              <div className="marketing-bento-icon large" style={{ background: "rgba(236, 72, 153, 0.1)", color: "#f472b6" }}><PieChart size={32} /></div>
-              <h3>Setup Tagging</h3>
-              <p>Tag every trade with your setup. Rank your setups by profit factor and win rate to find your true edge.</p>
+          {/* Prop Firm Tracking - Small */}
+          <motion.div variants={itemVariants} className="col-span-1 relative bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col items-center text-center justify-center group hover:-translate-y-1 hover:border-gray-700 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center mb-4">
+              <Target size={28} />
             </div>
-          </div>
-        </div>
+            <h3 className="text-lg font-bold text-white mb-2">Prop Firm Tracking</h3>
+            <p className="text-gray-400 text-xs mb-4">Real-time drawdown, daily loss, and profit target tracking.</p>
+            <div className="px-3 py-1 bg-purple-500/20 text-purple-300 text-[10px] font-bold uppercase tracking-wider rounded-full mt-auto">Pass rate: 73%</div>
+          </motion.div>
+
+          {/* Risk Management - Small */}
+          <motion.div variants={itemVariants} className="col-span-1 relative bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col items-center text-center justify-center group hover:-translate-y-1 hover:border-gray-700 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-gray-800 text-white flex items-center justify-center mb-4">
+              <Shield size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Risk Management</h3>
+            <p className="text-gray-400 text-xs mb-4">Auto-enforced risk rules. Never exceed your max risk per trade again.</p>
+            <div className="px-3 py-1 bg-gray-800 text-gray-300 text-[10px] font-bold uppercase tracking-wider rounded-full mt-auto">1% risk per trade</div>
+          </motion.div>
+          
+          {/* Setup Tagging - Small */}
+          <motion.div variants={itemVariants} className="col-span-1 relative bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col items-center text-center justify-center group hover:-translate-y-1 hover:border-gray-700 transition-all duration-300">
+            <div className="w-14 h-14 rounded-2xl bg-pink-500/10 text-pink-400 flex items-center justify-center mb-4">
+              <PieChart size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Setup Tagging</h3>
+            <p className="text-gray-400 text-xs">Tag every trade. Rank your setups by profit factor to find your true edge.</p>
+          </motion.div>
+
+          {/* Equity Curve - Small */}
+          <motion.div variants={itemVariants} className="col-span-1 relative bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col items-center text-center justify-center group hover:-translate-y-1 hover:border-gray-700 transition-all duration-300 md:hidden">
+            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-4">
+              <LineChart size={28} />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Equity Curve</h3>
+            <p className="text-gray-400 text-xs">Track your account growth over time.</p>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   )

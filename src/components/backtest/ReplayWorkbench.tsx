@@ -661,8 +661,8 @@ export function ReplayWorkbench({
       <div className="tz-replay-topbar">
         <div className="tz-replay-topbar-left">
           <Link href="/dashboard" className="tz-replay-logo">
-            <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "28px", objectFit: "contain" }} />
-            <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "28px", objectFit: "contain" }} />
+            <img src="/logo-light.png" alt="TradeLink" className="logo-light h-[28px] object-contain" />
+            <img src="/logo-dark.png" alt="TradeLink" className="logo-dark h-[28px] object-contain" />
           </Link>
           {/* Session info badge */}
           {!state.loading && !state.error && (
@@ -680,7 +680,7 @@ export function ReplayWorkbench({
           <div className="tz-replay-timeline-bar" title={`${Math.min(state.currentIndex + 1, state.data.length)} / ${state.data.length} bougies`}>
             <div className="tz-replay-timeline-fill" style={{ width: `${progress}%` }} />
           </div>
-          <div style={{ fontSize: "0.62rem", color: "var(--color-gray-600)", fontVariantNumeric: "tabular-nums" }}>
+          <div className="text-[0.62rem] text-[var(--color-gray-600)] tabular-nums">
             {state.data.length > 0 ? `${Math.min(state.currentIndex + 1, state.data.length)} / ${state.data.length} candles` : "Loading…"}
           </div>
         </div>
@@ -694,11 +694,10 @@ export function ReplayWorkbench({
             <RefreshCcw size={14} /> Reset
           </button>
           <button
-            className="tz-btn-share"
+            className="tz-btn-share relative"
             onClick={handleSaveAll}
             disabled={state.closedTrades.length === 0}
             title="Enregistrer dans le journal"
-            style={{ position: "relative" }}
           >
             <Save size={14} /> Save All
             {state.closedTrades.filter(t => !t.saved).length > 0 && (
@@ -725,10 +724,10 @@ export function ReplayWorkbench({
                 <select
                   value={config.symbol}
                   onChange={(e) => load({ symbol: e.target.value })}
-                  style={{ background: "transparent", border: "none", fontWeight: "inherit", fontSize: "inherit", outline: "none", width: "100px", color: "inherit", cursor: "pointer" }}
+                  className="bg-transparent border-none font-inherit text-inherit outline-none w-[100px] cursor-pointer"
                 >
                   {CFD_SYMBOLS.map((s) => (
-                    <option key={s.symbol} value={s.symbol} style={{ color: "black" }}>
+                    <option key={s.symbol} value={s.symbol} className="text-black">
                       {s.symbol}
                     </option>
                   ))}
@@ -746,7 +745,7 @@ export function ReplayWorkbench({
             </div>
 
             {/* Chart View */}
-            <div style={{ flex: 1, position: "relative" }}>
+            <div className="flex-1 relative">
               {state.loading ? (
                 <div className="backtest-skeleton">
                   <Loader2 className="spin" size={22} />

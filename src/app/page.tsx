@@ -22,7 +22,7 @@ export default async function HomePage() {
   const isLoggedIn = !!session?.user?.id
 
   return (
-    <div className="marketing-page">
+    <div className="dark force-dark bg-black text-white min-h-screen font-sans selection:bg-[var(--color-brand-500)] selection:text-black">
       <MarketingAnimations />
       <MarketingNav isLoggedIn={isLoggedIn} />
       <MarketingHero isLoggedIn={isLoggedIn} />

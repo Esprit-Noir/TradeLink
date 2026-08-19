@@ -1,8 +1,8 @@
 "use client"
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { useState, useEffect } from "react"
-import { Wallet } from "lucide-react"
+import { useState, useEffect, useTransition } from "react"
+import { Wallet, Loader2 } from "lucide-react"
 
 type FilterAccount = {
   id: string
@@ -14,6 +14,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [isPending, startTransition] = useTransition()
 
   const [accountId, setAccountId] = useState(searchParams?.get("accountId") || "all")
   const [period, setPeriod] = useState(searchParams?.get("period") || "all")
@@ -32,8 +33,10 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
       if (v === null) params.delete(k)
       else params.set(k, v)
     }
-    router.push(`${pathname}?${params.toString()}`)
-    router.refresh()
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`)
+      router.refresh()
+    })
   }
 
   const handleAccountChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -59,42 +62,40 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
   }
 
   return (
-    <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+    <div className="flex flex-wrap items-center gap-2">
       {showCustom && (
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", background: "var(--color-gray-900)", padding: "0.25rem 0.5rem", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+        <div className="flex items-center gap-2 bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] px-2 py-1 rounded-lg">
           <input
             type="date"
-            className="input"
-            style={{ width: "130px", height: "32px", fontSize: "0.8rem", padding: "0 0.5rem" }}
+            className="input w-[130px] h-8 text-xs px-2"
             value={startDate}
             onChange={e => setStartDate(e.target.value)}
           />
-          <span style={{ color: "var(--color-gray-500)", fontSize: "0.8rem" }}>to</span>
+          <span className="text-[var(--color-gray-500)] text-xs">to</span>
           <input
             type="date"
-            className="input"
-            style={{ width: "130px", height: "32px", fontSize: "0.8rem", padding: "0 0.5rem" }}
+            className="input w-[130px] h-8 text-xs px-2"
             value={endDate}
             onChange={e => setEndDate(e.target.value)}
           />
           <button
             type="button"
-            className="btn btn-primary"
-            style={{ height: "32px", padding: "0 0.75rem", fontSize: "0.8rem" }}
+            className="btn btn-primary h-8 px-3 text-xs"
             onClick={handleCustomDateApply}
+            disabled={isPending}
           >
             Apply
           </button>
         </div>
       )}
       {accounts.length > 1 && (
-        <div style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-          <Wallet size={14} style={{ color: "var(--color-gray-500)" }} />
+        <div className="flex items-center gap-1.5 relative">
+          <Wallet size={14} className="text-[var(--color-gray-500)] absolute left-3 pointer-events-none" />
           <select
-            className="input select"
-            style={{ width: "auto" }}
+            className="input select w-auto pl-8"
             value={accountId}
             onChange={handleAccountChange}
+            disabled={isPending}
           >
             <option value="all">All accounts (consolidated)</option>
             <option value="">Active account</option>
@@ -104,19 +105,23 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
           </select>
         </div>
       )}
-      <select
-        className="input select"
-        style={{ width: "auto" }}
-        value={period}
-        onChange={handlePeriodChange}
-      >
-        <option value="all">All time</option>
-        <option value="7d">Last 7 days</option>
-        <option value="30d">Last 30 days</option>
-        <option value="90d">Last 90 days</option>
-        <option value="ytd">Year to date</option>
-        <option value="custom">Custom Date...</option>
-      </select>
+      <div className="relative flex items-center">
+        <select
+          className="input select w-auto"
+          value={period}
+          onChange={handlePeriodChange}
+          disabled={isPending}
+        >
+          <option value="all">All time</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+          <option value="ytd">Year to date</option>
+          <option value="custom">Custom Date...</option>
+        </select>
+        {isPending && <Loader2 className="absolute right-[-1.5rem] animate-spin text-[var(--color-gray-500)]" size={16} />}
+      </div>
     </div>
   )
 }
+

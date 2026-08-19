@@ -169,7 +169,6 @@
   border-radius: 8px;
   border: 1px solid var(--color-gray-800);
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 .tz-replay-chart-header {
@@ -574,16 +573,13 @@
 /* ── Custom input variants ── */
 .tz-input-profit:focus {
   border-color: var(--color-profit) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-profit) 15%, transparent);
 }
 .tz-input-loss:focus {
   border-color: var(--color-loss) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-loss) 15%, transparent);
 }
 .tz-replay-input:focus {
   border-color: var(--color-brand-500);
   outline: none;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-500) 15%, transparent);
 }
 
 /* ── Floating P&L indicator ── */
@@ -681,7 +677,6 @@
 .tz-replay-btn-buy:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-profit) 85%, white);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-profit) 40%, transparent);
 }
 .tz-replay-btn-buy:active:not(:disabled) { transform: translateY(0); }
 .tz-replay-btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -705,7 +700,6 @@
 .tz-replay-btn-sell:hover:not(:disabled) {
   background: color-mix(in srgb, var(--color-loss) 85%, white);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-loss) 40%, transparent);
 }
 .tz-replay-btn-sell:active:not(:disabled) { transform: translateY(0); }
 .tz-replay-btn-sell:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -722,7 +716,7 @@
 
 /* ── Input focus improvements ── */
 .tz-replay-input {
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s;
 }
 
 /* ── Topbar improvements ── */

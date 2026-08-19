@@ -147,19 +147,19 @@ export function AdvancedStatsClient() {
     if (patch.side !== undefined) setSide(patch.side)
   }, [])
 
-  const kpis = data!.kpis
-  const streaks = data!.streaks
-  const drawdown = data!.drawdown
-  const drawdownEpisodes = data!.drawdownEpisodes ?? []
-  const equityCurve = data!.equityCurve
-  const rrDistribution = data!.rrDistribution ?? {}
-  const dowPerformance = data!.dowPerformance ?? []
-  const hourPerformance = data!.hourPerformance ?? []
-  const monthlyPerformance = data!.monthlyPerformance ?? []
-  const topSymbols = data!.topSymbols
-  const topSetups = data!.topSetups
-  const symbols = data!.symbols ?? []
-  const setups = data!.setups ?? []
+  const kpis = data?.kpis as Kpis
+  const streaks = data?.streaks as Streaks
+  const drawdown = data?.drawdown as Drawdown
+  const drawdownEpisodes = data?.drawdownEpisodes ?? []
+  const equityCurve = data?.equityCurve as EquityPoint[]
+  const rrDistribution = data?.rrDistribution ?? {}
+  const dowPerformance = data?.dowPerformance ?? []
+  const hourPerformance = data?.hourPerformance ?? []
+  const monthlyPerformance = data?.monthlyPerformance ?? []
+  const topSymbols = data?.topSymbols as BreakdownItem[]
+  const topSetups = data?.topSetups as BreakdownItem[]
+  const symbols = data?.symbols ?? []
+  const setups = data?.setups ?? []
 
   const rrData = useMemo(() => Object.entries(rrDistribution).map(([name, value]) => ({ name, value })), [rrDistribution])
   const dowData = useMemo(() => dowPerformance.map((pnl: number, index: number) => ({

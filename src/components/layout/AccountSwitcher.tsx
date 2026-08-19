@@ -47,18 +47,11 @@ export function AccountSwitcher() {
   if (loading || accounts.length === 0) return null
 
   return (
-    <div style={{ padding: "0 1.25rem", marginBottom: "1rem" }}>
+    <div className="px-5 mb-4">
       <select 
-        className="input select" 
+        className="input select bg-[var(--color-gray-800)] border-[var(--color-gray-700)] text-xs font-semibold text-[var(--color-brand-400)]" 
         value={activeId}
         onChange={handleChange}
-        style={{ 
-          background: "var(--color-gray-800)", 
-          borderColor: "var(--color-gray-700)",
-          fontSize: "0.8rem",
-          fontWeight: 600,
-          color: "var(--color-brand-400)"
-        }}
       >
         {accounts.map(acc => (
           <option key={acc.id} value={acc.id}>
@@ -69,3 +62,4 @@ export function AccountSwitcher() {
     </div>
   )
 }
+
