@@ -109,7 +109,7 @@ export default async function CalendarPage({
         </Suspense>
       </div>
 
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div>
         <CalendarView dailyPnl={dailyPnl} dailyTradeCount={dailyTradeCount} propDailyPnl={propDailyPnl} accountId={selectedAccountId || undefined} />
       </div>
     </div>

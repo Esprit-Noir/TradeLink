@@ -404,33 +404,49 @@ export function ChallengesManager({
                 </div>
               </div>
 
-              {/* Progress Bars */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {/* Progress Gauges */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: "0.5rem" }}>
                 {(() => {
                   const profitTarget = Number(c.initialBalance) * (Number(c.profitTargetPct) / 100)
                   const currentProfit = Number(c.currentEquity) - Number(c.initialBalance)
                   const profitPct = profitTarget > 0 ? Math.min(Math.max((currentProfit / profitTarget) * 100, 0), 100) : 0
+                  
                   const maxDdAllowed = maxDdRef - maxDdThreshold
                   const maxDdUsed = Math.max(0, maxDdRef - Number(c.currentEquity))
                   const ddPct = maxDdAllowed > 0 ? Math.min((maxDdUsed / maxDdAllowed) * 100, 100) : 0
+
+                  const radius = 22
+                  const circumference = 2 * Math.PI * radius
+                  
                   return (
                     <>
-                      <div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", color: "var(--color-gray-400)", marginBottom: "0.3rem" }}>
-                          <span>Profit Target</span>
-                          <span style={{ color: "var(--color-profit)" }}>{Math.round(profitPct)}%</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <div style={{ position: "relative", width: 50, height: 50, flexShrink: 0 }}>
+                          <svg width="50" height="50" viewBox="0 0 50 50" style={{ transform: "rotate(-90deg)" }}>
+                            <circle cx="25" cy="25" r={radius} fill="none" stroke="var(--color-gray-800)" strokeWidth="4" />
+                            <circle cx="25" cy="25" r={radius} fill="none" stroke="var(--color-profit)" strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={circumference - (profitPct / 100) * circumference} strokeLinecap="round" style={{ transition: "stroke-dashoffset 1s ease" }} />
+                          </svg>
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+                            {Math.round(profitPct)}%
+                          </div>
                         </div>
-                        <div style={{ width: "100%", height: "6px", background: "var(--color-gray-800)", borderRadius: "4px", overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${profitPct}%`, background: "var(--color-profit)", borderRadius: "4px", transition: "width 0.4s ease" }} />
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Profit Target</span>
                         </div>
                       </div>
-                      <div>
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", color: "var(--color-gray-400)", marginBottom: "0.3rem" }}>
-                          <span>Max Drawdown Used</span>
-                          <span style={{ color: ddPct >= 80 ? "var(--color-warning)" : "var(--color-gray-300)" }}>{Math.round(ddPct)}%</span>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                        <div style={{ position: "relative", width: 50, height: 50, flexShrink: 0 }}>
+                          <svg width="50" height="50" viewBox="0 0 50 50" style={{ transform: "rotate(-90deg)" }}>
+                            <circle cx="25" cy="25" r={radius} fill="none" stroke="var(--color-gray-800)" strokeWidth="4" />
+                            <circle cx="25" cy="25" r={radius} fill="none" stroke={ddPct >= 80 ? "var(--color-warning)" : "var(--color-loss)"} strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={circumference - (ddPct / 100) * circumference} strokeLinecap="round" style={{ transition: "stroke-dashoffset 1s ease" }} />
+                          </svg>
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+                            {Math.round(ddPct)}%
+                          </div>
                         </div>
-                        <div style={{ width: "100%", height: "6px", background: "var(--color-gray-800)", borderRadius: "4px", overflow: "hidden" }}>
-                          <div style={{ height: "100%", width: `${ddPct}%`, background: ddPct >= 80 ? "var(--color-warning)" : "var(--color-brand-500)", borderRadius: "4px", transition: "width 0.4s ease" }} />
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Max DD Used</span>
                         </div>
                       </div>
                     </>

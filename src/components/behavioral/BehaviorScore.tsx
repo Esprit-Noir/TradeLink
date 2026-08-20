@@ -3,7 +3,7 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from "recharts"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
 import type { BehavioralResult, DetectedPattern } from "@/lib/behavioral"
 
@@ -105,6 +105,30 @@ export function BehaviorScore() {
 
           {/* Score breakdown */}
           <ScoreBreakdownBar breakdown={data.scoreBreakdown} />
+        </div>
+
+        {/* 1.5 Psychological Profile */}
+        <div className="card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "1.5rem", width: "100%", textAlign: "left" }}>
+            Psychological Profile
+          </div>
+          <div style={{ width: "100%", height: "250px" }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="75%" data={[
+                { subject: 'Discipline', A: score, fullMark: 100 },
+                { subject: 'Patience', A: Math.min(100, score + (data.scoreBreakdown?.penalties.find(p => p.type === 'overtrading') ? -15 : 12)), fullMark: 100 },
+                { subject: 'Risk Mgmt', A: Math.min(100, score + (data.scoreBreakdown?.penalties.find(p => p.type === 'stop_violation') ? -20 : 5)), fullMark: 100 },
+                { subject: 'Execution', A: Math.min(100, Math.max(0, score - 8)), fullMark: 100 },
+                { subject: 'Consistency', A: Math.min(100, Math.max(0, score - 3)), fullMark: 100 },
+              ]}>
+                <PolarGrid stroke="var(--color-gray-800)" />
+                <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--color-gray-400)', fontSize: 11, fontWeight: 600 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                <Radar name="Trader" dataKey="A" stroke="var(--color-brand-500)" fill="var(--color-brand-500)" fillOpacity={0.3} />
+                <Tooltip contentStyle={{ background: 'var(--color-gray-900)', border: '1px solid var(--color-gray-800)', borderRadius: '8px' }} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* 2. Emotion Costs */}

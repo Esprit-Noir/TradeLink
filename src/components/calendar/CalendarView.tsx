@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, ChevronRight, X, CalendarDays, List } from "lucide-react"
+import { ChevronLeft, ChevronRight, X, CalendarDays, List, TrendingUp, Target, Activity, Calendar as CalendarIcon, Award } from "lucide-react"
 import { useTheme } from "@/components/ThemeProvider"
 import { formatCurrency } from "@/lib/formatters"
 
@@ -270,6 +270,7 @@ export function CalendarView({
       <div
         key={i}
         onClick={() => openDay(dateStr)}
+        title={pnl !== undefined ? `PnL: ${formatCurrency(Number(pnl), "USD", true)} | Trades: ${dailyTradeCount[dateStr] ?? 0}` : ""}
         style={{
           background: bgColor,
           border: isToday ? "2px solid var(--color-brand-500)" : `1px solid ${borderColor}`,
@@ -293,27 +294,27 @@ export function CalendarView({
           e.currentTarget.style.zIndex = "1"
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <span style={{ fontSize: "0.85rem", opacity: hasJournal || propPnl !== undefined ? 1 : 0, display: "flex", gap: "0.25rem" }}>
-            {hasJournal && <span title="Journal entry">📝</span>}
-            {propPnl !== undefined && (
-              <span title={`Prop firm P&L: ${formatCurrency(propPnl, "USD", true)}`} style={{ cursor: "help" }}>🎯</span>
-            )}
-          </span>
+        <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start" }}>
           <span style={{ fontSize: "0.85rem", fontWeight: 600, color: isToday ? "var(--color-brand-400)" : colors.cellText }}>
             {i}
           </span>
         </div>
         {pnl !== undefined && (
-          <div style={{ textAlign: "center", marginTop: "auto" }}>
-            <span style={{ display: "block", fontWeight: 700, fontSize: "1rem", color: textColor, textShadow: isDark ? "0 2px 10px rgba(0,0,0,0.5)" : "none" }}>
+          <div style={{ textAlign: "center", marginTop: "auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.3rem" }}>
+            <span style={{ 
+              display: "inline-block",
+              color: textColor,
+              fontWeight: 700,
+              fontSize: "1.05rem",
+              textShadow: isDark ? "0 2px 10px rgba(0,0,0,0.5)" : "none"
+            }}>
               {formatCurrency(Number(pnl), "USD", true)}
             </span>
             {(() => {
               const count = dailyTradeCount[dateStr] ?? 0
               if (count === 0) return null
               return (
-                <span style={{ display: "block", fontSize: "0.68rem", opacity: 0.8, color: textColor, marginTop: "0.15rem", fontWeight: 500 }}>
+                <span style={{ display: "block", fontSize: "0.68rem", opacity: 0.8, color: textColor, fontWeight: 500 }}>
                   {count} {count > 1 ? "trades" : "trade"}
                 </span>
               )
@@ -331,20 +332,29 @@ export function CalendarView({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      {/* Month summary strip */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", padding: "1rem", background: colors.cellBg, border: `1px solid ${colors.cellBorder}`, borderRadius: "var(--radius-card)" }}>
-        <Stat label="Month P&L" value={formatCurrency(monthSummary.total, "USD", true)} color={monthSummary.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-        <Stat label="Trading days" value={`${monthSummary.count}`} color={isDark ? "#ededf0" : "#18181b"} />
-        <Stat label="Win days" value={`${monthSummary.green}`} color="var(--color-profit)" />
-        <Stat label="Loss days" value={`${monthSummary.red}`} color="var(--color-loss)" />
-        <Stat label="Avg / day" value={formatCurrency(monthSummary.avg, "USD", true)} color={monthSummary.avg >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-        <Stat label="Green streak" value={`${streak}d`} color={streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)"} />
-        <Stat label="Best day" value={monthSummary.best ? formatCurrency(monthSummary.best.pnl, "USD", true) : "—"} color="var(--color-profit)" />
-        <Stat label="Worst day" value={monthSummary.worst ? formatCurrency(monthSummary.worst.pnl, "USD", true) : "—"} color="var(--color-loss)" />
+      {/* Month KPIs */}
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
+        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Stat label="Month P&L" value={formatCurrency(monthSummary.total, "USD", true)} color={monthSummary.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"} size="large" icon={<Activity size={16} />} />
+        </div>
+        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Stat label="Win / Loss Days" value={`${monthSummary.green} / ${monthSummary.red}`} color="var(--color-gray-100)" icon={<Target size={16} />} />
+        </div>
+        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Stat label="Avg / day" value={formatCurrency(monthSummary.avg, "USD", true)} color={monthSummary.avg >= 0 ? "var(--color-profit)" : "var(--color-loss)"} icon={<TrendingUp size={16} />} />
+        </div>
+        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Stat label="Best day" value={monthSummary.best ? formatCurrency(monthSummary.best.pnl, "USD", true) : "—"} color="var(--color-profit)" icon={<Award size={16} />} />
+        </div>
+        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Stat label="Worst day" value={monthSummary.worst ? formatCurrency(monthSummary.worst.pnl, "USD", true) : "—"} color="var(--color-loss)" icon={<CalendarIcon size={16} />} />
+        </div>
       </div>
 
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+      {/* Calendar Block */}
+      <div className="card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <div style={{ display: "flex", gap: "0.25rem" }}>
             <button
@@ -485,9 +495,8 @@ export function CalendarView({
         <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: colors.profitBg, border: `1px solid ${colors.profitBorder}`, display: "inline-block" }} /> Profit</span>
         <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: colors.lossBg, border: `1px solid ${colors.lossBorder}`, display: "inline-block" }} /> Loss</span>
         <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}><span style={{ width: 12, height: 12, borderRadius: 3, background: colors.cellBg, border: `1px solid ${colors.cellBorder}`, display: "inline-block" }} /> No trades</span>
-        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>📝 Journal</span>
-        <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>🎯 Prop P&L</span>
         <span style={{ marginLeft: "auto" }}>Click a day to view details</span>
+      </div>
       </div>
 
       {/* Day detail modal */}
@@ -630,11 +639,14 @@ export function CalendarView({
   )
 }
 
-function Stat({ label, value, color }: { label: string; value: string; color: string }) {
+function Stat({ label, value, color, size = "normal", icon }: { label: string; value: string; color: string, size?: "normal" | "large", icon?: React.ReactNode }) {
   return (
-    <div style={{ flex: "1 1 110px" }}>
-      <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.25rem" }}>{label}</div>
-      <div style={{ fontSize: "1rem", fontWeight: 700, color, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+    <div style={{ flex: "1 1 auto", display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+        {icon && <span style={{ opacity: 0.7 }}>{icon}</span>}
+        {label}
+      </div>
+      <div style={{ fontSize: size === "large" ? "1.6rem" : "1.2rem", fontWeight: 700, color, fontVariantNumeric: "tabular-nums" }}>{value}</div>
     </div>
   )
 }

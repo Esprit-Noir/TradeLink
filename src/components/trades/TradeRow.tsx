@@ -34,8 +34,9 @@ export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibl
 
   return (
     <tr
+      className="recent-trade-item"
       onClick={handleRowClick}
-      style={{ cursor: "pointer", transition: "background-color 0.15s", ...(selected ? { background: "rgba(139,92,246,0.08)" } : {}) }}
+      style={{ cursor: "pointer", ...(selected ? { background: "rgba(139,92,246,0.08)" } : {}) }}
       onMouseEnter={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "var(--gray-900)" }}
       onMouseLeave={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "transparent" }}
     >
@@ -111,7 +112,7 @@ export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibl
       )}
       {show("netPnl") && (
         <td style={{ textAlign: "right" }}>
-          <span style={{ fontWeight: 600, color: pnl > 0 ? "var(--color-profit)" : pnl < 0 ? "var(--color-loss)" : "inherit" }}>
+          <span className={`badge ${pnl > 0 ? "badge-profit" : pnl < 0 ? "badge-loss" : "badge-neutral"}`} style={{ fontWeight: 700, fontSize: "0.8rem" }}>
             {formatCurrency(pnl, baseCurrency, true, 2)}
           </span>
         </td>
