@@ -53,12 +53,20 @@ export default function RootLayout({
           {children}
           <ServiceWorkerRegister />
           <Toaster 
-            position="bottom-right" 
+            position="bottom-right"
+            theme="dark"
             toastOptions={{
+              className: 'custom-toast',
               style: {
-                background: 'var(--color-bg)',
-                color: 'var(--color-text)',
-                border: '1px solid var(--color-border)',
+                background: 'color-mix(in srgb, var(--color-gray-900) 80%, transparent)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid var(--color-gray-800)',
+                color: '#fff',
+                borderRadius: '12px',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                padding: '16px',
+                fontSize: '0.85rem'
               }
             }}
           />

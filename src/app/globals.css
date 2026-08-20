@@ -826,7 +826,32 @@
   animation: slideIn 200ms ease;
 }
 
-/* ── Upload zone ────────────────────────────────────────── */
+/* ── Custom Scrollbar ───────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-gray-700) 50%, transparent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-600);
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-gray-700) 50%, transparent) transparent;
+}
+
+/* ── Layout Rules ───────────────────────────────────────── */
 .upload-zone {
   border: 2px dashed var(--color-gray-700);
   border-radius: var(--radius-card);

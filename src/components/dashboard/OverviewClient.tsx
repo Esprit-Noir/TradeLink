@@ -98,7 +98,11 @@ export function OverviewClient({ username }: { username?: string }) {
               {dayName}, {dateStr}
             </p>
             <h1 className="page-title">
-              {loading ? "Loading..." : `Welcome back${username ? `, ${username}` : ""}`}
+              {loading ? (
+                <div className="skeleton" style={{ width: 250, height: 36, display: "inline-block" }} />
+              ) : (
+                `Welcome back${username ? `, ${username}` : ""}`
+              )}
             </h1>
             <p className="page-subtitle">Your trading performance at a glance</p>
           </div>
