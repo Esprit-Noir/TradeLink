@@ -47,6 +47,16 @@ export function SetupBarChart() {
         <div style={{ flex: 1, minHeight: 0 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32} barGap={8}>
+              <defs>
+                <linearGradient id="setupProfit" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-profit)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="var(--color-profit)" stopOpacity={0.4} />
+                </linearGradient>
+                <linearGradient id="setupLoss" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="var(--color-loss)" stopOpacity={1} />
+                  <stop offset="100%" stopColor="var(--color-loss)" stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
               <XAxis 
                 dataKey="name" 
                 tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
@@ -54,23 +64,27 @@ export function SetupBarChart() {
                 tickLine={false}
                 interval={0}
                 tickFormatter={(v: string) => v.length > 12 ? `${v.slice(0, 10)}…` : v}
+                dy={10}
               />
               <YAxis 
                 tick={{ fill: "var(--color-gray-500)", fontSize: 11 }}
                 axisLine={false}
                 tickLine={false}
+                dx={-10}
                 tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
               />
               <Tooltip
-                cursor={{ fill: "var(--color-gray-800)", opacity: 0.4 }}
+                cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
                 contentStyle={{
                   background: "var(--color-gray-900)",
-                  border: "1px solid var(--color-gray-700)",
+                  border: "1px solid var(--color-gray-800)",
                   borderRadius: 8,
                   fontSize: 12,
                   color: "var(--color-gray-200)",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
                 }}
-                itemStyle={{ color: "var(--color-gray-100)" }}
+                itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
+                labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.25rem", fontWeight: 500 }}
                 formatter={(value: any, name: any, props: any) => {
                   const { count, winRate } = props.payload
                   return [`$${Number(value).toFixed(2)}`, `${count} trades · ${winRate}% WR`]
@@ -78,7 +92,7 @@ export function SetupBarChart() {
               />
               <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
                 {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                  <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "url(#setupProfit)" : "url(#setupLoss)"} />
                 ))}
               </Bar>
             </BarChart>

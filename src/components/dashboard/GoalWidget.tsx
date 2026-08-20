@@ -97,24 +97,26 @@ export function GoalWidget({ label, currentPnl, initialGoal, goalKey, placeholde
 
       {goal !== null && goal > 0 && (
         <>
-          <div className="progress-bar">
-            <div className="progress-bar-fill" style={{
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.75rem" }}>
+            <div style={{ fontSize: "1.5rem", fontWeight: 700, color: currentPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontVariantNumeric: "tabular-nums" }}>
+              {formatCurrency(currentPnl, "USD", true, 2)}
+            </div>
+            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500 }}>
+              {isAchieved ? `🎯 ${formatCurrency(currentPnl - goal, "USD", true, 2)} over goal` : isNegative ? `${formatCurrency(goal - currentPnl, "USD", true, 2)} to recover + reach goal` : `${formatCurrency(goal - currentPnl, "USD", true, 2)} remaining`}
+            </div>
+          </div>
+          
+          <div style={{ background: "var(--color-gray-900)", height: "8px", borderRadius: "4px", overflow: "hidden", border: "1px solid var(--color-gray-800)" }}>
+            <div style={{
+              height: "100%",
               width: `${Math.max(0, progress)}%`,
               background: isAchieved
                 ? "var(--color-profit)"
                 : isNegative
                 ? "var(--color-loss)"
-                : `linear-gradient(90deg, var(--color-brand-600), var(--color-brand-400))`,
+                : `linear-gradient(90deg, rgba(16, 185, 129, 0.4), var(--color-profit))`,
+              transition: "width 0.5s ease-out",
             }} />
-          </div>
-
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontSize: "1.25rem", fontWeight: 700, color: currentPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontVariantNumeric: "tabular-nums" }}>
-              {formatCurrency(currentPnl, "USD", true, 2)}
-            </div>
-            <div style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>
-              {isAchieved ? `🎯 ${formatCurrency(currentPnl - goal, "USD", true, 2)} over goal` : isNegative ? `${formatCurrency(goal - currentPnl, "USD", true, 2)} to recover + reach goal` : `${formatCurrency(goal - currentPnl, "USD", true, 2)} remaining`}
-            </div>
           </div>
         </>
       )}

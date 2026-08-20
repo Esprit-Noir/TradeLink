@@ -53,7 +53,7 @@ export default function RootLayout({
           {children}
           <ServiceWorkerRegister />
           <Toaster 
-            position="bottom-right"
+            position="top-right"
             theme="dark"
             toastOptions={{
               className: 'custom-toast',

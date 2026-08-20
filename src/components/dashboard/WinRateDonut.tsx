@@ -50,9 +50,11 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
                 backgroundColor: "var(--color-gray-900)", 
                 border: "1px solid var(--color-gray-800)",
                 borderRadius: "8px",
-                color: "var(--color-gray-100)"
+                color: "var(--color-gray-100)",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
               }} 
-              itemStyle={{ color: "var(--color-gray-100)" }}
+              itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
+              labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.25rem", fontWeight: 500 }}
             />
           </PieChart>
         </ResponsiveContainer>

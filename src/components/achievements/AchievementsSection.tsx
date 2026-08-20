@@ -77,28 +77,52 @@ export function AchievementsSection() {
   const pct = total > 0 ? Math.round((unlockedCount / total) * 100) : 0
 
   return (
-    <div className="card" style={{ padding: "1.5rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
-        <Trophy size={16} style={{ color: "var(--color-warning)" }} />
-        <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Achievements</h3>
-        <span style={{ marginLeft: "auto", fontSize: "0.8rem", fontWeight: 700, color: "var(--color-gray-400)" }}>
-          {unlockedCount}/{total} unlocked
-        </span>
+    <div className="card" style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
+      {/* Header & Global Progress */}
+      <div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div style={{ padding: "0.6rem", background: "rgba(245, 158, 11, 0.1)", borderRadius: "10px", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
+              <Trophy size={22} style={{ color: "var(--color-warning)" }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--color-gray-100)", letterSpacing: "-0.02em" }}>Achievements</h3>
+              <p style={{ fontSize: "0.85rem", color: "var(--color-gray-500)", marginTop: "0.15rem" }}>Unlock milestones on your trading journey.</p>
+            </div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: "1.6rem", fontWeight: 800, color: "var(--color-gray-100)", fontVariantNumeric: "tabular-nums" }}>
+              {unlockedCount}<span style={{ fontSize: "1.1rem", color: "var(--color-gray-500)", fontWeight: 600 }}>/{total}</span>
+            </div>
+            <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginTop: "0.15rem" }}>Unlocked</div>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{ flex: 1, background: "var(--color-gray-900)", borderRadius: "999px", height: "10px", overflow: "hidden", border: "1px solid var(--color-gray-800)", position: "relative" }}>
+            <div style={{ 
+              height: "100%", width: `${pct}%`, borderRadius: "999px", 
+              background: "linear-gradient(90deg, #f59e0b, #fbbf24)", 
+              boxShadow: "0 0 10px rgba(245, 158, 11, 0.5)",
+              transition: "width 0.8s cubic-bezier(0.4, 0, 0.2, 1)" 
+            }} />
+          </div>
+          <span style={{ fontSize: "0.9rem", fontWeight: 800, color: "var(--color-warning)", width: "3.5ch", textAlign: "right" }}>{pct}%</span>
+        </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem" }}>
-        <div style={{ flex: 1, background: "var(--color-gray-800)", borderRadius: "6px", height: "8px", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${pct}%`, borderRadius: "6px", background: "linear-gradient(90deg, var(--color-brand-500), var(--color-warning))", transition: "width 400ms ease" }} />
-        </div>
-        <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--color-gray-300)" }}>{pct}%</span>
-      </div>
+      <div style={{ width: "100%", height: "1px", background: "var(--color-gray-800)" }} />
 
       {groups.map(g => (
-        <div key={g.category} style={{ marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.6rem" }}>
-            {CATEGORY_LABELS[g.category] || g.category}
+        <div key={g.category}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
+            <h4 style={{ fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, color: "var(--color-gray-400)" }}>
+              {CATEGORY_LABELS[g.category] || g.category}
+            </h4>
+            <div style={{ flex: 1, height: "1px", background: "var(--color-gray-800)" }} />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "0.75rem" }}>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1rem" }}>
             {g.achievements.map(a => {
               const pctProgress = a.target > 0 ? Math.min(100, Math.round((a.progress / a.target) * 100)) : a.earned ? 100 : 0
               const locked = !a.earned
@@ -107,85 +131,76 @@ export function AchievementsSection() {
               return (
                 <div
                   key={a.id}
+                  className="card-hover"
                   style={{
                     position: "relative",
                     padding: "1.25rem",
                     display: "flex",
                     flexDirection: "column",
-                    borderRadius: "8px",
+                    borderRadius: "12px",
                     background: isEarned
-                      ? "rgba(245,158,11,0.05)"
+                      ? "linear-gradient(145deg, rgba(245,158,11,0.08) 0%, rgba(245,158,11,0.02) 100%)"
                       : "var(--color-gray-900)",
                     border: isEarned
                       ? "1px solid rgba(245,158,11,0.3)"
                       : "1px solid var(--color-gray-800)",
-                    opacity: locked ? 0.6 : 1,
-                    transition: "all 200ms ease",
+                    boxShadow: isEarned ? "0 4px 20px rgba(245, 158, 11, 0.05)" : "none",
+                    opacity: locked ? 0.7 : 1,
+                    overflow: "hidden",
+                    transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
+                  <div style={{ display: "flex", gap: "1rem", alignItems: "flex-start", marginBottom: "1.25rem" }}>
                     <div style={{
-                      width: "42px", height: "42px", borderRadius: "50%",
+                      width: "48px", height: "48px", borderRadius: "10px", flexShrink: 0,
                       display: "flex", alignItems: "center", justifyContent: "center",
                       background: isEarned ? "rgba(245,158,11,0.15)" : "var(--color-gray-800)",
                       border: isEarned ? "1px solid rgba(245,158,11,0.4)" : "1px solid var(--color-gray-700)",
                       color: isEarned ? "#f59e0b" : "var(--color-gray-500)",
+                      boxShadow: isEarned ? "inset 0 0 10px rgba(245,158,11,0.2)" : "none",
                     }}>
-                      <span style={{ display: "flex", alignItems: "center", justifyContent: "center", opacity: isEarned ? 1 : 0.6 }}>
+                      <span style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
                         {getAchievementIcon(a.code, locked)}
                       </span>
                     </div>
 
-                    {!a.unlocked && !locked && (
-                      <Lock size={14} style={{ color: "var(--color-warning)" }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                         <div style={{ fontSize: "0.95rem", fontWeight: 700, color: isEarned ? "var(--color-gray-100)" : "var(--color-gray-300)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                           {a.name}
+                         </div>
+                         {!a.unlocked && !locked && (
+                           <Lock size={14} style={{ color: "var(--color-warning)", flexShrink: 0 }} />
+                         )}
+                       </div>
+                       <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginTop: "0.25rem", lineHeight: 1.4 }}>
+                         {a.description}
+                       </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: "auto" }}>
+                    {!a.unlocked ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                           <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                             Progress
+                           </span>
+                           <span style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>
+                             {a.progress} <span style={{ color: "var(--color-gray-600)" }}>/ {a.target}</span>
+                           </span>
+                        </div>
+                        <div style={{ width: "100%", background: "var(--color-gray-800)", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: `${pctProgress}%`, background: locked ? "var(--color-gray-600)" : "var(--color-warning)", borderRadius: "999px", transition: "width 0.5s ease" }} />
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#f59e0b", background: "rgba(245, 158, 11, 0.1)", padding: "0.4rem 0.75rem", borderRadius: "6px", width: "fit-content", border: "1px solid rgba(245, 158, 11, 0.2)" }}>
+                        <div style={{ width: "14px", height: "14px", borderRadius: "50%", background: "#f59e0b", color: "#1a1206", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", fontWeight: 800 }}>✓</div>
+                        <span style={{ fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>Unlocked</span>
+                      </div>
                     )}
                   </div>
-
-                  <div style={{ fontSize: "0.82rem", fontWeight: 700, color: isEarned ? "var(--color-gray-100)" : "var(--color-gray-300)" }}>
-                    {a.name}
-                  </div>
-                  <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", marginTop: "0.25rem", lineHeight: 1.35, flex: 1 }}>
-                    {a.description}
-                  </div>
-
-                  {/* status chip */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "1rem" }}>
-                    <div style={{
-                      fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.05em",
-                      padding: "0.25rem 0.6rem", borderRadius: "4px",
-                      color: isEarned ? "#fbbf24" : "var(--color-gray-500)",
-                      background: isEarned ? "rgba(245,158,11,0.12)" : "var(--color-gray-800)",
-                      border: `1px solid ${isEarned ? "rgba(245,158,11,0.2)" : "var(--color-gray-700)"}`,
-                      textTransform: "uppercase",
-                    }}>
-                      {a.unlocked ? "Unlocked" : locked ? "Locked" : "Earned — open again"}
-                    </div>
-                  </div>
-
-                  {/* Progress bar if locked */}
-                  {!a.unlocked && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.75rem" }}>
-                      <div style={{ flex: 1, background: "var(--color-gray-800)", borderRadius: "4px", height: "4px", overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${pctProgress}%`, background: locked ? "var(--color-gray-600)" : "var(--color-warning)", borderRadius: "4px" }} />
-                      </div>
-                      <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", fontWeight: 600, whiteSpace: "nowrap" }}>
-                        {a.progress}/{a.target}
-                      </span>
-                    </div>
-                  )}
-                  
-                  {/* corner check for earned */}
-                  {isEarned && (
-                    <div style={{
-                      position: "absolute", top: "0.75rem", right: "0.75rem",
-                      width: "16px", height: "16px", borderRadius: "50%",
-                      background: "#f59e0b", color: "#1a1206",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: "0.6rem", fontWeight: 800,
-                    }}>
-                      ✓
-                    </div>
-                  )}
                 </div>
               )
             })}

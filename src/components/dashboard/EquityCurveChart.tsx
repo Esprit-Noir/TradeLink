@@ -35,10 +35,10 @@ function CustomTooltip({ active, payload, label, initialBalance }: any) {
   return (
     <div style={{
       background: "var(--color-gray-900)",
-      border: "1px solid var(--color-gray-700)",
-      borderRadius: "10px",
+      border: "1px solid var(--color-gray-800)",
+      borderRadius: "8px",
       padding: "0.75rem",
-      boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
       fontSize: "0.75rem",
       minWidth: "180px",
     }}>
@@ -393,8 +393,8 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
                   const dd = payload[0]?.value ?? 0
                   return (
                     <div style={{
-                      background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)",
-                      borderRadius: "10px", padding: "0.75rem", boxShadow: "0 4px 16px rgba(0,0,0,0.3)", fontSize: "0.75rem",
+                      background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
+                      borderRadius: "8px", padding: "0.75rem", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", fontSize: "0.75rem",
                     }}>
                       <div style={{ color: "var(--color-gray-500)", marginBottom: "0.35rem" }}>
                         {label ? new Date(label).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}

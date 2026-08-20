@@ -79,35 +79,31 @@ export function PropFirmReport() {
   }
 
   return (
-    <div style={{ background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)", borderRadius: "8px", padding: "1.5rem", marginBottom: "1.5rem" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+    <div className="card" style={{ padding: "1.75rem", marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-          <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "var(--color-gray-100)" }}>Global Report</div>
-          <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginTop: "0.15rem" }}>All your prop challenges</div>
+          <div style={{ fontWeight: 800, fontSize: "1.25rem", color: "var(--color-gray-100)", letterSpacing: "-0.02em" }}>Global Report</div>
+          <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)", marginTop: "0.25rem" }}>All your prop challenges</div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <span style={{
-            fontSize: "0.7rem", fontWeight: 700, padding: "0.25rem 0.6rem", borderRadius: "4px",
-            background: "rgba(139,92,246,0.12)", color: "var(--color-brand-500)", border: "1px solid rgba(139,92,246,0.2)"
+            fontSize: "0.8rem", fontWeight: 700, padding: "0.35rem 0.85rem", borderRadius: "8px",
+            background: "rgba(139,92,246,0.12)", color: "var(--color-brand-500)", border: "1px solid rgba(139,92,246,0.2)",
+            boxShadow: "0 0 10px rgba(139,92,246,0.15)"
           }}>
             {report.passRate}% pass rate
           </span>
           <button
             onClick={exportCsv}
-            style={{ 
-              background: "transparent", border: "1px solid var(--color-gray-700)", color: "var(--color-gray-300)",
-              padding: "0.35rem 0.75rem", borderRadius: "6px", fontSize: "0.78rem", fontWeight: 600, cursor: "pointer",
-              transition: "all 0.2s"
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.background = "var(--color-gray-800)"; e.currentTarget.style.color = "var(--color-gray-100)" }}
-            onMouseOut={(e) => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "var(--color-gray-300)" }}
+            className="btn btn-secondary"
+            style={{ fontSize: "0.8rem" }}
           >
             Export CSV
           </button>
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.75rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "1rem" }}>
         <Metric label="Challenges" value={String(report.total)} />
         <Metric label="Active" value={String(report.active)} color="var(--color-brand-500)" />
         <Metric label="Passed" value={String(report.passed)} color="var(--color-profit)" />
@@ -125,63 +121,50 @@ export function PropFirmReport() {
         )}
       </div>
 
-      {report.totalCost > 0 && (
-        <div style={{
-          marginTop: "1.25rem", padding: "0.75rem 1rem", borderRadius: "6px",
-          background: (report.roi ?? 0) >= 0 ? "rgba(16,185,129,0.05)" : "rgba(239,68,68,0.05)",
-          border: `1px solid ${(report.roi ?? 0) >= 0 ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)"}`,
-          fontSize: "0.82rem",
-          color: (report.roi ?? 0) >= 0 ? "var(--color-profit)" : "var(--color-loss)",
-          lineHeight: "1.5"
-        }}>
-          {`You spent $${report.totalCost.toLocaleString("en-US", { minimumFractionDigits: 0 })} on challenges and received $${report.payoutsPaid.toLocaleString("en-US", { minimumFractionDigits: 0 })} in payouts — `}
-          <strong>{report.roi! >= 0 ? `net +${report.roi}% ROI.` : `net ${report.roi}% ROI (still in the red).`}</strong>
-          {` Set the challenge cost when creating or editing a challenge to refine this.`}
-        </div>
-      )}
+
 
       {report.byFirm.length > 0 && (
-        <div style={{ marginTop: "1.5rem" }}>
-          <div style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--color-gray-300)", marginBottom: "0.75rem" }}>Per-firm breakdown</div>
-          <div style={{ overflowX: "auto", borderRadius: "8px", border: "1px solid var(--color-gray-800)", background: "var(--color-gray-900)" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem" }}>
+        <div style={{ marginTop: "0.5rem" }}>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-gray-400)", marginBottom: "1rem" }}>Per-firm breakdown</div>
+          <div className="table-wrapper">
+            <table className="data-table comfortable">
               <thead>
-                <tr style={{ background: "var(--color-gray-950)", color: "var(--color-gray-400)", textAlign: "left", borderBottom: "1px solid var(--color-gray-800)" }}>
-                  <th style={{ padding: "0.6rem 0.85rem", fontWeight: 600 }}>Firm</th>
-                  <th style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600 }}>Challenges</th>
-                  <th style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600 }}>Passed</th>
-                  <th style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600 }}>Breached</th>
-                  <th style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600 }}>Active</th>
-                  <th style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600 }}>Payouts paid</th>
-                  <th style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600 }}>Cost</th>
-                  <th style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600 }}>ROI</th>
+                <tr>
+                  <th>Firm</th>
+                  <th style={{ textAlign: "right" }}>Challenges</th>
+                  <th style={{ textAlign: "right" }}>Passed</th>
+                  <th style={{ textAlign: "right" }}>Breached</th>
+                  <th style={{ textAlign: "right" }}>Active</th>
+                  <th style={{ textAlign: "right" }}>Payouts paid</th>
+                  <th style={{ textAlign: "right" }}>Cost</th>
+                  <th style={{ textAlign: "right" }}>ROI</th>
                 </tr>
               </thead>
               <tbody>
-                {report.byFirm.map((f, i) => (
-                  <tr key={f.firmName} style={{ borderBottom: i === report.byFirm.length - 1 ? "none" : "1px solid var(--color-gray-800)", color: "var(--color-gray-300)" }}>
-                    <td style={{ padding: "0.6rem 0.85rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                {report.byFirm.map((f) => (
+                  <tr key={f.firmName}>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                         {f.logoUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={f.logoUrl} alt={f.firmName} style={{ width: 16, height: 16, objectFit: "contain", borderRadius: 2 }} />
+                          <img src={f.logoUrl} alt={f.firmName} style={{ width: 20, height: 20, objectFit: "contain", borderRadius: 4 }} />
                         ) : (
-                          <div style={{ width: 16, height: 16, borderRadius: 2, background: "var(--color-gray-800)" }} />
+                          <div style={{ width: 20, height: 20, borderRadius: 4, background: "var(--color-gray-800)" }} />
                         )}
-                        <span style={{ fontWeight: 600, color: "var(--color-gray-100)" }}>{f.firmName}</span>
+                        <span style={{ fontWeight: 700, color: "var(--color-gray-100)" }}>{f.firmName}</span>
                       </div>
                     </td>
-                    <td style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 500 }}>{f.total}</td>
-                    <td style={{ padding: "0.6rem 0.85rem", textAlign: "right", color: "var(--color-profit)", fontWeight: 500 }}>{f.passed}</td>
-                    <td style={{ padding: "0.6rem 0.85rem", textAlign: "right", color: "var(--color-loss)", fontWeight: 500 }}>{f.breached}</td>
-                    <td style={{ padding: "0.6rem 0.85rem", textAlign: "right", color: "var(--color-brand-500)", fontWeight: 500 }}>{f.active}</td>
-                    <td style={{ padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 500 }}>
+                    <td style={{ textAlign: "right", fontWeight: 600 }}>{f.total}</td>
+                    <td style={{ textAlign: "right", color: "var(--color-profit)", fontWeight: 600 }}>{f.passed}</td>
+                    <td style={{ textAlign: "right", color: "var(--color-loss)", fontWeight: 600 }}>{f.breached}</td>
+                    <td style={{ textAlign: "right", color: "var(--color-brand-500)", fontWeight: 600 }}>{f.active}</td>
+                    <td style={{ textAlign: "right", fontWeight: 600 }}>
                       ${f.payoutsPaid.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-                      {f.payoutsPending > 0 && <span style={{ color: "var(--color-warning)", fontSize: "0.68rem", marginLeft: "4px" }}>+{f.payoutsPending.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>}
+                      {f.payoutsPending > 0 && <span style={{ color: "var(--color-warning)", fontSize: "0.7rem", marginLeft: "6px" }}>+{f.payoutsPending.toLocaleString("en-US", { maximumFractionDigits: 0 })}</span>}
                     </td>
-                    <td style={{ padding: "0.6rem 0.85rem", textAlign: "right", color: "var(--color-gray-400)" }}>{f.cost > 0 ? `$${f.cost.toLocaleString("en-US", { maximumFractionDigits: 0 })}` : "—"}</td>
+                    <td style={{ textAlign: "right", color: "var(--color-gray-400)", fontWeight: 500 }}>{f.cost > 0 ? `$${f.cost.toLocaleString("en-US", { maximumFractionDigits: 0 })}` : "—"}</td>
                     <td style={{
-                      padding: "0.6rem 0.85rem", textAlign: "right", fontWeight: 600,
+                      textAlign: "right", fontWeight: 700,
                       color: f.roi === null ? "var(--color-gray-600)" : f.roi >= 0 ? "var(--color-profit)" : "var(--color-loss)",
                     }}>
                       {f.roi === null ? "—" : `${f.roi >= 0 ? "+" : ""}${f.roi}%`}
@@ -199,9 +182,9 @@ export function PropFirmReport() {
 
 function Metric({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div style={{ background: "var(--color-gray-900)", padding: "0.85rem", borderRadius: "6px", border: "1px solid var(--color-gray-800)" }}>
-      <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600, marginBottom: "0.25rem" }}>{label}</div>
-      <div style={{ fontSize: "1.1rem", fontWeight: 700, color: color || "var(--color-gray-100)" }}>{value}</div>
+    <div className="card-hover" style={{ background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700, marginBottom: "0.4rem" }}>{label}</div>
+      <div style={{ fontSize: "1.4rem", fontWeight: 800, color: color || "var(--color-gray-100)", fontVariantNumeric: "tabular-nums" }}>{value}</div>
     </div>
   )
 }

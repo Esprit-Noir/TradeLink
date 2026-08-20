@@ -190,42 +190,38 @@ export default async function DashboardPage({
       <div className="dashboard-row-equal">
         <MonthlyGoalWidget monthPnl={monthPnl} initialGoal={monthlyGoal} monthLabel={monthLabel} />
 
-        <div className="card" style={{ padding: "1.25rem" }}>
+        <div className="card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column" }}>
           <div className="section-label" style={{ marginBottom: "1rem" }}>
             Month Stats — {monthLabel}
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-            <div style={{ flex: "1 1 120px" }}>
-              <div className="stat-label">🔥 Green streak</div>
-              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", flex: 1 }}>
+            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>🔥 Green streak</div>
+              <div style={{ fontSize: "1.4rem", fontWeight: 800, color: streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)", fontVariantNumeric: "tabular-nums" }}>
                 {streak}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> day{streak !== 1 ? "s" : ""}</span>
               </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>consecutive winning days</div>
             </div>
-            <div style={{ flex: "1 1 120px" }}>
-              <div className="stat-label">🟢 Green days</div>
-              <div style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--color-gray-100)" }}>
+            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>🟢 Green days</div>
+              <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--color-gray-100)", fontVariantNumeric: "tabular-nums" }}>
                 {greenDaysThisMonth}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> this month</span>
               </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
-                {monthDays.length > 0 ? `${Math.round((greenDaysThisMonth / monthDays.length) * 100)}% of trading days` : "no trades yet"}
-              </div>
             </div>
-            <div style={{ flex: "1 1 120px" }}>
-              <div className="stat-label">🏆 Best day</div>
-              <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-profit)" }}>
+            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>🏆 Best day</div>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-profit)", fontVariantNumeric: "tabular-nums" }}>
                 {bestDay ? formatCurrency(bestDay.pnl, "USD", true, 2) : "—"}
               </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500, marginTop: "0.15rem" }}>
                 {bestDay ? formatDay(bestDay.key) : "no trades yet"}
               </div>
             </div>
-            <div style={{ flex: "1 1 120px" }}>
-              <div className="stat-label">⚠️ Worst day</div>
-              <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-loss)" }}>
+            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>⚠️ Worst day</div>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-loss)", fontVariantNumeric: "tabular-nums" }}>
                 {worstDay ? formatCurrency(worstDay.pnl, "USD", true, 2) : "—"}
               </div>
-              <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500, marginTop: "0.15rem" }}>
                 {worstDay ? formatDay(worstDay.key) : "no trades yet"}
               </div>
             </div>

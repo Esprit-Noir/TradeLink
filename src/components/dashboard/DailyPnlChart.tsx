@@ -48,6 +48,16 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+        <defs>
+          <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-profit)" stopOpacity={1} />
+            <stop offset="100%" stopColor="var(--color-profit)" stopOpacity={0.4} />
+          </linearGradient>
+          <linearGradient id="colorLoss" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-loss)" stopOpacity={1} />
+            <stop offset="100%" stopColor="var(--color-loss)" stopOpacity={0.4} />
+          </linearGradient>
+        </defs>
         <XAxis 
           dataKey="displayDate" 
           tick={{ fontSize: 11, fill: "var(--color-gray-500)" }}
@@ -60,22 +70,24 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
           tick={{ fontSize: 11, fill: "var(--color-gray-500)" }}
           axisLine={false}
           tickLine={false}
+          dx={-10}
         />
         <Tooltip 
-          cursor={{ fill: "var(--color-gray-800)", opacity: 0.4 }}
+          cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
           contentStyle={{ 
             backgroundColor: "var(--color-gray-900)", 
             border: "1px solid var(--color-gray-800)",
             borderRadius: "8px",
-            color: "var(--color-gray-100)"
+            color: "var(--color-gray-100)",
+            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
           }}
-          itemStyle={{ color: "var(--color-gray-100)" }}
+          itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
           formatter={(value: any) => [formatCurrency(Number(value)), "P&L"]}
-          labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.25rem" }}
+          labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.5rem", fontWeight: 500, fontSize: "0.8rem" }}
         />
         <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
           {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "url(#colorProfit)" : "url(#colorLoss)"} />
           ))}
         </Bar>
       </BarChart>

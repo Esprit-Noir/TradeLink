@@ -56,7 +56,7 @@ function GaugeChart({ score }: { score: number }) {
           <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#EF4444" />
             <stop offset="50%" stopColor="#9CA3AF" />
-            <stop offset="100%" stopColor="#22C55E" />
+            <stop offset="100%" stopColor="#00c758" />
           </linearGradient>
           <linearGradient id="needleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
             <stop offset="0%" stopColor="#3B82F6" />

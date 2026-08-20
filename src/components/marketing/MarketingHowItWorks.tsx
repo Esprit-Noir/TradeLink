@@ -28,7 +28,7 @@ const STEPS = [
     title: "Improve Your Edge",
     description:
       "Follow your personalized action plan. Track progress with detailed analytics. Build discipline and consistency that translates to real profits.",
-    color: "#22c55e",
+    color: "#00c758",
     details: ["Action plans", "Progress tracking", "Accountability", "Consistent results"],
   },
 ]

@@ -317,7 +317,7 @@ export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailV
               <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Initial Balance</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(challenge.initialBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
             </div>
-            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid #10B981" }}>
+            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid #00c758" }}>
               <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Highest Balance</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(challenge.highestBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
             </div>
@@ -566,7 +566,7 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: Snapshot[]; c
           <div style={{ width: "1px", background: "var(--color-gray-800)", alignSelf: "stretch", display: "none" }} className="md:block" />
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
             <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Biggest Day / Profit</div>
-            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: ruleOk ? "#10B981" : "var(--color-loss)" }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: ruleOk ? "#00c758" : "var(--color-loss)" }}>
               {biggestPct.toFixed(1)}%
             </div>
           </div>

@@ -11,6 +11,8 @@ import { CommandPalette } from "./CommandPalette"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { ChallengeStatusWidget } from "./ChallengeStatusWidget"
 
+import { ROINotification } from "@/components/prop-firm/ROINotification"
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
@@ -21,6 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-layout">
+      <ROINotification />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main className="main-content">
         <div className="topbar-actions">

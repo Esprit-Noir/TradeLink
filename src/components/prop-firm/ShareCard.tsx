@@ -47,12 +47,12 @@ export function ShareCard({ data }: { data: CardData }) {
   const buildSvg = useCallback((logo: string | null, scale = 1) => {
     const W = 640, H = 400
     const w = W * scale, h = H * scale
-    const statusColor = data.status === "passed" ? "#10b981" : data.status === "breached" || data.status === "failed" ? "#ef4444" : "#8b5cf6"
+    const statusColor = data.status === "passed" ? "#00c758" : data.status === "breached" || data.status === "failed" ? "#ef4444" : "#8b5cf6"
     const profit = data.currentBalance - data.initialBalance
-    const profitColor = profit >= 0 ? "#10b981" : "#ef4444"
+    const profitColor = profit >= 0 ? "#00c758" : "#ef4444"
     const targetPct = Math.min(100, Math.max(0, data.targetProgressPct))
     const ddPct = Math.min(100, Math.max(0, data.ddUsedPct))
-    const ddColor = ddPct >= 80 ? "#ef4444" : ddPct >= 60 ? "#f59e0b" : "#10b981"
+    const ddColor = ddPct >= 80 ? "#ef4444" : ddPct >= 60 ? "#f59e0b" : "#00c758"
 
     const bar = (x: number, y: number, width: number, pct: number, color: string, label: string, valueLabel: string) => `
       <text x="${x}" y="${y}" font-size="${11 * scale}" fill="#9ca3af" font-family="system-ui, sans-serif">${label}</text>

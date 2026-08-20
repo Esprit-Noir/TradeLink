@@ -55,14 +55,14 @@ function NeedleGauge({ label, used, total, isBreached, formatCurrency = true, re
         <svg viewBox="0 0 200 100" className="w-full h-auto overflow-visible">
           <defs>
             <linearGradient id={`dd-grad-${label.replace(/\s+/g, '')}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="0%" stopColor="#00c758" />
               <stop offset="60%" stopColor="#f59e0b" />
               <stop offset="100%" stopColor="#ef4444" />
             </linearGradient>
             <linearGradient id={`profit-grad-${label.replace(/\s+/g, '')}`} x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#6b7280" />
               <stop offset="50%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#10b981" />
+              <stop offset="100%" stopColor="#00c758" />
             </linearGradient>
             <linearGradient id="needleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="var(--color-gray-100)" />

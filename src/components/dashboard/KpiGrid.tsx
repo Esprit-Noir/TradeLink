@@ -8,6 +8,9 @@ import { resolveAccountScope } from "@/lib/active-account"
 import { formatCurrency } from "@/lib/formatters"
 import type { Trade } from "@prisma/client"
 
+import { Activity, Target, Lightbulb, TrendingUp, AlertTriangle, List } from "lucide-react"
+
+// ... existing code in KpiGrid ...
 export async function KpiGrid({
   dateRange,
   accountId,
@@ -23,13 +26,13 @@ export async function KpiGrid({
 
   if (scope.accounts.length === 0) {
     return (
-      <div className="kpi-grid">
-        <EmptyKpiCard label="Net P&L" />
-        <EmptyKpiCard label="Win Rate" />
-        <EmptyKpiCard label="Expectancy" />
-        <EmptyKpiCard label="Profit Factor" />
-        <EmptyKpiCard label="Max Drawdown" />
-        <EmptyKpiCard label="Total Trades" />
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%", marginBottom: "1.5rem" }}>
+        <EmptyKpiCard label="Net P&L" icon={<Activity size={16} />} />
+        <EmptyKpiCard label="Win Rate" icon={<Target size={16} />} />
+        <EmptyKpiCard label="Expectancy" icon={<Lightbulb size={16} />} />
+        <EmptyKpiCard label="Profit Factor" icon={<TrendingUp size={16} />} />
+        <EmptyKpiCard label="Max Drawdown" icon={<AlertTriangle size={16} />} />
+        <EmptyKpiCard label="Total Trades" icon={<List size={16} />} />
       </div>
     )
   }
@@ -65,13 +68,15 @@ export async function KpiGrid({
   const currency = scope.currency
 
   return (
-    <div className="kpi-grid">
+    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%", marginBottom: "1.5rem" }}>
       <KpiCard
         label="Net P&L"
         value={formatCurrency(metrics.netPnl, currency)}
         sub={`${trades.length} closed trades`}
         type={metrics.netPnl >= 0 ? "profit" : "loss"}
         id="kpi-net-pnl"
+        icon={<Activity size={16} />}
+        size="large"
       />
       <KpiCard
         label="Win Rate"
@@ -79,6 +84,7 @@ export async function KpiGrid({
         sub={`${metrics.winningTrades}W / ${metrics.losingTrades}L`}
         type={metrics.winRate >= 0.5 ? "profit" : "loss"}
         id="kpi-win-rate"
+        icon={<Target size={16} />}
       />
       <KpiCard
         label="Expectancy"
@@ -86,6 +92,7 @@ export async function KpiGrid({
         sub="Per trade"
         type={metrics.expectancy >= 0 ? "profit" : "loss"}
         id="kpi-expectancy"
+        icon={<Lightbulb size={16} />}
       />
       <KpiCard
         label="Profit Factor"
@@ -93,6 +100,7 @@ export async function KpiGrid({
         sub={`${formatCurrency(metrics.grossProfit, currency)} gross profit`}
         type={metrics.profitFactor >= 1 ? "profit" : "loss"}
         id="kpi-profit-factor"
+        icon={<TrendingUp size={16} />}
       />
       <KpiCard
         label="Max Drawdown"
@@ -100,6 +108,7 @@ export async function KpiGrid({
         sub={formatCurrency(metrics.maxDrawdown, currency)}
         type={metrics.maxDrawdownPct > 10 ? "loss" : "neutral"}
         id="kpi-max-drawdown"
+        icon={<AlertTriangle size={16} />}
       />
       <KpiCard
         label="Total Trades"
@@ -107,6 +116,7 @@ export async function KpiGrid({
         sub={`${metrics.winningTrades}W / ${metrics.losingTrades}L`}
         type="neutral"
         id="kpi-total-trades"
+        icon={<List size={16} />}
       />
     </div>
   )
@@ -114,29 +124,39 @@ export async function KpiGrid({
 
 // ─── KPI Card Component ───────────────────────────────────────────────────────
 function KpiCard({
-  label, value, sub, type = "neutral", id,
+  label, value, sub, type = "neutral", id, icon, size = "normal"
 }: {
   label: string
   value: string
   sub?: string
   type?: "profit" | "loss" | "neutral"
   id: string
+  icon?: React.ReactNode
+  size?: "normal" | "large"
 }) {
+  const color = type === "profit" ? "var(--color-profit)" : type === "loss" ? "var(--color-loss)" : "var(--color-gray-100)"
+  
   return (
-    <div className="kpi-card" id={id}>
-      <div className="kpi-label">{label}</div>
-      <div className={`kpi-value ${type !== "neutral" ? type : ""}`}>{value}</div>
-      {sub && <div className="kpi-sub">{sub}</div>}
+    <div className="card" id={id} style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.35rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+        {icon && <span style={{ opacity: 0.7 }}>{icon}</span>}
+        {label}
+      </div>
+      <div style={{ fontSize: size === "large" ? "1.6rem" : "1.2rem", fontWeight: 700, color, fontVariantNumeric: "tabular-nums" }}>{value}</div>
+      {sub && <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500 }}>{sub}</div>}
     </div>
   )
 }
 
-function EmptyKpiCard({ label }: { label: string }) {
+function EmptyKpiCard({ label, icon }: { label: string, icon?: React.ReactNode }) {
   return (
-    <div className="kpi-card">
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value" style={{ color: "var(--color-gray-700)" }}>—</div>
-      <div className="kpi-sub">No data yet</div>
+    <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.35rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+        {icon && <span style={{ opacity: 0.7 }}>{icon}</span>}
+        {label}
+      </div>
+      <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-gray-700)", fontVariantNumeric: "tabular-nums" }}>—</div>
+      <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500 }}>No data yet</div>
     </div>
   )
 }

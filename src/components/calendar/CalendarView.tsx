@@ -67,9 +67,9 @@ export function CalendarView({
 
   const colors = isDark
     ? {
-        profitBg: "#064e3b",
-        profitBorder: "#047857",
-        profitText: "#34d399",
+        profitBg: "rgba(0, 199, 88, 0.15)",
+        profitBorder: "rgba(0, 199, 88, 0.3)",
+        profitText: "#00c758",
         lossBg: "#7f1d1d",
         lossBorder: "#b91c1c",
         lossText: "#f87171",
@@ -79,9 +79,9 @@ export function CalendarView({
         zeroText: "#4c4c58",
       }
     : {
-        profitBg: "#d1fae5",
-        profitBorder: "#34d399",
-        profitText: "#065f46",
+        profitBg: "rgba(0, 199, 88, 0.15)",
+        profitBorder: "rgba(0, 199, 88, 0.4)",
+        profitText: "#00c758",
         lossBg: "#fee2e2",
         lossBorder: "#f87171",
         lossText: "#991b1b",
