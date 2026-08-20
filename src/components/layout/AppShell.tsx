@@ -9,6 +9,7 @@ import { BacktestShell } from "./BacktestShell"
 import { NotificationBell } from "./NotificationBell"
 import { CommandPalette } from "./CommandPalette"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { ChallengeStatusWidget } from "./ChallengeStatusWidget"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -33,6 +34,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="topbar-spacer">
             <CommandPalette />
           </div>
+          <ChallengeStatusWidget />
           <NotificationBell />
           <ThemeToggle />
         </div>
