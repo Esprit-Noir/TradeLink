@@ -10,9 +10,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "db:seed:achievements": "node prisma/seed-achievements.ts",
-    "postinstall": "prisma generate"
-  },
+    "db:seed:achievements": "node prisma/seed-achievements.ts"},
   "prisma": {
     "seed": "node prisma/seed-achievements.ts"
   },
