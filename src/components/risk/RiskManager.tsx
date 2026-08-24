@@ -145,7 +145,7 @@ export function RiskManager() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(600px, 1fr))", gap: "1.5rem", alignItems: "start" }}>
 
         {/* ── Live risk status ── */}
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
             <ShieldAlert size={16} style={{ color: "var(--color-brand-500)" }} />
             <h2 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Live Risk Status</h2>
@@ -200,7 +200,7 @@ export function RiskManager() {
         </div>
 
         {/* ── Risk limits settings ── */}
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
             <Settings2 size={16} style={{ color: "var(--color-brand-500)" }} />
             <h2 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Daily Risk Limits</h2>
@@ -232,7 +232,7 @@ export function RiskManager() {
       </div>
 
       {/* ── Position size calculator ── */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem" }}>
           <Calculator size={16} style={{ color: "var(--color-brand-500)" }} />
           <h2 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Position Size Calculator</h2>

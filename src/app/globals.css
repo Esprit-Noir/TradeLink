@@ -143,15 +143,13 @@
 
 /* ── Glassmorphism utility ──────────────────────────────── */
 .glass {
-  background: color-mix(in srgb, var(--color-gray-900) 75%, transparent);
-  border: 1px solid var(--color-gray-700);
+  background: var(--color-gray-900);
+  border: 1px solid var(--color-gray-800);
 }
 
 /* ── Card ───────────────────────────────────────────────── */
 .card {
-  background: color-mix(in srgb, var(--color-gray-900) 80%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
   border-radius: var(--radius-card);
   padding: 1.25rem;
@@ -298,8 +296,7 @@
 }
 
 .btn-secondary {
-  background: color-mix(in srgb, var(--color-gray-800) 80%, transparent);
-  backdrop-filter: blur(8px);
+  background: var(--color-gray-800);
   color: var(--color-gray-300);
   border: 1px solid var(--color-gray-700);
 }
@@ -342,9 +339,8 @@
 /* ── Input ──────────────────────────────────────────────── */
 .input {
   width: 100%;
-  background: color-mix(in srgb, var(--color-gray-800) 80%, transparent);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--color-gray-700);
+  background: var(--color-gray-950);
+  border: 1px solid var(--color-gray-800);
   border-radius: var(--radius-button);
   padding: 0.5rem 0.75rem;
   color: var(--color-gray-100);
@@ -394,10 +390,8 @@
 .sidebar {
   width: 240px;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.90);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  background: #030304;
+  border-right: 1px solid #101014;
   display: flex;
   flex-direction: column;
   padding: 1rem 0;
@@ -414,10 +408,11 @@
   --color-gray-700: #1a1a20;
   --color-gray-800: #101014;
   --color-gray-900: #08080a;
+  --color-gray-950: #030304;
 }
 
 .light .sidebar {
-  background: rgba(0, 0, 0, 0.95);
+  background: #030304;
 }
 .sidebar-logo {
   padding: 0.5rem 1.25rem 1.25rem;
@@ -587,9 +582,7 @@
   position: sticky;
   top: -1.75rem;
   z-index: 40;
-  background: color-mix(in srgb, var(--background) 70%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--color-gray-950);
   border-bottom: 1px solid var(--color-gray-800);
 }
 
@@ -629,9 +622,7 @@
 }
 
 .kpi-card {
-  background: color-mix(in srgb, var(--color-gray-900) 60%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
   border-radius: var(--radius-card);
   padding: 1.25rem;
@@ -662,8 +653,11 @@
 }
 
 .kpi-card:hover {
-  border-color: var(--color-gray-600);
-  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--color-brand-500) 30%, transparent);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 30px color-mix(in srgb, var(--color-brand-500) 8%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-brand-500) 10%, transparent);
 }
 
 .kpi-card:hover::after {
@@ -698,9 +692,7 @@
 
 /* ── Chart wrapper ──────────────────────────────────────── */
 .chart-card {
-  background: color-mix(in srgb, var(--color-gray-900) 60%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--color-gray-900);
   border: 1px solid var(--color-gray-800);
   border-radius: var(--radius-card);
   padding: 1.25rem;
@@ -709,8 +701,11 @@
 }
 
 .chart-card:hover {
-  border-color: var(--color-gray-600);
+  border-color: color-mix(in srgb, var(--color-brand-500) 30%, transparent);
   transform: translateY(-2px);
+  box-shadow: 
+    0 8px 30px color-mix(in srgb, var(--color-brand-500) 8%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-brand-500) 10%, transparent);
 }
 
 .chart-title {
@@ -727,19 +722,18 @@
   overflow-x: auto;
   border-radius: var(--radius-card);
   border: 1px solid var(--color-gray-800);
-  background: color-mix(in srgb, var(--color-gray-900) 80%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: var(--color-gray-900);
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .data-table th {
-  background: color-mix(in srgb, var(--color-gray-900) 90%, transparent);
+  background: var(--color-gray-950);
   padding: 0.75rem 1rem;
   text-align: left;
   font-size: 0.7rem;
@@ -930,8 +924,9 @@
   }
 
   .topbar-spacer {
-    display: block;
-    margin-right: auto;
+    display: flex;
+    flex: 1;
+    min-width: 0;
   }
 
   .sidebar {
@@ -981,6 +976,11 @@
 
   .app-layout { height: 100vh; overflow: hidden; }
   .main-content { padding: 1rem; margin-left: 0 !important; }
+  .topbar-actions {
+    margin: -1rem -1rem 1rem -1rem;
+    padding: 0.5rem 1rem;
+    top: -1rem;
+  }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .page-header { flex-direction: column; }
   .table-wrapper { overflow-x: auto; }
@@ -2819,9 +2819,23 @@
   font-size: 0.7rem;
   background: var(--color-gray-800);
   border: 1px solid var(--color-gray-700);
-  padding: 2px 6px;
   border-radius: 4px;
-  color: var(--color-gray-300);
+  padding: 2px 4px;
+  color: var(--color-gray-400);
+}
+@media (max-width: 640px) {
+  .cmd-k-text, .cmd-k-kbd {
+    display: none;
+  }
+  .cmd-k-trigger {
+    padding: 6px;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+  }
+  .challenge-status-widget {
+    display: none !important;
+  }
 }
 .cmd-k-overlay {
   position: fixed;

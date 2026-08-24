@@ -123,7 +123,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
           position: "fixed", inset: 0, zIndex: 200,
           background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem",
         }} onClick={() => setEditing(null)}>
-          <div className="card" style={{ width: "100%", maxWidth: 440, padding: "1.5rem" }} onClick={e => e.stopPropagation()}>
+          <div className="chart-card" style={{ width: "100%", maxWidth: 440, padding: "1.5rem" }} onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <h3 style={{ fontWeight: 700, fontSize: "1.05rem" }}>Edit Account</h3>
               <button onClick={() => setEditing(null)} aria-label="Close" style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.4rem" }}>&times;</button>
@@ -156,39 +156,39 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
 
       {/* KPIs Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
-        <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-400)", fontSize: "0.85rem", textTransform: "uppercase", fontWeight: 600 }}>
+        <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
             <Wallet size={16} /> Total Equity
           </div>
-          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)" }}>
+          <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--color-text)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {formatCurrency(kpis.totalEquity, "USD", false, 2)}
           </div>
         </div>
 
-        <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-400)", fontSize: "0.85rem", textTransform: "uppercase", fontWeight: 600 }}>
+        <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
             <TrendingUp size={16} /> Total Net P&L
           </div>
-          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: kpis.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+          <div style={{ fontSize: "2rem", fontWeight: 800, color: kpis.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {formatCurrency(kpis.totalPnlUsd, "USD", true, 2)}
           </div>
-          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>in USD equivalent</div>
+          <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>in USD equivalent</div>
         </div>
 
-        <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-400)", fontSize: "0.85rem", textTransform: "uppercase", fontWeight: 600 }}>
+        <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
             <Target size={16} /> Funded Capital (Prop)
           </div>
-          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-brand-400)" }}>
+          <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--color-brand-400)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {formatCurrency(kpis.fundedCapital, "USD", false, 2)}
           </div>
         </div>
 
-        <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-400)", fontSize: "0.85rem", textTransform: "uppercase", fontWeight: 600 }}>
+        <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
             <Activity size={16} /> Active Accounts
           </div>
-          <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)" }}>
+          <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--color-text)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {kpis.activeCount}
           </div>
         </div>
@@ -219,7 +219,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
 
       {/* Empty state */}
       {filteredAccounts.length === 0 && (
-        <div className="card" style={{ padding: "3rem", textAlign: "center" }}>
+        <div className="chart-card" style={{ padding: "3rem", textAlign: "center" }}>
           <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>🏦</div>
           <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-gray-200)" }}>
             {accounts.length === 0 ? "No accounts yet" : "No accounts of this type"}
@@ -245,18 +245,19 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
           return (
             <div
               key={acc.id}
-              className="card"
+              className="card-hover"
               onClick={() => openAccount(acc)}
               style={{
                 border: `1px solid ${typeColor}40`,
                 padding: "1.5rem",
+                borderRadius: "16px",
                 display: "flex", flexDirection: "column", gap: "1.5rem",
                 position: "relative",
                 cursor: "pointer",
                 transition: "border-color 0.2s ease, transform 0.15s ease",
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = typeColor; e.currentTarget.style.transform = "translateY(-2px)" }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = `${typeColor}40`; e.currentTarget.style.transform = "none" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = typeColor }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = `${typeColor}40` }}
             >
               {/* Top Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.75rem" }}>

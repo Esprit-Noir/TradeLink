@@ -89,7 +89,7 @@ export function CalculatorClient() {
       {/* Calculator Form */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "1.5rem" }}>
         {/* Inputs */}
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
             <Calculator size={18} style={{ color: "var(--color-brand-500)" }} />
             <h3 style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Trade Parameters</h3>
@@ -196,7 +196,7 @@ export function CalculatorClient() {
         </div>
 
         {/* Results */}
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
             <TrendingUp size={18} style={{ color: "var(--color-brand-500)" }} />
             <h3 style={{ fontSize: "0.95rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Results</h3>
@@ -274,7 +274,7 @@ export function CalculatorClient() {
       </div>
 
       {/* Quick Reference */}
-      <div className="card" style={{ padding: "1.25rem" }}>
+      <div className="chart-card" style={{ padding: "1.25rem" }}>
         <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)", marginBottom: 12 }}>Quick Reference</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, fontSize: "0.75rem", color: "var(--color-gray-400)" }}>
           <div>

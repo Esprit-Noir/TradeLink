@@ -14,6 +14,7 @@ import {
   Shield,
   PanelLeftClose,
   PanelLeftOpen,
+  Layers,
 } from "lucide-react"
 
 const iconProps = { size: 18, strokeWidth: 1.75, style: { opacity: 0.9, flexShrink: 0 } }
@@ -22,6 +23,7 @@ const navigation = [
   { href: "/admin", label: "Dashboard", icon: () => <LayoutDashboard {...iconProps} /> },
   { href: "/admin/users", label: "Users", icon: () => <Users {...iconProps} /> },
   { href: "/admin/subscriptions", label: "Subscriptions", icon: () => <CreditCard {...iconProps} /> },
+  { href: "/admin/plans", label: "Plans", icon: () => <Layers {...iconProps} /> },
   { href: "/admin/logs", label: "Audit Logs", icon: () => <ScrollText {...iconProps} /> },
   { href: "/admin/support", label: "Support", icon: () => <LifeBuoy {...iconProps} /> },
 ]

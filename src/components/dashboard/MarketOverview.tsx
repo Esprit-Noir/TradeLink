@@ -160,7 +160,7 @@ export function MarketOverview() {
       setLoading(true)
       // Yahoo finance symbols corresponding to the hardcoded list
       const yahooSymbols = ["EURUSD=X", "GBPJPY=X", "^NDX", "GC=F", "BTC-USD", "^DJI", "ETH-USD", "JPY=X"]
-      const res = await fetch(`/api/market-quotes?symbols=${yahooSymbols.join(",")}`)
+      const res = await fetch(`/api/market-quotes?symbols=${encodeURIComponent(yahooSymbols.join(","))}`)
       if (!res.ok) throw new Error("Failed to fetch")
       const result = await res.json()
       const quotes = result.quotes || []
@@ -254,7 +254,7 @@ export function MarketOverview() {
       {isModalOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
           <div onClick={() => setIsModalOpen(false)} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} />
-          <div className="card" style={{ position: "relative", width: "100%", maxWidth: 440, padding: "1.5rem", zIndex: 10 }}>
+          <div className="chart-card" style={{ position: "relative", width: "100%", maxWidth: 440, padding: "1.5rem", zIndex: 10 }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <Settings size={16} style={{ color: "var(--color-brand-500)" }} />

@@ -108,15 +108,15 @@ export function PropFirmStatsClient({
 
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string; color: string }) {
   return (
-    <div style={{
+    <div className="card-hover" style={{
       background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
-      borderRadius: "var(--radius-card)", padding: "0.85rem",
-      display: "flex", flexDirection: "column", gap: "0.2rem",
+      borderRadius: "12px", padding: "1.25rem",
+      display: "flex", flexDirection: "column", gap: "0.3rem",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", color: "var(--color-gray-500)", fontSize: "0.68rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-500)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         {icon} {label}
       </div>
-      <div style={{ fontSize: "1.2rem", fontWeight: 700, fontFamily: "var(--font-mono)", color }}>{value}</div>
+      <div style={{ fontSize: "1.5rem", fontWeight: 800, fontFamily: "var(--font-mono)", color, letterSpacing: "-0.02em" }}>{value}</div>
     </div>
   )
 }

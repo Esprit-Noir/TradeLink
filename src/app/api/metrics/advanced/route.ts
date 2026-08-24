@@ -84,6 +84,12 @@ export async function GET(request: Request) {
     let peakBalance = 0
     let currentBalance = 0
 
+    // Trade Duration
+    let winTotalDurationMs = 0
+    let lossTotalDurationMs = 0
+    let winTradesWithDuration = 0
+    let lossTradesWithDuration = 0
+
     // R:R Distribution
     const rrDistribution = {
       "0-1R": 0,
@@ -94,9 +100,20 @@ export async function GET(request: Request) {
     }
 
     // Day of Week
-    const dowPerformance = [0, 0, 0, 0, 0, 0, 0]
+    const dowPerformance = [
+      { pnl: 0, wins: 0, count: 0 }, { pnl: 0, wins: 0, count: 0 }, { pnl: 0, wins: 0, count: 0 },
+      { pnl: 0, wins: 0, count: 0 }, { pnl: 0, wins: 0, count: 0 }, { pnl: 0, wins: 0, count: 0 },
+      { pnl: 0, wins: 0, count: 0 }
+    ]
     const hourPerformance = new Array(24).fill(0) as number[]
     const monthPerformance: Record<string, number> = {}
+
+    // Sessions
+    const sessionPerformance = {
+      asian: { pnl: 0, wins: 0, count: 0 },
+      london: { pnl: 0, wins: 0, count: 0 },
+      newYork: { pnl: 0, wins: 0, count: 0 }
+    }
 
     // Symbols & Setups Aggregation
     const symbolMap: Record<string, { pnl: number, count: number, wins: number }> = {}
@@ -122,6 +139,20 @@ export async function GET(request: Request) {
         currentLossStreak++
         currentWinStreak = 0
         if (currentLossStreak > longestLossStreak) longestLossStreak = currentLossStreak
+      }
+
+      // Trade duration
+      if (trade.exitAt) {
+        const durationMs = trade.exitAt.getTime() - trade.entryAt.getTime()
+        if (durationMs >= 0) {
+          if (isWin) {
+            winTotalDurationMs += durationMs
+            winTradesWithDuration++
+          } else if (isLoss) {
+            lossTotalDurationMs += durationMs
+            lossTradesWithDuration++
+          }
+        }
       }
 
       // Balance & Drawdown
@@ -157,12 +188,27 @@ export async function GET(request: Request) {
 
       // Day of Week
       const dow = dayOfWeek(trade.entryAt, timezone)
-      dowPerformance[dow] += pnl
+      dowPerformance[dow].pnl += pnl
+      dowPerformance[dow].count++
+      if (isWin) dowPerformance[dow].wins++
 
       // Hour of day (local)
       const hourKey = new Date(trade.entryAt).toLocaleString("en-US", { timeZone: timezone, hour: "numeric", hour12: false })
       const hour = Number(hourKey) % 24
       hourPerformance[hour] += pnl
+
+      // Sessions (Based on UTC hours)
+      // Asian: 22:00 - 08:00
+      // London: 08:00 - 13:00
+      // NY: 13:00 - 22:00
+      const hourUtc = trade.entryAt.getUTCHours()
+      let sessionKey = "asian"
+      if (hourUtc >= 8 && hourUtc < 13) sessionKey = "london"
+      else if (hourUtc >= 13 && hourUtc < 22) sessionKey = "newYork"
+      
+      sessionPerformance[sessionKey as keyof typeof sessionPerformance].pnl += pnl
+      sessionPerformance[sessionKey as keyof typeof sessionPerformance].count++
+      if (isWin) sessionPerformance[sessionKey as keyof typeof sessionPerformance].wins++
 
       // Monthly
       const monthKey = new Date(trade.entryAt).toLocaleString("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit" })
@@ -307,6 +353,10 @@ export async function GET(request: Request) {
         totalTrades,
         sortino: Math.round(sortino * 100) / 100,
       },
+      durations: {
+        avgWinDurationMinutes: winTradesWithDuration > 0 ? (winTotalDurationMs / winTradesWithDuration) / 60000 : null,
+        avgLossDurationMinutes: lossTradesWithDuration > 0 ? (lossTotalDurationMs / lossTradesWithDuration) / 60000 : null,
+      },
       streaks: {
         longestWinStreak,
         longestLossStreak,
@@ -327,6 +377,7 @@ export async function GET(request: Request) {
       rrDistribution,
       dowPerformance,
       hourPerformance,
+      sessionPerformance,
       monthlyPerformance,
       topSymbols,
       topSetups,

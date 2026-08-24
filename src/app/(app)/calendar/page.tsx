@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { CalendarView } from "@/components/calendar/CalendarView"
 import { CalendarFilter } from "@/components/calendar/CalendarFilter"
+import { EconomicCalendarWidget } from "@/components/calendar/EconomicCalendarWidget"
 import { resolveAccountScope } from "@/lib/active-account"
 import { dayKey } from "@/lib/dates"
 
@@ -109,8 +110,13 @@ export default async function CalendarPage({
         </Suspense>
       </div>
 
-      <div>
-        <CalendarView dailyPnl={dailyPnl} dailyTradeCount={dailyTradeCount} propDailyPnl={propDailyPnl} accountId={selectedAccountId || undefined} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem", alignItems: "start" }}>
+        <div style={{ gridColumn: "1 / -1" }}>
+          <CalendarView dailyPnl={dailyPnl} dailyTradeCount={dailyTradeCount} propDailyPnl={propDailyPnl} accountId={selectedAccountId || undefined} />
+        </div>
+        <div style={{ gridColumn: "1 / -1" }}>
+          <EconomicCalendarWidget limit={8} />
+        </div>
       </div>
     </div>
   )

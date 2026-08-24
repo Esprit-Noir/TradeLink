@@ -651,12 +651,33 @@ export function ReplayWorkbench({
   }
 
 
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable fullscreen: ${err.message}`)
+      })
+    } else {
+      document.exitFullscreen()
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+  }, [])
+
   const progress = state.data.length > 1 ? (state.currentIndex / (state.data.length - 1)) * 100 : 0
 
   const currentTime = state.data[state.currentIndex]?.time ?? null
 
   return (
-    <div className="tz-replay-fullscreen">
+    <div className="tz-replay-fullscreen" ref={containerRef} style={isFullscreen ? { background: "var(--background)", height: "100vh" } : undefined}>
       {/* ── Top Bar ── */}
       <div className="tz-replay-topbar">
         <div className="tz-replay-topbar-left">
@@ -706,6 +727,9 @@ export function ReplayWorkbench({
           </button>
           <button className="tz-btn-close" onClick={handleExportPdf}>
             <Share size={14} /> Export
+          </button>
+          <button className="tz-btn-close" onClick={toggleFullscreen} title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}>
+            {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
           <Link href="/dashboard" className="tz-btn-close" title="Back to Dashboard">
             <X size={16} />

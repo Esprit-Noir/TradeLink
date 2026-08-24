@@ -97,7 +97,7 @@ export function ProfileManager({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* ─── Profile header ─────────────────────────────────────────────── */}
-      <div className="card" style={{ padding: "1.5rem", display: "flex", alignItems: "center", gap: "1.25rem", flexWrap: "wrap" }}>
+      <div className="chart-card" style={{ padding: "1.5rem", display: "flex", alignItems: "center", gap: "1.25rem", flexWrap: "wrap" }}>
         <div style={{
           width: "76px", height: "76px", borderRadius: "50%", flexShrink: 0,
           background: "linear-gradient(135deg, var(--color-brand-500), #7c3aed)",
@@ -128,7 +128,7 @@ export function ProfileManager({
       </div>
 
       {/* ─── Personal details ───────────────────────────────────────────── */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div style={{ fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.25rem" }}>Personal Details</div>
         <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1.25rem" }}>
           Basic information about your account.
@@ -155,7 +155,7 @@ export function ProfileManager({
       </div>
 
       {/* ─── Preferences ────────────────────────────────────────────────── */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div style={{ fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.25rem" }}>Preferences</div>
         <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "1.25rem" }}>
           Currency, timezone, and trading defaults.
@@ -208,7 +208,7 @@ export function ProfileManager({
       </div>
 
       {/* ─── Notifications ──────────────────────────────────────────────── */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <NotificationPreferences />
       </div>
 

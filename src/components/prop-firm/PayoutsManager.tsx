@@ -186,7 +186,7 @@ export function PayoutsManager() {
           position: "fixed", inset: 0, zIndex: 200,
           background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem",
         }} onClick={() => setModalOpen(false)}>
-          <div className="card" style={{ width: "100%", maxWidth: 460, padding: "1.5rem" }} onClick={e => e.stopPropagation()}>
+          <div className="chart-card" style={{ width: "100%", maxWidth: 460, padding: "1.5rem" }} onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <h3 style={{ fontWeight: 700, fontSize: "1.05rem" }}>Register Payout</h3>
               <button onClick={() => setModalOpen(false)} style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.4rem" }}>&times;</button>
@@ -245,7 +245,7 @@ export function PayoutsManager() {
         {loading ? (
           <div className="skeleton" style={{ height: 120 }} />
         ) : payouts.length === 0 ? (
-          <div className="card" style={{ padding: "2.5rem", textAlign: "center" }}>
+          <div className="chart-card" style={{ padding: "2.5rem", textAlign: "center" }}>
             <div style={{ fontSize: "1.8rem", marginBottom: "0.5rem" }}>💸</div>
             <div style={{ fontWeight: 700, color: "var(--color-gray-200)" }}>No payouts yet</div>
             <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)", marginTop: "0.35rem" }}>

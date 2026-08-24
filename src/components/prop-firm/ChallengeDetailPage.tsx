@@ -116,6 +116,7 @@ export function ChallengeDetailPage({
   }
 
   const shareData = {
+    challengeId: challenge.id,
     firmName: challenge.template?.firmName || "Prop Firm",
     programName: challenge.template?.programName || "",
     logoUrl: challenge.template?.logoUrl || null,

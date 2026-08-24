@@ -23,7 +23,6 @@ export function ThemeToggle() {
   const toggleTheme = () => {
     const newTheme = isDark ? "light" : "dark"
     setTheme(newTheme)
-    toast.success(`Theme switched to ${newTheme} mode`)
   }
 
   return (

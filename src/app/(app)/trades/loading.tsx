@@ -11,7 +11,7 @@ export default function TradesLoading() {
       {/* Summary bar */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: "0.85rem" }}>
+          <div key={i} className="chart-card" style={{ padding: "0.85rem" }}>
             <div className="skeleton" style={{ height: 10, width: 50, marginBottom: 6 }} />
             <div className="skeleton" style={{ height: 20, width: 80 }} />
           </div>
@@ -19,14 +19,14 @@ export default function TradesLoading() {
       </div>
 
       {/* Filter bar */}
-      <div className="card" style={{ padding: "1rem", display: "flex", gap: "0.75rem" }}>
+      <div className="chart-card" style={{ padding: "1rem", display: "flex", gap: "0.75rem" }}>
         <div className="skeleton" style={{ height: 32, width: 120, borderRadius: 6 }} />
         <div className="skeleton" style={{ height: 32, width: 100, borderRadius: 6 }} />
         <div className="skeleton" style={{ height: 32, width: 80, borderRadius: 6 }} />
       </div>
 
       {/* Table rows */}
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="chart-card" style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ padding: "0.75rem 1rem", borderBottom: "1px solid var(--color-gray-800)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr 80px", gap: "1rem" }}>
             {["Symbol", "Side", "Entry", "P&L", "Date", ""].map((h) => (

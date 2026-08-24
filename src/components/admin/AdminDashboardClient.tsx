@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, UserCheck, TrendingUp, BarChart3, Headphones, AlertCircle, Activity } from "lucide-react"
+import { Users, UserCheck, TrendingUp, BarChart3, Headphones, AlertCircle, Activity, CreditCard, Clock, DollarSign } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts"
 
 interface KPIs {
@@ -11,6 +11,9 @@ interface KPIs {
   totalBacktestSessions: number
   totalTickets: number
   openTickets: number
+  activeSubscriptions: number
+  pendingSubscriptions: number
+  mrr: number
 }
 
 interface Charts {
@@ -40,7 +43,7 @@ function KPICard({ label, value, icon: Icon, color }: { label: string; value: nu
 
 function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="card" style={{ padding: "1.25rem" }}>
+    <div className="chart-card" style={{ padding: "1.25rem" }}>
       <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)", marginBottom: 16 }}>{title}</h3>
       {children}
     </div>
@@ -52,6 +55,9 @@ export function AdminDashboardClient({ kpis, charts }: { kpis: KPIs; charts: Cha
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* KPI Cards */}
       <div className="kpi-grid">
+        <KPICard label="MRR (Active)" value={`$${kpis.mrr}`} icon={DollarSign} color="var(--color-brand-400)" />
+        <KPICard label="Active Subs" value={kpis.activeSubscriptions} icon={CreditCard} color="var(--color-profit)" />
+        <KPICard label="Pending Crypto" value={kpis.pendingSubscriptions} icon={Clock} color={kpis.pendingSubscriptions > 0 ? "var(--color-warning)" : "var(--color-gray-400)"} />
         <KPICard label="Total Users" value={kpis.totalUsers} icon={Users} color="var(--color-info)" />
         <KPICard label="Active (7d)" value={kpis.activeUsers7d} icon={UserCheck} color="var(--color-profit)" />
         <KPICard label="Active (30d)" value={kpis.activeUsers30d} icon={Activity} color="#8b5cf6" />

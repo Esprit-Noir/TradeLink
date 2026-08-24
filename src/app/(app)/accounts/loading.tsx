@@ -10,7 +10,7 @@ export default function AccountsLoading() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem" }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: "1.5rem" }}>
+          <div key={i} className="chart-card" style={{ padding: "1.5rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
               <div className="skeleton" style={{ height: 36, width: 36, borderRadius: 10 }} />
               <div>

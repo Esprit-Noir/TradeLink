@@ -79,7 +79,7 @@ export function PropFirmReport() {
   }
 
   return (
-    <div className="card" style={{ padding: "1.75rem", marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+    <div className="chart-card" style={{ padding: "1.75rem", marginBottom: "2rem", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <div style={{ fontWeight: 800, fontSize: "1.25rem", color: "var(--color-gray-100)", letterSpacing: "-0.02em" }}>Global Report</div>

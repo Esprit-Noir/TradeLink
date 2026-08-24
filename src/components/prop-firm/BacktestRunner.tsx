@@ -118,7 +118,7 @@ export function BacktestRunner({ templates, accounts }: { templates: Template[];
         <Simulator templates={templates} />
       ) : (
         <>
-          <div className="card" style={{ padding: "1.25rem" }}>
+          <div className="chart-card" style={{ padding: "1.25rem" }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.9rem" }}>
               <div className="form-group">
                 <label className="label">Firm template</label>
@@ -175,13 +175,13 @@ export function BacktestRunner({ templates, accounts }: { templates: Template[];
           </div>
 
           {error && (
-            <div className="card" style={{ padding: "1rem", border: "1px solid var(--color-loss)", color: "var(--color-loss)" }}>
+            <div className="chart-card" style={{ padding: "1rem", border: "1px solid var(--color-loss)", color: "var(--color-loss)" }}>
               {error}
             </div>
           )}
 
           {result && (
-            <div className="card" style={{ padding: "1.25rem" }}>
+            <div className="chart-card" style={{ padding: "1.25rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.25rem" }}>
                 <span style={{
                   fontSize: "1.4rem", fontWeight: 800, color: resultColor, textTransform: "uppercase",
@@ -346,7 +346,7 @@ function Simulator({ templates }: { templates: Template[] }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div className="card" style={{ padding: "1.25rem" }}>
+      <div className="chart-card" style={{ padding: "1.25rem" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.9rem" }}>
           <div className="form-group">
             <label className="label">Firm template</label>
@@ -389,7 +389,7 @@ function Simulator({ templates }: { templates: Template[] }) {
       </div>
 
       {out && (
-        <div className="card" style={{ padding: "1.25rem" }}>
+        <div className="chart-card" style={{ padding: "1.25rem" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <Metric label="Pass probability" value={`${out.passRate.toFixed(1)}%`} color={out.passRate >= 50 ? "var(--color-profit)" : "var(--color-loss)"} />
             <Metric label="Median time to pass" value={out.medianDays <= (template?.maxTradingDays ?? 60) ? `${out.medianDays} days` : "—"} />

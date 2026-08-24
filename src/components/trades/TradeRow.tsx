@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
+import { motion } from "framer-motion"
 
 type TradeRowProps = {
   trade: any
@@ -9,10 +10,11 @@ type TradeRowProps = {
   baseCurrency?: string
   visibleColumns?: Record<string, boolean>
   selected?: boolean
+  index?: number
   onSelect?: () => void
 }
 
-export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibleColumns, selected, onSelect }: TradeRowProps) {
+export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibleColumns, selected, index = 0, onSelect }: TradeRowProps) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -33,11 +35,14 @@ export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibl
   const pnl = Number(trade.netPnl || 0)
 
   return (
-    <tr
+    <motion.tr
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.05, 0.5) }}
       className="recent-trade-item"
       onClick={handleRowClick}
       style={{ cursor: "pointer", ...(selected ? { background: "rgba(139,92,246,0.08)" } : {}) }}
-      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "var(--gray-900)" }}
+      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "var(--color-gray-900)" }}
       onMouseLeave={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "transparent" }}
     >
       {visibleColumns && (
@@ -122,6 +127,6 @@ export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibl
           <span className="badge badge-neutral" style={{ fontSize: "0.7rem", textTransform: "uppercase" }}>{trade.status}</span>
         </td>
       )}
-    </tr>
+    </motion.tr>
   )
 }

@@ -45,7 +45,7 @@ export function GoalWidget({ label, currentPnl, initialGoal, goalKey, placeholde
   }
 
   return (
-    <div className="card" style={{ padding: "1.25rem" }}>
+    <div className="chart-card" style={{ padding: "1.25rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
         <div>
           <div className="section-label">{label}</div>

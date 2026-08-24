@@ -40,6 +40,33 @@ async function logEventIfAbsent(
   await prisma.propChallengeEvent.create({
     data: { challengeId, eventType, severity, message, metadata: metadata ?? undefined },
   })
+
+  // Trigger email notification for important events
+  const shouldEmail = severity === "critical" || severity === "warning" || eventType === "target_hit"
+  if (shouldEmail) {
+    const challengeInfo = await prisma.propChallenge.findUnique({
+      where: { id: challengeId },
+      select: { template: { select: { firmName: true } }, user: { select: { email: true, name: true } } }
+    })
+
+    if (challengeInfo?.user.email) {
+      import("@/lib/email").then(({ sendEmail }) => {
+        import("@/emails/PropAlertEmail").then(({ PropAlertEmail }) => {
+          sendEmail({
+            to: challengeInfo.user.email,
+            subject: `TradeLink: Update on your ${challengeInfo.template.firmName} Challenge`,
+            react: PropAlertEmail({
+              userName: challengeInfo.user.name || "Trader",
+              firmName: challengeInfo.template.firmName,
+              eventType: eventType.replace(/_/g, " ").toUpperCase(),
+              severity: severity as any,
+              message: message,
+            }),
+          }).catch(console.error)
+        })
+      }).catch(console.error)
+    }
+  }
 }
 
 interface DayAccum {
@@ -67,9 +94,10 @@ export async function evaluateChallenge(challengeId: string) {
   // User notification preferences (controls which events are created)
   const user = await prisma.user.findUnique({
     where: { id: challenge.userId },
-    select: { notificationPrefs: true },
+    select: { email: true, name: true, notificationPrefs: true },
   })
   const prefs = user?.notificationPrefs
+
 
   // Time limit check
   if (challenge.deadlineAt && challenge.status === 'active' && new Date() > challenge.deadlineAt) {

@@ -115,22 +115,26 @@ const itemVariants: Variants = {
 
 export function MarketingTestimonials() {
   return (
-    <section className="py-32 bg-black border-y border-white/5" id="testimonials">
-      <div className="max-w-[1200px] mx-auto px-6">
+    <section className="py-32 bg-[#050505] border-y border-white/5 relative overflow-hidden" id="testimonials">
+      {/* Background gradients */}
+      <div className="absolute top-1/4 left-0 w-1/4 h-1/2 bg-[var(--color-brand-500)]/5 blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-0 w-1/4 h-1/2 bg-blue-500/5 blur-[150px] pointer-events-none" />
+
+      <div className="max-w-[1200px] mx-auto px-6 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16 flex flex-col items-center"
+          className="text-center mb-20 flex flex-col items-center"
         >
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 mb-6 text-[10px] font-bold text-[var(--color-brand-500)] uppercase tracking-widest">
-            Testimonials
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
+            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Testimonials</span>
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
-            Trusted by <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent">10,000+ Traders</span>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tighter">
+            Trusted by <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,199,88,0.3)]">10,000+ Traders</span>
           </h2>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium">
             Real results from real traders. See how TradeLink is transforming
             trading careers worldwide.
           </p>
@@ -144,33 +148,37 @@ export function MarketingTestimonials() {
           className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6"
         >
           {TESTIMONIALS.map((t) => (
-            <motion.div variants={itemVariants} key={t.name} className="break-inside-avoid bg-gray-900 border border-gray-800 rounded-2xl p-6 hover:border-gray-700 transition-colors">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex gap-1">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} size={14} className="fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                {t.metric && (
-                  <span className="px-2 py-1 bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] text-[10px] font-bold uppercase tracking-wider rounded-md">
-                    {t.metric}
-                  </span>
-                )}
-              </div>
-              <p className="text-gray-300 text-sm leading-relaxed mb-6">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gray-800 border border-gray-700 flex items-center justify-center font-bold text-gray-400">
-                  {t.name.charAt(0)}
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 text-sm font-bold text-white">
-                    {t.name}
-                    {t.verified && <BadgeCheck size={14} className="text-blue-400" />}
+            <motion.div variants={itemVariants} key={t.name} className="break-inside-avoid bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:-translate-y-1 hover:border-white/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] group relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex gap-1">
+                    {Array.from({ length: t.rating }).map((_, j) => (
+                      <Star key={j} size={16} className="fill-yellow-500 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" />
+                    ))}
                   </div>
-                  <div className="text-xs text-gray-500 font-medium">
-                    {t.role} • {t.firm}
+                  {t.metric && (
+                    <span className="px-3 py-1 bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] text-[10px] font-bold uppercase tracking-widest rounded-full shadow-inner border border-[var(--color-brand-500)]/20">
+                      {t.metric}
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-300 text-base leading-relaxed mb-8 font-medium">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 flex items-center justify-center font-bold text-gray-300 shadow-inner">
+                    {t.name.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 text-sm font-bold text-white tracking-tight">
+                      {t.name}
+                      {t.verified && <BadgeCheck size={16} className="text-blue-500 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" />}
+                    </div>
+                    <div className="text-xs text-gray-500 font-medium">
+                      {t.role} • {t.firm}
+                    </div>
                   </div>
                 </div>
               </div>

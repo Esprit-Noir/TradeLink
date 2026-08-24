@@ -8,35 +8,35 @@ export default function DashboardLoading() {
         </div>
       </div>
 
-      {/* KPI cards */}
+      {/* KPIs Skeleton */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: "1.25rem" }}>
-            <div className="skeleton" style={{ height: 11, width: 60, marginBottom: 10 }} />
-            <div className="skeleton" style={{ height: 26, width: 100 }} />
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="kpi-card" style={{ padding: "1.25rem" }}>
+            <div className="skeleton-pulse" style={{ width: "40%", height: 12, borderRadius: 4, marginBottom: "0.5rem" }} />
+            <div className="skeleton-pulse" style={{ width: "80%", height: 28, borderRadius: 6 }} />
           </div>
         ))}
       </div>
 
-      {/* Charts row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
-        <div className="card" style={{ padding: "1.5rem" }}>
-          <div className="skeleton" style={{ height: 14, width: 100, marginBottom: 12 }} />
-          <div className="skeleton" style={{ height: 220 }} />
+      {/* Top row skeletons */}
+      <div className="dashboard-row-equal">
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
+          <div className="skeleton-pulse" style={{ width: "30%", height: 16, borderRadius: 4, marginBottom: "2rem" }} />
+          <div className="skeleton-pulse" style={{ width: "100%", height: 180, borderRadius: 8 }} />
         </div>
-        <div className="card" style={{ padding: "1.5rem" }}>
-          <div className="skeleton" style={{ height: 14, width: 120, marginBottom: 12 }} />
-          <div className="skeleton" style={{ height: 220 }} />
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
+          <div className="skeleton-pulse" style={{ width: "40%", height: 16, borderRadius: 4, marginBottom: "2rem" }} />
+          <div className="skeleton-pulse" style={{ width: "80%", height: 180, borderRadius: 8, margin: "0 auto" }} />
         </div>
       </div>
 
-      {/* Bottom row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
-        <div className="card" style={{ padding: "1.5rem" }}>
-          <div className="skeleton" style={{ height: 14, width: 110, marginBottom: 12 }} />
-          <div className="skeleton" style={{ height: 180 }} />
+      {/* Bottom row skeletons */}
+      <div className="dashboard-row-equal">
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
+          <div className="skeleton-pulse" style={{ width: "20%", height: 16, borderRadius: 4, marginBottom: "2rem" }} />
+          <div className="skeleton-pulse" style={{ width: "100%", height: 250, borderRadius: 8 }} />
         </div>
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div className="skeleton" style={{ height: 14, width: 90, marginBottom: 12 }} />
           <div className="skeleton" style={{ height: 180 }} />
         </div>

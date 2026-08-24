@@ -77,7 +77,7 @@ export function AchievementsSection() {
   const pct = total > 0 ? Math.round((unlockedCount / total) * 100) : 0
 
   return (
-    <div className="card" style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
+    <div className="chart-card" style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
       {/* Header & Global Progress */}
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>

@@ -32,7 +32,7 @@ export default async function SupportPage() {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {tickets.map(ticket => (
-              <div key={ticket.id} className="card" style={{ padding: "1rem" }}>
+              <div key={ticket.id} className="chart-card" style={{ padding: "1rem" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <div>
                     <div style={{ fontWeight: 500, color: "var(--color-gray-200)" }}>{ticket.subject}</div>

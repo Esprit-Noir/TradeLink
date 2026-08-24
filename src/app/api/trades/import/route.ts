@@ -104,7 +104,7 @@ export async function POST(request: Request) {
       if (netPnl === undefined) {
         if (t.exitPrice && t.entryPrice) {
           const diff = isLong ? t.exitPrice - t.entryPrice : t.entryPrice - t.exitPrice
-          netPnl = diff * t.quantity
+          netPnl = (diff * (t.quantity || 1)) - (t.fees || 0)
         } else {
           netPnl = 0
         }

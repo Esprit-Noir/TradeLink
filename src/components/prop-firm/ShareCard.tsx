@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
 
 type CardData = {
+  challengeId: string
   firmName: string
   programName: string
   logoUrl: string | null
@@ -24,6 +25,8 @@ type CardData = {
 
 export function ShareCard({ data }: { data: CardData }) {
   const [open, setOpen] = useState(false)
+  const [loadingLink, setLoadingLink] = useState(false)
+  const [publicUrl, setPublicUrl] = useState<string | null>(null)
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
@@ -157,6 +160,32 @@ export function ShareCard({ data }: { data: CardData }) {
     toast.success("Progress card downloaded (SVG)")
   }
 
+  const handleGetLink = async () => {
+    if (publicUrl) {
+      navigator.clipboard.writeText(window.location.origin + publicUrl)
+      toast.success("Link copied to clipboard!")
+      return
+    }
+
+    setLoadingLink(true)
+    try {
+      const res = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entityType: "challenge", entityId: data.challengeId })
+      })
+      if (!res.ok) throw new Error("Failed to generate link")
+      const json = await res.json()
+      setPublicUrl(json.url)
+      navigator.clipboard.writeText(window.location.origin + json.url)
+      toast.success("Public link copied to clipboard!")
+    } catch {
+      toast.error("Failed to generate share link")
+    } finally {
+      setLoadingLink(false)
+    }
+  }
+
   return (
     <>
       <button className="btn btn-outline" onClick={() => setOpen(true)} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
@@ -169,7 +198,7 @@ export function ShareCard({ data }: { data: CardData }) {
           display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem",
         }} onClick={() => setOpen(false)}>
           <div
-            className="card"
+            className="chart-card"
             style={{ padding: "1.5rem", maxWidth: 680, width: "100%" }}
             onClick={e => e.stopPropagation()}
           >
@@ -183,13 +212,28 @@ export function ShareCard({ data }: { data: CardData }) {
               <img src={preview} alt="Progress card preview" style={{ width: "100%", borderRadius: "12px", marginBottom: "1rem" }} />
             )}
 
-            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
-              <button className="btn btn-outline" onClick={downloadSvg} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
-                Download SVG
+            {publicUrl && (
+              <div style={{ marginBottom: "1rem", padding: "0.75rem", background: "rgba(0,199,88,0.1)", border: "1px solid rgba(0,199,88,0.2)", borderRadius: "8px", color: "var(--color-profit)", fontSize: "0.85rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{window.location.origin + publicUrl}</span>
+                <button onClick={() => {
+                  navigator.clipboard.writeText(window.location.origin + publicUrl)
+                  toast.success("Copied!")
+                }} style={{ background: "none", border: "none", color: "inherit", cursor: "pointer", fontWeight: "bold" }}>Copy</button>
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: "0.5rem", justifyContent: "space-between" }}>
+              <button className="btn btn-primary" onClick={handleGetLink} disabled={loadingLink} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
+                {loadingLink ? "Generating..." : publicUrl ? "Copy Public Link" : "Get Public Link"}
               </button>
-              <button className="btn btn-primary" onClick={downloadPng} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
-                Download PNG
-              </button>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button className="btn btn-outline" onClick={downloadSvg} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem" }}>
+                  Download SVG
+                </button>
+                <button className="btn btn-outline" onClick={downloadPng} style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", background: "rgba(255,255,255,0.05)" }}>
+                  Download PNG
+                </button>
+              </div>
             </div>
           </div>
         </div>

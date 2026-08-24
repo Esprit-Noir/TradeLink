@@ -25,7 +25,7 @@ export function ChallengeStatusWidget() {
   if (!stats?.challengeStatus) return null
 
   return (
-    <div style={{
+    <div className="challenge-status-widget" style={{
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",

@@ -7,8 +7,9 @@ import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { TradesFilter } from "@/components/trades/TradesFilter"
 import { TradesTable } from "@/components/trades/TradesTable"
 import { TradeDetailsDrawer } from "@/components/trades/TradeDetailsDrawer"
-import { TradesEquityMini } from "@/components/trades/TradesEquityMini"
+
 import { cookies } from "next/headers"
+import { getTranslations } from "next-intl/server"
 
 export const metadata = {
   title: "All Trades",
@@ -29,12 +30,13 @@ const SORTABLE: Record<string, "asc" | "desc"> = {
 export default async function TradesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; status?: string; tradeId?: string; sort?: string; dir?: string; accountId?: string }>
+  searchParams: Promise<{ page?: string; symbol?: string; side?: string; result?: string; date?: string; status?: string; tradeId?: string; sort?: string; dir?: string; accountId?: string; instrument?: string; setup?: string; session?: string }>
 }) {
   const session = await auth()
   if (!session?.user?.id) {
     redirect("/login")
   }
+  const t = await getTranslations("TradesPage")
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } })
 
@@ -64,6 +66,15 @@ export default async function TradesPage({
   }
   if (searchParamsObj?.status) {
     whereClause.status = searchParamsObj.status
+  }
+  if (searchParamsObj?.instrument) {
+    whereClause.instrumentType = searchParamsObj.instrument
+  }
+  if (searchParamsObj?.session) {
+    whereClause.session = searchParamsObj.session
+  }
+  if (searchParamsObj?.setup) {
+    whereClause.setupTags = { has: searchParamsObj.setup }
   }
 
   // Fetch all user accounts for the filter dropdown
@@ -148,8 +159,8 @@ export default async function TradesPage({
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">All Trades</h1>
-          <p className="page-subtitle">Detailed view of all your trading history.</p>
+          <h1 className="page-title">{t("title")}</h1>
+          <p className="page-subtitle">{t("subtitle")}</p>
         </div>
         <div className="actions">
           <AddTradeModal />
@@ -161,35 +172,33 @@ export default async function TradesPage({
       </Suspense>
 
       {/* Summary Bar */}
-      <div className="flex gap-3 mb-4 flex-wrap">
-        <div className="card py-3 px-5 flex-1 min-w-[120px]">
-          <div className="text-[0.65rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider">Trades</div>
-          <div className="text-xl font-bold text-[var(--color-gray-100)]">{totals.count}</div>
-          <div className="text-[0.7rem] text-[var(--color-gray-500)]">{totals.wins}W / {totals.losses}L</div>
+      <div className="flex gap-4 mb-6 flex-wrap">
+        <div className="card-hover py-5 px-6 flex-1 min-w-[140px] flex flex-col justify-center rounded-xl bg-[var(--color-gray-900)] border border-[var(--color-gray-800)]">
+          <div className="text-[0.7rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider mb-2">{t("tradesCount")}</div>
+          <div className="text-3xl font-extrabold text-[var(--color-gray-100)] tabular-nums tracking-tight">{totals.count}</div>
+          <div className="text-[0.75rem] text-[var(--color-gray-500)] font-semibold mt-1">{totals.wins}W / {totals.losses}L</div>
         </div>
-        <div className="card py-3 px-5 flex-1 min-w-[120px]">
-          <div className="text-[0.65rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider">Win Rate</div>
-          <div className={`text-xl font-bold ${totals.count > 0 && (totals.wins / totals.count) >= 0.5 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
+        <div className="card-hover py-5 px-6 flex-1 min-w-[140px] flex flex-col justify-center rounded-xl bg-[var(--color-gray-900)] border border-[var(--color-gray-800)]">
+          <div className="text-[0.7rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider mb-2">{t("winRate")}</div>
+          <div className={`text-3xl font-extrabold tabular-nums tracking-tight ${totals.count > 0 && (totals.wins / totals.count) >= 0.5 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
             {totals.count > 0 ? `${((totals.wins / totals.count) * 100).toFixed(1)}%` : "—"}
           </div>
         </div>
-        <div className="card py-3 px-5 flex-1 min-w-[120px]">
-          <div className="text-[0.65rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider">Net P&L</div>
-          <div className={`text-xl font-bold ${totals.netPnl >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
+        <div className="card-hover py-5 px-6 flex-1 min-w-[140px] flex flex-col justify-center rounded-xl bg-[var(--color-gray-900)] border border-[var(--color-gray-800)]">
+          <div className="text-[0.7rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider mb-2">{t("netPnl")}</div>
+          <div className={`text-3xl font-extrabold tabular-nums tracking-tight ${totals.netPnl >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
             {formatCurrency(totals.netPnl, baseCurrency ?? "USD", true, 2)}
           </div>
         </div>
-        <div className="card py-3 px-5 flex-1 min-w-[120px]">
-          <div className="text-[0.65rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider">Avg / Trade</div>
-          <div className={`text-xl font-bold ${totals.count > 0 && (totals.netPnl / totals.count) >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
+        <div className="card-hover py-5 px-6 flex-1 min-w-[140px] flex flex-col justify-center rounded-xl bg-[var(--color-gray-900)] border border-[var(--color-gray-800)]">
+          <div className="text-[0.7rem] uppercase font-bold text-[var(--color-gray-500)] tracking-wider mb-2">{t("avgTrade")}</div>
+          <div className={`text-3xl font-extrabold tabular-nums tracking-tight ${totals.count > 0 && (totals.netPnl / totals.count) >= 0 ? "text-[var(--color-profit)]" : "text-[var(--color-loss)]"}`}>
             {totals.count > 0 ? formatCurrency(totals.netPnl / totals.count, baseCurrency ?? "USD", true, 2) : "—"}
           </div>
         </div>
       </div>
 
-      <Suspense fallback={<div className="skeleton h-20 mb-4" />}>
-        <TradesEquityMini />
-      </Suspense>
+
 
       <Suspense fallback={<div className="skeleton h-[400px] mb-6" />}>
         <TradesTable

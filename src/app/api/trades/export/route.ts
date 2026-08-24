@@ -61,6 +61,8 @@ export async function GET(request: Request) {
     if (sort && sort in HEADERS) orderBy[sort] = "asc"
     else orderBy.entryAt = "desc"
 
+    const format = url.searchParams.get("format")
+
     const trades = await prisma.trade.findMany({
       where: whereClause,
       orderBy,
@@ -71,6 +73,10 @@ export async function GET(request: Request) {
         emotionTags: true, status: true,
       },
     })
+
+    if (format === "json") {
+      return NextResponse.json({ trades })
+    }
 
     const rows = trades.map((t) => [
       t.entryAt.toISOString(),

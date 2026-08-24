@@ -11,6 +11,7 @@ export interface Subscription {
   renewalDate: Date | null
   user: { id: string; email: string; name: string | null }
   plan: { id: string; name: string; price: number }
+  cryptoTxId: string | null
 }
 
 export interface Plan {
@@ -23,6 +24,23 @@ export function SubscriptionsTable({ initialSubscriptions, plans }: { initialSub
   const [subscriptions, setSubscriptions] = useState(initialSubscriptions)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [selectedPlanId, setSelectedPlanId] = useState("")
+  const [isApproving, setIsApproving] = useState<string | null>(null)
+
+  const handleApprove = async (subscriptionId: string) => {
+    setIsApproving(subscriptionId)
+    try {
+      const res = await fetch("/api/admin/subscriptions", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscriptionId, status: "ACTIVE" }),
+      })
+      if (res.ok) {
+        window.location.reload()
+      }
+    } catch {
+      setIsApproving(null)
+    }
+  }
 
   const handleAssignPlan = async (userId: string) => {
     if (!selectedPlanId) return
@@ -102,6 +120,31 @@ export function SubscriptionsTable({ initialSubscriptions, plans }: { initialSub
       key: "renewalDate",
       label: "Renewal",
       render: (sub) => sub.renewalDate ? new Date(sub.renewalDate).toLocaleDateString() : "—",
+    },
+    {
+      key: "crypto",
+      label: "Crypto Payment",
+      render: (sub) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 150 }}>
+          {sub.cryptoTxId ? (
+            <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", wordBreak: "break-all" }}>
+              <span style={{ fontWeight: 600, color: "var(--color-gray-300)" }}>TxID:</span> {sub.cryptoTxId}
+            </div>
+          ) : (
+            <span style={{ fontSize: "0.75rem", color: "var(--color-gray-500)" }}>No TxID</span>
+          )}
+          {sub.status === "PENDING" && (
+            <button
+              onClick={() => handleApprove(sub.id)}
+              disabled={isApproving === sub.id}
+              className="btn btn-primary"
+              style={{ fontSize: "0.7rem", padding: "0.3rem 0.5rem", width: "fit-content" }}
+            >
+              {isApproving === sub.id ? "Approving..." : "Approve Payment"}
+            </button>
+          )}
+        </div>
+      ),
     },
   ]
 

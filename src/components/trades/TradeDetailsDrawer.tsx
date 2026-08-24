@@ -4,7 +4,9 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { formatCurrency } from "@/lib/formatters"
-import { X, UploadCloud } from "lucide-react"
+import { X, UploadCloud, Share2, Download } from "lucide-react"
+import { toPng } from "html-to-image"
+import { TradeShareCard } from "./TradeShareCard"
 
 type Trade = {
   id: string
@@ -38,6 +40,9 @@ export function TradeDetailsDrawer() {
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+  const shareCardRef = useRef<HTMLDivElement>(null)
 
   // Edit Mode States
   const [editMode, setEditMode] = useState(false)
@@ -175,6 +180,30 @@ export function TradeDetailsDrawer() {
     }
   }
 
+  const handleExportImage = async () => {
+    if (!shareCardRef.current || !trade) return
+    setIsGeneratingImage(true)
+    try {
+      const dataUrl = await toPng(shareCardRef.current, {
+        quality: 1,
+        pixelRatio: 2,
+        cacheBust: true,
+      })
+      
+      const link = document.createElement("a")
+      link.download = `TradeLink-${trade.symbol}-${new Date(trade.entryAt).toISOString().split('T')[0]}.png`
+      link.href = dataUrl
+      link.click()
+      
+      toast.success("Trade image exported successfully!")
+    } catch (err) {
+      console.error(err)
+      toast.error("Failed to generate image")
+    } finally {
+      setIsGeneratingImage(false)
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -191,10 +220,25 @@ export function TradeDetailsDrawer() {
       >
         <div className="p-6 border-b border-[var(--color-gray-800)] flex justify-between items-center shrink-0">
           <h2 className="text-xl font-semibold">Trade Details</h2>
-          <button onClick={closeDrawer} className="bg-transparent border-none text-[var(--color-gray-400)] cursor-pointer hover:text-white transition-colors">
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-2">
+            {trade && (
+              <button 
+                onClick={handleExportImage}
+                disabled={isGeneratingImage}
+                className="btn py-1 px-3 h-auto bg-transparent border border-[var(--color-gray-700)] text-sm flex items-center gap-2 hover:bg-[var(--color-gray-800)]"
+                title="Export as Image"
+              >
+                {isGeneratingImage ? <Download size={16} className="animate-pulse" /> : <Share2 size={16} />}
+                Share
+              </button>
+            )}
+            <button onClick={closeDrawer} className="bg-transparent border-none text-[var(--color-gray-400)] cursor-pointer hover:text-white transition-colors ml-2">
+              <X size={24} />
+            </button>
+          </div>
         </div>
+
+        {trade && <TradeShareCard trade={trade} ref={shareCardRef} />}
 
         <div className="p-6 pb-16 overflow-y-auto flex-1 flex flex-col gap-8">
           {loading || !trade ? (

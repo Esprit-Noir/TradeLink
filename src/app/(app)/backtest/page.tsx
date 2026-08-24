@@ -15,6 +15,12 @@ export default async function BacktestPage({
   const session = await auth()
   if (!session?.user?.id) redirect("/login")
 
+  const { hasFeatureAccess } = await import("@/lib/subscriptions")
+  const canAccessBacktest = await hasFeatureAccess(session.user.id, "backtestAccess")
+  if (!canAccessBacktest) {
+    redirect("/billing?feature=replay")
+  }
+
   const { symbol } = await searchParams
   const initialSymbol = sanitizeSymbol(symbol ?? "") ?? "XAU/USD"
 

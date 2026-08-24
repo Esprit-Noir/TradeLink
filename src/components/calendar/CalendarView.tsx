@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, X, CalendarDays, List, TrendingUp, Target, Activity, Calendar as CalendarIcon, Award } from "lucide-react"
 import { useTheme } from "@/components/ThemeProvider"
 import { formatCurrency } from "@/lib/formatters"
+import { motion } from "framer-motion"
 
 type DayDetail = {
   date: string
@@ -67,25 +68,25 @@ export function CalendarView({
 
   const colors = isDark
     ? {
-        profitBg: "rgba(0, 199, 88, 0.15)",
-        profitBorder: "rgba(0, 199, 88, 0.3)",
-        profitText: "#00c758",
-        lossBg: "#7f1d1d",
-        lossBorder: "#b91c1c",
-        lossText: "#f87171",
-        cellBg: "#08080a",
-        cellBorder: "#101014",
-        cellText: "#85858f",
-        zeroText: "#4c4c58",
+        profitBg: "color-mix(in srgb, var(--color-profit) 10%, transparent)",
+        profitBorder: "color-mix(in srgb, var(--color-profit) 25%, transparent)",
+        profitText: "var(--color-profit)",
+        lossBg: "color-mix(in srgb, var(--color-loss) 10%, transparent)",
+        lossBorder: "color-mix(in srgb, var(--color-loss) 25%, transparent)",
+        lossText: "var(--color-loss)",
+        cellBg: "color-mix(in srgb, var(--color-gray-900) 40%, transparent)",
+        cellBorder: "var(--color-gray-800)",
+        cellText: "var(--color-gray-400)",
+        zeroText: "var(--color-gray-500)",
       }
     : {
-        profitBg: "rgba(0, 199, 88, 0.15)",
-        profitBorder: "rgba(0, 199, 88, 0.4)",
-        profitText: "#00c758",
-        lossBg: "#fee2e2",
-        lossBorder: "#f87171",
-        lossText: "#991b1b",
-        cellBg: "#ffffff",
+        profitBg: "color-mix(in srgb, var(--color-profit) 15%, transparent)",
+        profitBorder: "color-mix(in srgb, var(--color-profit) 35%, transparent)",
+        profitText: "var(--color-profit)",
+        lossBg: "color-mix(in srgb, var(--color-loss) 15%, transparent)",
+        lossBorder: "color-mix(in srgb, var(--color-loss) 35%, transparent)",
+        lossText: "var(--color-loss)",
+        cellBg: "rgba(255, 255, 255, 0.5)",
         cellBorder: "#e4e4e7",
         cellText: "#71717a",
         zeroText: "#a1a1aa",
@@ -267,8 +268,12 @@ export function CalendarView({
     }
 
     days.push(
-      <div
+      <motion.div
         key={i}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2, delay: i * 0.015 }}
+        className="card-hover relative"
         onClick={() => openDay(dateStr)}
         title={pnl !== undefined ? `PnL: ${formatCurrency(Number(pnl), "USD", true)} | Trades: ${dailyTradeCount[dateStr] ?? 0}` : ""}
         style={{
@@ -326,33 +331,38 @@ export function CalendarView({
             {isToday ? "Today" : "—"}
           </div>
         )}
-      </div>
+        {pnl !== undefined && dailyTradeCount[dateStr] !== undefined && (
+          <div style={{ position: "absolute", bottom: "0.25rem", right: "0.4rem", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-gray-500)", opacity: 0.7 }}>
+            {dailyTradeCount[dateStr]}
+          </div>
+        )}
+      </motion.div>
     )
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {/* Month KPIs */}
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%" }}>
-        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", width: "100%" }}>
+        <div className="kpi-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <Stat label="Month P&L" value={formatCurrency(monthSummary.total, "USD", true)} color={monthSummary.total >= 0 ? "var(--color-profit)" : "var(--color-loss)"} size="large" icon={<Activity size={16} />} />
         </div>
-        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="kpi-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <Stat label="Win / Loss Days" value={`${monthSummary.green} / ${monthSummary.red}`} color="var(--color-gray-100)" icon={<Target size={16} />} />
         </div>
-        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="kpi-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <Stat label="Avg / day" value={formatCurrency(monthSummary.avg, "USD", true)} color={monthSummary.avg >= 0 ? "var(--color-profit)" : "var(--color-loss)"} icon={<TrendingUp size={16} />} />
         </div>
-        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="kpi-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <Stat label="Best day" value={monthSummary.best ? formatCurrency(monthSummary.best.pnl, "USD", true) : "—"} color="var(--color-profit)" icon={<Award size={16} />} />
         </div>
-        <div className="card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="kpi-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <Stat label="Worst day" value={monthSummary.worst ? formatCurrency(monthSummary.worst.pnl, "USD", true) : "—"} color="var(--color-loss)" icon={<CalendarIcon size={16} />} />
         </div>
       </div>
 
       {/* Calendar Block */}
-      <div className="card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -417,7 +427,7 @@ export function CalendarView({
         </>
       ) : (
         /* Year view */
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", flexWrap: "wrap", gap: "0.5rem" }}>
             <div style={{ display: "flex", alignItems: "baseline", gap: "0.75rem" }}>
               <span style={{ fontSize: "1.05rem", fontWeight: 700, color: isDark ? "#ededf0" : "#18181b" }}>{year}</span>
@@ -511,7 +521,7 @@ export function CalendarView({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="card"
+            className="chart-card"
             style={{ maxWidth: 520, width: "100%", maxHeight: "80vh", overflowY: "auto", padding: "1.5rem" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>

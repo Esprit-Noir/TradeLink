@@ -115,13 +115,13 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {challenges.length === 0 && (
-        <div className="card" style={{ padding: "2rem", textAlign: "center", color: "var(--color-gray-500)" }}>
+        <div className="chart-card" style={{ padding: "2rem", textAlign: "center", color: "var(--color-gray-500)" }}>
           No challenges yet. <a href="/challenges" style={{ color: "var(--color-brand-500)" }}>Create one</a>.
         </div>
       )}
 
       {challenges.length > 0 && (
-        <div className="card" style={{ padding: "1rem" }}>
+        <div className="chart-card" style={{ padding: "1rem" }}>
           <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.75rem" }}>
             Select up to 4 challenges ({selected.length}/4)
           </div>
@@ -149,14 +149,14 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
       )}
 
       {selectedChallenges.length === 0 && challenges.length > 0 && (
-        <div className="card" style={{ padding: "2rem", textAlign: "center", color: "var(--color-gray-500)" }}>
+        <div className="chart-card" style={{ padding: "2rem", textAlign: "center", color: "var(--color-gray-500)" }}>
           Select at least one challenge above to compare.
         </div>
       )}
 
       {/* Normalized comparison table */}
       {selectedChallenges.length >= 2 && (
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem" }}>
             <BarChart2 size={18} style={{ color: "var(--color-brand-500)" }} />
             <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Normalized Comparison</span>
@@ -215,7 +215,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
             {selectedChallenges.map(c => (
               <div
                 key={c.id}
-                className="card"
+                className="chart-card"
                 style={{ padding: "1rem", cursor: "pointer", display: "flex", flexDirection: "column", gap: "0.75rem" }}
                 onClick={() => router.push(`/challenges/${c.id}`)}
               >

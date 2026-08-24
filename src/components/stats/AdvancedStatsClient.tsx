@@ -53,17 +53,24 @@ interface Drawdown {
   maxDrawdownRecovery: string
 }
 
+interface Durations {
+  avgWinDurationMinutes: number | null
+  avgLossDurationMinutes: number | null
+}
+
 interface AdvancedStatsData {
   empty?: boolean
   symbols?: BreakdownItem[]
   setups?: BreakdownItem[]
   kpis: Kpis
+  durations: Durations
   streaks: Streaks
   drawdown: Drawdown
   drawdownEpisodes: DrawdownEpisode[]
   equityCurve: EquityPoint[]
   rrDistribution: Record<string, number>
-  dowPerformance: number[]
+  dowPerformance: { pnl: number, count: number, wins: number }[]
+  sessionPerformance: Record<string, { pnl: number, count: number, wins: number }>
   hourPerformance: number[]
   monthlyPerformance: { month: string; pnl: number }[]
   topSymbols: BreakdownItem[]
@@ -101,6 +108,42 @@ const tooltipStyle = {
 }
 
 const pnlFormatter: Formatter = (val) => [formatCurrency(Number(val), "USD", true, 2), "P&L"]
+
+const CustomDowTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div style={tooltipStyle} className="p-2">
+        <div style={{ color: "var(--color-gray-400)", marginBottom: "4px" }}>{label}</div>
+        <div style={{ color: data.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 700 }}>
+          {formatCurrency(data.pnl, "USD", true, 2)}
+        </div>
+        <div style={{ color: "var(--color-gray-300)", fontSize: "0.7rem", marginTop: "2px" }}>
+          {data.count} trades · {data.winRate.toFixed(1)}% WR
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
+const CustomDurationTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const val = payload[0].value;
+    const hours = Math.floor(val / 60);
+    const mins = Math.round(val % 60);
+    const text = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    return (
+      <div style={tooltipStyle} className="p-2">
+        <div style={{ color: "var(--color-gray-400)", marginBottom: "4px" }}>{label}</div>
+        <div style={{ color: payload[0].payload.fill, fontWeight: 700 }}>
+          {text}
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
 
 export function AdvancedStatsClient() {
   const [data, setData] = useState<AdvancedStatsData | null>(null)
@@ -154,6 +197,8 @@ export function AdvancedStatsClient() {
   const equityCurve = data?.equityCurve as EquityPoint[]
   const rrDistribution = data?.rrDistribution ?? {}
   const dowPerformance = data?.dowPerformance ?? []
+  const sessionPerformance = data?.sessionPerformance
+  const durations = data?.durations
   const hourPerformance = data?.hourPerformance ?? []
   const monthlyPerformance = data?.monthlyPerformance ?? []
   const topSymbols = data?.topSymbols as BreakdownItem[]
@@ -162,14 +207,33 @@ export function AdvancedStatsClient() {
   const setups = data?.setups ?? []
 
   const rrData = useMemo(() => Object.entries(rrDistribution).map(([name, value]) => ({ name, value })), [rrDistribution])
-  const dowData = useMemo(() => dowPerformance.map((pnl: number, index: number) => ({
+  const dowData = useMemo(() => dowPerformance.map((item: any, index: number) => ({
     name: dayNames[index].substring(0, 3),
-    pnl,
-  })).filter((d: { name: string; pnl: number }, i: number) => !(d.pnl === 0 && (i === 0 || i === 6))), [dowPerformance])
+    pnl: item.pnl,
+    winRate: item.count > 0 ? (item.wins / item.count) * 100 : 0,
+    count: item.count
+  })).filter((d: any, i: number) => !(d.count === 0 && (i === 0 || i === 6))), [dowPerformance])
   const hourData = useMemo(() => hourPerformance.map((pnl: number, h: number) => ({ hour: `${String(h).padStart(2, "0")}H`, pnl })), [hourPerformance])
   const monthData = useMemo(() => monthlyPerformance.map((m: { month: string; pnl: number }) => ({ name: m.month.slice(5), pnl: m.pnl })), [monthlyPerformance])
   const worstSymbols = useMemo(() => [...symbols].reverse().slice(0, 3), [symbols])
   const worstSetups = useMemo(() => [...setups].reverse().slice(0, 3), [setups])
+
+  const sessionData = useMemo(() => {
+    if (!sessionPerformance) return []
+    return [
+      { name: "Asian", ...sessionPerformance.asian, winRate: sessionPerformance.asian.count > 0 ? (sessionPerformance.asian.wins / sessionPerformance.asian.count) * 100 : 0 },
+      { name: "London", ...sessionPerformance.london, winRate: sessionPerformance.london.count > 0 ? (sessionPerformance.london.wins / sessionPerformance.london.count) * 100 : 0 },
+      { name: "New York", ...sessionPerformance.newYork, winRate: sessionPerformance.newYork.count > 0 ? (sessionPerformance.newYork.wins / sessionPerformance.newYork.count) * 100 : 0 },
+    ].filter(s => s.count > 0)
+  }, [sessionPerformance])
+
+  const durationData = useMemo(() => {
+    if (!durations) return []
+    return [
+      { name: "Avg Win", minutes: durations.avgWinDurationMinutes || 0, fill: "var(--color-profit)" },
+      { name: "Avg Loss", minutes: durations.avgLossDurationMinutes || 0, fill: "var(--color-loss)" },
+    ]
+  }, [durations])
 
   const exportBreakdown = useCallback(() => {
     const rows = ["type,name,count,winRate%,netPnl"]
@@ -304,11 +368,51 @@ export function AdvancedStatsClient() {
               <BarChart data={dowData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} dy={8} />
                 <YAxis hide />
-                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} formatter={pnlFormatter} contentStyle={tooltipStyle} />
+                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} content={<CustomDowTooltip />} />
                 <ReferenceLine y={0} stroke="var(--color-gray-800)" />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-                  {dowData.map((entry: { name: string; pnl: number }, index: number) => (
+                  {dowData.map((entry: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Sessions & Duration */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.25rem" }}>
+          <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Session Performance (UTC)</div>
+          <div style={{ height: 220 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={sessionData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} dy={8} />
+                <YAxis hide />
+                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} content={<CustomDowTooltip />} />
+                <ReferenceLine y={0} stroke="var(--color-gray-800)" />
+                <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+                  {sessionData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="chart-card" style={{ padding: "1.25rem" }}>
+          <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Average Trade Duration</div>
+          <div style={{ height: 220 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={durationData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} width={80} />
+                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} content={<CustomDurationTooltip />} />
+                <Bar dataKey="minutes" radius={[0, 4, 4, 0]} barSize={40}>
+                  {durationData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Bar>
               </BarChart>
@@ -385,16 +489,14 @@ export function AdvancedStatsClient() {
 
 function KpiStat({ icon, label, value, color, sub }: { icon: React.ReactNode; label: string; value: string; color: string; sub?: string }) {
   return (
-    <div style={{
-      background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
-      borderRadius: "var(--radius-card)", padding: "1rem",
-      display: "flex", flexDirection: "column", gap: "0.25rem",
+    <div className="kpi-card" style={{
+      display: "flex", flexDirection: "column", gap: "0.4rem",
     }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "var(--color-gray-500)", fontSize: "0.7rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-500)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         {icon} {label}
       </div>
-      <div style={{ fontSize: "1.3rem", fontWeight: 700, fontFamily: "var(--font-mono)", color }}>{value}</div>
-      {sub && <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>{sub}</div>}
+      <div style={{ fontSize: "1.75rem", fontWeight: 800, fontFamily: "var(--font-mono)", color, letterSpacing: "-0.02em" }}>{value}</div>
+      {sub && <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>{sub}</div>}
     </div>
   )
 }
@@ -402,11 +504,9 @@ function KpiStat({ icon, label, value, color, sub }: { icon: React.ReactNode; la
 function StatsFilters({ available, filters, apply }: { available: { symbols: string[]; setups: string[] }; filters: FilterState; apply: (p: FilterPatch) => void }) {
   const hasFilters = filters.period !== "all" || filters.symbol || filters.setup || filters.side
   return (
-    <div style={{
+    <div className="chart-card" style={{
       display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center",
       padding: "0.75rem 1rem",
-      background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
-      borderRadius: "var(--radius-card)",
     }}>
       <div style={{ display: "flex", background: "var(--color-gray-950)", borderRadius: "8px", padding: "2px", gap: "2px" }}>
         {PERIODS.map(p => (
@@ -452,9 +552,9 @@ function StatsFilters({ available, filters, apply }: { available: { symbols: str
 
 function DrawdownStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div style={{ padding: "0.5rem 0.6rem", background: "var(--color-gray-950)", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
+    <div className="kpi-card" style={{ padding: "0.75rem 1rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
       <div style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.15rem" }}>{label}</div>
-      <div style={{ fontSize: "0.85rem", fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-gray-100)" }}>{value}</div>
+      <div style={{ fontSize: "1.1rem", fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-gray-100)" }}>{value}</div>
       {sub && <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)" }}>{sub}</div>}
     </div>
   )

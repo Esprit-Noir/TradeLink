@@ -233,7 +233,7 @@ export function WorldSessionsMap() {
           const progress = getSessionProgress(session, now)
           
           return (
-            <div key={session.id} className="card" style={{
+            <div key={session.id} className="chart-card" style={{
               padding: "0.85rem",
               borderColor: open ? `${session.color}40` : (isDark ? "var(--color-gray-800)" : "var(--color-gray-200)"),
               background: open ? (isDark ? "var(--color-gray-900)" : "var(--color-brand-50)") : "transparent",

@@ -60,9 +60,20 @@ export async function DELETE(
       return NextResponse.json({ error: "Trade not found or unauthorized" }, { status: 404 })
     }
 
-    await prisma.trade.delete({
-      where: { id: tradeId }
+    const deletedTrade = await prisma.trade.delete({
+      where: { id: tradeId },
+      include: { account: true }
     })
+
+    const propChallenge = await prisma.propChallenge.findUnique({
+      where: { accountId: deletedTrade.accountId }
+    })
+    
+    if (propChallenge) {
+      import("@/lib/prop-firm.service").then(({ evaluateChallenge }) => {
+        evaluateChallenge(propChallenge.id).catch(console.error)
+      }).catch(console.error)
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {

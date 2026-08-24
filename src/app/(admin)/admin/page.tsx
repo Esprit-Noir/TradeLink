@@ -18,6 +18,9 @@ export default async function AdminDashboardPage() {
     usersByRole,
     recentSignups,
     tradesByDay,
+    activeSubscriptions,
+    pendingSubscriptions,
+    activeSubscriptionsList,
   ] = await Promise.all([
     // Total users (excluding soft deleted)
     prisma.user.count({ where: { deletedAt: null } }),
@@ -69,7 +72,22 @@ export default async function AdminDashboardPage() {
       },
       orderBy: { entryAt: "asc" },
     }),
+
+    // Active subscriptions
+    prisma.subscription.count({ where: { status: "ACTIVE" } }),
+
+    // Pending subscriptions (crypto)
+    prisma.subscription.count({ where: { status: "PENDING" } }),
+    
+    // Revenue from active subscriptions
+    prisma.subscription.findMany({
+      where: { status: "ACTIVE" },
+      include: { plan: true }
+    })
   ])
+
+  // Calculate MRR (Monthly Recurring Revenue) from active subscriptions
+  const totalRevenue = activeSubscriptionsList.reduce((acc, sub) => acc + (sub.plan?.price?.toNumber() || 0), 0)
 
   // Process signups by day
   const signupsByDay = recentSignups.map(item => ({
@@ -101,6 +119,9 @@ export default async function AdminDashboardPage() {
     totalBacktestSessions,
     totalTickets,
     openTickets,
+    activeSubscriptions,
+    pendingSubscriptions,
+    mrr: totalRevenue,
   }
 
   const charts = {

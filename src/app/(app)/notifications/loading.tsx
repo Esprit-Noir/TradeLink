@@ -8,7 +8,7 @@ export default function NotificationsLoading() {
         </div>
       </div>
 
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 0", borderBottom: i < 5 ? "1px solid var(--color-gray-800)" : "none" }}>
             <div className="skeleton" style={{ height: 32, width: 32, borderRadius: 8, flexShrink: 0 }} />

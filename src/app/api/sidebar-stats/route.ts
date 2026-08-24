@@ -56,14 +56,26 @@ export async function GET() {
       challengeName = challenge.template?.firmName || "Challenge"
     }
 
+    const { getActivePlan } = await import("@/lib/subscriptions")
+    const plan = await getActivePlan(session.user.id)
+    const userRole = (session.user as any).role
+    const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN"
+
+    const baseFeatures = plan?.features as Record<string, boolean> | undefined || {}
+    const features = isAdmin 
+      ? { replayAccess: true, propFirmAccess: true, advancedStats: true, backtestAccess: true } 
+      : baseFeatures
+
     return NextResponse.json({
       todayPnl,
       todayTrades,
       challengeStatus,
       challengeName,
-      challengePct: Math.max(0, challengePct)
+      challengePct: Math.max(0, challengePct),
+      features,
+      backtestAccess: isAdmin ? true : !!plan?.backtestAccess
     })
   } catch (error) {
-    return NextResponse.json({ todayPnl: 0, todayTrades: 0, challengeStatus: null, challengeName: null, challengePct: 0 })
+    return NextResponse.json({ todayPnl: 0, todayTrades: 0, challengeStatus: null, challengeName: null, challengePct: 0, features: {}, backtestAccess: false })
   }
 }

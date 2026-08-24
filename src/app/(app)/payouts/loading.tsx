@@ -11,7 +11,7 @@ export default function PayoutsLoading() {
       {/* Stats row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: "1.25rem" }}>
+          <div key={i} className="chart-card" style={{ padding: "1.25rem" }}>
             <div className="skeleton" style={{ height: 11, width: 70, marginBottom: 8 }} />
             <div className="skeleton" style={{ height: 24, width: 100 }} />
           </div>
@@ -19,7 +19,7 @@ export default function PayoutsLoading() {
       </div>
 
       {/* Table */}
-      <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+      <div className="chart-card" style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ padding: "0.75rem 1rem", borderBottom: "1px solid var(--color-gray-800)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 100px", gap: "1rem" }}>
             {["Challenge", "Amount", "Status", "Date", ""].map((h) => (

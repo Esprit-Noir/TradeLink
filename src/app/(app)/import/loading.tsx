@@ -9,14 +9,14 @@ export default function ImportLoading() {
       </div>
 
       {/* Upload area */}
-      <div className="card" style={{ padding: "3rem", textAlign: "center" }}>
+      <div className="chart-card" style={{ padding: "3rem", textAlign: "center" }}>
         <div className="skeleton" style={{ height: 48, width: 48, borderRadius: 12, margin: "0 auto 16px" }} />
         <div className="skeleton" style={{ height: 14, width: 200, margin: "0 auto 8px" }} />
         <div className="skeleton" style={{ height: 11, width: 280, margin: "0 auto" }} />
       </div>
 
       {/* Import history */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div className="skeleton" style={{ height: 14, width: 110, marginBottom: 14 }} />
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < 2 ? "1px solid var(--color-gray-800)" : "none" }}>

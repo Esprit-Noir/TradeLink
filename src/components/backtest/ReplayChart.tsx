@@ -1,7 +1,17 @@
 "use client"
 
-import { useEffect, useRef, forwardRef, useImperativeHandle } from "react"
+import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react"
 import { fmtPrice } from "@/lib/formatters"
+import {
+  DrawingManager,
+  TrendLine,
+  HorizontalLine,
+  ParallelChannel,
+  FibRetracement,
+  Rectangle,
+  TextAnnotation,
+} from "lightweight-charts-drawing"
+import { DrawingToolbar, type DrawingToolType } from "./DrawingToolbar"
 import {
   createChart,
   createSeriesMarkers,
@@ -106,6 +116,34 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
   const rafRef = useRef<number | null>(null)
   const candlesCountRef = useRef<number>(0)
   const candlesRef = useRef<Candle[]>([])
+
+  // Drawing Tools States
+  const [activeDrawingTool, setActiveDrawingTool] = useState<DrawingToolType>("cursor")
+  const activeDrawingToolRef = useRef<DrawingToolType>("cursor")
+  const drawingManagerRef = useRef<DrawingManager | null>(null)
+  const draftPointsRef = useRef<{ time: Time; price: number }[]>([])
+  const drawingDraggingRef = useRef(false)
+
+  const handleClearAllDrawings = () => {
+    drawingManagerRef.current?.clearAll()
+    draftPointsRef.current = []
+  }
+
+  const handleToolChange = (tool: DrawingToolType) => {
+    setActiveDrawingTool(tool)
+    activeDrawingToolRef.current = tool
+    if (tool !== "cursor") {
+      chartRef.current?.applyOptions({ handleScroll: false, handleScale: false })
+      draftPointsRef.current = []
+      drawingManagerRef.current?.setActiveTool(tool as any)
+    } else {
+      chartRef.current?.applyOptions({
+        handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
+        handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
+      })
+      drawingManagerRef.current?.setActiveTool(null as any)
+    }
+  }
 
   // Live refs so callbacks never read stale props
   const activeTradeRef = useRef(selectedTrade)
@@ -273,6 +311,70 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
     volumeSeriesRef.current = volumeSeries
     rsiSeriesRef.current = rsiSeries
     markersRef.current = createSeriesMarkers(candleSeries, [])
+
+    // ─── Drawing Manager ───────────────────────────────────────────────────────
+    const manager = new DrawingManager()
+    manager.attach(chart, candleSeries, container)
+    drawingManagerRef.current = manager
+
+    chart.subscribeClick((param) => {
+      const tool = activeDrawingToolRef.current
+      if (tool === "cursor" || !drawingManagerRef.current) return
+      if (drawingDraggingRef.current) return
+
+      const point = param.point
+      if (!point) return
+
+      let time = param.time as Time
+      if (!time) time = chart.timeScale().coordinateToTime(point.x) as Time
+      if (!time) return
+
+      const price = candleSeries.coordinateToPrice(point.y)
+      if (price === null) return
+
+      const newAnchor = { time, price }
+      const currentDraft = [...draftPointsRef.current, newAnchor]
+
+      let required = 2
+      if (tool === "HorizontalLine" || tool === "TextAnnotation") required = 1
+      if (tool === "ParallelChannel") required = 3
+
+      if (currentDraft.length >= required) {
+        const id = crypto.randomUUID()
+        let drawing = null
+        try {
+          switch (tool) {
+            case "TrendLine":
+              drawing = new TrendLine(id, currentDraft)
+              break
+            case "HorizontalLine":
+              drawing = new HorizontalLine(id, currentDraft)
+              break
+            case "ParallelChannel":
+              drawing = new ParallelChannel(id, currentDraft)
+              break
+            case "FibRetracement":
+              drawing = new FibRetracement(id, currentDraft)
+              break
+            case "Rectangle":
+              drawing = new Rectangle(id, currentDraft)
+              break
+            case "TextAnnotation":
+              drawing = new TextAnnotation(id, currentDraft)
+              break
+          }
+          if (drawing) {
+            drawingManagerRef.current.addDrawing(drawing)
+          }
+        } catch (err: any) {
+          console.error(err)
+        }
+        draftPointsRef.current = []
+        handleToolChange("cursor")
+      } else {
+        draftPointsRef.current = currentDraft
+      }
+    })
 
     const ro = new ResizeObserver((entries) => {
       const rect = entries[0]?.contentRect
@@ -513,6 +615,8 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
     if (!el) return
 
     const onPointerDown = (e: PointerEvent) => {
+      if (activeDrawingToolRef.current !== "cursor") return
+
       const chart = chartRef.current
       const act = activeTradeRef.current
       if (!chart || !act || e.button !== 0) return
@@ -541,6 +645,8 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
     }
 
     const onPointerMove = (e: PointerEvent) => {
+      if (activeDrawingToolRef.current !== "cursor") return
+
       const d = dragRef.current
       const chart = chartRef.current
       const act = activeTradeRef.current
@@ -602,6 +708,12 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
     <div
       ref={containerRef}
       className="replay-chart w-full h-full relative bg-transparent"
-    />
+    >
+      <DrawingToolbar
+        activeTool={activeDrawingTool}
+        onToolChange={handleToolChange}
+        onClearAll={handleClearAllDrawings}
+      />
+    </div>
   )
 })

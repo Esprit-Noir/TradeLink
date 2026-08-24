@@ -5,15 +5,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useTheme } from "@/components/ThemeProvider"
 import { formatCurrency } from "@/lib/formatters"
-
-const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"]
-const DAY_NAMES = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]
+import { useTranslations, useLocale } from "next-intl"
 
 export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Record<string, number>; dailyTradeCount?: Record<string, number> }) {
   const [currentDate, setCurrentDate] = useState(() => new Date())
   const [mounted, setMounted] = useState(false)
   const router = useRouter()
   const { resolvedTheme } = useTheme()
+  const t = useTranslations("MiniCalendar")
+  const locale = useLocale()
   
   useEffect(() => {
     setMounted(true)
@@ -32,6 +32,15 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
   const lastDay = new Date(year, month + 1, 0)
   const daysInMonth = lastDay.getDate()
   const startDow = firstDay.getDay()
+
+  const monthName = new Intl.DateTimeFormat(locale, { month: "long" }).format(firstDay)
+  
+  // Get short weekday names dynamically
+  const dayNames = Array.from({ length: 7 }, (_, i) => {
+    // Jan 1 2023 was a Sunday. So Jan 1 2023 + i days gives the correct weekday order starting from Sunday.
+    const d = new Date(2023, 0, 1 + i)
+    return new Intl.DateTimeFormat(locale, { weekday: "short" }).format(d)
+  })
 
   const todayStr = (() => {
     const d = new Date()
@@ -80,8 +89,8 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
           >
             <ChevronLeft size={14} />
           </button>
-          <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-gray-100)", minWidth: 140, textAlign: "center" }}>
-            {MONTH_NAMES[month]} {year}
+          <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-gray-100)", minWidth: 140, textAlign: "center", textTransform: "capitalize" }}>
+            {monthName} {year}
           </span>
           <button
             onClick={() => setCurrentDate(new Date(year, month + 1, 1))}
@@ -95,24 +104,24 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
         {/* Legend */}
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.65rem", color: "var(--color-gray-500)" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: colors.profitBg, border: `1px solid ${colors.profitBorder}`, display: "inline-block" }} /> Profit
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: colors.profitBg, border: `1px solid ${colors.profitBorder}`, display: "inline-block" }} /> {t("profit")}
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: colors.lossBg, border: `1px solid ${colors.lossBorder}`, display: "inline-block" }} /> Loss
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: colors.lossBg, border: `1px solid ${colors.lossBorder}`, display: "inline-block" }} /> {t("loss")}
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, background: "var(--color-gray-200)", border: "1px solid var(--color-gray-300)", display: "inline-block" }} /> No trades
+            <span style={{ width: 10, height: 10, borderRadius: 2, background: "var(--color-gray-200)", border: "1px solid var(--color-gray-300)", display: "inline-block" }} /> {t("noTrades")}
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ width: 10, height: 10, borderRadius: 2, border: "2px solid var(--color-brand-500)", display: "inline-block" }} /> Today
+            <span style={{ width: 10, height: 10, borderRadius: 2, border: "2px solid var(--color-brand-500)", display: "inline-block" }} /> {t("today")}
           </span>
         </div>
       </div>
 
       {/* Day headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.4rem", marginBottom: "0.4rem" }}>
-        {DAY_NAMES.map((d, i) => (
-          <div key={i} style={{ textAlign: "center", fontSize: "0.7rem", fontWeight: 600, color: "var(--color-gray-500)", padding: "0.4rem 0" }}>
+        {dayNames.map((d, i) => (
+          <div key={i} style={{ textAlign: "center", fontSize: "0.7rem", fontWeight: 600, color: "var(--color-gray-500)", padding: "0.4rem 0", textTransform: "capitalize" }}>
             {d}
           </div>
         ))}
@@ -162,7 +171,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
                     {formatCurrency(cell.pnl, "USD", true, 2)}
                   </span>
                   <span style={{ fontSize: "0.65rem", color: textColor, opacity: 0.7, textAlign: "center" }}>
-                    {cell.trades} {cell.trades > 1 ? "trades" : "trade"}
+                    {t("tradesCount", { count: cell.trades })}
                   </span>
                 </>
               ) : (
@@ -176,13 +185,13 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
       {/* Summary */}
       {tradingDays > 0 && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)", fontSize: "0.7rem" }}>
-          <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{greenDays} green days</span>
-          <span style={{ color: "var(--color-gray-500)" }}>{tradingDays} trading days</span>
+          <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{greenDays} {t("greenDays")}</span>
+          <span style={{ color: "var(--color-gray-500)" }}>{tradingDays} {t("tradingDays")}</span>
           <span style={{ color: monthPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 700, fontSize: "0.8rem" }}>
             {formatCurrency(monthPnl, "USD", true, 2)}
           </span>
-          <span style={{ color: "var(--color-gray-500)" }}>{Math.round((greenDays / Math.max(tradingDays, 1)) * 100)}% win days</span>
-          <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{redDays} red days</span>
+          <span style={{ color: "var(--color-gray-500)" }}>{Math.round((greenDays / Math.max(tradingDays, 1)) * 100)}{t("winDays")}</span>
+          <span style={{ color: "var(--color-loss)", fontWeight: 600 }}>{redDays} {t("redDays")}</span>
         </div>
       )}
     </div>

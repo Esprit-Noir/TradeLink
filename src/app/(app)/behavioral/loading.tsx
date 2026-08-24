@@ -11,7 +11,7 @@ export default function BehavioralLoading() {
       {/* Score cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: "1.25rem" }}>
+          <div key={i} className="chart-card" style={{ padding: "1.25rem" }}>
             <div className="skeleton" style={{ height: 11, width: 70, marginBottom: 10 }} />
             <div className="skeleton" style={{ height: 28, width: 50, marginBottom: 8 }} />
             <div className="skeleton" style={{ height: 8, width: "100%" }} />
@@ -20,7 +20,7 @@ export default function BehavioralLoading() {
       </div>
 
       {/* Chart area */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div className="skeleton" style={{ height: 14, width: 130, marginBottom: 12 }} />
         <div className="skeleton" style={{ height: 260 }} />
       </div>

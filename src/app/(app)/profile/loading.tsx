@@ -9,7 +9,7 @@ export default function ProfileLoading() {
       </div>
 
       {/* Avatar section */}
-      <div className="card" style={{ padding: "1.5rem", display: "flex", alignItems: "center", gap: 16 }}>
+      <div className="chart-card" style={{ padding: "1.5rem", display: "flex", alignItems: "center", gap: 16 }}>
         <div className="skeleton" style={{ height: 64, width: 64, borderRadius: 16 }} />
         <div>
           <div className="skeleton" style={{ height: 14, width: 120, marginBottom: 6 }} />
@@ -18,7 +18,7 @@ export default function ProfileLoading() {
       </div>
 
       {/* Form fields */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} style={{ marginBottom: 16 }}>
             <div className="skeleton" style={{ height: 10, width: 70, marginBottom: 6 }} />

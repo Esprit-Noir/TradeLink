@@ -1,6 +1,7 @@
 "use client"
 
 import { ArrowRight, Shield, Clock, CreditCard, LayoutDashboard } from "lucide-react"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { motion, Variants } from "framer-motion"
 
@@ -22,6 +23,7 @@ const itemVariants: Variants = {
 }
 
 export function MarketingCta({ isLoggedIn }: { isLoggedIn?: boolean }) {
+  const t = useTranslations("Marketing.Cta")
   return (
     <section className="py-32 bg-black border-t border-white/5 relative overflow-hidden">
       {/* Background accents */}
@@ -45,44 +47,44 @@ export function MarketingCta({ isLoggedIn }: { isLoggedIn?: boolean }) {
       >
         <div className="max-w-3xl mx-auto flex flex-col items-center">
           <motion.h2 variants={itemVariants} className="text-5xl md:text-6xl font-bold mb-6 text-white tracking-tight leading-tight">
-            Ready to Transform <br />Your Trading?
+            {t("title1")} <br />{t("title2")}
           </motion.h2>
           <motion.p variants={itemVariants} className="text-xl text-gray-400 mb-12 leading-relaxed">
-            Join 10,000+ traders who use TradeLink to analyze performance,
-            build discipline, and improve their edge. Start free today.
+            Rejoignez plus de 10 000 traders qui utilisent TradeLink pour analyser leurs performances,
+            forger leur discipline et améliorer leur avantage. Démarrez gratuitement dès aujourd'hui.
           </motion.p>
 
           <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-6 mb-12">
             <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
               <Shield size={16} className="text-[var(--color-brand-500)]" />
-              <span>Free Forever Plan</span>
+              <span>{t("f1")}</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
               <CreditCard size={16} className="text-[var(--color-brand-500)]" />
-              <span>No Credit Card</span>
+              <span>{t("f2")}</span>
             </div>
             <div className="flex items-center gap-2 text-sm font-semibold text-gray-300">
               <Clock size={16} className="text-[var(--color-brand-500)]" />
-              <span>2-Minute Setup</span>
+              <span>{t("f3")}</span>
             </div>
           </motion.div>
 
           <motion.div variants={itemVariants}>
             {isLoggedIn ? (
               <Link href="/dashboard" className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[var(--color-brand-500)] hover:bg-[var(--color-brand-400)] text-black font-semibold rounded-lg transition-colors">
-                Go to Dashboard
+                {t("dashboard")}
                 <LayoutDashboard size={18} />
               </Link>
             ) : (
               <Link href="/register" className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[var(--color-brand-500)] hover:bg-[var(--color-brand-400)] text-black font-semibold rounded-lg transition-colors">
-                Start Free — No Card Needed
+                {t("startFree")}
                 <ArrowRight size={18} />
               </Link>
             )}
           </motion.div>
 
           <motion.p variants={itemVariants} className="mt-8 text-sm text-gray-500 font-medium">
-            Join now. Upgrade when you need to. Cancel anytime.
+            {t("disclaimer")}
           </motion.p>
         </div>
       </motion.div>

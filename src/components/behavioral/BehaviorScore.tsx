@@ -91,7 +91,7 @@ export function BehaviorScore() {
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
 
         {/* 1. Score Card */}
-        <div className="card" style={{ flex: "1 1 300px", textAlign: "center", padding: "2.5rem 1.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="chart-card" style={{ flex: "1 1 300px", textAlign: "center", padding: "2.5rem 1.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "2rem" }}>
             Discipline Score
           </div>
@@ -108,7 +108,7 @@ export function BehaviorScore() {
         </div>
 
         {/* 1.5 Psychological Profile */}
-        <div className="card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <div className="chart-card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
           <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "1.5rem", width: "100%", textAlign: "left" }}>
             Psychological Profile
           </div>
@@ -132,7 +132,7 @@ export function BehaviorScore() {
         </div>
 
         {/* 2. Emotion Costs */}
-        <div className="card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column" }}>
+        <div className="chart-card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "1.5rem" }}>
             Cost of Emotions (Tilt)
           </div>
@@ -160,7 +160,7 @@ export function BehaviorScore() {
         </div>
 
         {/* 3. Setup Performance */}
-        <div className="card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column" }}>
+        <div className="chart-card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "1.5rem" }}>
             Setup Performance
           </div>
@@ -194,7 +194,7 @@ export function BehaviorScore() {
       </div>
 
       {/* 4. History Chart */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="card-hover" style={{ padding: "1.75rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
         <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-500)", marginBottom: "1.5rem" }}>
           Score History
         </div>
@@ -245,7 +245,7 @@ export function BehaviorScore() {
 
       {/* 5. Recent violations */}
       {data.recentFlags && data.recentFlags.length > 0 && (
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="card-hover" style={{ padding: "1.75rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
           <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-500)", marginBottom: "1rem" }}>
             Recent Violations
           </div>
@@ -279,7 +279,7 @@ export function BehaviorScore() {
           Violations & Patterns
         </div>
         {data.patterns.length === 0 ? (
-          <div className="card" style={{ textAlign: "center", padding: "3rem", color: "var(--color-gray-500)" }}>
+          <div className="chart-card" style={{ textAlign: "center", padding: "3rem", color: "var(--color-gray-500)" }}>
             <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>✅</div>
             <div style={{ fontWeight: 600, color: "var(--color-gray-300)", fontSize: "1.1rem" }}>No severe patterns detected</div>
             <div style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>Keep trading your plan consistently.</div>
@@ -405,42 +405,45 @@ function ScoreGauge({ score, scoreClass }: { score: number; scoreClass: string }
 // ─── Pattern Card ─────────────────────────────────────────────────────────────
 function PatternCard({ pattern }: { pattern: DetectedPattern }) {
   const severityColors = {
-    low: { bg: "var(--color-gray-900)", border: "var(--color-gray-700)", icon: "⚠️" },
-    medium: { bg: "rgba(245, 158, 11, 0.1)", border: "rgba(245, 158, 11, 0.3)", icon: "🔥" },
-    high: { bg: "rgba(239, 68, 68, 0.1)", border: "rgba(239, 68, 68, 0.3)", icon: "🚨" },
+    low: { bg: "var(--color-gray-900)", border: "var(--color-gray-800)", icon: "⚠️", glow: "none" },
+    medium: { bg: "rgba(245, 158, 11, 0.05)", border: "rgba(245, 158, 11, 0.3)", icon: "🔥", glow: "0 4px 20px rgba(245, 158, 11, 0.05)" },
+    high: { bg: "rgba(239, 68, 68, 0.05)", border: "rgba(239, 68, 68, 0.3)", icon: "🚨", glow: "0 4px 20px rgba(239, 68, 68, 0.05)" },
   }
 
   const style = severityColors[pattern.severity]
 
   return (
-    <div style={{
+    <div className="card-hover" style={{
       background: style.bg,
       border: `1px solid ${style.border}`,
-      borderRadius: "var(--radius-card)",
-      padding: "1.25rem",
+      borderRadius: "12px",
+      padding: "1.5rem",
+      boxShadow: style.glow,
+      display: "flex",
+      flexDirection: "column",
     }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span style={{ fontSize: "1.25rem" }}>{style.icon}</span>
-          <span style={{ fontWeight: 600, color: "var(--color-gray-200)" }}>{pattern.label}</span>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+          <span style={{ fontSize: "1.4rem" }}>{style.icon}</span>
+          <span style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--color-gray-100)", letterSpacing: "-0.01em" }}>{pattern.label}</span>
         </div>
-        <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", padding: "0.25rem 0.5rem", borderRadius: "var(--radius-sm)", background: "rgba(0,0,0,0.2)", color: pattern.severity === 'high' ? "var(--color-loss)" : "var(--color-warning)" }}>
+        <div style={{ fontSize: "0.7rem", fontWeight: 800, textTransform: "uppercase", padding: "0.3rem 0.6rem", borderRadius: "6px", background: "rgba(0,0,0,0.2)", color: pattern.severity === 'high' ? "var(--color-loss)" : "var(--color-warning)", letterSpacing: "0.05em", border: `1px solid ${style.border}` }}>
           {pattern.severity}
         </div>
       </div>
       
-      <p style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", lineHeight: 1.5, marginBottom: "1rem" }}>
+      <p style={{ fontSize: "0.85rem", color: "var(--color-gray-400)", lineHeight: 1.6, marginBottom: "1.25rem", flex: 1 }}>
         {pattern.description}
       </p>
 
-      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--color-gray-800)", paddingTop: "0.75rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--color-gray-800)", paddingTop: "1rem", marginTop: "auto" }}>
         <div>
-          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Affected Trades</div>
-          <div style={{ fontWeight: 600, color: "var(--color-gray-300)" }}>{pattern.count}</div>
+          <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Affected Trades</div>
+          <div style={{ fontWeight: 800, color: "var(--color-gray-200)", fontSize: "1.1rem" }}>{pattern.count}</div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Impact (P&L)</div>
-          <div style={{ fontWeight: 700, color: "var(--color-loss)" }}>
+          <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Impact (P&L)</div>
+          <div style={{ fontWeight: 800, color: "var(--color-loss)", fontSize: "1.1rem" }}>
             {formatCurrency(pattern.impactPnl, "USD", true, 2)}
           </div>
         </div>

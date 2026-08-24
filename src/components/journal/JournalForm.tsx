@@ -71,6 +71,10 @@ export function JournalForm({ date, initialData }: JournalFormProps) {
       })
       if (res.ok) {
         toast.success("Journal saved.")
+        const data = await res.json()
+        if (data.unlocks && data.unlocks.length > 0) {
+          data.unlocks.forEach((code: string) => toast.success(`🏆 Achievement Unlocked: ${code.replace(/_/g, ' ').toUpperCase()}!`))
+        }
         router.refresh()
       } else {
         toast.error("Failed to save journal.")
@@ -86,7 +90,7 @@ export function JournalForm({ date, initialData }: JournalFormProps) {
   const toggleCheck = (key: string) => setChecks(prev => ({ ...prev, [key]: !prev[key] }))
 
   return (
-    <div className="card" style={{ padding: "1.5rem" }}>
+    <div className="chart-card" style={{ padding: "1.5rem" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Daily Journal</h2>
         <button onClick={handleSave} disabled={saving} className="btn btn-primary">

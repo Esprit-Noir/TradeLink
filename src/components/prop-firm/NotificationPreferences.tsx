@@ -78,7 +78,7 @@ export function NotificationPreferences() {
   }
 
   return (
-    <div className="card" style={{ padding: "1.5rem" }}>
+    <div className="chart-card" style={{ padding: "1.5rem" }}>
       <h2 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.25rem" }}>Notification Preferences</h2>
       <p style={{ fontSize: "0.85rem", color: "var(--color-gray-500)", marginBottom: "1.25rem" }}>
         Choose which prop-firm events show up in your notification center.

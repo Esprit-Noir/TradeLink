@@ -78,7 +78,7 @@ export function TicketDetailClient({ ticket }: { ticket: Ticket }) {
       </Link>
 
       {/* Header */}
-      <div className="card" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>
             <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{ticket.subject}</h1>
@@ -109,7 +109,7 @@ export function TicketDetailClient({ ticket }: { ticket: Ticket }) {
       </div>
 
       {/* Messages */}
-      <div className="card" style={{ padding: "1.25rem", marginBottom: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.25rem", marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12, maxHeight: 500, overflowY: "auto" }}>
           {ticket.messages.map(msg => {
             const isAdmin = msg.sender.id !== ticket.user.id
@@ -138,7 +138,7 @@ export function TicketDetailClient({ ticket }: { ticket: Ticket }) {
       </div>
 
       {/* Reply */}
-      <div className="card" style={{ padding: "1.25rem" }}>
+      <div className="chart-card" style={{ padding: "1.25rem" }}>
         <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)", marginBottom: 12 }}>Reply</h3>
         <textarea
           value={reply}

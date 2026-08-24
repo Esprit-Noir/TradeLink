@@ -9,7 +9,7 @@ export function DangerZone() {
   }
 
   return (
-    <div className="card" style={{ padding: "1.5rem", border: "1px solid rgba(239,68,68,0.25)" }}>
+    <div className="chart-card" style={{ padding: "1.5rem", border: "1px solid rgba(239,68,68,0.25)" }}>
       <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-loss)", marginBottom: "0.25rem" }}>
         Danger Zone
       </div>

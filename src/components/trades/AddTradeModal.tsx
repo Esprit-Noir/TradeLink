@@ -81,6 +81,10 @@ export function AddTradeModal() {
         throw new Error(data.error || "Failed to add trade")
       }
 
+      if (data.unlocks && data.unlocks.length > 0) {
+        data.unlocks.forEach((code: string) => toast.success(`🏆 Achievement Unlocked: ${code.replace(/_/g, ' ').toUpperCase()}!`))
+      }
+
       setIsOpen(false)
       router.refresh() // Refresh the Server Component to show the new trade
     } catch (err: any) {

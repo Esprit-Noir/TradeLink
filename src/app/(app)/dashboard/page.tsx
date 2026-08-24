@@ -16,6 +16,8 @@ import { MS_PER_DAY } from "@/lib/constants"
 import { formatCurrency } from "@/lib/formatters"
 import { EquityCurveChart, SetupBarChart, HourHeatmap } from "@/components/dashboard/LazyCharts"
 import { MiniCalendar } from "@/components/dashboard/MiniCalendar"
+import { EconomicCalendarWidget } from "@/components/calendar/EconomicCalendarWidget"
+import { getTranslations } from "next-intl/server"
 
 export const metadata = {
   title: "Dashboard",
@@ -29,6 +31,7 @@ export default async function DashboardPage({
   const searchParamsObj = await searchParams
   const period = searchParamsObj?.period || "all"
   const accountIdParam = searchParamsObj?.accountId || ""
+  const t = await getTranslations("Dashboard")
   
   let fromDate: Date | undefined
   let toDate: Date | undefined
@@ -173,8 +176,8 @@ export default async function DashboardPage({
     <div>
       <div className="page-header">
         <div>
-          <h1 className="page-title">Dashboard</h1>
-          <p className="page-subtitle">Your trading performance at a glance</p>
+          <h1 className="page-title">{t("title")}</h1>
+          <p className="page-subtitle">{t("subtitle")}</p>
         </div>
         <Suspense fallback={<div className="skeleton" style={{ width: 120, height: 38 }} />}>
           <DashboardFilter accounts={filterAccounts} />
@@ -190,39 +193,39 @@ export default async function DashboardPage({
       <div className="dashboard-row-equal">
         <MonthlyGoalWidget monthPnl={monthPnl} initialGoal={monthlyGoal} monthLabel={monthLabel} />
 
-        <div className="card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column" }}>
+        <div className="chart-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column" }}>
           <div className="section-label" style={{ marginBottom: "1rem" }}>
-            Month Stats — {monthLabel}
+            {t("monthStats", { month: monthLabel })}
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem", flex: 1 }}>
-            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>🔥 Green streak</div>
-              <div style={{ fontSize: "1.4rem", fontWeight: 800, color: streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)", fontVariantNumeric: "tabular-nums" }}>
-                {streak}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> day{streak !== 1 ? "s" : ""}</span>
+            <div className="card-hover" style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t("greenStreak")}</div>
+              <div style={{ fontSize: "1.75rem", fontWeight: 800, color: streak > 0 ? "var(--color-profit)" : "var(--color-gray-400)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
+                {streak}<span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-500)", marginLeft: "0.3rem" }}>{t("days")}</span>
               </div>
             </div>
-            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>🟢 Green days</div>
-              <div style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--color-gray-100)", fontVariantNumeric: "tabular-nums" }}>
-                {greenDaysThisMonth}<span style={{ fontSize: "0.8rem", fontWeight: 500, color: "var(--color-gray-500)" }}> this month</span>
+            <div className="card-hover" style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t("greenDays")}</div>
+              <div style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-gray-100)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
+                {greenDaysThisMonth}<span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-500)", marginLeft: "0.3rem" }}>{t("thisMonth")}</span>
               </div>
             </div>
-            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>🏆 Best day</div>
-              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-profit)", fontVariantNumeric: "tabular-nums" }}>
+            <div className="card-hover" style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t("bestDay")}</div>
+              <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--color-profit)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
                 {bestDay ? formatCurrency(bestDay.pnl, "USD", true, 2) : "—"}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500, marginTop: "0.15rem" }}>
-                {bestDay ? formatDay(bestDay.key) : "no trades yet"}
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 600, marginTop: "0.25rem" }}>
+                {bestDay ? formatDay(bestDay.key) : t("noTrades")}
               </div>
             </div>
-            <div style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1rem", borderRadius: "10px", border: "1px solid var(--color-gray-800)" }}>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.35rem" }}>⚠️ Worst day</div>
-              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-loss)", fontVariantNumeric: "tabular-nums" }}>
+            <div className="card-hover" style={{ flex: "1 1 120px", display: "flex", flexDirection: "column", justifyContent: "center", background: "var(--color-gray-900)", padding: "1.25rem", borderRadius: "12px", border: "1px solid var(--color-gray-800)" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t("worstDay")}</div>
+              <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--color-loss)", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
                 {worstDay ? formatCurrency(worstDay.pnl, "USD", true, 2) : "—"}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500, marginTop: "0.15rem" }}>
-                {worstDay ? formatDay(worstDay.key) : "no trades yet"}
+              <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 600, marginTop: "0.25rem" }}>
+                {worstDay ? formatDay(worstDay.key) : t("noTrades")}
               </div>
             </div>
           </div>
@@ -232,7 +235,7 @@ export default async function DashboardPage({
       {/* Charts Row 1: Daily P&L and Win Rate */}
       <div className="dashboard-row-2-1">
         <div className="chart-card" style={{ display: "flex", flexDirection: "column" }}>
-          <div className="chart-title">Daily Net P&L</div>
+          <div className="chart-title">{t("dailyNetPnl")}</div>
           <div style={{ flex: 1, minHeight: 280 }}>
             <Suspense fallback={<ChartSkeleton height={280} />}>
               <DailyPnlChartServer dateRange={dateRange} accountId={selectedAccountId} />
@@ -241,7 +244,7 @@ export default async function DashboardPage({
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div className="chart-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-            <div className="chart-title">Win Rate</div>
+            <div className="chart-title">{t("winRate")}</div>
             <div style={{ flex: 1, minHeight: 200 }}>
               <Suspense fallback={<ChartSkeleton height={200} />}>
                 <WinRateChartServer dateRange={dateRange} accountId={selectedAccountId} />
@@ -256,7 +259,7 @@ export default async function DashboardPage({
       <div className="dashboard-row-2-1" style={{ alignItems: "stretch" }}>
         <Suspense fallback={
           <div className="chart-card">
-            <div className="chart-title">Equity Curve</div>
+            <div className="chart-title">{t("equityCurve")}</div>
             <ChartSkeleton height={300} />
           </div>
         }>
@@ -265,7 +268,7 @@ export default async function DashboardPage({
         
         <Suspense fallback={
           <div className="chart-card" style={{ minHeight: 300 }}>
-            <div className="chart-title">Performance by Setup</div>
+            <div className="chart-title">{t("perfBySetup")}</div>
             <ChartSkeleton height={260} />
           </div>
         }>
@@ -277,7 +280,7 @@ export default async function DashboardPage({
       <div style={{ marginBottom: "1rem" }}>
         <Suspense fallback={
           <div className="chart-card">
-            <div className="chart-title">Performance by Hour & Day</div>
+            <div className="chart-title">{t("perfByHour")}</div>
             <ChartSkeleton height={180} />
           </div>
         }>
@@ -285,15 +288,20 @@ export default async function DashboardPage({
         </Suspense>
       </div>
 
-      {/* Mini Calendar */}
-      <div className="chart-card" style={{ marginBottom: "1.5rem" }}>
-        <div className="chart-title">Trading Calendar</div>
-        <MiniCalendar dailyPnl={dailyPnlForCalendar} dailyTradeCount={dailyTradeCountForCalendar} />
+      {/* Mini Calendar & Macro Events */}
+      <div className="dashboard-row-2-1" style={{ marginBottom: "1.5rem" }}>
+        <div className="chart-card" style={{ flex: 2 }}>
+          <div className="chart-title">{t("tradingCalendar")}</div>
+          <MiniCalendar dailyPnl={dailyPnlForCalendar} dailyTradeCount={dailyTradeCountForCalendar} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <EconomicCalendarWidget limit={4} />
+        </div>
       </div>
 
       {/* Recent Trades */}
       <div className="chart-card">
-        <div className="chart-title">Recent Trades</div>
+        <div className="chart-title">{t("recentTrades")}</div>
         <Suspense fallback={<TableSkeleton />}>
           <RecentTradesTable dateRange={dateRange} accountId={selectedAccountId} />
         </Suspense>

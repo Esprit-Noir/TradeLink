@@ -11,7 +11,7 @@ export default function RiskLoading() {
       {/* Alert cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: "1.25rem" }}>
+          <div key={i} className="chart-card" style={{ padding: "1.25rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
               <div className="skeleton" style={{ height: 32, width: 32, borderRadius: 8 }} />
               <div className="skeleton" style={{ height: 13, width: 80 }} />
@@ -23,7 +23,7 @@ export default function RiskLoading() {
       </div>
 
       {/* Rules list */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div className="skeleton" style={{ height: 14, width: 100, marginBottom: 14 }} />
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < 3 ? "1px solid var(--color-gray-800)" : "none" }}>

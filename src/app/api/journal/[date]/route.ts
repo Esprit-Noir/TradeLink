@@ -95,7 +95,11 @@ export async function POST(req: Request, { params }: { params: Promise<{ date: s
       },
     })
 
-    return NextResponse.json({ journal })
+    const unlocks = await import("@/lib/achievements.service")
+      .then(m => m.evaluateAchievements(session.user?.id || ""))
+      .catch(e => { console.error(e); return [] })
+
+    return NextResponse.json({ journal, unlocks })
   } catch (error) {
     console.error("[JOURNAL_POST]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Error" }, { status: 500 })

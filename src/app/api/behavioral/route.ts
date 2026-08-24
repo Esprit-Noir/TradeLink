@@ -29,7 +29,7 @@ export async function GET(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { timezone: true },
+      select: { email: true, timezone: true, notificationPrefs: true },
     })
     const timezone = user?.timezone ?? "UTC"
 
@@ -85,7 +85,7 @@ export async function GET(request: Request) {
       .sort((a, b) => new Date(b.entryAt).getTime() - new Date(a.entryAt).getTime())
       .slice(0, 8)
 
-    if (range === "all" && trades.length > 0 && !scope.all) {
+      if (range === "all" && trades.length > 0 && !scope.all) {
       const acctId = scope.accounts[0].id
       await prisma.behavioralSnapshot.upsert({
         where: {
@@ -109,6 +109,41 @@ export async function GET(request: Request) {
           computedAt: new Date(),
         },
       })
+
+      // Risk Alert Email Logic (Cooldown 24h)
+      if (result.disciplineScore < 40 && user?.email) {
+        const prefs = (user.notificationPrefs as any) || {}
+        const lastAlert = prefs.lastRiskAlertAt ? new Date(prefs.lastRiskAlertAt) : new Date(0)
+        const now = new Date()
+
+        if (now.getTime() - lastAlert.getTime() > 86400000) {
+          // Trigger email asynchronously
+          import("@/lib/email").then(({ sendEmail }) => {
+            import("@/emails/RiskAlertEmail").then(({ RiskAlertEmail }) => {
+              sendEmail({
+                to: user.email,
+                subject: "⚠️ TradeLink Risk Alert",
+                react: RiskAlertEmail({
+                  userName: "Trader",
+                  alertType: "Low Discipline Score",
+                  description: `Your discipline score dropped to ${result.disciplineScore}. You are exhibiting high-risk behavior patterns.`,
+                }),
+              }).catch(console.error)
+            })
+          }).catch(console.error)
+
+          // Update last alert time
+          await prisma.user.update({
+            where: { id: session.user.id },
+            data: {
+              notificationPrefs: {
+                ...prefs,
+                lastRiskAlertAt: now.toISOString(),
+              },
+            },
+          })
+        }
+      }
     }
 
     return NextResponse.json({ ...result, history, range, recentFlags })

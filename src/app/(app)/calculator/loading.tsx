@@ -10,7 +10,7 @@ export default function CalculatorLoading() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "1.5rem" }}>
         {/* Input form */}
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div className="skeleton" style={{ height: 14, width: 90, marginBottom: 16 }} />
           {Array.from({ length: 5 }).map((_, i) => (
             <div key={i} style={{ marginBottom: 14 }}>
@@ -22,7 +22,7 @@ export default function CalculatorLoading() {
         </div>
 
         {/* Results */}
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div className="skeleton" style={{ height: 14, width: 80, marginBottom: 16 }} />
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: i < 2 ? "1px solid var(--color-gray-800)" : "none" }}>

@@ -9,7 +9,7 @@ export default function SupportLoading() {
       </div>
 
       {/* FAQ */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div className="skeleton" style={{ height: 14, width: 120, marginBottom: 16 }} />
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} style={{ padding: "12px 0", borderBottom: i < 3 ? "1px solid var(--color-gray-800)" : "none" }}>
@@ -20,7 +20,7 @@ export default function SupportLoading() {
       </div>
 
       {/* Contact form */}
-      <div className="card" style={{ padding: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem" }}>
         <div className="skeleton" style={{ height: 14, width: 100, marginBottom: 16 }} />
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} style={{ marginBottom: 14 }}>

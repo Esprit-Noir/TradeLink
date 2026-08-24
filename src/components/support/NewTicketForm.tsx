@@ -42,7 +42,7 @@ export function NewTicketForm() {
   }
 
   return (
-    <div className="card" style={{ padding: "1.5rem" }}>
+    <div className="chart-card" style={{ padding: "1.5rem" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)" }}>New Support Ticket</h3>
         <button onClick={() => setOpen(false)} style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>

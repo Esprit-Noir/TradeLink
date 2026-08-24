@@ -9,6 +9,24 @@ import { toast } from "sonner"
 import { jsPDF } from "jspdf"
 import { autoTable } from "jspdf-autotable"
 import { Download, FileText } from "lucide-react"
+import { motion, Variants } from "framer-motion"
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+}
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" }
+  }
+}
 
 interface DailyItem {
   date: string
@@ -426,17 +444,22 @@ export function MonthlyReport() {
       ) : !data ? (
         <div className="empty-state">Unable to load report.</div>
       ) : (
-        <>
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}
+        >
           {/* Month title */}
-          <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+          <motion.div variants={itemVariants} style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
             {monthLabel(month)}
             <span style={{ fontSize: "0.85rem", fontWeight: 400, color: "var(--color-gray-500)", marginLeft: "0.75rem" }}>
               {t.total} trades · {t.tradingDays} trading days
             </span>
-          </div>
+          </motion.div>
 
           {/* KPIs */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
+          <motion.div variants={itemVariants} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
             <div className="kpi-card" style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
               <div className="kpi-label">Net P&L</div>
               <div className="kpi-value" style={{ color: t.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
@@ -472,10 +495,10 @@ export function MonthlyReport() {
                 {fmtMoney(t.worst, true)}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Daily chart */}
-          <div className="chart-card">
+          <motion.div variants={itemVariants} className="chart-card">
             <div className="chart-title">Daily P&L and cumulative</div>
             <ResponsiveContainer width="100%" height={260}>
               <ComposedChart data={dayShort} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
@@ -500,10 +523,10 @@ export function MonthlyReport() {
                 <Line yAxisId="cum" type="monotone" dataKey="cumPnl" stroke="var(--color-brand-500)" strokeWidth={2} dot={false} />
               </ComposedChart>
             </ResponsiveContainer>
-          </div>
+          </motion.div>
 
           {/* Setups + Symbols */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+          <motion.div variants={itemVariants} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
             <div className="chart-card">
               <div className="chart-title">Top Setups</div>
               {data.setups.length === 0 ? (
@@ -546,10 +569,10 @@ export function MonthlyReport() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Hours + Days of week */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+          <motion.div variants={itemVariants} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
             <div className="chart-card">
               <div className="chart-title">Performance by hour</div>
               {data.hours.length === 0 ? (
@@ -603,10 +626,10 @@ export function MonthlyReport() {
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
 
           {/* Challenges + Payouts */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+          <motion.div variants={itemVariants} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
             <div className="chart-card">
               <div className="chart-title">Challenges</div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
@@ -672,8 +695,8 @@ export function MonthlyReport() {
                 </div>
               )}
             </div>
-          </div>
-        </>
+          </motion.div>
+        </motion.div>
       )}
     </div>
   )

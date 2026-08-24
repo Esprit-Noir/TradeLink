@@ -102,7 +102,23 @@ export async function POST(request: Request) {
       where: { accountId: account.id },
     })
 
-    return NextResponse.json({ success: true, trade })
+    // If this is a prop firm account, run challenge evaluation asynchronously
+    const propChallenge = await prisma.propChallenge.findUnique({
+      where: { accountId: account.id }
+    })
+    
+    if (propChallenge) {
+      import("@/lib/prop-firm.service").then(({ evaluateChallenge }) => {
+        evaluateChallenge(propChallenge.id).catch(console.error)
+      }).catch(console.error)
+    }
+
+    // Evaluate achievements
+    const unlocks = await import("@/lib/achievements.service")
+      .then(m => m.evaluateAchievements(session.user?.id || ""))
+      .catch(e => { console.error(e); return [] })
+
+    return NextResponse.json({ success: true, trade, unlocks })
   } catch (error) {
     console.error("Error creating trade:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

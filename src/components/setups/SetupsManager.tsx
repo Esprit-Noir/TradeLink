@@ -198,41 +198,41 @@ export function SetupsManager() {
 
       {/* Global KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "1rem" }}>
-        <div className="kpi-card">
-          <div className="kpi-label">Combined P&L</div>
-          <div className="kpi-value" style={{ color: totals.totalPnl > 0 ? "var(--color-profit)" : totals.totalPnl < 0 ? "var(--color-loss)" : "var(--color-gray-100)" }}>
+        <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", color: "var(--color-gray-500)" }}>Combined P&L</div>
+          <div style={{ fontSize: "2rem", fontWeight: 800, fontFamily: "var(--font-mono)", letterSpacing: "-0.02em", color: totals.totalPnl > 0 ? "var(--color-profit)" : totals.totalPnl < 0 ? "var(--color-loss)" : "var(--color-gray-100)" }}>
             {fmt(totals.totalPnl, true)}
           </div>
-          <div className="kpi-sub">{totals.totalTrades} tagged trades</div>
+          <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>{totals.totalTrades} tagged trades</div>
         </div>
-        <div className="kpi-card">
-          <div className="kpi-label">Setups</div>
-          <div className="kpi-value">{totals.total}</div>
-          <div className="kpi-sub">{totals.profitable} profitable</div>
+        <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+          <div style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", color: "var(--color-gray-500)" }}>Setups</div>
+          <div style={{ fontSize: "2rem", fontWeight: 800, fontFamily: "var(--font-mono)", letterSpacing: "-0.02em", color: "var(--color-gray-100)" }}>{totals.total}</div>
+          <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>{totals.profitable} profitable</div>
         </div>
         {totals.best?.count > 0 && (
-          <div className="kpi-card">
-            <div className="kpi-label">Top setup</div>
-            <div className="kpi-value" style={{ fontSize: "1.15rem", color: "var(--color-brand-500)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+            <div style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", color: "var(--color-gray-500)" }}>Top setup</div>
+            <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--color-brand-500)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: "-0.02em" }}>
               {totals.best.name}
             </div>
-            <div className="kpi-sub">{fmt(totals.best.netPnl, true)} · {totals.best.count} trades</div>
+            <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>{fmt(totals.best.netPnl, true)} · {totals.best.count} trades</div>
           </div>
         )}
         {totals.bestWinRate && (
-          <div className="kpi-card">
-            <div className="kpi-label">Best win rate</div>
-            <div className="kpi-value" style={{ fontSize: "1.15rem", color: "var(--color-profit)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+            <div style={{ fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", color: "var(--color-gray-500)" }}>Best win rate</div>
+            <div style={{ fontSize: "2rem", fontWeight: 800, fontFamily: "var(--font-mono)", color: "var(--color-profit)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", letterSpacing: "-0.02em" }}>
               {totals.bestWinRate.winRate.toFixed(0)}%
             </div>
-            <div className="kpi-sub">{totals.bestWinRate.name}</div>
+            <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>{totals.bestWinRate.name}</div>
           </div>
         )}
       </div>
 
       {/* Leaderboard */}
       {totals.withTrades.length > 0 && (
-        <div className="card" style={{ padding: "1.5rem" }}>
+        <div className="chart-card" style={{ padding: "1.5rem" }}>
           <div style={{ fontSize: "0.8rem", color: "var(--color-gray-400)", marginBottom: "1rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
             Setup Leaderboard
           </div>
@@ -316,7 +316,7 @@ export function SetupsManager() {
           <div className="skeleton card" style={{ height: "260px" }} />
         </div>
       ) : setups.length === 0 ? (
-        <div className="card" style={{ textAlign: "center", padding: "4rem 2rem", color: "var(--color-gray-500)" }}>
+        <div className="chart-card" style={{ textAlign: "center", padding: "4rem 2rem", color: "var(--color-gray-500)" }}>
           <Target size={48} style={{ opacity: 0.5, marginBottom: "1rem", margin: "0 auto" }} />
           <div style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-gray-300)", marginBottom: "0.5rem" }}>No setups defined</div>
           <p style={{ maxWidth: 400, margin: "0 auto", lineHeight: 1.5 }}>
@@ -324,7 +324,7 @@ export function SetupsManager() {
           </p>
         </div>
       ) : sorted.length === 0 ? (
-        <div className="card" style={{ textAlign: "center", padding: "3rem 2rem", color: "var(--color-gray-500)" }}>
+        <div className="chart-card" style={{ textAlign: "center", padding: "3rem 2rem", color: "var(--color-gray-500)" }}>
           <Search size={40} style={{ opacity: 0.5, margin: "0 auto 0.75rem" }} />
           <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-300)" }}>No setups match “{query}”</div>
         </div>
@@ -334,7 +334,7 @@ export function SetupsManager() {
             const isEditing = editingId === setup.id
             const hasTrades = setup.count > 0
             return (
-              <div key={setup.id} className="card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", position: "relative", gap: "1rem" }}>
+              <div key={setup.id} className="card-hover" style={{ padding: "1.5rem", borderRadius: "16px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", display: "flex", flexDirection: "column", position: "relative", gap: "1rem" }}>
                 {setup.isDefault && !isEditing && (
                   <div style={{ position: "absolute", top: "1.5rem", right: "1.5rem", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", background: "var(--color-brand-500)", color: "#000", padding: "0.25rem 0.5rem", borderRadius: "var(--radius-sm)" }}>
                     Default

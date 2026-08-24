@@ -5,9 +5,12 @@
 import { useMemo, useState, useEffect, useRef } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { toast } from "sonner"
-import { Columns3, Trash2, CheckCheck, ArrowUpDown, ArrowUp, ArrowDown, X, Download } from "lucide-react"
+import { Columns3, Trash2, CheckCheck, ArrowUpDown, ArrowUp, ArrowDown, X, Download, FileText } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
 import { TradeRow } from "@/components/trades/TradeRow"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
+import { useTranslations, useLocale } from "next-intl"
 
 export const TRADE_COLUMNS = [
   { key: "entryAt", label: "Entry Time", default: true, sortable: true },
@@ -58,6 +61,8 @@ export function TradesTable({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const t = useTranslations("TradesTable")
+  const locale = useLocale()
 
   const [visible, setVisible] = useState<Record<string, boolean>>(() => {
     return TRADE_COLUMNS.reduce((acc: any, c) => ({ ...acc, [c.key]: c.default }), {})
@@ -139,7 +144,7 @@ export function TradesTable({
 
   const runBulk = async (action: "delete" | "open" | "close") => {
     if (selectedIds.length === 0) return
-    if (action === "delete" && !confirm(`Delete ${selectedIds.length} trade(s)? This cannot be undone.`)) return
+    if (action === "delete" && !confirm(t("messages.deleteConfirm", { count: selectedIds.length }))) return
     setBusy(true)
     try {
       const res = await fetch("/api/trades/bulk", {
@@ -149,11 +154,11 @@ export function TradesTable({
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed")
-      toast.success(`Updated ${data.count} trade(s).`)
+      toast.success(t("messages.updatedTrades", { count: data.count }))
       setSelected(new Set())
       router.refresh()
     } catch (err: any) {
-      toast.error(err.message || "Action failed.")
+      toast.error(err.message || t("messages.actionFailed"))
     } finally {
       setBusy(false)
       setBulkOpen(false)
@@ -174,9 +179,64 @@ export function TradesTable({
       a.download = "trades-export.csv"
       a.click()
       URL.revokeObjectURL(url)
-      toast.success(`Exported filtered trades to CSV.`)
+      toast.success(t("messages.exportedCsv"))
     } catch {
-      toast.error("Export failed.")
+      toast.error(t("messages.exportFailed"))
+    }
+  }
+
+  const exportPdf = async () => {
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("page")
+    params.delete("tradeId")
+    params.set("format", "json")
+    try {
+      const res = await fetch(`/api/trades/export?${params.toString()}`)
+      if (!res.ok) throw new Error("Export failed")
+      const { trades: exportTrades } = await res.json()
+      
+      const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" })
+      
+      doc.setFontSize(18)
+      doc.text(t("report.tradesReport"), 40, 40)
+      
+      doc.setFontSize(10)
+      doc.setTextColor(100)
+      doc.text(t("report.generatedOn", { date: new Date().toLocaleDateString(locale) }), 40, 55)
+
+      const totalPnl = exportTrades.reduce((sum: number, t: any) => sum + Number(t.netPnl || 0), 0)
+      const winRate = exportTrades.length > 0 
+        ? ((exportTrades.filter((t: any) => Number(t.netPnl || 0) > 0).length / exportTrades.length) * 100).toFixed(1) 
+        : 0
+      
+      doc.setFontSize(12)
+      doc.setTextColor(totalPnl >= 0 ? 0 : 200, totalPnl >= 0 ? 150 : 0, 0)
+      doc.text(`${t("report.totalPnl")}${totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl, baseCurrency)} | ${t("report.winRate")}${winRate}% | ${t("report.trades")}${exportTrades.length}`, 40, 80)
+
+      autoTable(doc, {
+        startY: 100,
+        head: [["Date", "Symbol", "Side", "Qty", "Entry", "Exit", "P&L", "Status"]],
+        body: exportTrades.map((t: any) => [
+          new Date(t.entryAt).toLocaleString(),
+          t.symbol,
+          t.side,
+          t.quantity,
+          t.entryPrice || "-",
+          t.exitPrice || "-",
+          Number(t.netPnl || 0).toFixed(2),
+          t.status
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [15, 23, 42] },
+        styles: { fontSize: 8 },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+      })
+
+      doc.save(`trades-export-${new Date().toISOString().slice(0, 10)}.pdf`)
+      toast.success(t("messages.exportedPdf"))
+    } catch (err) {
+      console.error(err)
+      toast.error(t("messages.exportFailed"))
     }
   }
 
@@ -192,25 +252,25 @@ export function TradesTable({
         {selectedIds.length > 0 ? (
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.6rem", borderRadius: "8px", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.3)" }}>
             <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-brand-300)" }}>
-              {selectedIds.length} selected
+              {t("selection.selected", { count: selectedIds.length })}
             </span>
-            <button onClick={() => setSelected(new Set())} title="Clear selection" style={{ display: "flex", alignItems: "center", background: "none", border: "none", cursor: "pointer", color: "var(--color-gray-400)" }}>
+            <button onClick={() => setSelected(new Set())} title={t("actions.clearSelection")} style={{ display: "flex", alignItems: "center", background: "none", border: "none", cursor: "pointer", color: "var(--color-gray-400)" }}>
               <X size={14} />
             </button>
             <div style={{ display: "flex", gap: "0.35rem", position: "relative" }}>
               <button className="btn btn-ghost btn-sm" onClick={() => setBulkOpen((o) => !o)} disabled={busy} style={{ fontSize: "0.78rem" }}>
-                Bulk actions ▾
+                {t("actions.bulkActions")}
               </button>
               {bulkOpen && (
                 <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 20, minWidth: "180px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", padding: "0.35rem", boxShadow: "0 8px 24px rgba(0,0,0,0.4)", display: "flex", flexDirection: "column", gap: "0.15rem" }}>
                   <button className="btn btn-ghost btn-sm" onClick={() => runBulk("open")} disabled={busy} style={{ justifyContent: "flex-start", gap: "0.4rem" }}>
-                    <CheckCheck size={14} /> Mark as open
+                    <CheckCheck size={14} /> {t("actions.markOpen")}
                   </button>
                   <button className="btn btn-ghost btn-sm" onClick={() => runBulk("close")} disabled={busy} style={{ justifyContent: "flex-start", gap: "0.4rem" }}>
-                    <CheckCheck size={14} /> Mark as closed
+                    <CheckCheck size={14} /> {t("actions.markClosed")}
                   </button>
                   <button className="btn btn-ghost btn-sm" onClick={() => runBulk("delete")} disabled={busy} style={{ justifyContent: "flex-start", gap: "0.4rem", color: "var(--color-loss)" }}>
-                    <Trash2 size={14} /> Delete
+                    <Trash2 size={14} /> {t("actions.delete")}
                   </button>
                 </div>
               )}
@@ -218,7 +278,7 @@ export function TradesTable({
           </div>
         ) : (
           <span style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
-            {totals.count} trade{totals.count !== 1 ? "s" : ""} match{/* */}ing filters
+            {t("selection.matchingFilters", { count: totals.count })}
           </span>
         )}
 
@@ -227,9 +287,17 @@ export function TradesTable({
             className="btn btn-outline btn-sm"
             onClick={exportCsv}
             style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
-            title="Export filtered trades as CSV"
+            title={t("actions.exportCsv")}
           >
-            <Download size={14} /> Export CSV
+            <Download size={14} /> {t("actions.exportCsv")}
+          </button>
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={exportPdf}
+            style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
+            title={t("actions.exportPdf")}
+          >
+            <FileText size={14} /> {t("actions.exportPdf")}
           </button>
           {/* Column visibility */}
           <div style={{ position: "relative" }} ref={columnsRef}>
@@ -238,7 +306,7 @@ export function TradesTable({
               onClick={() => setColumnsOpen((o) => !o)}
               style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}
             >
-              <Columns3 size={14} /> Columns
+              <Columns3 size={14} /> {t("actions.columns")}
             </button>
             {columnsOpen && (
               <div style={{ position: "absolute", top: "calc(100% + 4px)", right: 0, zIndex: 20, minWidth: "200px", maxHeight: "320px", overflowY: "auto", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", padding: "0.5rem", boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
@@ -250,7 +318,7 @@ export function TradesTable({
                       onChange={() => toggleColumn(c.key)}
                       style={{ accentColor: "var(--color-brand-500)" }}
                     />
-                    {c.label}
+                    {t(`columns.${c.key}`)}
                   </label>
                 ))}
               </div>
@@ -284,7 +352,7 @@ export function TradesTable({
                   }}
                 >
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
-                    {c.label}
+                    {t(`columns.${c.key}`)}
                     {c.sortable && (sortKey === c.key ? (
                       sortDir === "asc" ? <ArrowUp size={12} /> : <ArrowDown size={12} />
                     ) : (
@@ -300,15 +368,16 @@ export function TradesTable({
               <tr>
                 <td colSpan={visibleColumns.length + 1} style={{ textAlign: "center", padding: "3rem" }}>
                   <div className="empty-state">
-                    <p>No trades found.</p>
+                    <p>{t("empty.noTrades")}</p>
                   </div>
                 </td>
               </tr>
             ) : (
-              trades.map((t) => (
+              trades.map((t, i) => (
                 <TradeRow
                   key={t.id}
                   trade={t}
+                  index={i}
                   timezone={timezone}
                   baseCurrency={baseCurrency}
                   visibleColumns={visible}
@@ -321,7 +390,7 @@ export function TradesTable({
           <tfoot>
             <tr style={{ background: "var(--color-gray-900)" }}>
               <td colSpan={visibleColumns.length + 1} style={{ textAlign: "right", paddingRight: "1rem" }}>
-                <span style={{ fontSize: "0.8rem", color: "var(--color-gray-500)", marginRight: "0.5rem" }}>Page total</span>
+                <span style={{ fontSize: "0.8rem", color: "var(--color-gray-500)", marginRight: "0.5rem" }}>{t("tableFoot.pageTotal")}</span>
                 <span style={{ fontWeight: 700, fontSize: "0.85rem", color: pageNetPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                   {formatCurrency(pageNetPnl, baseCurrency, true, 2)}
                 </span>
@@ -334,27 +403,27 @@ export function TradesTable({
       {/* Totals strip */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem", padding: "0.75rem 1rem", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)", fontSize: "0.8rem" }}>
         <div>
-          <span style={{ color: "var(--color-gray-500)" }}>Filtered net P&L: </span>
+          <span style={{ color: "var(--color-gray-500)" }}>{t("summary.filteredNetPnl")}</span>
           <strong style={{ color: totals.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
             {formatCurrency(totals.netPnl, baseCurrency, true, 2)}
           </strong>
         </div>
         <div>
-          <span style={{ color: "var(--color-gray-500)" }}>Win rate: </span>
+          <span style={{ color: "var(--color-gray-500)" }}>{t("summary.winRate")}</span>
           <strong style={{ color: "var(--color-gray-200)" }}>
             {totals.count > 0 ? ((totals.wins / totals.count) * 100).toFixed(1) : "0"}%
           </strong>
           <span style={{ color: "var(--color-gray-600)" }}> ({totals.wins}W / {totals.losses}L)</span>
         </div>
         <div>
-          <span style={{ color: "var(--color-gray-500)" }}>Avg P&L: </span>
+          <span style={{ color: "var(--color-gray-500)" }}>{t("summary.avgPnl")}</span>
           <strong style={{ color: totals.count > 0 && totals.netPnl >= 0 ? "var(--color-profit)" : totals.count > 0 ? "var(--color-loss)" : "inherit" }}>
             {totals.count > 0 ? formatCurrency(totals.netPnl / totals.count, baseCurrency, true, 2) : "—"}
           </strong>
         </div>
         {selectedIds.length > 0 && (
           <div>
-            <span style={{ color: "var(--color-gray-500)" }}>Selected P&L: </span>
+            <span style={{ color: "var(--color-gray-500)" }}>{t("summary.selectedPnl")}</span>
             <strong style={{ color: "var(--color-gray-200)" }}>
               {formatCurrency(
                 trades.filter((t) => selected.has(t.id)).reduce((s, t) => s + Number(t.netPnl || 0), 0),
@@ -371,24 +440,24 @@ export function TradesTable({
       {totalPages > 1 && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem" }}>
           <div style={{ fontSize: "0.85rem", color: "var(--color-gray-400)" }}>
-            Showing {skip + 1} to {Math.min(skip + itemsPerPage, totalTrades)} of {totalTrades} trades
+            {t("pagination.showing", { start: skip + 1, end: Math.min(skip + itemsPerPage, totalTrades), total: totalTrades })}
           </div>
           <div style={{ display: "flex", gap: "0.5rem" }}>
             {currentPage > 1 ? (
-              <LinkBtn href={pageHref(currentPage - 1, searchParams, pathname)}>Previous</LinkBtn>
+              <LinkBtn href={pageHref(currentPage - 1, searchParams, pathname)}>{t("pagination.previous")}</LinkBtn>
             ) : (
               <button className="btn btn-secondary" disabled style={{ opacity: 0.5, cursor: "not-allowed" }}>
-                Previous
+                {t("pagination.previous")}
               </button>
             )}
             <div style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", color: "var(--color-gray-200)" }}>
-              Page {currentPage} of {totalPages}
+              {t("pagination.pageOf", { current: currentPage, total: totalPages })}
             </div>
             {currentPage < totalPages ? (
-              <LinkBtn href={pageHref(currentPage + 1, searchParams, pathname)}>Next</LinkBtn>
+              <LinkBtn href={pageHref(currentPage + 1, searchParams, pathname)}>{t("pagination.next")}</LinkBtn>
             ) : (
               <button className="btn btn-secondary" disabled style={{ opacity: 0.5, cursor: "not-allowed" }}>
-                Next
+                {t("pagination.next")}
               </button>
             )}
           </div>

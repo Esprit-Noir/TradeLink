@@ -57,6 +57,17 @@ export async function POST(request: Request) {
       return newUser
     })
 
+    // Send Welcome Email asynchronously (don't block the response)
+    import("@/lib/email").then(({ sendEmail }) => {
+      import("@/emails/WelcomeEmail").then(({ WelcomeEmail }) => {
+        sendEmail({
+          to: user.email,
+          subject: "Welcome to TradeLink 🚀",
+          react: WelcomeEmail({ userName: user.name || "Trader" }),
+        }).catch(console.error)
+      })
+    }).catch(console.error)
+
     return NextResponse.json({ id: user.id, email: user.email, name: user.name })
   } catch (error: any) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

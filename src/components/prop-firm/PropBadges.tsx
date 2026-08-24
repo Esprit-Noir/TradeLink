@@ -75,7 +75,7 @@ export function PropBadges() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
       {/* Achievements Section */}
-      <div className="card" style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
+      <div className="chart-card" style={{ padding: "1.75rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -178,7 +178,7 @@ export function PropBadges() {
 
       {/* Active Challenges Section */}
       {activeChallenges.length > 0 && (
-        <div className="card" style={{ padding: "1.75rem" }}>
+        <div className="chart-card" style={{ padding: "1.75rem" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
             <div>
               <h3 style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--color-gray-100)", letterSpacing: "-0.02em" }}>Active Challenges</h3>

@@ -40,21 +40,26 @@ export const metadata: Metadata = {
 import { ThemeProvider } from "@/components/ThemeProvider"
 import { Toaster } from "sonner"
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister"
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased bg-gray-950 text-gray-100`}>
-        <ThemeProvider>
-          {children}
-          <ServiceWorkerRegister />
+        <NextIntlClientProvider messages={messages}>
+          <ThemeProvider>
+            {children}
+            <ServiceWorkerRegister />
           <Toaster 
-            position="top-right"
-            theme="dark"
+            position="bottom-right"
             toastOptions={{
               className: 'custom-toast',
               style: {
@@ -62,7 +67,7 @@ export default function RootLayout({
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
                 border: '1px solid var(--color-gray-800)',
-                color: '#fff',
+                color: 'var(--color-gray-100)',
                 borderRadius: '12px',
                 boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
                 padding: '16px',
@@ -70,7 +75,8 @@ export default function RootLayout({
               }
             }}
           />
-        </ThemeProvider>
+          </ThemeProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )

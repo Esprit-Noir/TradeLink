@@ -41,7 +41,7 @@ export function RiskAlerts() {
   }
 
   return (
-    <div className="card" style={{ padding: "1.5rem" }}>
+    <div className="chart-card" style={{ padding: "1.5rem" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
         <BellRing size={16} style={{ color: "var(--color-brand-500)" }} />
         <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Risk Alerts & Rules</h3>

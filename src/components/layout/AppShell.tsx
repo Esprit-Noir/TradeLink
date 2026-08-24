@@ -10,10 +10,19 @@ import { NotificationBell } from "./NotificationBell"
 import { CommandPalette } from "./CommandPalette"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { ChallengeStatusWidget } from "./ChallengeStatusWidget"
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher"
 
 import { ROINotification } from "@/components/prop-firm/ROINotification"
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({ 
+  children,
+  initialFeatures = {},
+  initialBacktestAccess = false,
+}: { 
+  children: React.ReactNode 
+  initialFeatures?: Record<string, boolean>
+  initialBacktestAccess?: boolean
+}) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
 
@@ -24,7 +33,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="app-layout">
       <ROINotification />
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar 
+        open={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+        initialFeatures={initialFeatures}
+        initialBacktestAccess={initialBacktestAccess}
+      />
       <main className="main-content">
         <div className="topbar-actions">
           <button 
@@ -38,6 +52,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <CommandPalette />
           </div>
           <ChallengeStatusWidget />
+          <LanguageSwitcher />
           <NotificationBell />
           <ThemeToggle />
         </div>

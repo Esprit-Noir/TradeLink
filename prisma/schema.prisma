@@ -22,6 +22,7 @@ enum UserStatus {
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
   EXPIRED
   CANCELED
@@ -70,6 +71,7 @@ model User {
   ownedTickets         SupportTicket[]      @relation("TicketUser")
   assignedTickets      SupportTicket[]      @relation("TicketAssignedAdmin")
   supportMessages      SupportMessage[]
+  shareLinks           ShareLink[]
 
   @@map("users")
 }
@@ -486,6 +488,7 @@ model Plan {
   backtestAccess    Boolean @default(false) @map("backtest_access")
   maxTradesPerMonth Int?    @map("max_trades_per_month")
   isActive          Boolean @default(true) @map("is_active")
+  features          Json?   @default("{}") // Store arbitrary features like {"replayAccess": true}
   createdAt         DateTime @default(now()) @map("created_at")
 
   subscriptions     Subscription[]
@@ -501,6 +504,8 @@ model Subscription {
   startDate     DateTime           @default(now()) @map("start_date")
   renewalDate   DateTime?          @map("renewal_date")
   canceledAt    DateTime?          @map("canceled_at")
+  cryptoTxId    String?            @map("crypto_tx_id") // Hash of the crypto payment
+  cryptoAddress String?            @map("crypto_address") // Address paid to
   createdAt     DateTime           @default(now()) @map("created_at")
   updatedAt     DateTime           @updatedAt @map("updated_at")
 
@@ -563,3 +568,22 @@ model SupportMessage {
   @@index([ticketId])
   @@map("support_messages")
 }
+
+// ─── SHARE LINKS ────────────────────────────────────────────────────────────
+model ShareLink {
+  id         String   @id @default(cuid())
+  userId     String   @map("user_id")
+  entityType String   @map("entity_type") // e.g. "challenge", "trade", "stats"
+  entityId   String   @map("entity_id")
+  isPublic   Boolean  @default(true) @map("is_public")
+  views      Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@map("share_links")
+}
+

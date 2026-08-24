@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { AccountSwitcher } from "@/components/layout/AccountSwitcher"
+import { useTranslations } from "next-intl"
 import {
   LayoutDashboard,
   Wallet,
@@ -32,6 +33,7 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Calculator,
+  Trophy,
 } from "lucide-react"
 
 type SidebarStats = {
@@ -40,17 +42,31 @@ type SidebarStats = {
   challengeStatus: "safe" | "warning" | "danger" | null
   challengeName: string | null
   challengePct: number
+  features: Record<string, boolean>
+  backtestAccess: boolean
 }
 
 const iconProps = { size: 18, strokeWidth: 1.75, style: { opacity: 0.9, flexShrink: 0 } }
 
-export function Sidebar({
-  open,
-  onClose,
-  asDrawer = false,
-}: { open?: boolean; onClose?: () => void; asDrawer?: boolean } = {}) {
+interface SidebarProps {
+  open?: boolean
+  onClose?: () => void
+  asDrawer?: boolean
+  initialFeatures?: Record<string, boolean>
+  initialBacktestAccess?: boolean
+}
+
+export function Sidebar({ open, onClose, asDrawer = false, initialFeatures = {}, initialBacktestAccess = false }: SidebarProps) {
   const pathname = usePathname()
-  const [stats, setStats] = useState<SidebarStats | null>(null)
+  
+  // Initialize stats with server-provided defaults for instant rendering
+  const [stats, setStats] = useState<any>({
+    features: initialFeatures,
+    backtestAccess: initialBacktestAccess,
+  })
+
+  const t = useTranslations("Sidebar")
+  
   const [mobileOpen, setMobileOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -78,25 +94,28 @@ export function Sidebar({
     setMobileOpen(false)
   }
 
-  const closeOnNav = () => setMobileOpen(false)
+  const closeOnNav = () => {
+    if (onClose) onClose()
+    setMobileOpen(false)
+  }
 
   useEffect(() => {
     localStorage.setItem("sidebar_collapsed", String(collapsed))
   }, [collapsed])
 
   useEffect(() => {
-    if (mobileOpen) {
+    if (isOpen) {
       document.body.style.overflow = "hidden"
     } else {
       document.body.style.overflow = ""
     }
     return () => { document.body.style.overflow = "" }
-  }, [mobileOpen])
+  }, [isOpen])
 
   useEffect(() => {
     fetch("/api/sidebar-stats")
       .then(r => r.json())
-      .then(d => setStats(d))
+      .then(d => setStats((prev: any) => ({ ...prev, ...d })))
       .catch(() => {})
   }, [pathname])
 
@@ -105,27 +124,32 @@ export function Sidebar({
       section: "Overview",
       items: [
         { href: "/overview",   label: "Overview",    icon: () => <Eye {...iconProps} /> },
-        { href: "/dashboard", label: "Dashboard", icon: () => <LayoutDashboard {...iconProps} /> },
+        { href: "/dashboard", label: t("dashboard"), icon: () => <LayoutDashboard {...iconProps} /> },
         { href: "/accounts",  label: "Accounts",  icon: () => <Wallet {...iconProps} /> },
-        { href: "/calendar",  label: "Calendar",  icon: () => <CalendarDays {...iconProps} /> },
+        { href: "/calendar",  label: t("calendar"),  icon: () => <CalendarDays {...iconProps} /> },
+        { href: "/achievements", label: "Achievements", icon: () => <Trophy {...iconProps} /> },
         { href: "/report",    label: "Monthly Report", icon: () => <FileText {...iconProps} /> },
-        { href: "/stats",     label: "Statistics",icon: () => <BarChart3 {...iconProps} /> },
-        { href: "/behavioral",label: "Behavioral", icon: () => <Brain {...iconProps} /> },
+        ...(stats?.features?.advancedStats ? [
+          { href: "/stats",     label: "Statistics",icon: () => <BarChart3 {...iconProps} /> },
+          { href: "/behavioral",label: "Behavioral", icon: () => <Brain {...iconProps} /> },
+        ] : []),
         { href: "/notifications", label: "Notifications", icon: () => <Bell {...iconProps} /> },
       ],
     },
     {
       section: "Trades",
       items: [
-        { href: "/trades",      label: "All Trades",  icon: () => <List {...iconProps} /> },
+        { href: "/trades",      label: t("trades"),  icon: () => <List {...iconProps} /> },
         { href: "/setups",      label: "Setups",      icon: () => <Layers {...iconProps} /> },
-        { href: "/import",      label: "Import CSV",  icon: () => <Upload {...iconProps} /> },
-        { href: "/risk",        label: "Risk",        icon: () => <Shield {...iconProps} /> },
+        { href: "/import",      label: t("import"),  icon: () => <Upload {...iconProps} /> },
+        { href: "/risk",        label: t("risk"),        icon: () => <Shield {...iconProps} /> },
         { href: "/calculator",  label: "Calculator",  icon: () => <Calculator {...iconProps} /> },
-        { href: "/backtest",    label: "Replay",      icon: () => <CandlestickChart {...iconProps} /> },
+        ...(stats?.backtestAccess || stats?.features?.replayAccess ? [
+          { href: "/backtest",    label: "Replay",      icon: () => <CandlestickChart {...iconProps} /> },
+        ] : []),
       ],
     },
-    {
+    ...(stats?.features?.propFirmAccess ? [{
       section: "Challenges",
       items: [
         { href: "/challenges",  label: "Prop Firms",  icon: () => <Target {...iconProps} /> },
@@ -133,12 +157,12 @@ export function Sidebar({
         { href: "/challenges/compare", label: "Compare", icon: () => <GitCompare {...iconProps} /> },
         { href: "/challenges/backtest", label: "Backtest", icon: () => <FlaskConical {...iconProps} /> },
       ],
-    },
+    }] : []),
   ]
 
   return (
     <>
-      {mobileOpen && <div className="sidebar-backdrop" onClick={closeSidebar} />}
+      {isOpen && <div className="sidebar-backdrop" onClick={closeSidebar} />}
 
       <aside {...(asDrawer ? { role: "dialog", "aria-modal": "true" } : {})} className={`sidebar ${effectiveCollapsed ? "sidebar--collapsed" : ""} ${asDrawer ? "sidebar--drawer" : ""} ${isOpen ? "open" : ""}`}>
         {/* Mobile close */}
@@ -204,18 +228,18 @@ export function Sidebar({
 
         {/* Footer */}
         <div className="sidebar-footer">
-          <Link href="/profile" onClick={closeOnNav} className={`nav-item ${pathname === "/profile" ? "active" : ""}`} title={effectiveCollapsed ? "Profile" : undefined}>
+          <Link href="/profile" onClick={closeOnNav} className={`nav-item ${pathname === "/profile" ? "active" : ""}`} title={effectiveCollapsed ? t("settings") : undefined}>
             <Settings {...iconProps} />
-            {!effectiveCollapsed && <span>Profile</span>}
+            {!effectiveCollapsed && <span>{t("settings")}</span>}
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="nav-item"
-            title={effectiveCollapsed ? "Logout" : undefined}
+            title={effectiveCollapsed ? t("logout") : undefined}
             style={{ color: "var(--color-gray-400)" }}
           >
             <LogOut {...iconProps} />
-            {!effectiveCollapsed && <span>Logout</span>}
+            {!effectiveCollapsed && <span>{t("logout")}</span>}
           </button>
         </div>
       </aside>

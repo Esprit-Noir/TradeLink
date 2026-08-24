@@ -9,7 +9,7 @@ export default function ChallengesLoading() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1rem" }}>
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="card" style={{ padding: "1.5rem" }}>
+          <div key={i} className="chart-card" style={{ padding: "1.5rem" }}>
             <div className="skeleton" style={{ height: 14, width: 80, marginBottom: 8 }} />
             <div className="skeleton" style={{ height: 28, width: 160, marginBottom: 12 }} />
             <div className="skeleton" style={{ height: 8, width: "100%", marginBottom: 8 }} />

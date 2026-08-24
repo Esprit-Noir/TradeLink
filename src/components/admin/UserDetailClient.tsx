@@ -92,7 +92,7 @@ export function UserDetailClient({ user }: { user: User }) {
       </Link>
 
       {/* Header */}
-      <div className="card" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
+      <div className="chart-card" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>
             <h1 style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-100)" }}>{user.email}</h1>
@@ -132,7 +132,7 @@ export function UserDetailClient({ user }: { user: User }) {
           { label: "Backtests", value: user._count.backtestSessions },
           { label: "Journal Entries", value: user._count.dailyJournals },
         ].map(s => (
-          <div key={s.label} className="card" style={{ padding: "1rem" }}>
+          <div key={s.label} className="chart-card" style={{ padding: "1rem" }}>
             <p style={{ fontSize: "0.65rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 600, letterSpacing: "0.08em" }}>{s.label}</p>
             <p style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-200)", marginTop: 4 }}>{s.value}</p>
           </div>
@@ -141,7 +141,7 @@ export function UserDetailClient({ user }: { user: User }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
         {/* Accounts */}
-        <div className="card" style={{ padding: "1.25rem" }}>
+        <div className="chart-card" style={{ padding: "1.25rem" }}>
           <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)", marginBottom: 12 }}>Trading Accounts</h3>
           {user.accounts.length === 0 ? (
             <p style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>No accounts</p>
@@ -158,7 +158,7 @@ export function UserDetailClient({ user }: { user: User }) {
         </div>
 
         {/* Audit Logs */}
-        <div className="card" style={{ padding: "1.25rem" }}>
+        <div className="chart-card" style={{ padding: "1.25rem" }}>
           <h3 style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-gray-200)", marginBottom: 12 }}>Recent Admin Actions</h3>
           {user.adminActionLogs.length === 0 ? (
             <p style={{ fontSize: "0.8rem", color: "var(--color-gray-500)" }}>No actions logged</p>
