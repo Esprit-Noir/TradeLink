@@ -146,7 +146,7 @@ export function ChallengesManager({
     })
 
     prevRef.current = next
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [challenges])
 
   // Real-time evaluation: poll the engine for active challenges while the page is visible
@@ -310,7 +310,7 @@ export function ChallengesManager({
           const eventBadge = latestEvent && EVENT_BADGE[latestEvent.eventType]
           
           // Generate a subtle background gradient based on status
-          let bgColor = "var(--color-gray-900)"
+          const bgColor = "var(--color-gray-900)"
           let borderColor = "var(--color-gray-800)"
           if (isBreached) {
             borderColor = "var(--color-loss)"

@@ -19,7 +19,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
     let totalPnl = 0
     let totalPnlUsd = 0
     let fundedCapital = 0
-    let activeCount = accounts.length
+    const activeCount = accounts.length
 
     accounts.forEach(acc => {
       const eq = acc.propChallenge ? acc.propChallenge.currentEquity : acc.initialBalance + acc.stats.totalPnl

@@ -64,8 +64,8 @@ export default async function DashboardPage({
   let dailyGoal: number | null = null
   let selectedAccountId: string | null | "all" = null
   let filterAccounts: { id: string; name: string; isDefault: boolean }[] = []
-  let dailyPnlForCalendar: Record<string, number> = {}
-  let dailyTradeCountForCalendar: Record<string, number> = {}
+  const dailyPnlForCalendar: Record<string, number> = {}
+  const dailyTradeCountForCalendar: Record<string, number> = {}
 
   // Month & streak aggregates
   let timezone = "UTC"

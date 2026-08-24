@@ -1,0 +1,64 @@
+
+/Users/mac/developements/TradeLink/src/app/login/page.tsx
+  167:16  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/developements/TradeLink/src/app/onboarding/page.tsx
+  121:70  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  168:94  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/developements/TradeLink/src/app/share/[id]/opengraph-image.tsx
+  81:52  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/developements/TradeLink/src/app/share/[id]/page.tsx
+   71:48  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                        react/no-unescaped-entities
+  143:13  error  Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/mac/developements/TradeLink/src/components/layout/LanguageSwitcher.tsx
+  35:5  error  Error: This value cannot be modified
+
+Modifying a variable defined outside a component or hook is not allowed. Consider using an effect.
+
+/Users/mac/developements/TradeLink/src/components/layout/LanguageSwitcher.tsx:35:5
+  33 |
+  34 |   const setLanguage = (loc: string) => {
+> 35 |     document.cookie = `NEXT_LOCALE=${loc}; path=/; max-age=31536000`
+     |     ^^^^^^^^ value cannot be modified
+  36 |     setCurrentLocale(loc)
+  37 |     setOpen(false)
+  38 |     router.refresh()  react-hooks/immutability
+
+/Users/mac/developements/TradeLink/src/components/marketing/MarketingCta.tsx
+  54:97  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/developements/TradeLink/src/components/prop-firm/ChallengeCompare.tsx
+  119:30  error  Do not use an `<a>` element to navigate to `/challenges/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/mac/developements/TradeLink/src/components/prop-firm/ChallengeDetailView.tsx
+  156:5  error  Error: Cannot reassign variable after render completes
+
+Reassigning `runningHighBalance` after render has completed can cause inconsistent behavior on subsequent renders. Consider using state instead.
+
+/Users/mac/developements/TradeLink/src/components/prop-firm/ChallengeDetailView.tsx:156:5
+  154 |     const ddUsedPct = maxDDPct > 0 ? (ddPct / maxDDPct) * 100 : 0
+  155 |     const maxDDLevel = anchor * (1 - maxDDPct / 100)
+> 156 |     runningHighBalance = Math.max(runningHighBalance, endB)
+      |     ^^^^^^^^^^^^^^^^^^ Cannot reassign `runningHighBalance` after render completes
+  157 |     runningHighEquity = Math.max(runningHighEquity, endB, lowE)
+  158 |     return {
+  159 |       ...s,  react-hooks/immutability
+
+/Users/mac/developements/TradeLink/src/components/setups/SetupDetailPanel.tsx
+  57:13  error  Optional chain expressions can return undefined by design - using a non-null assertion is unsafe and wrong  @typescript-eslint/no-non-null-asserted-optional-chain
+
+/Users/mac/developements/TradeLink/src/components/stats/PropFirmStatsClient.tsx
+  37:35  error  Do not use an `<a>` element to navigate to `/challenges/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/mac/developements/TradeLink/src/components/trades/AddTradeModal.tsx
+  142:106  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/mac/developements/TradeLink/src/emails/SubscriptionApprovedEmail.tsx
+  36:26  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  61:62  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+✖ 15 problems (15 errors, 0 warnings)
+

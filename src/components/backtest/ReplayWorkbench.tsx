@@ -425,7 +425,7 @@ export function ReplayWorkbench({
       chart.setData(chartData.slice(0, idx + 1))
     }
     prevIndexRef.current = idx
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [state.currentIndex, state.data, state.subData, config.subTf, state.loadToken])
 
   // ── data loading ─────────────────────────────────────────────────────────────
