@@ -5,7 +5,7 @@
 import type { ParseResult } from "./index"
 
 // Colonnes attendues dans l'Activity Statement IB
-const REQUIRED_COLS = ["Symbol", "Date/Time", "Quantity", "T. Price", "Comm/Fee", "Realized P&L"]
+// const REQUIRED_COLS = ["Symbol", "Date/Time", "Quantity", "T. Price", "Comm/Fee", "Realized P&L"]
 
 export interface ParsedTrade {
   externalId?: string

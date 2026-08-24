@@ -14,7 +14,7 @@ export function DeleteTradeButton({ id }: { id: string }) {
       
       // Refresh the current route to fetch updated data from the server
       router.refresh()
-    } catch (error) {
+    } catch {
       toast.error("Error deleting trade.")
     }
   }

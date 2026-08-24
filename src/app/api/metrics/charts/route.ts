@@ -148,7 +148,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ setupData, hourlyData, heatmapData })
 
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to load charts data" }, { status: 500 })
   }
 }

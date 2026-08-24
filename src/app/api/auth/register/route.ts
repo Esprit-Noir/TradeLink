@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     }).catch(console.error)
 
     return NextResponse.json({ id: user.id, email: user.email, name: user.name })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

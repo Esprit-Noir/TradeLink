@@ -194,7 +194,7 @@ export async function POST(request: Request) {
         challengeId: targetChallenge?.id || null,
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

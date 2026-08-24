@@ -33,7 +33,7 @@ function LoginContent() {
       } else {
         setError("Invalid email or password.")
       }
-    } catch (err) {
+    } catch {
       setError("An unexpected error occurred.")
     } finally {
       setLoading(false)
