@@ -39,7 +39,7 @@ export default async function ProfilePage() {
     prisma.propChallenge.count({ where: { userId: session.user.id } }),
     prisma.tradingSetup.count({ where: { userId: session.user.id } }),
     prisma.dailyJournal.count({ where: { userId: session.user.id } }),
-    prisma.trade.count({ where: { accountId: { in: accountIds.map(a => a.id) } } }),
+    prisma.trade.count({ where: { accountId: { in: accountIds.map((a: any) => a.id) } } }),
   ])
 
   const cookieStore = await cookies()

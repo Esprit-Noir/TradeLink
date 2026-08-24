@@ -46,7 +46,7 @@ export default function RegisterPage() {
         router.push("/login")
       }
     } catch (err: unknown) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
       setLoading(false)
     }

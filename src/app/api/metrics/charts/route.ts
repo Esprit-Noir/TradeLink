@@ -101,13 +101,13 @@ export async function GET(request: Request) {
       }
     }
 
-    trades.forEach(t => {
+    trades.forEach((t: any) => {
       const pnl = Number(t.netPnl)
       const isWin = pnl > 0
       
       // Setups
       if (t.setupTags && t.setupTags.length > 0) {
-        t.setupTags.forEach(tag => {
+        t.setupTags.forEach((tag: any) => {
           if (!setupMap[tag]) setupMap[tag] = { pnl: 0, count: 0, wins: 0 }
           setupMap[tag].pnl += pnl
           setupMap[tag].count++

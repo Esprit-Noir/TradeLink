@@ -55,7 +55,7 @@ export async function RecentTradesTable({
           </tr>
         </thead>
         <tbody>
-          {trades.map((t) => (
+          {trades.map((t: any) => (
             <tr key={t.id}>
               <td>
                 <Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>

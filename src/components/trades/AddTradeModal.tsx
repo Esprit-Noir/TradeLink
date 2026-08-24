@@ -88,7 +88,7 @@ export function AddTradeModal() {
       setIsOpen(false)
       router.refresh() // Refresh the Server Component to show the new trade
     } catch (err: unknown) {
-      setError(err.message)
+      setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
       setLoading(false)
     }

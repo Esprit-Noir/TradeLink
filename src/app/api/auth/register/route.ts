@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(password, 10)
 
     // Create user and a default trading account in a transaction
-    const user = await prisma.$transaction(async (tx) => {
+    const user = await prisma.$transaction(async (tx: any) => {
       const newUser = await tx.user.create({
         data: {
           name,
