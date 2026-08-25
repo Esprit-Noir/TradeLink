@@ -16,7 +16,10 @@ export async function POST(request: Request) {
     const ip = request.headers.get("x-forwarded-for") || "unknown"
     const { success } = rateLimit(`register:${ip}`, { limit: 5, windowMs: 60000 })
     if (!success) {
-      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 })
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429, headers: { "Retry-After": "60" } }
+      )
     }
 
     const body = await request.json()

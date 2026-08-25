@@ -33,7 +33,7 @@ export const SubscriptionApprovedEmail = ({
           <Text style={text}>Hi {name},</Text>
           
           <Text style={text}>
-            Good news! We've received your payment and your account has been successfully upgraded to the <strong>{planName} Plan</strong>. 
+            Good news! We&apos;ve received your payment and your account has been successfully upgraded to the <strong>{planName} Plan</strong>. 
             All premium features are now unlocked and ready to use.
           </Text>
 
@@ -58,7 +58,7 @@ export const SubscriptionApprovedEmail = ({
           <Hr style={hr} />
           
           <Text style={footer}>
-            Thank you for investing in your trading edge. Let's conquer the markets!
+            Thank you for investing in your trading edge. Let&apos;s conquer the markets!
             <br /><br />
             Stay disciplined,
             <br />

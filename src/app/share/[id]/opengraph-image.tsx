@@ -78,7 +78,7 @@ export default async function Image({ params }: { params: { id: string } }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', margin: '40px 0' }}>
               <div style={{ fontSize: '32px', color: '#9ca3af', marginBottom: '16px' }}>
-                {shareLink.user.name || "A trader"}'s Performance
+                {shareLink.user.name || "A trader"}&apos;s Performance
               </div>
               <div style={{ fontSize: '72px', fontWeight: '900', letterSpacing: '-2px', lineHeight: '1.1', marginBottom: '16px' }}>
                 {challenge.template.firmName}

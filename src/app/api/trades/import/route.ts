@@ -19,7 +19,10 @@ export async function POST(request: Request) {
 
     const rl = rateLimit(`import:${session.user.id}`, { limit: 5, windowMs: 60000 })
     if (!rl.success) {
-      return NextResponse.json({ error: "Too many requests. Please wait a minute." }, { status: 429 })
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a minute." },
+        { status: 429, headers: { "Retry-After": "60" } }
+      )
     }
 
     const formData = await request.formData()

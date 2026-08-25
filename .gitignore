@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# scripts & debug — rapports générés, fichiers scratch
+/scripts/*.txt
+/scripts/*.json
+/scripts/*.log

@@ -4,6 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell,
 } from "recharts"
 import { Trophy, TrendingUp, AlertCircle, DollarSign } from "lucide-react"
+import Link from "next/link"
 
 const FIRM_COLORS = ["var(--color-profit)", "var(--color-brand-500)", "var(--color-warning)", "var(--color-loss)", "#a78bfa", "#22d3ee"]
 
@@ -34,7 +35,7 @@ export function PropFirmStatsClient({
       <div className="chart-card" style={{ padding: "1.25rem" }}>
         <div className="chart-title">Prop Firm Performance</div>
         <div className="empty-state" style={{ padding: "2rem" }}>
-          No prop challenges yet. <a href="/challenges" style={{ color: "var(--color-brand-500)" }}>Start one now</a>.
+          No prop challenges yet. <Link href="/challenges" style={{ color: "var(--color-brand-500)" }}>Start one now</Link>.
         </div>
       </div>
     )

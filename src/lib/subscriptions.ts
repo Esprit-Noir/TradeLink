@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { cache } from "react"
 
 export type FeatureKey = "replayAccess" | "propFirmAccess" | "advancedStats" | "backtestAccess"
 
@@ -46,11 +47,13 @@ export async function hasFeatureAccess(userId: string, feature: FeatureKey): Pro
   return false
 }
 
-export async function getActivePlan(userId: string) {
+// Utiliser React.cache() pour dédupliquer les appels dans une même requête HTTP
+// (ex: (app)/layout.tsx et sidebar-stats/route.ts appellent la même fonction pour le même userId)
+export const getActivePlan = cache(async (userId: string) => {
   const sub = await prisma.subscription.findFirst({
     where: { userId, status: "ACTIVE" },
     include: { plan: true },
     orderBy: { createdAt: "desc" }
   })
   return sub?.plan || null
-}
+})

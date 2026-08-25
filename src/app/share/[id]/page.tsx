@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/formatters"
 import { BadgeCheck, Target, TrendingUp, AlertTriangle } from "lucide-react"
+import Link from "next/link"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -68,7 +69,7 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
             {isPassed ? <BadgeCheck size={40} /> : isFailed ? <AlertTriangle size={40} className="text-red-500" /> : <TrendingUp size={40} />}
           </div>
           <h1 className="text-4xl font-bold text-white tracking-tight mb-4">
-            {shareLink.user.name || "A trader"}'s Performance
+            {shareLink.user.name || "A trader"}&apos;s Performance
           </h1>
           <p className="text-xl text-gray-400">
             {challenge.template.firmName} — {challenge.template.programName}
@@ -140,9 +141,9 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
             <img src="/logo-dark.png" alt="TradeLink" className="h-6" />
           </div>
           <div>
-            <a href="/" className="text-sm font-medium hover:text-white text-gray-400 transition-colors">
+            <Link href="/" className="text-sm font-medium hover:text-white text-gray-400 transition-colors">
               Create your own journal &rarr;
-            </a>
+            </Link>
           </div>
         </div>
       </header>

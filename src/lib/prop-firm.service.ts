@@ -1,5 +1,7 @@
 import { prisma } from "./prisma"
 import { dayKey, nextMidnightInTz } from "@/lib/dates"
+import { sendEmail } from "@/lib/email"
+import { PropAlertEmail } from "@/emails/PropAlertEmail"
 
 type EventSeverity = "info" | "warning" | "critical"
 
@@ -50,21 +52,18 @@ async function logEventIfAbsent(
     })
 
     if (challengeInfo?.user.email) {
-      import("@/lib/email").then(({ sendEmail }) => {
-        import("@/emails/PropAlertEmail").then(({ PropAlertEmail }) => {
-          sendEmail({
-            to: challengeInfo.user.email,
-            subject: `TradeLink: Update on your ${challengeInfo.template.firmName} Challenge`,
-            react: PropAlertEmail({
-              userName: challengeInfo.user.name || "Trader",
-              firmName: challengeInfo.template.firmName,
-              eventType: eventType.replace(/_/g, " ").toUpperCase(),
-              severity: severity as any,
-              message: message,
-            }),
-          }).catch(console.error)
-        })
-      }).catch(console.error)
+      // Fire-and-forget avec gestion d'erreur propre
+      sendEmail({
+        to: challengeInfo.user.email,
+        subject: `TradeLink: Update on your ${challengeInfo.template.firmName} Challenge`,
+        react: PropAlertEmail({
+          userName: challengeInfo.user.name || "Trader",
+          firmName: challengeInfo.template.firmName,
+          eventType: eventType.replace(/_/g, " ").toUpperCase(),
+          severity: severity as any,
+          message: message,
+        }),
+      }).catch((err) => console.error("[PROP_EMAIL]", err))
     }
   }
 }
@@ -391,51 +390,54 @@ async function markBreached(challengeId: string, reason: string, prefs?: any) {
 }
 
 async function writeDailySnapshots(challengeId: string, days: Map<string, DayAccum>, dailyDDPct: number) {
-  // First, delete any existing snapshots that are not in the current evaluation
-  // This handles cases where trades were deleted or filtered out.
+  // Supprimer les snapshots qui ne font plus partie de l'évaluation courante
   const evaluatedDates = Array.from(days.values()).map(acc => acc.date)
-  
+
   if (evaluatedDates.length === 0) {
     await prisma.propChallengeDailySnapshot.deleteMany({
       where: { challengeId }
     })
-  } else {
-    await prisma.propChallengeDailySnapshot.deleteMany({
-      where: {
-        challengeId,
-        date: { notIn: evaluatedDates }
-      }
-    })
+    return
   }
 
-  for (const acc of days.values()) {
-    const key = dayKey(acc.date, "UTC")
-    const [y, m, d] = key.split("-").map(Number)
-    const date = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0))
-    const dailyDdAllowed = acc.startBalance * (Number(dailyDDPct) / 100)
-    const ddUsed = Math.max(0, acc.startBalance - acc.lowestEquity)
-    const dailyDDUsedPct = dailyDdAllowed > 0 ? (ddUsed / dailyDdAllowed) * 100 : null
+  await prisma.propChallengeDailySnapshot.deleteMany({
+    where: {
+      challengeId,
+      date: { notIn: evaluatedDates }
+    }
+  })
 
-    await prisma.propChallengeDailySnapshot.upsert({
-      where: { challengeId_date: { challengeId, date } },
-      update: {
-        startBalance: acc.startBalance,
-        endBalance: acc.endBalance,
-        lowestEquity: acc.lowestEquity,
-        dailyPnl: acc.pnl,
-        tradesCount: acc.count,
-        dailyDDUsedPct,
-      },
-      create: {
-        challengeId,
-        date,
-        startBalance: acc.startBalance,
-        endBalance: acc.endBalance,
-        lowestEquity: acc.lowestEquity,
-        dailyPnl: acc.pnl,
-        tradesCount: acc.count,
-        dailyDDUsedPct,
-      }
+  // Regrouper tous les upserts dans une transaction pour éviter N requêtes séquentielles
+  await prisma.$transaction(
+    Array.from(days.values()).map(acc => {
+      const key = dayKey(acc.date, "UTC")
+      const [y, m, d] = key.split("-").map(Number)
+      const date = new Date(Date.UTC(y, m - 1, d, 0, 0, 0, 0))
+      const dailyDdAllowed = acc.startBalance * (Number(dailyDDPct) / 100)
+      const ddUsed = Math.max(0, acc.startBalance - acc.lowestEquity)
+      const dailyDDUsedPct = dailyDdAllowed > 0 ? (ddUsed / dailyDdAllowed) * 100 : null
+
+      return prisma.propChallengeDailySnapshot.upsert({
+        where: { challengeId_date: { challengeId, date } },
+        update: {
+          startBalance: acc.startBalance,
+          endBalance: acc.endBalance,
+          lowestEquity: acc.lowestEquity,
+          dailyPnl: acc.pnl,
+          tradesCount: acc.count,
+          dailyDDUsedPct,
+        },
+        create: {
+          challengeId,
+          date,
+          startBalance: acc.startBalance,
+          endBalance: acc.endBalance,
+          lowestEquity: acc.lowestEquity,
+          dailyPnl: acc.pnl,
+          tradesCount: acc.count,
+          dailyDDUsedPct,
+        }
+      })
     })
-  }
+  )
 }

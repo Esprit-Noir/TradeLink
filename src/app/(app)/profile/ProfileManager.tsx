@@ -15,12 +15,22 @@ type ProfileStats = {
   trades: number
 }
 
+type UserProfile = {
+  id: string
+  name: string | null
+  email: string
+  createdAt: Date | string
+  baseCurrency?: string | null
+  timezone?: string | null
+  dailyGoal?: number | string | null
+}
+
 export function ProfileManager({
   user,
   initialDensity = "comfortable",
   stats,
 }: {
-  user: any
+  user: UserProfile
   initialDensity?: string
   stats: ProfileStats
 }) {
@@ -38,7 +48,7 @@ export function ProfileManager({
   const memberSince = new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
   const initials = (user.name || user.email)
     .split(/\s+/)
-    .map((w: string) => w[0])
+    .map((w: string) => Array.from(w)[0] ?? "")
     .join("")
     .slice(0, 2)
     .toUpperCase()

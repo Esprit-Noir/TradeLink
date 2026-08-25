@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveAccountScope } from "@/lib/active-account"
+import type { Prisma } from "@prisma/client"
 
 export async function GET() {
   try {
@@ -20,7 +21,7 @@ export async function GET() {
     const todayStart = new Date()
     todayStart.setHours(0, 0, 0, 0)
 
-    const whereClause: any = scope.all
+    const whereClause: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id, status: "closed", exitAt: { gte: todayStart } }
       : { accountId: scope.accounts[0].id, status: "closed", exitAt: { gte: todayStart } }
 
@@ -36,7 +37,7 @@ export async function GET() {
     let challengeName: string | null = null
     let challengePct = 0
 
-    const challengeWhere: any = scope.all
+    const challengeWhere: Prisma.PropChallengeWhereInput = scope.all
       ? { userId: session.user.id, status: "active" }
       : { accountId: scope.accounts[0].id, status: "active" }
 
@@ -76,6 +77,7 @@ export async function GET() {
       backtestAccess: isAdmin ? true : !!plan?.backtestAccess
     })
   } catch (error) {
-    return NextResponse.json({ todayPnl: 0, todayTrades: 0, challengeStatus: null, challengeName: null, challengePct: 0, features: {}, backtestAccess: false })
+    console.error("[SIDEBAR_STATS]", error instanceof Error ? error.message : error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

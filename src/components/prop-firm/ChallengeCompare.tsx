@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { BarChart2 } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
 
@@ -116,7 +117,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
       {challenges.length === 0 && (
         <div className="chart-card" style={{ padding: "2rem", textAlign: "center", color: "var(--color-gray-500)" }}>
-          No challenges yet. <a href="/challenges" style={{ color: "var(--color-brand-500)" }}>Create one</a>.
+          No challenges yet. <Link href="/challenges" style={{ color: "var(--color-brand-500)" }}>Create one</Link>.
         </div>
       )}
 

@@ -164,7 +164,7 @@ function LoginContent() {
 
         <div style={{ marginTop: "2rem", textAlign: "center" }}>
           <p style={{ fontSize: "0.875rem", color: "var(--color-gray-400)" }}>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link href="/register" style={{ color: "var(--color-brand-400)", textDecoration: "none", fontWeight: 500 }}>
               Sign up
             </Link>

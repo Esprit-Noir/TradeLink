@@ -51,7 +51,7 @@ export function MarketingCta({ isLoggedIn }: { isLoggedIn?: boolean }) {
           </motion.h2>
           <motion.p variants={itemVariants} className="text-xl text-gray-400 mb-12 leading-relaxed">
             Rejoignez plus de 10 000 traders qui utilisent TradeLink pour analyser leurs performances,
-            forger leur discipline et améliorer leur avantage. Démarrez gratuitement dès aujourd'hui.
+            forger leur discipline et améliorer leur avantage. Démarrez gratuitement dès aujourd&apos;hui.
           </motion.p>
 
           <motion.div variants={itemVariants} className="flex flex-wrap justify-center gap-6 mb-12">

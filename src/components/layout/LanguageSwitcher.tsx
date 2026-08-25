@@ -31,11 +31,19 @@ export function LanguageSwitcher() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
+  const [pendingLocale, setPendingLocale] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (pendingLocale) {
+      document.cookie = `NEXT_LOCALE=${pendingLocale}; path=/; max-age=31536000`
+      router.refresh()
+    }
+  }, [pendingLocale, router])
+
   const setLanguage = (loc: string) => {
-    document.cookie = `NEXT_LOCALE=${loc}; path=/; max-age=31536000`
     setCurrentLocale(loc)
+    setPendingLocale(loc)
     setOpen(false)
-    router.refresh()
   }
 
   const activeLang = LANGUAGES.find(l => l.code === currentLocale) || LANGUAGES[0]

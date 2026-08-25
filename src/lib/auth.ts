@@ -125,14 +125,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true
     },
     async jwt({ token, user }) {
+      // Seulement au moment de la connexion (user est défini)
       if (user) {
         token.id = user.id
-      }
-
-      const userId = token.id as string
-      if (userId) {
+        // On charge role/status une seule fois — stockés dans le JWT
         const dbUser = await authPrisma.user.findUnique({
-          where: { id: userId },
+          where: { id: user.id as string },
           select: { role: true, status: true },
         })
         if (dbUser) {

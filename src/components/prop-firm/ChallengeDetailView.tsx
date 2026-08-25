@@ -142,32 +142,42 @@ export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailV
   const targetPct = Number(challenge.profitTargetPct || 0)
   const profitTarget = initial * (1 + targetPct / 100)
 
-  let runningHighBalance = initial
-  let runningHighEquity = initial
-  const series = snapshots.map(s => {
-    const endB = Number(s.endBalance)
-    const lowE = Number(s.lowestEquity)
-    const anchor = challenge.template?.drawdownType === 'static_balance'
-      ? initial
-      : challenge.template?.drawdownType === 'trailing_balance' ? runningHighBalance : runningHighEquity
-    const ddPct = anchor > 0 ? ((anchor - lowE) / anchor) * 100 : 0
-    const ddUsedPct = maxDDPct > 0 ? (ddPct / maxDDPct) * 100 : 0
-    const maxDDLevel = anchor * (1 - maxDDPct / 100)
-    runningHighBalance = Math.max(runningHighBalance, endB)
-    runningHighEquity = Math.max(runningHighEquity, endB, lowE)
-    return {
-      ...s,
-      endBalance: endB,
-      lowestEquity: lowE,
-      maxDDLevel: Math.round(maxDDLevel * 100) / 100,
-      profitTarget,
-      ddUsedPct: Math.round(ddUsedPct * 100) / 100,
-      ddPct: Math.round(ddPct * 100) / 100,
-      cumPnl: endB - initial,
-      cumPct: initial > 0 ? ((endB - initial) / initial) * 100 : 0,
-      dateLabel: formatDate(s.date),
-    }
-  })
+  // Utiliser reduce() pour accumuler les running highs au lieu de réassigner des variables
+  // dans un .map() (interdit par react-hooks/immutability)
+  type SeriesPoint = typeof snapshots[0] & {
+    endBalance: number; lowestEquity: number; maxDDLevel: number; profitTarget: number;
+    ddUsedPct: number; ddPct: number; cumPnl: number; cumPct: number; dateLabel: string;
+  }
+  const series = snapshots.reduce<{ items: SeriesPoint[]; highBalance: number; highEquity: number }>(
+    (acc, s) => {
+      const endB = Number(s.endBalance)
+      const lowE = Number(s.lowestEquity)
+      const anchor = challenge.template?.drawdownType === 'static_balance'
+        ? initial
+        : challenge.template?.drawdownType === 'trailing_balance' ? acc.highBalance : acc.highEquity
+      const ddPct = anchor > 0 ? ((anchor - lowE) / anchor) * 100 : 0
+      const ddUsedPct = maxDDPct > 0 ? (ddPct / maxDDPct) * 100 : 0
+      const maxDDLevel = anchor * (1 - maxDDPct / 100)
+      const point = {
+        ...s,
+        endBalance: endB,
+        lowestEquity: lowE,
+        maxDDLevel: Math.round(maxDDLevel * 100) / 100,
+        profitTarget,
+        ddUsedPct: Math.round(ddUsedPct * 100) / 100,
+        ddPct: Math.round(ddPct * 100) / 100,
+        cumPnl: endB - initial,
+        cumPct: initial > 0 ? ((endB - initial) / initial) * 100 : 0,
+        dateLabel: formatDate(s.date),
+      }
+      return {
+        items: [...acc.items, point],
+        highBalance: Math.max(acc.highBalance, endB),
+        highEquity: Math.max(acc.highEquity, endB, lowE),
+      }
+    },
+    { items: [], highBalance: initial, highEquity: initial }
+  ).items
 
   const ddSeries = series.filter(s => s.ddUsedPct != null && !isNaN(s.ddUsedPct))
 

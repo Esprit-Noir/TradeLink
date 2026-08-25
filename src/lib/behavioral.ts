@@ -67,6 +67,8 @@ const CONFIG = {
     stop_violation: 20,    // par occurrence
     session_breach: 5,     // par occurrence
   },
+  // Nombre max d'occurrences prises en compte dans la pénalité (évite un score de 0 sur quelques mauvais trades)
+  maxPenaltyCap: 5,
 }
 
 // ─── Point d'entrée principal ─────────────────────────────────────────────────
@@ -169,15 +171,25 @@ function detectRevengeTrades(trades: Trade[]): DetectedPattern | null {
   let impactPnl = 0
 
   for (let i = 1; i < closed.length; i++) {
-    const prev = closed[i - 1]
     const curr = closed[i]
+    let isRevenge = false
 
-    const prevPnl = Number(prev.netPnl)
-    if (prevPnl >= 0) continue // le trade précédent n'est pas une perte
+    // Look back at previous closed trades to see if any loss happened just before this entry
+    for (let j = i - 1; j >= 0; j--) {
+      const prev = closed[j]
+      const prevPnl = Number(prev.netPnl)
+      
+      if (prevPnl >= 0 || !prev.exitAt) continue // Seulement les pertes clôturées
 
-    if (!prev.exitAt) continue
-    const gap = (new Date(curr.entryAt).getTime() - new Date(prev.exitAt).getTime()) / 60000
-    if (gap >= 0 && gap <= CONFIG.revengeWindowMinutes) {
+      const gap = (new Date(curr.entryAt).getTime() - new Date(prev.exitAt).getTime()) / 60000
+      
+      if (gap >= 0 && gap <= CONFIG.revengeWindowMinutes) {
+        isRevenge = true
+        break // Dès qu'on trouve une perte récente déclencheuse, on flag le trade
+      }
+    }
+
+    if (isRevenge) {
       affectedIds.push(curr.id)
       impactPnl += Number(curr.netPnl ?? 0)
     }
@@ -282,7 +294,7 @@ function computeScore(patterns: DetectedPattern[]): { score: number; breakdown: 
 
   let score = 100
   for (const p of penalties) {
-    score -= p.penalty * Math.min(p.count, 5) // cap à 5 occurrences max de pénalité
+    score -= p.penalty * Math.min(p.count, CONFIG.maxPenaltyCap)
   }
 
   score = Math.max(0, Math.min(100, Math.round(score)))

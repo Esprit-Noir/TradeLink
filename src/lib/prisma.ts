@@ -13,7 +13,7 @@ const prismaClientSingleton = () => {
     connectionString,
     connectionTimeoutMillis: 30000,
     idleTimeoutMillis: 60000,
-    max: 5,
+    max: 10, // augmenté car on partage une seule instance
   })
   const adapter = new PrismaPg(pool)
   return new PrismaClient({
@@ -26,25 +26,5 @@ export const prisma = globalForPrisma.prisma ?? prismaClientSingleton()
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
 
-// Separate PrismaClient for NextAuth
-const globalForAuthPrisma = globalThis as unknown as {
-  authPrisma: PrismaClient | undefined
-}
-
-const authPrismaSingleton = () => {
-  const pool = new Pool({
-    connectionString,
-    connectionTimeoutMillis: 30000,
-    idleTimeoutMillis: 60000,
-    max: 5,
-  })
-  const adapter = new PrismaPg(pool)
-  return new PrismaClient({
-    adapter,
-    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-  })
-}
-
-export const authPrisma = globalForAuthPrisma.authPrisma ?? authPrismaSingleton()
-
-if (process.env.NODE_ENV !== "production") globalForAuthPrisma.authPrisma = authPrisma
+// Alias partagé pour NextAuth — même instance, pas de double pool
+export const authPrisma = prisma

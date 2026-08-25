@@ -139,7 +139,7 @@ export function AddTradeModal() {
 
             <div style={{ marginBottom: "2rem" }}>
               <h2 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-gray-100)" }}>Manual Trade Entry</h2>
-              <p style={{ fontSize: "0.875rem", color: "var(--color-gray-400)" }}>Record a trade that isn't in your CSV imports.</p>
+              <p style={{ fontSize: "0.875rem", color: "var(--color-gray-400)" }}>Record a trade that isn&apos;t in your CSV imports.</p>
             </div>
 
             {error && (
