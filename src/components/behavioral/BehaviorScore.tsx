@@ -3,6 +3,9 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
+import { useTranslations } from "next-intl"
+import { motion } from "framer-motion"
+import { AlertTriangle, Brain } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
 import type { BehavioralResult, DetectedPattern } from "@/lib/behavioral"
@@ -14,6 +17,7 @@ const RANGES = [
 ]
 
 export function BehaviorScore() {
+  const t = useTranslations("behavioral")
   const [data, setData] = useState<(BehavioralResult & { history?: any[]; range?: string; recentFlags?: any[] }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [range, setRange] = useState("all")
@@ -42,7 +46,6 @@ export function BehaviorScore() {
   const scoreClass = score >= 85 ? "score-excellent" : score >= 70 ? "score-good" : score >= 50 ? "score-medium" : score >= 30 ? "score-poor" : "score-critical"
   const scoreLabel = score >= 85 ? "Excellent" : score >= 70 ? "Good" : score >= 50 ? "Fair" : score >= 30 ? "Poor" : "Critical"
 
-  // Score delta vs previous snapshot
   const history = data.history || []
   let delta: number | null = null
   if (history.length >= 2) {
@@ -51,10 +54,14 @@ export function BehaviorScore() {
     if (typeof a === "number" && typeof b === "number") delta = b - a
   }
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+  const hasOvertrading = data.scoreBreakdown?.penalties.some(p => p.type === "overtrading")
 
-      {/* Range selector */}
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="space-y-6"
+    >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: "0.5rem", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem" }}>
           {RANGES.map(r => (
@@ -77,21 +84,16 @@ export function BehaviorScore() {
             </button>
           ))}
         </div>
-        {delta !== null && (
-          <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", fontSize: "0.85rem", padding: "0.35rem 0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-            <span style={{ color: "var(--color-gray-500)" }}>vs last analysis</span>
-            <span style={{ fontWeight: 700, color: delta > 0 ? "var(--color-profit)" : delta < 0 ? "var(--color-loss)" : "var(--color-gray-400)" }}>
-              {delta > 0 ? "▲" : delta < 0 ? "▼" : "—"} {delta > 0 ? "+" : ""}{delta}
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* TOP ROW: 3 Cards */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
-
-        {/* 1. Score Card */}
-        <div className="chart-card" style={{ flex: "1 1 300px", textAlign: "center", padding: "2.5rem 1.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+          className="chart-card p-6 md:col-span-1 border border-[var(--color-gray-800)]"
+          style={{ background: "var(--color-gray-900)" }}
+        >
           <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "2rem" }}>
             Discipline Score
           </div>
@@ -102,14 +104,18 @@ export function BehaviorScore() {
           <div style={{ marginTop: "0.75rem", fontSize: "0.9rem", color: "var(--color-gray-400)", lineHeight: 1.6, padding: "0 1rem" }}>
             {data.summary}
           </div>
-
-          {/* Score breakdown */}
           <ScoreBreakdownBar breakdown={data.scoreBreakdown} />
-        </div>
+        </motion.div>
 
-        {/* 1.5 Psychological Profile */}
-        <div className="chart-card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "1.5rem", width: "100%", textAlign: "left" }}>
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="chart-card p-6 md:col-span-2 border border-[var(--color-gray-800)]"
+          style={{ background: "var(--color-gray-900)" }}
+        >
+          <div className="flex items-center gap-2 mb-4 text-gray-400 font-bold uppercase text-xs tracking-wider">
+            <Brain size={16} />
             Psychological Profile
           </div>
           <div style={{ width: "100%", height: "250px" }}>
@@ -129,71 +135,9 @@ export function BehaviorScore() {
               </RadarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        {/* 2. Emotion Costs */}
-        <div className="chart-card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "1.5rem" }}>
-            Cost of Emotions (Tilt)
-          </div>
-          {data.emotionCosts && data.emotionCosts.length > 0 ? (
-            <div style={{ display: "flex", flexDirection: "column", gap: "1rem", flex: 1, justifyContent: "center" }}>
-              {data.emotionCosts.map((ec) => (
-                <div key={ec.tag} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)" }}>
-                  <div>
-                    <div style={{ fontWeight: 600, color: "var(--color-gray-100)", textTransform: "capitalize", fontSize: "1.05rem" }}>{ec.tag}</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--color-gray-500)", marginTop: "0.25rem" }}>Occurred in {ec.count} losing trades</div>
-                  </div>
-                  <div style={{ fontWeight: 700, color: "var(--color-loss)", fontSize: "1.25rem" }}>
-                    {formatCurrency(ec.totalLoss, "USD", true, 2)}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--color-gray-500)", padding: "2rem 0", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px dashed var(--color-gray-800)" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "1rem", opacity: 0.8 }}>🧘‍♂️</div>
-              <div style={{ fontWeight: 600, color: "var(--color-gray-400)", fontSize: "1rem" }}>Zen Mode</div>
-              <div style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>No emotion-driven losses recorded.</div>
-            </div>
-          )}
-        </div>
-
-        {/* 3. Setup Performance */}
-        <div className="chart-card" style={{ flex: "1 1 300px", padding: "2rem 1.5rem", display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.15em", color: "var(--color-gray-500)", marginBottom: "1.5rem" }}>
-            Setup Performance
-          </div>
-          {data.setupPerformance && data.setupPerformance.length > 0 ? (
-            <div style={{ flex: 1, minHeight: "240px", width: "100%" }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.setupPerformance} layout="vertical" margin={{ top: 0, right: 0, left: 40, bottom: 0 }}>
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="tag" type="category" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 13, fontWeight: 500 }} />
-                  <Tooltip 
-                    cursor={{ fill: "var(--color-gray-800)" }}
-                    contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "var(--radius-card)", padding: "0.75rem" }}
-                    formatter={(val: any) => [formatCurrency(Number(val), "USD", true, 2), "Net P&L"]}
-                  />
-                  <Bar dataKey="netPnl" radius={[0, 6, 6, 0]} barSize={32}>
-                    {data.setupPerformance.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          ) : (
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--color-gray-500)", padding: "2rem 0", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px dashed var(--color-gray-800)" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "1rem", opacity: 0.8 }}>📊</div>
-              <div style={{ fontWeight: 600, color: "var(--color-gray-400)", fontSize: "1rem" }}>No Data Yet</div>
-              <div style={{ fontSize: "0.85rem", marginTop: "0.5rem" }}>Start tagging your trades to see performance.</div>
-            </div>
-          )}
-        </div>
+        </motion.div>
       </div>
 
-      {/* 4. History Chart */}
       <div className="card-hover" style={{ padding: "1.75rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
         <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-500)", marginBottom: "1.5rem" }}>
           Score History
@@ -202,37 +146,10 @@ export function BehaviorScore() {
           <div style={{ height: "200px" }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={history}>
-                <XAxis 
-                  dataKey="computedAt" 
-                  tickFormatter={(d) => new Date(d).toLocaleDateString()} 
-                  tick={{ fontSize: 12, fill: "var(--color-gray-500)" }}
-                  tickLine={false}
-                  axisLine={false}
-                  minTickGap={20}
-                />
-                <YAxis 
-                  domain={[0, 100]} 
-                  tick={{ fontSize: 12, fill: "var(--color-gray-500)" }}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    background: "var(--color-gray-900)",
-                    border: "1px solid var(--color-gray-700)",
-                    borderRadius: "var(--radius-sm)",
-                    fontSize: 12,
-                  }}
-                  labelFormatter={(l: any) => new Date(l).toLocaleString()}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="disciplineScore" 
-                  stroke="var(--color-brand-500)" 
-                  strokeWidth={3}
-                  dot={{ r: 4, fill: "var(--color-brand-500)", stroke: "var(--color-gray-900)" }}
-                  activeDot={{ r: 6 }}
-                />
+                <XAxis dataKey="computedAt" tickFormatter={(d) => new Date(d).toLocaleDateString()} tick={{ fontSize: 12, fill: "var(--color-gray-500)" }} tickLine={false} axisLine={false} minTickGap={20} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-gray-500)" }} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "var(--radius-sm)", fontSize: 12 }} labelFormatter={(l: any) => new Date(l).toLocaleString()} />
+                <Line type="monotone" dataKey="disciplineScore" stroke="var(--color-brand-500)" strokeWidth={3} dot={{ r: 4, fill: "var(--color-brand-500)", stroke: "var(--color-gray-900)" }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -243,38 +160,11 @@ export function BehaviorScore() {
         )}
       </div>
 
-      {/* 5. Recent violations */}
-      {data.recentFlags && data.recentFlags.length > 0 && (
-        <div className="card-hover" style={{ padding: "1.75rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--color-gray-500)", marginBottom: "1rem" }}>
-            Recent Violations
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-            {data.recentFlags.map((f, i) => (
-              <div key={`${f.id}-${i}`} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem 0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-                <span style={{
-                  fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", padding: "0.2rem 0.45rem", borderRadius: "4px", whiteSpace: "nowrap",
-                  background: `${f.color}22`, color: f.color, border: `1px solid ${f.color}44`,
-                }}>
-                  {f.label}
-                </span>
-                <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-100)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {f.symbol} <span style={{ color: "var(--color-gray-500)", fontWeight: 400, textTransform: "capitalize" }}>{f.side}</span>
-                </span>
-                <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginLeft: "auto", whiteSpace: "nowrap" }}>
-                  {new Date(f.entryAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                </span>
-                <span style={{ fontSize: "0.85rem", fontWeight: 700, color: f.netPnl < 0 ? "var(--color-loss)" : "var(--color-profit)", whiteSpace: "nowrap" }}>
-                  {formatCurrency(f.netPnl, "USD", true, 2)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 6. Detected Patterns */}
-      <div>
+      <motion.div 
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
         <div style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-200)", marginBottom: "1rem" }}>
           Violations & Patterns
         </div>
@@ -291,12 +181,11 @@ export function BehaviorScore() {
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 
-// ─── Score breakdown bar ──────────────────────────────────────────────────────
 function ScoreBreakdownBar({ breakdown }: { breakdown: BehavioralResult["scoreBreakdown"] }) {
   if (!breakdown || breakdown.penalties.length === 0) {
     return (

@@ -12,20 +12,10 @@ export function HourHeatmap() {
   const [loading, setLoading] = useState(true)
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null)
   const searchParams = useSearchParams()
+  const qs = searchParams.toString()
 
   useEffect(() => {
     setLoading(true)
-    const params = new URLSearchParams()
-    const period = searchParams.get("period")
-    const accountId = searchParams.get("accountId")
-    const from = searchParams.get("from")
-    const to = searchParams.get("to")
-    if (period) params.set("period", period)
-    if (accountId) params.set("accountId", accountId)
-    if (from) params.set("from", from)
-    if (to) params.set("to", to)
-
-    const qs = params.toString()
     fetch(`/api/metrics/charts${qs ? `?${qs}` : ""}`)
       .then((r) => r.json())
       .then((d) => {
@@ -33,7 +23,7 @@ export function HourHeatmap() {
         setLoading(false)
       })
       .catch(() => setLoading(false))
-  }, [searchParams])
+  }, [qs])
 
   if (loading) {
     return (

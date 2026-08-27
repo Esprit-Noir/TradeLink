@@ -1,6 +1,32 @@
 "use client"
 
+import React, { useMemo } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
+
+const renderCustomizedLabel = (props: any) => {
+  const { cx, cy, midAngle, outerRadius, fill, payload, percent } = props
+  const RADIAN = Math.PI / 180
+  
+  const sin = Math.sin(-RADIAN * midAngle)
+  const cos = Math.cos(-RADIAN * midAngle)
+  const sx = cx + (outerRadius + 4) * cos
+  const sy = cy + (outerRadius + 4) * sin
+  const mx = cx + (outerRadius + 12) * cos
+  const my = cy + (outerRadius + 12) * sin
+  const ex = mx + (cos >= 0 ? 1 : -1) * 8
+  const ey = my
+  const textAnchor = cos >= 0 ? 'start' : 'end'
+
+  return (
+    <g>
+      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke="var(--color-gray-700)" strokeWidth={1} fill="none" />
+      <circle cx={sx} cy={sy} r={3} fill={fill} stroke="none" />
+      <text x={ex + (cos >= 0 ? 1 : -1) * 8} y={ey} dy={4} textAnchor={textAnchor} fill="var(--color-gray-200)" fontSize={12} fontWeight={700}>
+        {payload.name} ({(percent * 100).toFixed(0)}%)
+      </text>
+    </g>
+  )
+}
 
 interface WinRateDonutProps {
   wins: number
@@ -11,10 +37,10 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
   const total = wins + losses
   const winRate = total > 0 ? (wins / total) * 100 : 0
   
-  const data = [
+  const data = useMemo(() => [
     { name: "Wins", value: wins, color: "var(--color-profit)" },
     { name: "Losses", value: losses, color: "var(--color-loss)" },
-  ]
+  ], [wins, losses])
 
   if (total === 0) {
     return (
@@ -28,18 +54,20 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
     <div className="h-full flex flex-col">
       <div className="flex-1 relative">
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
+          <PieChart margin={{ top: 10, bottom: 10, left: 35, right: 35 }}>
             <Pie
               data={data}
               cx="50%"
               cy="50%"
-              innerRadius="65%"
-              outerRadius="90%"
-              cornerRadius={8}
-              stroke="none"
+              innerRadius="50%"
+              outerRadius="95%"
+              paddingAngle={0}
+              stroke="var(--color-gray-900)"
+              strokeWidth={4}
               dataKey="value"
-              animationBegin={0}
-              animationDuration={800}
+              isAnimationActive={false}
+              label={renderCustomizedLabel}
+              labelLine={false}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -61,9 +89,6 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
           <div className="text-3xl font-bold text-[var(--color-gray-100)] leading-none">
             {winRate.toFixed(0)}%
-          </div>
-          <div className="text-[0.7rem] text-[var(--color-gray-500)] mt-1">
-            Win Rate
           </div>
         </div>
       </div>

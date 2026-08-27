@@ -10,8 +10,7 @@ import type { Trade } from "@prisma/client"
 import { getTranslations } from "next-intl/server"
 
 import { Activity, Target, Lightbulb, TrendingUp, AlertTriangle, List } from "lucide-react"
-
-// ... existing code in KpiGrid ...
+import { AnimatedKpiCard, AnimatedEmptyKpiCard } from "./AnimatedKpiCard"
 export async function KpiGrid({
   dateRange,
   accountId,
@@ -30,12 +29,12 @@ export async function KpiGrid({
   if (scope.accounts.length === 0) {
     return (
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%", marginBottom: "1.5rem" }}>
-        <EmptyKpiCard label={t("netPnl")} icon={<Activity size={16} />} noDataLabel={t("noData")} />
-        <EmptyKpiCard label={t("winRate")} icon={<Target size={16} />} noDataLabel={t("noData")} />
-        <EmptyKpiCard label={t("expectancy")} icon={<Lightbulb size={16} />} noDataLabel={t("noData")} />
-        <EmptyKpiCard label={t("profitFactor")} icon={<TrendingUp size={16} />} noDataLabel={t("noData")} />
-        <EmptyKpiCard label={t("maxDrawdown")} icon={<AlertTriangle size={16} />} noDataLabel={t("noData")} />
-        <EmptyKpiCard label={t("totalTrades")} icon={<List size={16} />} noDataLabel={t("noData")} />
+        <AnimatedEmptyKpiCard label={t("netPnl")} icon={<Activity size={16} />} noDataLabel={t("noData")} />
+        <AnimatedEmptyKpiCard label={t("winRate")} icon={<Target size={16} />} noDataLabel={t("noData")} />
+        <AnimatedEmptyKpiCard label={t("expectancy")} icon={<Lightbulb size={16} />} noDataLabel={t("noData")} />
+        <AnimatedEmptyKpiCard label={t("profitFactor")} icon={<TrendingUp size={16} />} noDataLabel={t("noData")} />
+        <AnimatedEmptyKpiCard label={t("maxDrawdown")} icon={<AlertTriangle size={16} />} noDataLabel={t("noData")} />
+        <AnimatedEmptyKpiCard label={t("totalTrades")} icon={<List size={16} />} noDataLabel={t("noData")} />
       </div>
     )
   }
@@ -72,7 +71,7 @@ export async function KpiGrid({
 
   return (
     <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%", marginBottom: "1.5rem" }}>
-      <KpiCard
+      <AnimatedKpiCard
         label={t("netPnl")}
         value={formatCurrency(metrics.netPnl, currency)}
         sub={t("closedTrades", { count: trades.length })}
@@ -81,7 +80,7 @@ export async function KpiGrid({
         icon={<Activity size={16} />}
         size="large"
       />
-      <KpiCard
+      <AnimatedKpiCard
         label={t("winRate")}
         value={`${(metrics.winRate * 100).toFixed(1)}%`}
         sub={`${metrics.winningTrades}W / ${metrics.losingTrades}L`}
@@ -89,7 +88,7 @@ export async function KpiGrid({
         id="kpi-win-rate"
         icon={<Target size={16} />}
       />
-      <KpiCard
+      <AnimatedKpiCard
         label={t("expectancy")}
         value={formatCurrency(metrics.expectancy, currency)}
         sub={t("perTrade")}
@@ -97,7 +96,7 @@ export async function KpiGrid({
         id="kpi-expectancy"
         icon={<Lightbulb size={16} />}
       />
-      <KpiCard
+      <AnimatedKpiCard
         label={t("profitFactor")}
         value={metrics.profitFactor === Infinity ? "∞" : metrics.profitFactor.toFixed(2)}
         sub={t("grossProfit", { amount: formatCurrency(metrics.grossProfit, currency) })}
@@ -105,7 +104,7 @@ export async function KpiGrid({
         id="kpi-profit-factor"
         icon={<TrendingUp size={16} />}
       />
-      <KpiCard
+      <AnimatedKpiCard
         label={t("maxDrawdown")}
         value={`${metrics.maxDrawdownPct.toFixed(1)}%`}
         sub={formatCurrency(metrics.maxDrawdown, currency)}
@@ -113,7 +112,7 @@ export async function KpiGrid({
         id="kpi-max-drawdown"
         icon={<AlertTriangle size={16} />}
       />
-      <KpiCard
+      <AnimatedKpiCard
         label={t("totalTrades")}
         value={`${trades.length}`}
         sub={`${metrics.winningTrades}W / ${metrics.losingTrades}L`}
@@ -121,45 +120,6 @@ export async function KpiGrid({
         id="kpi-total-trades"
         icon={<List size={16} />}
       />
-    </div>
-  )
-}
-
-// ─── KPI Card Component ───────────────────────────────────────────────────────
-function KpiCard({
-  label, value, sub, type = "neutral", id, icon, size = "normal"
-}: {
-  label: string
-  value: string
-  sub?: string
-  type?: "profit" | "loss" | "neutral"
-  id: string
-  icon?: React.ReactNode
-  size?: "normal" | "large"
-}) {
-  const color = type === "profit" ? "var(--color-profit)" : type === "loss" ? "var(--color-loss)" : "var(--color-gray-100)"
-  
-  return (
-    <div className="chart-card" id={id} style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.35rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-        {icon && <span style={{ opacity: 0.7 }}>{icon}</span>}
-        {label}
-      </div>
-      <div style={{ fontSize: size === "large" ? "1.6rem" : "1.2rem", fontWeight: 700, color, fontVariantNumeric: "tabular-nums" }}>{value}</div>
-      {sub && <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500 }}>{sub}</div>}
-    </div>
-  )
-}
-
-function EmptyKpiCard({ label, icon, noDataLabel = "No data yet" }: { label: string, icon?: React.ReactNode, noDataLabel?: string }) {
-  return (
-    <div className="chart-card" style={{ padding: "1.1rem 1.25rem", flex: "1 1 180px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.35rem" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.75rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-        {icon && <span style={{ opacity: 0.7 }}>{icon}</span>}
-        {label}
-      </div>
-      <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-gray-700)", fontVariantNumeric: "tabular-nums" }}>—</div>
-      <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500 }}>{noDataLabel}</div>
     </div>
   )
 }

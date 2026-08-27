@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { CreateChallengeDrawer } from "@/components/prop-firm/CreateChallengeDrawer"
 import { TemplateManager } from "@/components/prop-firm/TemplateManager"
@@ -287,7 +288,12 @@ export function ChallengesManager({
         onSubmit={handleSubmit} 
       />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "1.5rem" }}>
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ staggerChildren: 0.1 }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: "1.5rem" }}
+      >
         {filteredChallenges.length === 0 && (
           <div style={{ gridColumn: "1 / -1", padding: "4rem 2rem", textAlign: "center", background: "var(--color-gray-900)", borderRadius: "16px", border: "1px dashed var(--color-gray-700)" }}>
             <div style={{ color: "var(--color-gray-400)", fontSize: "1.1rem", marginBottom: "1rem" }}>
@@ -309,7 +315,6 @@ export function ChallengesManager({
           const latestEvent = Array.isArray(c.events) && c.events.length > 0 ? c.events[0] : null
           const eventBadge = latestEvent && EVENT_BADGE[latestEvent.eventType]
           
-          // Generate a subtle background gradient based on status
           const bgColor = "var(--color-gray-900)"
           let borderColor = "var(--color-gray-800)"
           if (isBreached) {
@@ -321,19 +326,18 @@ export function ChallengesManager({
           }
 
           return (
-            <div key={c.id} 
+            <motion.div key={c.id} 
+              whileHover={{ y: -2 }}
               onClick={() => router.push(`/challenges/${c.id}`)}
               style={{ 
               background: bgColor,
               border: `1px solid ${borderColor}`,
               borderRadius: "16px",
               padding: "1.5rem",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
               display: "flex", flexDirection: "column", gap: "1.5rem",
               position: "relative",
               overflow: "hidden",
               cursor: "pointer",
-              transition: "transform 0.2s ease, box-shadow 0.2s ease"
             }}>
               {/* Top Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -481,10 +485,10 @@ export function ChallengesManager({
                   {recalculating === c.id ? "Syncing..." : "Sync Engine"}
                 </button>
               </div>
-            </div>
+            </motion.div>
           )
         })}
-      </div>
+      </motion.div>
     </div>
   )
 }
