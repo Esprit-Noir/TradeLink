@@ -412,8 +412,8 @@ export function MonthlyReport() {
     if (!data?.dow) return []
     return data.dow
       .map((d: DowItem) => ({ ...d, value: Math.abs(d.pnl) || 0 }))
-      .filter((d: DowItem) => d.value > 0)
-      .sort((a: DowItem, b: DowItem) => b.value - a.value)
+      .filter(d => d.value > 0)
+      .sort((a, b) => b.value - a.value)
   }, [data?.dow])
 
   const totalDowTrades = React.useMemo(() => dowPieData.reduce((acc, curr) => acc + curr.count, 0), [dowPieData])
