@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { Trophy, CheckCircle2, Lock, Medal, Target, Flame, Star, Zap, Crown, TrendingUp } from "lucide-react"
+import { Trophy, CheckCircle2, Lock, Medal, Target, Flame, Star, Zap, Crown, TrendingUp, DollarSign, Rocket, Scale, Flag, Award, Banknote, Book, Library, BrainCircuit } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { toast } from "sonner"
 
@@ -28,6 +28,25 @@ type AchievementsData = {
   unlockedCount: number
   newlyUnlocked: string[]
   groups: AchievementGroup[]
+}
+
+const achievementIcons: Record<string, React.ReactNode> = {
+  first_trade: <Target size={26} />,
+  first_profit: <DollarSign size={26} />,
+  trades_25: <TrendingUp size={26} />,
+  trades_100: <Medal size={26} />,
+  trades_500: <Trophy size={26} />,
+  big_r: <Rocket size={26} />,
+  profit_factor_2: <Scale size={26} />,
+  streak_5: <Flame size={26} />,
+  streak_10: <Zap size={26} />,
+  green_week: <CheckCircle2 size={26} />,
+  prop_active: <Flag size={26} />,
+  prop_passed: <Award size={26} />,
+  payout_requested: <Banknote size={26} />,
+  journal_7: <Book size={26} />,
+  journal_30: <Library size={26} />,
+  discipline_perfect: <BrainCircuit size={26} />,
 }
 
 // ─── Animated Counter ─────────────────────────────────────────────────────────
@@ -138,17 +157,19 @@ function AchievementCard({ ach }: { ach: Achievement }) {
       )}
       
       <div className="flex items-start gap-4 relative z-10">
-        <div className={`w-12 h-12 flex items-center justify-center rounded-xl text-2xl shrink-0 transition-transform duration-500 ${
+        <div className={`flex items-center justify-center shrink-0 transition-all duration-500 ${
           isUnlocked 
-            ? "bg-[var(--color-gray-800)] border border-[var(--color-brand-500)]/40 shadow-[0_0_20px_rgba(0,199,88,0.2)]" 
-            : "bg-[var(--color-gray-800)] border border-[var(--color-gray-700)]"
+            ? "w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-brand-500)]/20 to-[var(--color-brand-500)]/5 border border-[var(--color-brand-500)]/40 shadow-[inset_0_0_20px_rgba(0,199,88,0.1),0_0_15px_rgba(0,199,88,0.2)] text-3xl" 
+            : "w-12 h-12 rounded-xl bg-[var(--color-gray-800)]/50 border border-[var(--color-gray-700)] text-2xl grayscale"
         }`}>
           {isUnlocked ? (
-            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }}>
-              {ach.icon}
+            <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", delay: 0.2 }} className="text-[var(--color-brand-500)] drop-shadow-[0_0_8px_rgba(0,199,88,0.8)]">
+              {achievementIcons[ach.code] || <Trophy size={26} />}
             </motion.span>
           ) : (
-            <span className="opacity-50">{ach.icon}</span>
+            <span className="opacity-50 text-[var(--color-gray-500)]">
+              {achievementIcons[ach.code] || <Trophy size={26} />}
+            </span>
           )}
         </div>
         
