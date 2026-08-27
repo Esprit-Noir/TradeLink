@@ -48,16 +48,6 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-        <defs>
-          <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-profit)" stopOpacity={1} />
-            <stop offset="100%" stopColor="var(--color-profit)" stopOpacity={0.4} />
-          </linearGradient>
-          <linearGradient id="colorLoss" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--color-loss)" stopOpacity={1} />
-            <stop offset="100%" stopColor="var(--color-loss)" stopOpacity={0.4} />
-          </linearGradient>
-        </defs>
         <XAxis 
           dataKey="displayDate" 
           tick={{ fontSize: 11, fill: "var(--color-gray-500)" }}
@@ -87,7 +77,7 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
         />
         <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
           {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "url(#colorProfit)" : "url(#colorLoss)"} />
+            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
           ))}
         </Bar>
       </BarChart>
