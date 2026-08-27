@@ -3,13 +3,43 @@
 import React, { useState, useEffect, useCallback } from "react"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
-  LineChart, Line, ReferenceLine, ComposedChart,
+  LineChart, Line, ReferenceLine, ComposedChart, PieChart, Pie, Area
 } from "recharts"
 import { toast } from "sonner"
 import { jsPDF } from "jspdf"
 import { autoTable } from "jspdf-autotable"
 import { Download, FileText } from "lucide-react"
 import { motion, Variants } from "framer-motion"
+
+const COLORS = ['#C29B3F', '#359B8B', '#4B83E0', '#D4638D', '#9B72E5', '#E57272', '#72E5A1']
+
+const renderCustomizedLabel = (props: any) => {
+  const { cx, cy, midAngle, outerRadius, fill, payload, percent } = props
+  const RADIAN = Math.PI / 180
+  
+  const sin = Math.sin(-RADIAN * midAngle)
+  const cos = Math.cos(-RADIAN * midAngle)
+  const sx = cx + (outerRadius + 8) * cos
+  const sy = cy + (outerRadius + 8) * sin
+  const mx = cx + (outerRadius + 25) * cos
+  const my = cy + (outerRadius + 25) * sin
+  const ex = mx + (cos >= 0 ? 1 : -1) * 20
+  const ey = my
+  const textAnchor = cos >= 0 ? 'start' : 'end'
+
+  return (
+    <g>
+      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke="var(--color-gray-700)" strokeWidth={1} fill="none" />
+      <circle cx={sx} cy={sy} r={3} fill={fill} stroke="none" />
+      <text x={ex + (cos >= 0 ? 1 : -1) * 8} y={ey} dy={-4} textAnchor={textAnchor} fill="var(--color-gray-200)" fontSize={12} fontWeight={700}>
+        {payload.name}
+      </text>
+      <text x={ex + (cos >= 0 ? 1 : -1) * 8} y={ey} dy={14} textAnchor={textAnchor} fill="var(--color-gray-500)" fontSize={11} fontWeight={500}>
+        {`${(percent * 100).toFixed(0)}% · $${Number(payload.pnl).toFixed(0)}`}
+      </text>
+    </g>
+  )
+}
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -378,6 +408,16 @@ export function MonthlyReport() {
     label: d.date.slice(5),
   }))
 
+  const dowPieData = React.useMemo(() => {
+    if (!data?.dow) return []
+    return data.dow
+      .map((d: DowItem) => ({ ...d, value: Math.abs(d.pnl) || 0 }))
+      .filter((d: DowItem) => d.value > 0)
+      .sort((a: DowItem, b: DowItem) => b.value - a.value)
+  }, [data?.dow])
+
+  const totalDowTrades = React.useMemo(() => dowPieData.reduce((acc, curr) => acc + curr.count, 0), [dowPieData])
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
       {/* Header */}
@@ -497,80 +537,6 @@ export function MonthlyReport() {
             </div>
           </motion.div>
 
-          {/* Daily chart */}
-          <motion.div variants={itemVariants} className="chart-card">
-            <div className="chart-title">Daily P&L and cumulative</div>
-            <ResponsiveContainer width="100%" height={260}>
-              <ComposedChart data={dayShort} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
-                <XAxis dataKey="label" tick={{ fontSize: 9, fill: "var(--color-gray-500)" }} interval="preserveStartEnd" minTickGap={24} />
-                <YAxis yAxisId="pnl" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} width={60} />
-                <YAxis yAxisId="cum" orientation="right" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} width={60} />
-                <Tooltip
-                  contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
-                  labelStyle={{ color: "var(--color-gray-300)" }}
-                  formatter={(value, name) => [
-                    fmtMoney(Number(value), true),
-                    name === "cumPnl" ? "Cumulative" : "Daily P&L",
-                  ]}
-                />
-                <ReferenceLine yAxisId="pnl" y={0} stroke="var(--color-gray-600)" />
-                <Bar yAxisId="pnl" dataKey="pnl" radius={[3, 3, 0, 0]}>
-                  {dayShort.map((d, i) => (
-                    <Cell key={i} fill={d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-                  ))}
-                </Bar>
-                <Line yAxisId="cum" type="monotone" dataKey="cumPnl" stroke="var(--color-brand-500)" strokeWidth={2} dot={false} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </motion.div>
-
-          {/* Setups + Symbols */}
-          <motion.div variants={itemVariants} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
-            <div className="chart-card">
-              <div className="chart-title">Top Setups</div>
-              {data.setups.length === 0 ? (
-                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No setups this month.</div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {data.setups.slice(0, 8).map((s: SetupItem) => (
-                    <div key={s.name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--color-gray-300)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {s.name}
-                        <span style={{ color: "var(--color-gray-500)", marginLeft: "0.35rem", fontSize: "0.75rem" }}>
-                          {s.count} · {s.wins}W
-                        </span>
-                      </span>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", whiteSpace: "nowrap" }}>
-                        {fmtMoney(s.pnl, true)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="chart-card">
-              <div className="chart-title">Top Symbols</div>
-              {data.symbols.length === 0 ? (
-                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No symbols this month.</div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {data.symbols.slice(0, 8).map((s: SymbolItem) => (
-                    <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem" }}>
-                      <span style={{ fontSize: "0.85rem", color: "var(--color-gray-300)", whiteSpace: "nowrap" }}>
-                        {s.symbol}
-                        <span style={{ color: "var(--color-gray-500)", marginLeft: "0.35rem", fontSize: "0.75rem" }}>{s.count} trades</span>
-                      </span>
-                      <span style={{ fontSize: "0.85rem", fontWeight: 600, color: s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", whiteSpace: "nowrap" }}>
-                        {fmtMoney(s.pnl, true)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </motion.div>
-
           {/* Hours + Days of week */}
           <motion.div variants={itemVariants} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
             <div className="chart-card">
@@ -578,52 +544,216 @@ export function MonthlyReport() {
               {data.hours.length === 0 ? (
                 <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No trades this month.</div>
               ) : (
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={data.hours} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
-                    <XAxis dataKey="hour" tick={{ fontSize: 9, fill: "var(--color-gray-500)" }} tickFormatter={(v: number) => `${v}:00`} />
-                    <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} width={52} />
+                <div style={{ position: "relative", height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.hours} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
+                      <XAxis dataKey="hour" tick={{ fontSize: 9, fill: "var(--color-gray-500)" }} tickFormatter={(v: number) => `${v}:00`} />
+                      <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} width={52} />
+                      <Tooltip
+                        contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
+                        labelStyle={{ color: "var(--color-gray-300)" }}
+                        labelFormatter={(v) => `${v}:00`}
+                        formatter={(value, name) => [fmtMoney(Number(value), true), name === "wins" ? "Wins" : "P&L"]}
+                      />
+                      <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
+                        {data.hours.map((h: HourItem, i: number) => (
+                          <Cell key={i} fill={h.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </div>
+            <div className="chart-card">
+              <div className="chart-title">Performance by day of week</div>
+              {dowPieData.length === 0 ? (
+                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem", display: "flex", flex: 1, alignItems: "center", justifyContent: "center" }}>No trades this month.</div>
+              ) : (
+                <div style={{ position: "relative", height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart margin={{ top: 20, bottom: 20, left: 40, right: 40 }}>
+                      <Pie
+                        data={dowPieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius="45%"
+                        outerRadius="70%"
+                        paddingAngle={0}
+                        dataKey="value"
+                        stroke="var(--color-gray-900)"
+                        strokeWidth={4}
+                        label={renderCustomizedLabel}
+                        labelLine={false}
+                        isAnimationActive={false}
+                      >
+                        {dowPieData.map((entry: any, index: number) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
+                        contentStyle={{
+                          background: "var(--color-gray-900)",
+                          border: "1px solid var(--color-gray-800)",
+                          borderRadius: 8,
+                          fontSize: 12,
+                          color: "var(--color-gray-200)",
+                          boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                        }}
+                        itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
+                        formatter={(value: any, name: any, props: any) => {
+                          const { count, wins, pnl } = props.payload
+                          return [`$${Number(pnl).toFixed(2)}`, `${count} trades · ${count > 0 ? ((wins / count) * 100).toFixed(0) : 0}% WR`]
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div style={{
+                    position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                    textAlign: "center", pointerEvents: "none",
+                  }}>
+                    <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--color-gray-100)" }}>{totalDowTrades}</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500, marginTop: "0.1rem" }}>Total Trades</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Daily chart */}
+          <motion.div variants={itemVariants} className="chart-card">
+            <div className="chart-title" style={{ marginBottom: "1rem" }}>Daily P&L and cumulative</div>
+            <ResponsiveContainer width="100%" height={380}>
+              <ComposedChart data={dayShort} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
+                <CartesianGrid stroke="var(--color-gray-800)" strokeOpacity={0.5} vertical={false} />
+                <XAxis 
+                  dataKey="label" 
+                  tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} 
+                  axisLine={false}
+                  tickLine={false}
+                  interval="preserveStartEnd" 
+                  minTickGap={24} 
+                  dy={10}
+                />
+                <YAxis 
+                  yAxisId="pnl" 
+                  tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} 
+                  axisLine={false}
+                  tickLine={false}
+                  width={60} 
+                  tickFormatter={(val) => `$${val}`}
+                />
+                <YAxis 
+                  yAxisId="cum" 
+                  orientation="right" 
+                  tick={{ fontSize: 10, fill: "var(--color-brand-500)" }} 
+                  axisLine={false}
+                  tickLine={false}
+                  width={60} 
+                  tickFormatter={(val) => `$${val}`}
+                />
+                <Tooltip
+                  cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
+                  contentStyle={{ 
+                    background: "var(--color-gray-900)", 
+                    border: "1px solid var(--color-gray-800)", 
+                    borderRadius: "8px", 
+                    fontSize: "0.85rem",
+                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)"
+                  }}
+                  labelStyle={{ color: "var(--color-gray-300)", marginBottom: "4px" }}
+                  formatter={(value, name) => [
+                    <span key={name} style={{ fontWeight: 600, color: name === "cumPnl" ? "var(--color-brand-500)" : (Number(value) >= 0 ? "var(--color-profit)" : "var(--color-loss)") }}>
+                      {fmtMoney(Number(value), true)}
+                    </span>,
+                    <span key={name + "-label"} style={{ color: "var(--color-gray-400)" }}>{name === "cumPnl" ? "Cumulative" : "Daily P&L"}</span>,
+                  ]}
+                />
+                <ReferenceLine yAxisId="pnl" y={0} stroke="var(--color-gray-700)" strokeWidth={1} />
+                <Area 
+                  yAxisId="cum" 
+                  type="monotone" 
+                  dataKey="cumPnl" 
+                  stroke="var(--color-brand-500)" 
+                  strokeWidth={3} 
+                  fill="var(--color-brand-500)" 
+                  fillOpacity={0.1}
+                  isAnimationActive={false}
+                />
+                <Bar yAxisId="pnl" dataKey="pnl" maxBarSize={16} radius={[4, 4, 4, 4]} isAnimationActive={false}>
+                  {dayShort.map((d, i) => (
+                    <Cell key={i} fill={d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                  ))}
+                </Bar>
+              </ComposedChart>
+            </ResponsiveContainer>
+          </motion.div>
+
+          {/* Setups + Symbols */}
+          <motion.div variants={itemVariants} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+            <div className="chart-card">
+              <div className="chart-title" style={{ marginBottom: "1rem" }}>Top Setups</div>
+              {data.setups.length === 0 ? (
+                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No setups this month.</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={data.setups.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+                    <CartesianGrid stroke="var(--color-gray-800)" strokeOpacity={0.4} horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "var(--color-gray-300)" }} axisLine={false} tickLine={false} width={80} />
                     <Tooltip
-                      contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
-                      labelStyle={{ color: "var(--color-gray-300)" }}
-                      labelFormatter={(v) => `${v}:00`}
-                      formatter={(value, name) => [fmtMoney(Number(value), true), name === "wins" ? "Wins" : "P&L"]}
+                      cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
+                      contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: 8, fontSize: "0.85rem", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)" }}
+                      labelStyle={{ color: "var(--color-gray-300)", marginBottom: "4px" }}
+                      formatter={(value, name, props) => [
+                        <span key="val" style={{ fontWeight: 600, color: Number(value) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                          {fmtMoney(Number(value), true)}
+                        </span>,
+                        <span key="name" style={{ color: "var(--color-gray-400)" }}>{props.payload.count} trades ({props.payload.wins}W)</span>
+                      ]}
                     />
-                    <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
-                      {data.hours.map((h: HourItem, i: number) => (
-                        <Cell key={i} fill={h.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                    <ReferenceLine x={0} stroke="var(--color-gray-700)" />
+                    <Bar dataKey="pnl" maxBarSize={16} radius={4} isAnimationActive={false}>
+                      {data.setups.slice(0, 8).map((s: SetupItem, i: number) => (
+                        <Cell key={i} fill={s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                       ))}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               )}
             </div>
+            
             <div className="chart-card">
-              <div className="chart-title">Performance by day of week</div>
-              {data.dow.length === 0 ? (
-                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No trades this month.</div>
+              <div className="chart-title" style={{ marginBottom: "1rem" }}>Top Symbols</div>
+              {data.symbols.length === 0 ? (
+                <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No symbols this month.</div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  {data.dow.map((d: DowItem) => (
-                    <div key={d.dow} style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                      <span style={{ width: 90, fontSize: "0.85rem", color: "var(--color-gray-300)", flexShrink: 0 }}>{d.name}</span>
-                      <div style={{ flex: 1, height: 16, background: "var(--color-gray-800)", borderRadius: 4, overflow: "hidden", position: "relative" }}>
-                        <div
-                          style={{
-                            height: "100%", borderRadius: 4,
-                            width: `${Math.max(2, Math.min(100, (Math.abs(d.pnl) / Math.max(...data.dow.map((x: DowItem) => Math.abs(x.pnl)))) * 100))}%`,
-                            background: d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",
-                            opacity: 0.85,
-                          }}
-                        />
-                      </div>
-                      <span style={{ width: 90, fontSize: "0.82rem", fontWeight: 600, textAlign: "right", color: d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", flexShrink: 0 }}>
-                        {fmtMoney(d.pnl, true)}
-                      </span>
-                      <span style={{ width: 46, fontSize: "0.75rem", color: "var(--color-gray-500)", textAlign: "right", flexShrink: 0 }}>{d.count} tr</span>
-                    </div>
-                  ))}
-                </div>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={data.symbols.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
+                    <CartesianGrid stroke="var(--color-gray-800)" strokeOpacity={0.4} horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
+                    <YAxis type="category" dataKey="symbol" tick={{ fontSize: 11, fill: "var(--color-gray-300)", fontWeight: 600 }} axisLine={false} tickLine={false} width={60} />
+                    <Tooltip
+                      cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
+                      contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: 8, fontSize: "0.85rem", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)" }}
+                      labelStyle={{ color: "var(--color-gray-300)", marginBottom: "4px", fontWeight: 700 }}
+                      formatter={(value, name, props) => [
+                        <span key="val" style={{ fontWeight: 600, color: Number(value) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                          {fmtMoney(Number(value), true)}
+                        </span>,
+                        <span key="name" style={{ color: "var(--color-gray-400)" }}>{props.payload.count} trades</span>
+                      ]}
+                    />
+                    <ReferenceLine x={0} stroke="var(--color-gray-700)" />
+                    <Bar dataKey="pnl" maxBarSize={16} radius={4} isAnimationActive={false}>
+                      {data.symbols.slice(0, 8).map((s: SymbolItem, i: number) => (
+                        <Cell key={i} fill={s.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               )}
             </div>
           </motion.div>
