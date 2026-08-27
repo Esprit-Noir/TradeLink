@@ -2,8 +2,9 @@
 
 import { useTranslations } from "next-intl"
 import Link from "next/link"
-import { Check, Sparkles, X } from "lucide-react"
+import { Check, Sparkles, X, Zap } from "lucide-react"
 import { motion, Variants } from "framer-motion"
+import { useState } from "react"
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -34,12 +35,15 @@ type DbPlan = {
 
 export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
   const t = useTranslations("Marketing.Pricing")
-  // If no DB plans passed (or empty), you could fallback to static ones, but we assume they are passed
+  const [isAnnual, setIsAnnual] = useState(false)
+
   const displayPlans = plans.map(p => {
     const isPro = p.name.toLowerCase() === "pro"
     const isElite = p.name.toLowerCase() === "elite"
     
-    // Map db features to UI feature list
+    const monthlyPrice = p.price
+    const annualPrice = parseFloat((monthlyPrice * 0.6).toFixed(2)) // 40% off annually
+    
     const featuresList = [
       { text: p.maxAccounts >= 10 ? t("f1Unlimited") : t("f1Limited", { count: p.maxAccounts }), included: true },
       { text: p.maxTradesPerMonth ? t("f2Limited", { count: p.maxTradesPerMonth }) : t("f2Unlimited"), included: true },
@@ -50,14 +54,22 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
       { text: t("f7"), included: !!p.features?.propFirmAccess },
     ]
 
+    const displayPrice = isAnnual ? annualPrice : monthlyPrice
+    const savings = Math.round((1 - annualPrice / monthlyPrice) * 100)
+
     return {
       name: p.name,
-      price: `$${p.price.toString().replace(/\.00$/, '')}`,
-      period: t("period"),
+      monthlyPrice,
+      annualPrice,
+      displayPrice,
+      savings,
+      price: `$${displayPrice.toString().replace(/\.00$/, '')}`,
+      period: isAnnual ? "/mo, billed annually" : t("period"),
       description: isElite ? t("descElite") : isPro ? t("descPro") : t("descBasic"),
       features: featuresList,
       cta: isElite ? t("ctaElite") : isPro ? t("ctaPro") : t("ctaBasic"),
       popular: isPro,
+      isFree: monthlyPrice === 0,
     }
   })
 
@@ -72,7 +84,7 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20 flex flex-col items-center"
+          className="text-center mb-16 flex flex-col items-center"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
             <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
@@ -80,9 +92,38 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tighter">
             {t("title1")} <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,199,88,0.3)]">{t("title2")}</span>
           </h2>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium">
+          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium mb-10">
             {t("subtitle")}
           </p>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center gap-4 p-1.5 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-md">
+            <button
+              onClick={() => setIsAnnual(false)}
+              className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${!isAnnual ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+            >
+              Mensuel
+            </button>
+            <button
+              onClick={() => setIsAnnual(true)}
+              className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${isAnnual ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+            >
+              Annuel
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${isAnnual ? 'bg-[var(--color-brand-500)] text-black' : 'bg-[var(--color-brand-500)]/20 text-[var(--color-brand-500)]'}`}>
+                -40%
+              </span>
+            </button>
+          </div>
+
+          {isAnnual && (
+            <motion.p
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 text-sm text-[var(--color-brand-500)] font-semibold flex items-center gap-2"
+            >
+              <Zap size={14} /> Économisez jusqu&apos;à 40% avec la facturation annuelle
+            </motion.p>
+          )}
         </motion.div>
 
         <motion.div 
@@ -108,11 +149,30 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
               
               <div className="flex flex-col h-full">
                 <h3 className="text-2xl font-bold text-white mb-2 tracking-tight">{plan.name}</h3>
-                <div className="flex items-baseline gap-1 mb-4">
-                  <span className="text-5xl font-extrabold text-white tracking-tighter">{plan.price}</span>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <motion.span
+                    key={`${plan.price}-${isAnnual}`}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-5xl font-extrabold text-white tracking-tighter"
+                  >
+                    {plan.price}
+                  </motion.span>
                   <span className="text-sm font-medium text-gray-400">{plan.period}</span>
                 </div>
-                <p className="text-sm text-gray-400 mb-8 h-10 font-medium">{plan.description}</p>
+                {isAnnual && !plan.isFree && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="flex items-center gap-2 mb-4"
+                  >
+                    <span className="text-sm text-gray-600 line-through">${plan.monthlyPrice}/mo</span>
+                    <span className="text-xs font-bold text-[var(--color-brand-500)] bg-[var(--color-brand-500)]/10 px-2 py-0.5 rounded-full border border-[var(--color-brand-500)]/20">
+                      -{plan.savings}%
+                    </span>
+                  </motion.div>
+                )}
+                <p className="text-sm text-gray-400 mb-8 font-medium">{plan.description}</p>
                 
                 <div className="w-full h-px bg-white/10 mb-8" />
                 
@@ -139,6 +199,22 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
               </div>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Money back guarantee */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-16 text-center"
+        >
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md">
+            <span className="text-2xl">🛡️</span>
+            <span className="text-sm text-gray-400 font-medium">
+              <span className="text-white font-bold">Garantie 14 jours</span> — Remboursement complet, sans question
+            </span>
+          </div>
         </motion.div>
       </div>
     </section>

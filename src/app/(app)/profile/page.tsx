@@ -2,7 +2,6 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { ProfileManager } from "./ProfileManager"
-import { AchievementsSection } from "@/components/achievements/AchievementsSection"
 import { DangerZone } from "./DangerZone"
 import { cookies } from "next/headers"
 import Link from "next/link"
@@ -63,9 +62,6 @@ export default async function ProfilePage() {
         initialDensity={uiDensity}
         stats={{ accounts: accountCount, challenges: challengeCount, setups: setupCount, journals: journalCount, trades: tradeCount }}
       />
-      <div style={{ marginTop: "1.5rem" }}>
-        <AchievementsSection />
-      </div>
       <div style={{ marginTop: "1.5rem" }}>
         <DangerZone />
       </div>

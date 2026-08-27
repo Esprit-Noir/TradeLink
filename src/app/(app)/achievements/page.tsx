@@ -8,14 +8,7 @@ export const metadata: Metadata = {
 
 export default function AchievementsPage() {
   return (
-    <div>
-      <div className="page-header">
-        <div>
-          <h1 className="page-title flex items-center gap-2">🏆 Achievements</h1>
-          <p className="page-subtitle">Track your progress, build consistency, and unlock trading milestones.</p>
-        </div>
-      </div>
-      
+    <div className="w-full h-full min-h-screen pb-20">
       <AchievementsClient />
     </div>
   )

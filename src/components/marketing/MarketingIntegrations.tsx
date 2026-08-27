@@ -3,10 +3,24 @@
 import { ArrowRight } from "lucide-react"
 import { motion, Variants } from "framer-motion"
 
+// Broker data with brand colors and icon letters
 const BROKERS = [
-  "TradingView", "MetaTrader 4", "MetaTrader 5", "Interactive Brokers",
-  "TD Ameritrade", "NinjaTrader", "Sierra Chart", "Quantower",
-  "ATAS", "Bookmap", "Rithmic", "CQG", "FTMO", "MyForexFunds"
+  { name: "TradingView", color: "#2962FF", letter: "T" },
+  { name: "MetaTrader 4", color: "#0EA5E9", letter: "M" },
+  { name: "MetaTrader 5", color: "#0284C7", letter: "M" },
+  { name: "Interactive Brokers", color: "#EF4444", letter: "IB" },
+  { name: "TD Ameritrade", color: "#22C55E", letter: "TD" },
+  { name: "NinjaTrader", color: "#F59E0B", letter: "N" },
+  { name: "Sierra Chart", color: "#8B5CF6", letter: "SC" },
+  { name: "Quantower", color: "#06B6D4", letter: "Q" },
+  { name: "ATAS", color: "#F97316", letter: "A" },
+  { name: "Bookmap", color: "#EC4899", letter: "B" },
+  { name: "Rithmic", color: "#10B981", letter: "R" },
+  { name: "CQG", color: "#6366F1", letter: "C" },
+  { name: "FTMO", color: "#14B8A6", letter: "F" },
+  { name: "MyForexFunds", color: "#A855F7", letter: "MFF" },
+  { name: "TopStep", color: "#3B82F6", letter: "TS" },
+  { name: "Apex", color: "#EF4444", letter: "AP" },
 ]
 
 const containerVariants: Variants = {
@@ -26,7 +40,29 @@ const itemVariants: Variants = {
   }
 }
 
+function BrokerCard({ broker }: { broker: typeof BROKERS[0] }) {
+  return (
+    <div className="flex items-center gap-3 px-6 py-4 mx-3 rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 flex-shrink-0 hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(255,255,255,0.05)] transition-all duration-300 cursor-default group">
+      {/* Colored icon */}
+      <div
+        className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-black text-white flex-shrink-0 shadow-inner transition-transform duration-300 group-hover:scale-110"
+        style={{
+          background: `linear-gradient(135deg, ${broker.color}80, ${broker.color}30)`,
+          border: `1px solid ${broker.color}40`,
+          boxShadow: `0 0 12px ${broker.color}20`,
+        }}
+      >
+        {broker.letter}
+      </div>
+      <span className="text-sm font-bold text-gray-300 group-hover:text-white transition-colors whitespace-nowrap">{broker.name}</span>
+    </div>
+  )
+}
+
 export function MarketingIntegrations() {
+  const row1 = BROKERS.slice(0, 8)
+  const row2 = BROKERS.slice(8)
+
   return (
     <section className="py-32 bg-[#050505] border-t border-white/5 overflow-hidden relative">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] bg-emerald-500/10 blur-[150px] pointer-events-none rounded-[100%]" />
@@ -48,32 +84,50 @@ export function MarketingIntegrations() {
             <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,199,88,0.3)]">Unified</span>
           </motion.h2>
           <motion.p variants={itemVariants} className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium">
-            Import trades automatically via API or CSV from any platform in seconds.
+            Import trades automatically via API ou CSV depuis n&apos;importe quelle plateforme en quelques secondes.
           </motion.p>
         </div>
 
-        <motion.div variants={itemVariants} className="relative w-full max-w-5xl mx-auto overflow-hidden before:absolute before:inset-y-0 before:left-0 before:w-32 before:bg-gradient-to-r before:from-[#050505] before:to-transparent before:z-10 after:absolute after:inset-y-0 after:right-0 after:w-32 after:bg-gradient-to-l after:from-[#050505] after:to-transparent after:z-10">
-          <div className="flex w-max" style={{ animation: 'marquee 40s linear infinite' }}>
-            {[...BROKERS, ...BROKERS].map((name, i) => (
-              <div key={`${name}-${i}`} className="flex items-center gap-3 px-8 py-5 mx-4 rounded-2xl bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 flex-shrink-0 hover:bg-white/5 hover:border-white/20 hover:-translate-y-1 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 cursor-default group">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-white/10 to-transparent border border-white/10 flex items-center justify-center shadow-inner group-hover:border-white/20 transition-colors" />
-                <span className="text-base font-bold text-gray-300 group-hover:text-white transition-colors">{name}</span>
-              </div>
-            ))}
+        {/* Double marquee rows */}
+        <div className="relative">
+          {/* Edge fades */}
+          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
+
+          {/* Row 1 — left to right */}
+          <div className="overflow-hidden mb-4">
+            <div className="flex w-max" style={{ animation: 'marquee-brokers 35s linear infinite' }}>
+              {[...row1, ...row1, ...row1, ...row1].map((broker, i) => (
+                <BrokerCard key={`r1-${broker.name}-${i}`} broker={broker} />
+              ))}
+            </div>
           </div>
-        </motion.div>
+
+          {/* Row 2 — right to left */}
+          <div className="overflow-hidden">
+            <div className="flex w-max" style={{ animation: 'marquee-brokers-reverse 40s linear infinite' }}>
+              {[...row2, ...row2, ...row2, ...row2].map((broker, i) => (
+                <BrokerCard key={`r2-${broker.name}-${i}`} broker={broker} />
+              ))}
+            </div>
+          </div>
+        </div>
 
         <style dangerouslySetInnerHTML={{__html: `
-          @keyframes marquee {
+          @keyframes marquee-brokers {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
           }
+          @keyframes marquee-brokers-reverse {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+          }
         `}} />
 
-        <motion.p variants={itemVariants} className="mt-20 text-center text-sm font-medium text-gray-500 flex flex-col items-center gap-3">
-          Don&apos;t see your broker? We add new integrations every month.
+        <motion.p variants={itemVariants} className="mt-16 text-center text-sm font-medium text-gray-500 flex flex-col items-center gap-3">
+          Vous ne voyez pas votre broker ? On ajoute de nouvelles intégrations chaque mois.
           <a href="#" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-[var(--color-brand-500)] hover:text-emerald-400 font-bold transition-all border border-white/5 hover:border-white/10 hover:shadow-[0_0_15px_rgba(0,199,88,0.2)]">
-            Request an integration <ArrowRight size={14} />
+            Demander une intégration <ArrowRight size={14} />
           </a>
         </motion.p>
       </motion.div>

@@ -1,7 +1,8 @@
 "use client"
 
-import { Star, BadgeCheck, TrendingUp, Shield } from "lucide-react"
+import { Star, BadgeCheck, ChevronLeft, ChevronRight } from "lucide-react"
 import { motion, Variants } from "framer-motion"
+import { useRef, useEffect, useState } from "react"
 
 const TESTIMONIALS = [
   {
@@ -13,6 +14,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "+17% win rate",
+    color: "#00c758",
+    avatar: "AM",
   },
   {
     name: "Sarah K.",
@@ -23,6 +26,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "$3,200/mo saved",
+    color: "#3b82f6",
+    avatar: "SK",
   },
   {
     name: "Marcus T.",
@@ -33,6 +38,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "1st attempt pass",
+    color: "#a855f7",
+    avatar: "MT",
   },
   {
     name: "Jordan L.",
@@ -43,6 +50,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "3x ROI in 6mo",
+    color: "#f59e0b",
+    avatar: "JL",
   },
   {
     name: "Chris R.",
@@ -53,6 +62,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "3 challenges passed",
+    color: "#ef4444",
+    avatar: "CR",
   },
   {
     name: "Emma D.",
@@ -63,6 +74,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "+23% win rate",
+    color: "#06b6d4",
+    avatar: "ED",
   },
   {
     name: "David K.",
@@ -73,6 +86,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "2x P&L",
+    color: "#10b981",
+    avatar: "DK",
   },
   {
     name: "Lisa P.",
@@ -83,6 +98,8 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "Challenge passed",
+    color: "#8b5cf6",
+    avatar: "LP",
   },
   {
     name: "Ahmed R.",
@@ -93,8 +110,77 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "-40% revenge trades",
+    color: "#f97316",
+    avatar: "AR",
   },
 ]
+
+function TestimonialCard({ t, style }: { t: typeof TESTIMONIALS[0], style?: React.CSSProperties }) {
+  return (
+    <div
+      className="bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 group relative overflow-hidden flex-shrink-0 w-[340px] md:w-[380px]"
+      style={style}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-[60px] opacity-10 pointer-events-none" style={{ background: t.color }} />
+      
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex gap-1">
+            {Array.from({ length: t.rating }).map((_, j) => (
+              <Star key={j} size={14} className="fill-yellow-500 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" />
+            ))}
+          </div>
+          {t.metric && (
+            <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border shadow-inner" style={{
+              background: `${t.color}15`,
+              color: t.color,
+              borderColor: `${t.color}30`
+            }}>
+              {t.metric}
+            </span>
+          )}
+        </div>
+        <p className="text-gray-300 text-sm leading-relaxed mb-6 font-medium">
+          &ldquo;{t.quote}&rdquo;
+        </p>
+        <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-black text-white flex-shrink-0"
+            style={{ background: `linear-gradient(135deg, ${t.color}60, ${t.color}20)`, border: `1px solid ${t.color}40` }}
+          >
+            {t.avatar}
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5 text-sm font-bold text-white tracking-tight">
+              {t.name}
+              {t.verified && <BadgeCheck size={14} className="text-blue-500 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" />}
+            </div>
+            <div className="text-xs text-gray-500 font-medium">
+              {t.role} • {t.firm}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Infinite marquee row
+function TestimonialRow({ items, reverse = false }: { items: typeof TESTIMONIALS, reverse?: boolean }) {
+  return (
+    <div className="relative w-full overflow-hidden">
+      <div
+        className="flex w-max gap-6"
+        style={{ animation: `marquee-testimonials${reverse ? '-reverse' : ''} 40s linear infinite` }}
+      >
+        {[...items, ...items].map((t, i) => (
+          <TestimonialCard key={`${t.name}-${i}`} t={t} />
+        ))}
+      </div>
+    </div>
+  )
+}
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -104,29 +190,34 @@ const containerVariants: Variants = {
   }
 }
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { type: "spring", stiffness: 50, damping: 15 }
-  }
-}
-
 export function MarketingTestimonials() {
+  const row1 = TESTIMONIALS.slice(0, 5)
+  const row2 = TESTIMONIALS.slice(4)
+
   return (
     <section className="py-32 bg-[#050505] border-y border-white/5 relative overflow-hidden" id="testimonials">
       {/* Background gradients */}
       <div className="absolute top-1/4 left-0 w-1/4 h-1/2 bg-[var(--color-brand-500)]/5 blur-[150px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-0 w-1/4 h-1/2 bg-blue-500/5 blur-[150px] pointer-events-none" />
 
-      <div className="max-w-[1200px] mx-auto px-6 relative z-10">
+      <style dangerouslySetInnerHTML={{__html: `
+        @keyframes marquee-testimonials {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes marquee-testimonials-reverse {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
+        }
+      `}} />
+
+      <div className="max-w-[1200px] mx-auto px-6 relative z-10 mb-16">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-20 flex flex-col items-center"
+          className="text-center flex flex-col items-center"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
             <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Testimonials</span>
@@ -139,53 +230,41 @@ export function MarketingTestimonials() {
             trading careers worldwide.
           </p>
         </motion.div>
-
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6"
-        >
-          {TESTIMONIALS.map((t) => (
-            <motion.div variants={itemVariants} key={t.name} className="break-inside-avoid bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-3xl p-8 hover:-translate-y-1 hover:border-white/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] group relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex gap-1">
-                    {Array.from({ length: t.rating }).map((_, j) => (
-                      <Star key={j} size={16} className="fill-yellow-500 text-yellow-500 drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" />
-                    ))}
-                  </div>
-                  {t.metric && (
-                    <span className="px-3 py-1 bg-[var(--color-brand-500)]/10 text-[var(--color-brand-500)] text-[10px] font-bold uppercase tracking-widest rounded-full shadow-inner border border-[var(--color-brand-500)]/20">
-                      {t.metric}
-                    </span>
-                  )}
-                </div>
-                <p className="text-gray-300 text-base leading-relaxed mb-8 font-medium">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex items-center gap-4 pt-4 border-t border-white/5">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 flex items-center justify-center font-bold text-gray-300 shadow-inner">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 text-sm font-bold text-white tracking-tight">
-                      {t.name}
-                      {t.verified && <BadgeCheck size={16} className="text-blue-500 drop-shadow-[0_0_5px_rgba(59,130,246,0.5)]" />}
-                    </div>
-                    <div className="text-xs text-gray-500 font-medium">
-                      {t.role} • {t.firm}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
       </div>
+
+      {/* Edge fades */}
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-gradient-to-r from-[#050505] to-transparent z-10 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-24 md:w-48 bg-gradient-to-l from-[#050505] to-transparent z-10 pointer-events-none" />
+
+        <div className="flex flex-col gap-6">
+          <TestimonialRow items={row1} />
+          <TestimonialRow items={row2} reverse />
+        </div>
+      </div>
+
+      {/* Summary stats */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="max-w-[1200px] mx-auto px-6 mt-16"
+      >
+        <div className="flex flex-wrap justify-center gap-8 md:gap-16">
+          {[
+            { value: "4.9/5", label: "Note moyenne", sub: "sur 2,400+ avis" },
+            { value: "91%", label: "Recommandent", sub: "à leurs collègues" },
+            { value: "15K+", label: "Traders actifs", sub: "dans 80+ pays" },
+          ].map(stat => (
+            <div key={stat.label} className="flex flex-col items-center text-center">
+              <span className="text-3xl font-black text-white tracking-tighter mb-1">{stat.value}</span>
+              <span className="text-sm font-bold text-[var(--color-brand-500)] mb-0.5">{stat.label}</span>
+              <span className="text-xs text-gray-500 font-medium">{stat.sub}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </section>
   )
 }

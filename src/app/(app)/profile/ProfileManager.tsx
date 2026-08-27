@@ -218,9 +218,7 @@ export function ProfileManager({
       </div>
 
       {/* ─── Notifications ──────────────────────────────────────────────── */}
-      <div className="chart-card" style={{ padding: "1.5rem" }}>
-        <NotificationPreferences />
-      </div>
+      <NotificationPreferences />
 
     </div>
   )
