@@ -247,6 +247,9 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
               key={acc.id}
               className="card-hover account-type-card"
               onClick={() => openAccount(acc)}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openAccount(acc) } }}
+              role="button"
+              tabIndex={0}
               style={{
                 border: `1px solid ${typeColor}40`,
                 padding: "1.5rem",
@@ -306,21 +309,21 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                         fxRateToUsd: acc.fxRateToUsd || "1",
                         isDefault: acc.isDefault,
                       })}
-                      title="Edit account"
+                      aria-label="Edit account"
                       style={{ background: "var(--color-gray-800)", border: "none", color: "var(--color-gray-300)", width: 28, height: 28, borderRadius: 7, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                     >
                       <Pencil size={14} />
                     </button>
                     <button
                       onClick={() => handleDelete(acc)}
-                      title="Delete account"
+                      aria-label="Delete account"
                       style={{ background: "var(--color-gray-800)", border: "none", color: "var(--color-loss)", width: 28, height: 28, borderRadius: 7, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                     >
                       <Trash2 size={14} />
                     </button>
                     <button
                       onClick={() => openAccount(acc)}
-                      title="Open"
+                      aria-label="Open account"
                       style={{ background: "var(--color-gray-800)", border: "none", color: "var(--color-gray-300)", width: 28, height: 28, borderRadius: 7, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                     >
                       <ExternalLink size={14} />

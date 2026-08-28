@@ -52,6 +52,7 @@ export function AccountSwitcher() {
         className="input select bg-[var(--color-gray-800)] border-[var(--color-gray-700)] text-xs font-semibold text-[var(--color-brand-400)]" 
         value={activeId}
         onChange={handleChange}
+        aria-label="Select account"
       >
         {accounts.map(acc => (
           <option key={acc.id} value={acc.id}>

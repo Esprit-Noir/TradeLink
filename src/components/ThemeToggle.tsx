@@ -30,7 +30,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       className="btn btn-ghost"
       style={{ padding: "0.5rem", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}
-      title={`Switch to ${isDark ? "Light" : "Dark"} Mode`}
+      aria-label={`Switch to ${isDark ? "Light" : "Dark"} Mode`}
     >
       {isDark ? <Sun size={20} /> : <Moon size={20} />}
     </button>

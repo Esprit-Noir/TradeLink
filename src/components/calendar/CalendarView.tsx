@@ -64,6 +64,13 @@ export function CalendarView({
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
+
+  useEffect(() => {
+    if (!selectedDay) return
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setSelectedDay(null) }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [selectedDay])
   const isDark = mounted ? resolvedTheme !== "light" : true
 
   const colors = isDark
@@ -275,6 +282,9 @@ export function CalendarView({
         transition={{ duration: 0.2, delay: i * 0.015 }}
         className="card-hover relative calendar-day-cell"
         onClick={() => openDay(dateStr)}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDay(dateStr) } }}
+        role="button"
+        tabIndex={0}
         title={pnl !== undefined ? `PnL: ${formatCurrency(Number(pnl), "USD", true)} | Trades: ${dailyTradeCount[dateStr] ?? 0}` : ""}
         style={{
           background: bgColor,
@@ -360,7 +370,7 @@ export function CalendarView({
               onClick={prevMonth}
               className="btn btn-secondary"
               style={{ padding: "0.45rem 0.7rem", display: "flex", alignItems: "center" }}
-              title="Previous month"
+              aria-label="Previous month"
             >
               <ChevronLeft size={16} />
             </button>
@@ -368,7 +378,7 @@ export function CalendarView({
               onClick={nextMonth}
               className="btn btn-secondary"
               style={{ padding: "0.45rem 0.7rem", display: "flex", alignItems: "center" }}
-              title="Next month"
+              aria-label="Next month"
             >
               <ChevronRight size={16} />
             </button>
@@ -524,7 +534,7 @@ export function CalendarView({
               </div>
               <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                 <button className="btn btn-secondary btn-sm" onClick={() => router.push(`/journal/${selectedDay}`)}>Journal</button>
-                <button onClick={() => setSelectedDay(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-gray-400)" }}>
+                <button onClick={() => setSelectedDay(null)} aria-label="Close" style={{ background: "none", border: "none", cursor: "pointer", color: "var(--color-gray-400)" }}>
                   <X size={18} />
                 </button>
               </div>

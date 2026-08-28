@@ -70,6 +70,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
             className="input w-[130px] h-8 text-xs px-2"
             value={startDate}
             onChange={e => setStartDate(e.target.value)}
+            aria-label="Start date"
           />
           <span className="text-[var(--color-gray-500)] text-xs">to</span>
           <input
@@ -77,6 +78,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
             className="input w-[130px] h-8 text-xs px-2"
             value={endDate}
             onChange={e => setEndDate(e.target.value)}
+            aria-label="End date"
           />
           <button
             type="button"
@@ -96,6 +98,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
             value={accountId}
             onChange={handleAccountChange}
             disabled={isPending}
+            aria-label="Select account"
           >
             <option value="all">All accounts (consolidated)</option>
             <option value="">Active account</option>
@@ -111,6 +114,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
           value={period}
           onChange={handlePeriodChange}
           disabled={isPending}
+          aria-label="Select period"
         >
           <option value="all">All time</option>
           <option value="7d">Last 7 days</option>

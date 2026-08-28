@@ -229,10 +229,10 @@ export function MarketOverview() {
           <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Market Overview</h2>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => setIsModalOpen(true)} style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
+          <button onClick={() => setIsModalOpen(true)} aria-label="Settings" style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
             <Settings size={14} />
           </button>
-          <button onClick={() => fetchRealData()} disabled={loading} style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
+          <button onClick={() => fetchRealData()} disabled={loading} aria-label="Refresh" style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
             <RefreshCcw size={14} className={loading ? "animate-spin" : ""} />
           </button>
         </div>
@@ -267,7 +267,7 @@ export function MarketOverview() {
                 <Settings size={16} style={{ color: "var(--color-brand-500)" }} />
                 <h3 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-gray-200)" }}>Configure Symbols</h3>
               </div>
-              <button onClick={() => setIsModalOpen(false)} style={{ padding: 4, borderRadius: 6, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
+              <button onClick={() => setIsModalOpen(false)} aria-label="Close" style={{ padding: 4, borderRadius: 6, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
                 <X size={16} />
               </button>
             </div>

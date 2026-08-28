@@ -154,7 +154,7 @@ export function NotificationsCenter() {
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
           <Filter size={14} style={{ color: "var(--color-gray-500)" }} />
-          <select className="input select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ width: 180 }}>
+          <select className="input select" value={typeFilter} onChange={e => setTypeFilter(e.target.value)} aria-label="Filter by event type" style={{ width: 180 }}>
             <option value="all">All event types</option>
             {types().map(t => (
               <option key={t} value={t}>{EVENT_TYPE_LABELS[t] || t}</option>
@@ -193,6 +193,9 @@ export function NotificationsCenter() {
                 }}
                 className="notification-item"
                 onClick={() => { toggleRead(e); router.push(`/challenges/${e.challenge.id}`) }}
+                onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggleRead(e); router.push(`/challenges/${e.challenge.id}`) } }}
+                role="button"
+                tabIndex={0}
               >
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: sev, marginTop: "0.25rem", flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -229,7 +232,7 @@ export function NotificationsCenter() {
                   className="btn btn-ghost"
                   style={{ padding: "0.3rem 0.5rem", flexShrink: 0 }}
                   onClick={ev => { ev.stopPropagation(); toggleRead(e) }}
-                  title={unread_ ? "Mark as read" : "Mark as read"}
+                  aria-label={unread_ ? "Mark as read" : "Mark as unread"}
                 >
                   <MailOpen size={14} />
                 </button>

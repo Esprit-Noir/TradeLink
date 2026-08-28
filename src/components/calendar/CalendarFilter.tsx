@@ -50,6 +50,7 @@ export function CalendarFilter({ accounts }: { accounts: FilterAccount[] }) {
           style={{ width: "auto", height: "38px" }}
           value={accountId}
           onChange={handleAccountChange}
+          aria-label="Select account"
         >
           <option value="all">All accounts (consolidated)</option>
           <option value="">Active account</option>

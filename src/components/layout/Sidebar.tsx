@@ -187,7 +187,7 @@ export function Sidebar({ open, onClose, asDrawer = false, initialFeatures = {},
             onClick={() => setCollapsed(!collapsed)}
             className="sidebar-collapse-btn"
             style={{ marginLeft: "auto" }}
-            title={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={effectiveCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {effectiveCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
           </button>

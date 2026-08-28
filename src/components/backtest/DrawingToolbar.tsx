@@ -35,7 +35,7 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({ activeTool, onTo
         <button
           key={tool.id}
           onClick={() => onToolChange(tool.id)}
-          title={tool.tooltip}
+          aria-label={tool.tooltip}
           className={`p-1.5 rounded-md transition-colors flex justify-center ${
             activeTool === tool.id 
               ? "bg-[var(--color-brand)] text-white" 
@@ -50,7 +50,7 @@ export const DrawingToolbar: React.FC<DrawingToolbarProps> = ({ activeTool, onTo
       
       <button
         onClick={onClearAll}
-        title="Clear All Drawings"
+        aria-label="Clear All Drawings"
         className="p-1.5 rounded-md text-red-500 hover:bg-red-500/10 transition-colors flex justify-center"
       >
         <Trash2 size={16} />

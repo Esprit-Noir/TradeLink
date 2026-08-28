@@ -1,6 +1,7 @@
 "use client"
 
 import { AlertTriangle } from "lucide-react"
+import { useEffect } from "react"
 
 interface ConfirmDialogProps {
   open: boolean
@@ -23,6 +24,13 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onCancel() }
+    document.addEventListener("keydown", handler)
+    return () => document.removeEventListener("keydown", handler)
+  }, [open, onCancel])
+
   if (!open) return null
 
   const confirmColor = variant === "danger"
@@ -34,7 +42,7 @@ export function ConfirmDialog({
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
       <div onClick={onCancel} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} />
-      <div className="chart-card" style={{ position: "relative", width: "100%", maxWidth: 400, padding: "1.5rem", zIndex: 10 }}>
+      <div className="chart-card" role="dialog" aria-modal="true" aria-label={title} style={{ position: "relative", width: "100%", maxWidth: 400, padding: "1.5rem", zIndex: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
           {variant !== "default" && (
             <div style={{ padding: 6, borderRadius: 8, background: variant === "danger" ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.12)" }}>
