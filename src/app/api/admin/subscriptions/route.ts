@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { requireAdmin, logAdminAction } from "@/lib/admin-auth"
+import { requireAdminApi, logAdminAction } from "@/lib/admin-auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -11,7 +11,9 @@ const PATCHSchema = z.object({
 })
 
 export async function GET(request: Request) {
-  const session = await requireAdmin()
+  const sessionOrResponse = await requireAdminApi()
+  if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
+  const session = sessionOrResponse
   const { searchParams } = new URL(request.url)
 
   const page = parseInt(searchParams.get("page") || "1")
@@ -35,7 +37,9 @@ export async function GET(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-  const session = await requireAdmin()
+  const sessionOrResponse = await requireAdminApi()
+  if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
+  const session = sessionOrResponse
   const body = await request.json()
   const parsed = PATCHSchema.safeParse(body)
 

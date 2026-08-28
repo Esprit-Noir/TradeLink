@@ -29,13 +29,14 @@ export function NotificationBell() {
   const router = useRouter()
   const [events, setEvents] = useState<PropEvent[]>([])
   const [unread, setUnread] = useState(0)
+  const unreadRef = useRef(0)
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const ref = useRef<HTMLDivElement>(null)
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/notifications?limit=30")
+      const res = await fetch("/api/notifications?limit=30", { signal })
       if (!res.ok) return
       const data = await res.json()
       const nextEvents: PropEvent[] = data.events || []
@@ -43,7 +44,7 @@ export function NotificationBell() {
 
       // Fire browser notifications for newly-arrived unread events
       if (
-        nextUnread > unread &&
+        nextUnread > unreadRef.current &&
         typeof window !== "undefined" &&
         "Notification" in window &&
         Notification.permission === "granted" &&
@@ -67,21 +68,27 @@ export function NotificationBell() {
 
       setEvents(nextEvents)
       setUnread(nextUnread)
+      unreadRef.current = nextUnread
     } catch {
       // silent
     } finally {
       setLoading(false)
     }
-  }, [unread])
+  }, [])
 
   useEffect(() => {
-    refresh()
-    const interval = setInterval(refresh, 30000)
+    const controller = new AbortController()
+    refresh(controller.signal)
+    const interval = setInterval(() => {
+      const ctrl = new AbortController()
+      refresh(ctrl.signal)
+    }, 30000)
     const onDocClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
     }
     document.addEventListener("mousedown", onDocClick)
     return () => {
+      controller.abort()
       clearInterval(interval)
       document.removeEventListener("mousedown", onDocClick)
     }
@@ -118,22 +125,7 @@ export function NotificationBell() {
       <button
         onClick={() => { setOpen(o => !o); if (!open) refresh() }}
         aria-label="Notifications"
-        style={{
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          color: "var(--color-gray-400)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 44,
-          height: 44,
-          borderRadius: "7px",
-          position: "relative",
-          transition: "all 200ms ease",
-        }}
-        onMouseEnter={e => (e.currentTarget.style.background = "var(--color-gray-800)")}
-        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+        className="notification-bell-btn"
       >
         <svg viewBox="0 0 16 16" fill="none" width="17" height="17">
           <path d="M8 1.5a4 4 0 00-4 4v2.3L3 10.5h10l-1-2.7V5.5a4 4 0 00-4-4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>

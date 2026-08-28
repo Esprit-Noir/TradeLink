@@ -3,9 +3,10 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { motion } from "framer-motion"
+import type { SerializedTrade } from "./TradesTable"
 
 type TradeRowProps = {
-  trade: any
+  trade: SerializedTrade
   timezone?: string
   baseCurrency?: string
   visibleColumns?: Record<string, boolean>
@@ -39,11 +40,9 @@ export function TradeRow({ trade, timezone = "UTC", baseCurrency = "USD", visibl
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, delay: Math.min(index * 0.05, 0.5) }}
-      className="recent-trade-item"
+      className={`recent-trade-item${selected ? " recent-trade-item--selected" : ""}`}
       onClick={handleRowClick}
-      style={{ cursor: "pointer", ...(selected ? { background: "rgba(139,92,246,0.08)" } : {}) }}
-      onMouseEnter={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "var(--color-gray-900)" }}
-      onMouseLeave={(e) => { if (!selected) e.currentTarget.style.backgroundColor = "transparent" }}
+      style={{ cursor: "pointer" }}
     >
       {visibleColumns && (
         <td style={{ width: "36px" }} onClick={handleSelectClick}>

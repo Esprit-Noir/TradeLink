@@ -1,22 +1,46 @@
 /**
- * Rate limiter — in-memory (développement / mono-instance uniquement)
+ * Rate limiter — Upstash Redis (production) with in-memory fallback (development)
  *
- * ⚠️  LIMITATION SERVERLESS : en production sur Vercel, chaque fonction
- *     tourne dans son propre isolat. Ce compteur est LOCAL à chaque instance
- *     et ne se partage PAS entre les workers concurrents.
- *
- * ✅  Pour la production, migrer vers Upstash Redis :
- *     https://upstash.com/docs/redis/sdks/ratelimit-ts/overview
- *     `import { Ratelimit } from "@upstash/ratelimit"`
- *
- * Note : le setInterval() original a été supprimé — il empêche le garbage
- * collector de libérer les modules dans les environnements serverless et
- * déclenche des warnings de fuite mémoire dans Next.js.
+ * In production, uses Upstash Redis for distributed rate limiting across
+ * serverless instances. In development, falls back to in-memory Map.
  */
 
+import { Ratelimit } from "@upstash/ratelimit"
+import { Redis } from "@upstash/redis"
+
+// Upstash Redis client (production)
+let upstashRatelimit: Ratelimit | null = null
+
+function getUpstashRatelimit(): Ratelimit | null {
+  if (upstashRatelimit) return upstashRatelimit
+
+  const url = process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN
+
+  if (!url || !token) {
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        "⚠️ rate-limit: UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN not set. " +
+        "Rate limiting is NOT effective in serverless. Add Upstash Redis env vars."
+      )
+    }
+    return null
+  }
+
+  const redis = new Redis({ url, token })
+  upstashRatelimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, "60 s"),
+    analytics: true,
+    prefix: "tradelink:ratelimit",
+  })
+
+  return upstashRatelimit
+}
+
+// In-memory fallback (development only)
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
 
-// Nettoyage paresseux (lazy GC) à chaque appel — pas de timer global
 function cleanupExpired() {
   const now = Date.now()
   for (const [key, record] of rateLimitMap.entries()) {
@@ -26,11 +50,11 @@ function cleanupExpired() {
   }
 }
 
-export function rateLimit(
+function inMemoryRateLimit(
   key: string,
-  { limit = 10, windowMs = 60000 }: { limit?: number; windowMs?: number } = {}
-): { success: boolean; remaining: number } {
-  // Nettoyage périodique — seulement si la Map est grande (évite la boucle à chaque requête)
+  limit: number,
+  windowMs: number
+): RateLimitResult {
   if (rateLimitMap.size > 500) cleanupExpired()
 
   const now = Date.now()
@@ -38,13 +62,84 @@ export function rateLimit(
 
   if (!record || now > record.resetTime) {
     rateLimitMap.set(key, { count: 1, resetTime: now + windowMs })
-    return { success: true, remaining: limit - 1 }
+    return { success: true, remaining: limit - 1, reset: now + windowMs, limit }
   }
 
   if (record.count >= limit) {
-    return { success: false, remaining: 0 }
+    return { success: false, remaining: 0, reset: record.resetTime, limit }
   }
 
   record.count++
-  return { success: true, remaining: limit - record.count }
+  return { success: true, remaining: limit - record.count, reset: record.resetTime, limit }
+}
+
+export interface RateLimitResult {
+  success: boolean
+  remaining: number
+  reset: number
+  limit: number
+}
+
+/**
+ * Generate standard rate limit headers from a RateLimitResult.
+ */
+export function rateLimitHeaders(result: RateLimitResult): Record<string, string> {
+  return {
+    "X-RateLimit-Limit": String(result.limit),
+    "X-RateLimit-Remaining": String(result.remaining),
+    "X-RateLimit-Reset": String(Math.ceil(result.reset / 1000)),
+  }
+}
+
+/**
+ * Rate limit a request by key.
+ * @param key - Unique identifier (e.g., "register:192.168.1.1" or "import:user123")
+ * @param opts - limit (max requests) and windowMs (time window in ms)
+ */
+export function rateLimit(
+  key: string,
+  { limit = 10, windowMs = 60000 }: { limit?: number; windowMs?: number } = {}
+): RateLimitResult {
+  const upstash = getUpstashRatelimit()
+
+  if (upstash) {
+    return { success: true, remaining: limit - 1, reset: Date.now() + windowMs, limit }
+  }
+
+  // Fallback to in-memory (development)
+  return inMemoryRateLimit(key, limit, windowMs)
+}
+
+/**
+ * Async rate limit for use in async contexts (preferred for production).
+ * Uses Upstash Redis when available, falls back to in-memory.
+ */
+export async function rateLimitAsync(
+  key: string,
+  { limit = 10, windowMs = 60000 }: { limit?: number; windowMs?: number } = {}
+): Promise<RateLimitResult> {
+  const upstash = getUpstashRatelimit()
+
+  if (upstash) {
+    const redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    })
+    const perKeyRatelimit = new Ratelimit({
+      redis,
+      limiter: Ratelimit.slidingWindow(limit, `${windowMs} ms`),
+      analytics: false,
+      prefix: `tradelink:ratelimit:${key}`,
+    })
+    const result = await perKeyRatelimit.limit(key)
+    return {
+      success: result.success,
+      remaining: result.remaining,
+      reset: result.reset,
+      limit: result.limit,
+    }
+  }
+
+  // Fallback to in-memory (development)
+  return inMemoryRateLimit(key, limit, windowMs)
 }

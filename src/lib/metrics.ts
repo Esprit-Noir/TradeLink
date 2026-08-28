@@ -58,7 +58,7 @@ export function computeMetrics(trades: Trade[], initialBalance = 0, timezone = "
   const lossRate = 1 - winRate
 
   const expectancy = winRate * avgWin - lossRate * avgLoss
-  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0
+  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Number.MAX_SAFE_INTEGER : 0
 
   // Drawdown sur equity curve
   const { maxDrawdown, maxDrawdownPct } = computeDrawdown(closed, initialBalance)

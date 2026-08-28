@@ -191,9 +191,8 @@ export function NotificationsCenter() {
                   background: unread_ ? "rgba(139,92,246,0.05)" : "var(--color-gray-900)",
                   border: `1px solid ${unread_ ? "rgba(139,92,246,0.25)" : "var(--color-gray-800)"}`,
                 }}
+                className="notification-item"
                 onClick={() => { toggleRead(e); router.push(`/challenges/${e.challenge.id}`) }}
-                onMouseEnter={ev => { ev.currentTarget.style.borderColor = "var(--color-gray-700)" }}
-                onMouseLeave={ev => { ev.currentTarget.style.borderColor = unread_ ? "rgba(139,92,246,0.25)" : "var(--color-gray-800)" }}
               >
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: sev, marginTop: "0.25rem", flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>

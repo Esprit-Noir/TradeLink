@@ -26,29 +26,46 @@ export async function evaluateAchievements(userId: string) {
     newUnlocks.push(code)
   }
 
-  // Evaluate Trading Achievements
-  const trades = await prisma.trade.findMany({
-    where: { userId, status: 'closed' },
-    orderBy: { exitAt: 'asc' }
+  // Evaluate Trading Achievements — use count() instead of loading all trades
+  const tradeCount = await prisma.trade.count({
+    where: { userId, status: 'closed' }
   })
 
-  if (trades.length > 0) {
+  if (tradeCount > 0) {
     await unlock('first_trade')
     
-    if (trades.length >= 25) await unlock('trades_25')
-    if (trades.length >= 100) await unlock('trades_100')
-    if (trades.length >= 500) await unlock('trades_500')
+    if (tradeCount >= 25) await unlock('trades_25')
+    if (tradeCount >= 100) await unlock('trades_100')
+    if (tradeCount >= 500) await unlock('trades_500')
 
-    const hasWin = trades.some(t => Number(t.netPnl) > 0)
+    // Check for first win — use findFirst instead of loading all trades
+    const hasWin = await prisma.trade.findFirst({
+      where: { userId, status: 'closed', netPnl: { gt: 0 } },
+      select: { id: true }
+    })
     if (hasWin) await unlock('first_profit')
 
-    const hasBigR = trades.some(t => {
-      if (!t.riskAmount || Number(t.riskAmount) <= 0) return false
-      return (Number(t.netPnl) / Number(t.riskAmount)) >= 3
+    // Check for big R trade — use findFirst
+    const hasBigR = await prisma.trade.findFirst({
+      where: {
+        userId,
+        status: 'closed',
+        riskAmount: { gt: 0 },
+        netPnl: { gte: 0 }
+      },
+      select: { id: true, netPnl: true, riskAmount: true }
     })
-    if (hasBigR) await unlock('big_r')
+    if (hasBigR && Number(hasBigR.netPnl) / Number(hasBigR.riskAmount) >= 3) {
+      await unlock('big_r')
+    }
 
-    // Streaks
+    // Streaks — only need trades for streak calculation
+    const trades = await prisma.trade.findMany({
+      where: { userId, status: 'closed' },
+      orderBy: { exitAt: 'asc' },
+      select: { netPnl: true }
+    })
+    
     let currentStreak = 0
     let maxStreak = 0
     for (const t of trades) {
@@ -62,43 +79,63 @@ export async function evaluateAchievements(userId: string) {
     if (maxStreak >= 5) await unlock('streak_5')
     if (maxStreak >= 10) await unlock('streak_10')
 
-    // Profit Factor (20 trades min)
-    if (trades.length >= 20) {
-      const grossProfit = trades.filter(t => Number(t.netPnl) > 0).reduce((sum, t) => sum + Number(t.netPnl), 0)
-      const grossLoss = trades.filter(t => Number(t.netPnl) < 0).reduce((sum, t) => sum + Math.abs(Number(t.netPnl)), 0)
+    // Profit Factor (20 trades min) — use aggregates
+    if (tradeCount >= 20) {
+      const [winSum, lossSum] = await Promise.all([
+        prisma.trade.aggregate({
+          where: { userId, status: 'closed', netPnl: { gt: 0 } },
+          _sum: { netPnl: true }
+        }),
+        prisma.trade.aggregate({
+          where: { userId, status: 'closed', netPnl: { lt: 0 } },
+          _sum: { netPnl: true }
+        })
+      ])
+      const grossProfit = Number(winSum._sum.netPnl || 0)
+      const grossLoss = Math.abs(Number(lossSum._sum.netPnl || 0))
       const pf = grossLoss === 0 ? grossProfit : grossProfit / grossLoss
       if (pf >= 2.0) await unlock('profit_factor_2')
     }
   }
 
-  // Evaluate Journal Achievements
-  const journals = await prisma.dailyJournal.findMany({
+  // Evaluate Journal Achievements — use count()
+  const journalCount = await prisma.dailyJournal.count({
     where: { userId }
   })
   
-  if (journals.length >= 7) await unlock('journal_7')
-  if (journals.length >= 30) await unlock('journal_30')
+  if (journalCount >= 7) await unlock('journal_7')
+  if (journalCount >= 30) await unlock('journal_30')
 
-  const hasPerfectDiscipline = journals.some(j => {
-    if (!j.disciplineChecks) return false
-    const checks = typeof j.disciplineChecks === 'string' ? JSON.parse(j.disciplineChecks as string) : j.disciplineChecks as Record<string, boolean>
-    // Assuming a perfect day means all checks are true and there are checks.
-    if (!checks || Object.keys(checks).length === 0) return false
-    return Object.values(checks).every(val => val === true)
+  // Check for perfect discipline — use findFirst
+  const perfectJournal = await prisma.dailyJournal.findFirst({
+    where: { userId, disciplineChecks: { not: undefined } },
+    select: { disciplineChecks: true }
   })
-  if (hasPerfectDiscipline) await unlock('discipline_perfect')
+  if (perfectJournal?.disciplineChecks) {
+    const checks = typeof perfectJournal.disciplineChecks === 'string'
+      ? JSON.parse(perfectJournal.disciplineChecks as string)
+      : perfectJournal.disciplineChecks as Record<string, boolean>
+    if (checks && Object.keys(checks).length > 0 && Object.values(checks).every(val => val === true)) {
+      await unlock('discipline_perfect')
+    }
+  }
 
-  // Evaluate Prop Firm Achievements
-  const challenges = await prisma.propChallenge.findMany({
+  // Evaluate Prop Firm Achievements — use count() and findFirst
+  const challengeCount = await prisma.propChallenge.count({
     where: { userId }
   })
-  if (challenges.length > 0) await unlock('prop_active')
-  if (challenges.some(c => c.status === 'passed' || c.phase === 'funded')) await unlock('prop_passed')
+  if (challengeCount > 0) await unlock('prop_active')
 
-  const payouts = await prisma.propPayout.count({
+  const passedChallenge = await prisma.propChallenge.findFirst({
+    where: { userId, OR: [{ status: 'passed' }, { phase: 'funded' }] },
+    select: { id: true }
+  })
+  if (passedChallenge) await unlock('prop_passed')
+
+  const payoutCount = await prisma.propPayout.count({
     where: { challenge: { userId } }
   })
-  if (payouts > 0) await unlock('payout_requested')
+  if (payoutCount > 0) await unlock('payout_requested')
 
   return newUnlocks
 }

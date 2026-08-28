@@ -11,6 +11,7 @@ export function TradesEquityMini() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const controller = new AbortController()
     setLoading(true)
     const params = new URLSearchParams()
     const accountId = searchParams?.get("accountId")
@@ -21,13 +22,14 @@ export function TradesEquityMini() {
     if (to) params.set("to", to)
 
     const qs = params.toString()
-    fetch(`/api/metrics/equity-curve${qs ? `?${qs}` : ""}`)
+    fetch(`/api/metrics/equity-curve${qs ? `?${qs}` : ""}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
-        setData((d.data || []).map((p: any) => ({ equity: p.equity, date: p.date })))
+        setData((d.data || []).map((p: { equity: number; date: string }) => ({ equity: p.equity, date: p.date })))
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((e) => { if (e.name !== "AbortError") setLoading(false) })
+    return () => controller.abort()
   }, [searchParams])
 
   if (loading) return <div className="skeleton" style={{ height: 80, borderRadius: "var(--radius-card)" }} />

@@ -24,7 +24,7 @@ export async function sendEmail({ to, subject, react }: SendEmailOptions) {
 
   try {
     const data = await resend.emails.send({
-      from: "TradeLink <onboarding@resend.dev>", // Replace with verified domain when going to production
+      from: process.env.EMAIL_FROM || "TradeLink <noreply@tradelink.app>",
       to,
       subject,
       react,

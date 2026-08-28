@@ -53,14 +53,14 @@ export async function POST(request: Request) {
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const parsed = addSchema.safeParse(await request.json())
-    if (!parsed.success) return NextResponse.json({ error: "Symbole invalide" }, { status: 400 })
+    if (!parsed.success) return NextResponse.json({ error: "Invalid symbol" }, { status: 400 })
 
     const symbol = sanitizeSymbol(parsed.data.symbol)
-    if (!symbol) return NextResponse.json({ error: "Symbole invalide" }, { status: 400 })
+    if (!symbol) return NextResponse.json({ error: "Invalid symbol" }, { status: 400 })
 
     const count = await prisma.watchlistItem.count({ where: { userId: session.user.id } })
     if (count >= 50) {
-      return NextResponse.json({ error: "Watchlist pleine (max 50 symboles)" }, { status: 400 })
+      return NextResponse.json({ error: "Watchlist full (max 50 symbols)" }, { status: 400 })
     }
 
     await prisma.watchlistItem.upsert({
@@ -83,7 +83,7 @@ export async function DELETE(request: NextRequest) {
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
     const parsed = delSchema.safeParse(Object.fromEntries(request.nextUrl.searchParams))
-    if (!parsed.success) return NextResponse.json({ error: "Symbole invalide" }, { status: 400 })
+    if (!parsed.success) return NextResponse.json({ error: "Invalid symbol" }, { status: 400 })
 
     const symbol = parsed.data.symbol.trim().toUpperCase()
     await prisma.watchlistItem.deleteMany({ where: { userId: session.user.id, symbol } })

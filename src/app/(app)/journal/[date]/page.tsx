@@ -204,6 +204,11 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
                   netPnlUsd: t.netPnlUsd ? Number(t.netPnlUsd) : null,
                   stopLoss: t.stopLoss ? Number(t.stopLoss) : null,
                   riskAmount: t.riskAmount ? Number(t.riskAmount) : null,
+                  entryAt: t.entryAt,
+                  status: t.status,
+                  setupTags: t.setupTags,
+                  emotionTags: t.emotionTags,
+                  screenshots: (t.screenshots || []).map((s: { id: string }) => ({ id: s.id })),
                 }
                 return <TradeRow key={t.id} trade={serializedTrade} />
               })

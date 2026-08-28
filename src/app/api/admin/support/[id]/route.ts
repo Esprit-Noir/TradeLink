@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { requireAdmin } from "@/lib/admin-auth"
+import { requireAdminApi } from "@/lib/admin-auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -11,7 +11,9 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await requireAdmin()
+  const sessionOrResponse = await requireAdminApi()
+  if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
+  const session = sessionOrResponse
   const { id } = await params
 
   const ticket = await prisma.supportTicket.findUnique({
@@ -37,7 +39,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await requireAdmin()
+  const sessionOrResponse = await requireAdminApi()
+  if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
+  const session = sessionOrResponse
   const { id } = await params
   const body = await request.json()
   const parsed = POSTSchema.safeParse(body)

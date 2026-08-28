@@ -75,7 +75,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
   }, [symbols])
 
   useEffect(() => {
-    let alive = true
+    let controller: AbortController | null = null
     let timer: ReturnType<typeof setTimeout> | undefined
     const tick = async () => {
       const syms = symbolsRef.current
@@ -84,22 +84,21 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
         timer = setTimeout(tick, 5000)
         return
       }
+      controller = new AbortController()
       try {
-        const res = await fetch(`/api/market-quotes?symbols=${encodeURIComponent(syms.join(","))}`)
+        const res = await fetch(`/api/market-quotes?symbols=${encodeURIComponent(syms.join(","))}`, { signal: controller.signal })
         if (res.ok) {
           const data = await res.json()
-          if (alive) {
-            const map: Record<string, MarketQuote> = {}
-            for (const q of data.quotes ?? []) map[q.symbol] = q
-            setQuotes(map)
-          }
+          const map: Record<string, MarketQuote> = {}
+          for (const q of data.quotes ?? []) map[q.symbol] = q
+          setQuotes(map)
         }
       } catch {}
       timer = setTimeout(tick, 20_000)
     }
     tick()
     return () => {
-      alive = false
+      controller?.abort()
       if (timer) clearTimeout(timer)
     }
   }, [])
@@ -191,7 +190,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
       {/* Header */}
       <div className="watchlist-head">
         <div className="watchlist-head-top">
-          <button className="watchlist-nav-btn" onClick={onOpenNav} aria-label="Ouvrir la navigation">
+          <button className="watchlist-nav-btn" onClick={onOpenNav} aria-label="Open navigation">
             <Menu size={14} />
           </button>
           <Link href="/dashboard" className="watchlist-logo">
@@ -251,7 +250,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
                   )
                 }
               >
-                {c === "all" ? "Tous" : c}
+                {c === "all" ? "All" : c}
               </button>
             ))}
           </div>
@@ -269,7 +268,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
             ))}
             {query.trim() && (
               <button className="watchlist-picker-row watchlist-picker-custom" onClick={() => addSymbol(query)}>
-                <span className="watchlist-picker-sym">Ajouter « {query.trim().toUpperCase()} »</span>
+                <span className="watchlist-picker-sym">Add "{query.trim().toUpperCase()}"</span>
               </button>
             )}
           </div>
@@ -278,7 +277,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
 
       {/* Column headers */}
       <div className="watchlist-cols">
-        <span style={{ flex: 1 }}>Paire</span>
+        <span style={{ flex: 1 }}>Symbol</span>
         <span>Last</span>
         <span>Chg%</span>
       </div>
@@ -290,7 +289,7 @@ export function WatchlistPanel({ onOpenNav }: { onOpenNav: () => void }) {
             <Loader2 size={14} className="spin" />
           </div>
         ) : items.length === 0 ? (
-          <div className="watchlist-empty">Ajoutez une paire avec +</div>
+          <div className="watchlist-empty">Add a symbol with +</div>
         ) : (
           items.map((item) => {
             const q = quotes[item.symbol]

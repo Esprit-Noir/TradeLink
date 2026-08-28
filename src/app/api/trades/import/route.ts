@@ -6,7 +6,7 @@ import { parseGenericCSV, type GenericMapping } from "@/lib/parsers/generic.pars
 import { classifySymbol } from "@/lib/market/symbols"
 import { getActiveAccount } from "@/lib/active-account"
 import { evaluateChallenge } from "@/lib/prop-firm.service"
-import { rateLimit } from "@/lib/rate-limit"
+import { rateLimitAsync, rateLimitHeaders } from "@/lib/rate-limit"
 
 const PREVIEW_LIMIT = 10
 
@@ -17,11 +17,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const rl = rateLimit(`import:${session.user.id}`, { limit: 5, windowMs: 60000 })
+    const rl = await rateLimitAsync(`import:${session.user.id}`, { limit: 5, windowMs: 60000 })
     if (!rl.success) {
+      const retryAfter = Math.ceil((rl.reset - Date.now()) / 1000)
       return NextResponse.json(
         { error: "Too many requests. Please wait a minute." },
-        { status: 429, headers: { "Retry-After": "60" } }
+        { status: 429, headers: { "Retry-After": String(retryAfter), ...rateLimitHeaders(rl) } }
       )
     }
 

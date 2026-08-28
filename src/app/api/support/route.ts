@@ -10,50 +10,60 @@ const POSTSchema = z.object({
 })
 
 export async function GET() {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const tickets = await prisma.supportTicket.findMany({
+      where: { userId: session.user.id },
+      include: {
+        _count: { select: { messages: true } },
+        assignedAdmin: { select: { email: true, name: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    })
+
+    return NextResponse.json({ tickets })
+  } catch (error) {
+    console.error("Get Tickets Error:", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
-
-  const tickets = await prisma.supportTicket.findMany({
-    where: { userId: session.user.id },
-    include: {
-      _count: { select: { messages: true } },
-      assignedAdmin: { select: { email: true, name: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  })
-
-  return NextResponse.json({ tickets })
 }
 
 export async function POST(request: Request) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-  }
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-  const body = await request.json()
-  const parsed = POSTSchema.safeParse(body)
+    const body = await request.json()
+    const parsed = POSTSchema.safeParse(body)
 
-  if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid payload" }, { status: 400 })
-  }
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid payload", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+    }
 
-  const ticket = await prisma.supportTicket.create({
-    data: {
-      userId: session.user.id,
-      subject: parsed.data.subject,
-      priority: parsed.data.priority,
-      messages: {
-        create: {
-          senderId: session.user.id,
-          content: parsed.data.content,
+    const ticket = await prisma.supportTicket.create({
+      data: {
+        userId: session.user.id,
+        subject: parsed.data.subject,
+        priority: parsed.data.priority,
+        messages: {
+          create: {
+            senderId: session.user.id,
+            content: parsed.data.content,
+          },
         },
       },
-    },
-    include: { messages: true },
-  })
+      include: { messages: true },
+    })
 
-  return NextResponse.json({ ticket })
+    return NextResponse.json({ ticket })
+  } catch (error) {
+    console.error("Create Ticket Error:", error)
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  }
 }

@@ -155,12 +155,12 @@ export function MarketOverview() {
     return () => clearInterval(interval)
   }, [])
 
-  const fetchRealData = async () => {
+  const fetchRealData = async (signal?: AbortSignal) => {
     try {
       setLoading(true)
       // Yahoo finance symbols corresponding to the hardcoded list
       const yahooSymbols = ["EURUSD=X", "GBPJPY=X", "^NDX", "GC=F", "BTC-USD", "^DJI", "ETH-USD", "JPY=X"]
-      const res = await fetch(`/api/market-quotes?symbols=${encodeURIComponent(yahooSymbols.join(","))}`)
+      const res = await fetch(`/api/market-quotes?symbols=${encodeURIComponent(yahooSymbols.join(","))}`, { signal })
       if (!res.ok) throw new Error("Failed to fetch")
       const result = await res.json()
       const quotes = result.quotes || []
@@ -202,9 +202,16 @@ export function MarketOverview() {
   }
 
   useEffect(() => {
-    fetchRealData()
-    const interval = setInterval(fetchRealData, 60000)
-    return () => clearInterval(interval)
+    const controller = new AbortController()
+    fetchRealData(controller.signal)
+    const interval = setInterval(() => {
+      const ctrl = new AbortController()
+      fetchRealData(ctrl.signal)
+    }, 60000)
+    return () => {
+      controller.abort()
+      clearInterval(interval)
+    }
   }, [])
 
   const saveSymbols = (symbols: string[]) => {
@@ -225,7 +232,7 @@ export function MarketOverview() {
           <button onClick={() => setIsModalOpen(true)} style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
             <Settings size={14} />
           </button>
-          <button onClick={fetchRealData} disabled={loading} style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
+          <button onClick={() => fetchRealData()} disabled={loading} style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer" }}>
             <RefreshCcw size={14} className={loading ? "animate-spin" : ""} />
           </button>
         </div>

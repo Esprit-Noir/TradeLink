@@ -245,7 +245,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
           return (
             <div
               key={acc.id}
-              className="card-hover"
+              className="card-hover account-type-card"
               onClick={() => openAccount(acc)}
               style={{
                 border: `1px solid ${typeColor}40`,
@@ -254,10 +254,8 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                 display: "flex", flexDirection: "column", gap: "1.5rem",
                 position: "relative",
                 cursor: "pointer",
-                transition: "border-color 0.2s ease, transform 0.15s ease",
+                ["--account-type-color" as string]: typeColor,
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = typeColor }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = `${typeColor}40` }}
             >
               {/* Top Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.75rem" }}>

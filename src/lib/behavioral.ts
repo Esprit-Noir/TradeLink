@@ -183,7 +183,10 @@ function detectRevengeTrades(trades: Trade[]): DetectedPattern | null {
 
       const gap = (new Date(curr.entryAt).getTime() - new Date(prev.exitAt).getTime()) / 60000
       
-      if (gap >= 0 && gap <= CONFIG.revengeWindowMinutes) {
+      // Early exit: if gap exceeds the window, no need to check older trades
+      if (gap > CONFIG.revengeWindowMinutes) break
+      
+      if (gap >= 0) {
         isRevenge = true
         break // Dès qu'on trouve une perte récente déclencheuse, on flag le trade
       }

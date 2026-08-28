@@ -17,15 +17,23 @@ const DEFAULT_PREFS: Record<string, boolean> = {
   deadline_1d: true,
 }
 
-function prefEnabled(prefs: any, eventType: string) {
-  const map = prefs?.eventTypes
+function prefEnabled(prefs: Record<string, unknown> | null | undefined, eventType: string) {
+  const map = prefs?.eventTypes as Record<string, boolean> | undefined
   if (!map || typeof map !== "object") return DEFAULT_PREFS[eventType] ?? true
   if (eventType in map) return Boolean(map[eventType])
   return DEFAULT_PREFS[eventType] ?? true
 }
 
-async function logEventIfAbsent(
-  challengeId: string,
+interface PendingEvent {
+  eventType: string
+  severity: EventSeverity
+  message: string
+  metadata?: object
+  enabled: boolean
+}
+
+function collectEvent(
+  pending: PendingEvent[],
   eventType: string,
   severity: EventSeverity,
   message: string,
@@ -33,35 +41,52 @@ async function logEventIfAbsent(
   enabled: boolean = true
 ) {
   if (!enabled) return
-  const existing = await prisma.propChallengeEvent.findFirst({
-    where: { challengeId, eventType },
-    select: { id: true },
+  pending.push({ eventType, severity, message, metadata, enabled })
+}
+
+async function flushEvents(
+  challengeId: string,
+  pending: PendingEvent[],
+  challengeInfo: { firmName: string; userEmail: string; userName: string } | null
+) {
+  if (pending.length === 0) return
+
+  // Batch fetch existing events
+  const eventTypes = pending.map(e => e.eventType)
+  const existing = await prisma.propChallengeEvent.findMany({
+    where: { challengeId, eventType: { in: eventTypes } },
+    select: { eventType: true },
   })
-  if (existing) return
+  const existingSet = new Set(existing.map(e => e.eventType))
 
-  await prisma.propChallengeEvent.create({
-    data: { challengeId, eventType, severity, message, metadata: metadata ?? undefined },
+  // Filter out already-existing events
+  const newEvents = pending.filter(e => !existingSet.has(e.eventType))
+  if (newEvents.length === 0) return
+
+  // Batch create
+  await prisma.propChallengeEvent.createMany({
+    data: newEvents.map(e => ({
+      challengeId,
+      eventType: e.eventType,
+      severity: e.severity,
+      message: e.message,
+      metadata: e.metadata ?? undefined,
+    })),
   })
 
-  // Trigger email notification for important events
-  const shouldEmail = severity === "critical" || severity === "warning" || eventType === "target_hit"
-  if (shouldEmail) {
-    const challengeInfo = await prisma.propChallenge.findUnique({
-      where: { id: challengeId },
-      select: { template: { select: { firmName: true } }, user: { select: { email: true, name: true } } }
-    })
-
-    if (challengeInfo?.user.email) {
-      // Fire-and-forget avec gestion d'erreur propre
+  // Send emails for critical/warning events (fire-and-forget)
+  if (challengeInfo) {
+    const emailsToSend = newEvents.filter(e => e.severity === "critical" || e.severity === "warning" || e.eventType === "target_hit")
+    for (const e of emailsToSend) {
       sendEmail({
-        to: challengeInfo.user.email,
-        subject: `TradeLink: Update on your ${challengeInfo.template.firmName} Challenge`,
+        to: challengeInfo.userEmail,
+        subject: `TradeLink: Update on your ${challengeInfo.firmName} Challenge`,
         react: PropAlertEmail({
-          userName: challengeInfo.user.name || "Trader",
-          firmName: challengeInfo.template.firmName,
-          eventType: eventType.replace(/_/g, " ").toUpperCase(),
-          severity: severity as any,
-          message: message,
+          userName: challengeInfo.userName || "Trader",
+          firmName: challengeInfo.firmName,
+          eventType: e.eventType.replace(/_/g, " ").toUpperCase(),
+          severity: e.severity as "info" | "warning" | "critical",
+          message: e.message,
         }),
       }).catch((err) => console.error("[PROP_EMAIL]", err))
     }
@@ -95,12 +120,22 @@ export async function evaluateChallenge(challengeId: string) {
     where: { id: challenge.userId },
     select: { email: true, name: true, notificationPrefs: true },
   })
-  const prefs = user?.notificationPrefs
+  const prefs = user?.notificationPrefs as Record<string, unknown> | null
 
+  // Pre-fetch challenge info for emails (avoid N+1 in flushEvents)
+  const challengeInfo = user?.email ? {
+    firmName: challenge.template.firmName,
+    userEmail: user.email,
+    userName: user.name || "",
+  } : null
+
+  // Collect all events to batch-insert later
+  const pendingEvents: PendingEvent[] = []
 
   // Time limit check
   if (challenge.deadlineAt && challenge.status === 'active' && new Date() > challenge.deadlineAt) {
-    await markFailed(challenge.id, 'time_limit', `Time limit reached. Challenge expired.`, prefs)
+    await markFailed(challenge.id, 'time_limit', `Time limit reached. Challenge expired.`, prefs, pendingEvents)
+    await flushEvents(challenge.id, pendingEvents, challengeInfo)
     return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
   }
 
@@ -108,8 +143,7 @@ export async function evaluateChallenge(challengeId: string) {
   if (challenge.deadlineAt && challenge.status === 'active') {
     const daysRemaining = Math.ceil((challenge.deadlineAt.getTime() - Date.now()) / 86400000)
     if (daysRemaining <= 5) {
-      await logEventIfAbsent(
-        challenge.id,
+      collectEvent(pendingEvents,
         "deadline_5d",
         "warning",
         `Deadline approaching: ${Math.max(0, daysRemaining)} day(s) left (${challenge.deadlineAt.toISOString().slice(0, 10)}).`,
@@ -118,8 +152,7 @@ export async function evaluateChallenge(challengeId: string) {
       )
     }
     if (daysRemaining <= 1) {
-      await logEventIfAbsent(
-        challenge.id,
+      collectEvent(pendingEvents,
         "deadline_1d",
         "critical",
         `Last day! Deadline is ${Math.max(0, daysRemaining) === 0 ? "today" : "tomorrow"}.`,
@@ -192,8 +225,7 @@ export async function evaluateChallenge(challengeId: string) {
     const ddUsedPct = ddBudget > 0 ? ((maxDdReference - currentBalance) / ddBudget) * 100 : 0
 
     if (ddUsedPct >= 90) {
-      await logEventIfAbsent(
-        challenge.id,
+      collectEvent(pendingEvents,
         "alert_90pct",
         "critical",
         `Drawdown alert: ${Math.round(ddUsedPct)}% of your max drawdown is used.`,
@@ -202,8 +234,7 @@ export async function evaluateChallenge(challengeId: string) {
       )
     }
     if (ddUsedPct >= 80) {
-      await logEventIfAbsent(
-        challenge.id,
+      collectEvent(pendingEvents,
         "alert_80pct",
         "warning",
         `Drawdown alert: ${Math.round(ddUsedPct)}% of your max drawdown is used.`,
@@ -213,10 +244,9 @@ export async function evaluateChallenge(challengeId: string) {
     }
 
     // Custom alert thresholds (configurable per challenge)
-    const alertConfig: any = challenge.alertConfig || {}
+    const alertConfig = (challenge.alertConfig || {}) as Record<string, unknown>
     if (alertConfig.enableStopTrading && Number(alertConfig.stopTradingPct) > 0 && ddUsedPct >= Number(alertConfig.stopTradingPct)) {
-      await logEventIfAbsent(
-        challenge.id,
+      collectEvent(pendingEvents,
         "stop_trading",
         "critical",
         `Stop-trading alert: ${Math.round(ddUsedPct)}% of max drawdown used (threshold ${alertConfig.stopTradingPct}%). Consider stopping for the day.`,
@@ -228,8 +258,7 @@ export async function evaluateChallenge(challengeId: string) {
       const profitGoal = profitTarget * (Number(alertConfig.profitGoalPct) / 100)
       const currentProfit = currentBalance - Number(challenge.initialBalance)
       if (currentProfit >= profitGoal && profitGoal > 0) {
-        await logEventIfAbsent(
-          challenge.id,
+        collectEvent(pendingEvents,
           "goal_reached",
           "info",
           `Profit goal reached: ${Math.round(currentProfit * 100) / 100} (${alertConfig.profitGoalPct}% of target).`,
@@ -241,14 +270,16 @@ export async function evaluateChallenge(challengeId: string) {
 
     if (currentBalance <= maxDdThreshold) {
       await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, days.size)
-      await markBreached(challenge.id, 'max_dd', prefs)
+      await markBreached(challenge.id, 'max_dd', prefs, pendingEvents)
+      await flushEvents(challenge.id, pendingEvents, challengeInfo)
       await writeDailySnapshots(challenge.id, days, Number(challenge.dailyDDPct || 0))
       return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
     }
 
     if (currentBalance <= dailyDdThreshold) {
       await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, days.size)
-      await markBreached(challenge.id, 'daily_dd', prefs)
+      await markBreached(challenge.id, 'daily_dd', prefs, pendingEvents)
+      await flushEvents(challenge.id, pendingEvents, challengeInfo)
       await writeDailySnapshots(challenge.id, days, Number(challenge.dailyDDPct || 0))
       return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
     }
@@ -266,27 +297,27 @@ export async function evaluateChallenge(challengeId: string) {
   if (currentProfit >= profitTarget) {
     // Funded accounts don't "pass" — they become eligible for payouts.
     if (challenge.phase === 'funded') {
-      await logEventIfAbsent(
-        challenge.id,
+      collectEvent(pendingEvents,
         "target_hit",
         "info",
         `Profit target of ${challenge.profitTargetPct}% reached. You are eligible for a payout.`,
         { currentProfit: Math.round(currentProfit * 100) / 100 },
         prefEnabled(prefs, "target_hit")
       )
+      await flushEvents(challenge.id, pendingEvents, challengeInfo)
       return updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
     }
 
     // Min trading days gate
     if (tradingDays < minTradingDays) {
-      await logEventIfAbsent(
-        challenge.id,
+      collectEvent(pendingEvents,
         "min_days_not_met",
         "info",
         `Profit target reached but min trading days (${minTradingDays}) not met — ${tradingDays} traded.`,
         { tradingDays, minTradingDays },
         prefEnabled(prefs, "min_days_not_met")
       )
+      await flushEvents(challenge.id, pendingEvents, challengeInfo)
       return updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
     }
 
@@ -298,19 +329,20 @@ export async function evaluateChallenge(challengeId: string) {
       const biggestPct = (biggestDay / currentProfit) * 100
       if (biggestPct > consistencyPct) {
         await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
-        await markFailed(challenge.id, 'consistency', `Consistency rule violated: largest day was ${Math.round(biggestPct)}% of total profit (max ${consistencyPct}%).`, prefs)
+        await markFailed(challenge.id, 'consistency', `Consistency rule violated: largest day was ${Math.round(biggestPct)}% of total profit (max ${consistencyPct}%).`, prefs, pendingEvents)
+        await flushEvents(challenge.id, pendingEvents, challengeInfo)
         return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
       }
     }
 
-    await logEventIfAbsent(
-      challenge.id,
+    collectEvent(pendingEvents,
       "target_hit",
       "info",
       `Profit target of ${challenge.profitTargetPct}% reached. Prepare to pass the phase.`,
       { currentProfit: Math.round(currentProfit * 100) / 100 },
       prefEnabled(prefs, "target_hit")
     )
+    await flushEvents(challenge.id, pendingEvents, challengeInfo)
     await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
     await prisma.propChallenge.update({
       where: { id: challenge.id },
@@ -318,6 +350,9 @@ export async function evaluateChallenge(challengeId: string) {
     })
     return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
   }
+
+  // Flush remaining events
+  await flushEvents(challenge.id, pendingEvents, challengeInfo)
 
   // Update live values if no breach
   return updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
@@ -336,7 +371,7 @@ async function updateLive(
     where: { id: challengeId },
     select: { metadata: true },
   })
-  const metadata = (challenge?.metadata as any) || {}
+  const metadata = (challenge?.metadata as Record<string, unknown>) || {}
   return prisma.propChallenge.update({
     where: { id: challengeId },
     data: {
@@ -351,7 +386,7 @@ async function updateLive(
   })
 }
 
-async function markFailed(challengeId: string, reason: string, message: string, prefs?: any) {
+async function markFailed(challengeId: string, reason: string, message: string, prefs?: Record<string, unknown> | null, pendingEvents?: PendingEvent[]) {
   await prisma.propChallenge.update({
     where: { id: challengeId },
     data: {
@@ -360,17 +395,18 @@ async function markFailed(challengeId: string, reason: string, message: string, 
       breachedAt: new Date()
     }
   })
-  await logEventIfAbsent(
-    challengeId,
-    "breached",
-    "critical",
-    message,
-    { reason },
-    prefEnabled(prefs, "breached")
-  )
+  if (pendingEvents) {
+    collectEvent(pendingEvents,
+      "breached",
+      "critical",
+      message,
+      { reason },
+      prefEnabled(prefs, "breached")
+    )
+  }
 }
 
-async function markBreached(challengeId: string, reason: string, prefs?: any) {
+async function markBreached(challengeId: string, reason: string, prefs?: Record<string, unknown> | null, pendingEvents?: PendingEvent[]) {
   await prisma.propChallenge.update({
     where: { id: challengeId },
     data: {
@@ -379,14 +415,15 @@ async function markBreached(challengeId: string, reason: string, prefs?: any) {
       breachedAt: new Date()
     }
   })
-  await logEventIfAbsent(
-    challengeId,
-    "breached",
-    "critical",
-    `Challenge breached: ${reason.replace('_', ' ')} limit hit.`,
-    { reason },
-    prefEnabled(prefs, "breached")
-  )
+  if (pendingEvents) {
+    collectEvent(pendingEvents,
+      "breached",
+      "critical",
+      `Challenge breached: ${reason.replace('_', ' ')} limit hit.`,
+      { reason },
+      prefEnabled(prefs, "breached")
+    )
+  }
 }
 
 async function writeDailySnapshots(challengeId: string, days: Map<string, DayAccum>, dailyDDPct: number) {

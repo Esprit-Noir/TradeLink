@@ -47,6 +47,7 @@ model User {
   timezone     String      @default("UTC")
   baseCurrency String      @default("USD") @map("base_currency")
   onboarded    Boolean     @default(false)
+  tokenVersion Int         @default(0) @map("token_version")
   lastLoginAt  DateTime?   @map("last_login_at")
   dailyGoal    Decimal?    @db.Decimal(15,2) @map("daily_goal")
   monthlyGoal  Decimal?    @db.Decimal(15,2) @map("monthly_goal")
@@ -211,6 +212,8 @@ model Trade {
 
   @@unique([accountId, externalId]) // déduplication broker
   @@index([userId, entryAt(sort: Desc)])
+  @@index([userId, status])
+  @@index([accountId, status, exitAt(sort: Asc)])
   @@index([accountId])
   @@index([backtestSessionId])
   @@index([status])
@@ -368,6 +371,7 @@ model PropChallengeEvent {
   challenge    PropChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
 
   @@index([challengeId])
+  @@index([challengeId, eventType])
   @@map("prop_challenge_events")
 }
 
@@ -513,6 +517,7 @@ model Subscription {
   plan          Plan               @relation(fields: [planId], references: [id])
 
   @@index([userId])
+  @@index([userId, status, createdAt(sort: Desc)])
   @@map("subscriptions")
 }
 

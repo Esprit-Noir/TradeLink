@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { requireAdmin, logAdminAction } from "@/lib/admin-auth"
+import { requireAdminApi, logAdminAction } from "@/lib/admin-auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
@@ -12,7 +12,9 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await requireAdmin()
+  const sessionOrResponse = await requireAdminApi()
+  if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
+  const session = sessionOrResponse
   const { id } = await params
 
   const user = await prisma.user.findUnique({
@@ -56,7 +58,9 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await requireAdmin()
+  const sessionOrResponse = await requireAdminApi()
+  if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
+  const session = sessionOrResponse
   const { id } = await params
   const body = await request.json()
   const parsed = impersonateSchema.safeParse(body)

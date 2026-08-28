@@ -118,6 +118,8 @@ export async function GET(request: Request) {
     // Symbols & Setups Aggregation
     const symbolMap: Record<string, { pnl: number, count: number, wins: number }> = {}
     const setupMap: Record<string, { pnl: number, count: number, wins: number }> = {}
+    const instrumentMap: Record<string, { pnl: number, count: number, wins: number }> = {}
+    const sideMap: Record<string, { pnl: number, count: number, wins: number }> = {}
 
     trades.forEach(trade => {
       const pnl = Number(trade.netPnl)
@@ -229,6 +231,20 @@ export async function GET(request: Request) {
         setupMap[tag].count++
         if (isWin) setupMap[tag].wins++
       })
+
+      // Instrument Type
+      const inst = trade.instrumentType || "forex"
+      if (!instrumentMap[inst]) instrumentMap[inst] = { pnl: 0, count: 0, wins: 0 }
+      instrumentMap[inst].pnl += pnl
+      instrumentMap[inst].count++
+      if (isWin) instrumentMap[inst].wins++
+
+      // Side
+      const sd = trade.side || "LONG"
+      if (!sideMap[sd]) sideMap[sd] = { pnl: 0, count: 0, wins: 0 }
+      sideMap[sd].pnl += pnl
+      sideMap[sd].count++
+      if (isWin) sideMap[sd].wins++
     })
 
     // Calculations
@@ -383,6 +399,12 @@ export async function GET(request: Request) {
       topSetups,
       symbols,
       setups,
+      instruments: Object.entries(instrumentMap)
+        .map(([name, data]) => ({ name, pnl: data.pnl, count: data.count, winRate: data.count > 0 ? (data.wins / data.count) * 100 : 0 }))
+        .sort((a, b) => b.pnl - a.pnl),
+      sides: Object.entries(sideMap)
+        .map(([name, data]) => ({ name, pnl: data.pnl, count: data.count, winRate: data.count > 0 ? (data.wins / data.count) * 100 : 0 }))
+        .sort((a, b) => b.count - a.count),
     })
   } catch (error) {
     console.error("[ADVANCED_METRICS_GET]", error instanceof Error ? error.message : "Unknown error")

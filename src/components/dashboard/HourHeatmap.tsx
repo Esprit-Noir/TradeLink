@@ -15,14 +15,16 @@ export function HourHeatmap() {
   const qs = searchParams.toString()
 
   useEffect(() => {
+    const controller = new AbortController()
     setLoading(true)
-    fetch(`/api/metrics/charts${qs ? `?${qs}` : ""}`)
+    fetch(`/api/metrics/charts${qs ? `?${qs}` : ""}`, { signal: controller.signal })
       .then((r) => r.json())
       .then((d) => {
         setData(d.heatmapData || [])
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch((e) => { if (e.name !== "AbortError") setLoading(false) })
+    return () => controller.abort()
   }, [qs])
 
   if (loading) {
@@ -88,7 +90,7 @@ export function HourHeatmap() {
                 return (
                   <div 
                     key={`${d}-${h}`} 
-                    className="heatmap-cell"
+                    className="heatmap-cell calendar-heatmap-cell"
                     style={{ 
                       aspectRatio: "1/1",
                       borderRadius: "3px",
@@ -98,7 +100,6 @@ export function HourHeatmap() {
                       opacity: pnl === 0 ? 1 : intensity,
                       position: "relative",
                       cursor: "pointer",
-                      transition: "transform 0.1s, opacity 0.1s"
                     }}
                     onMouseEnter={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect()
@@ -107,14 +108,8 @@ export function HourHeatmap() {
                         y: rect.top - 8,
                         text: `${FULL_DAYS[d]} ${formatHour(h)}\n${formatCurrency(pnl)}`
                       })
-                      e.currentTarget.style.transform = "scale(1.3)"
-                      e.currentTarget.style.zIndex = "10"
                     }}
-                    onMouseLeave={(e) => {
-                      setTooltip(null)
-                      e.currentTarget.style.transform = "scale(1)"
-                      e.currentTarget.style.zIndex = "1"
-                    }}
+                    onMouseLeave={() => { setTooltip(null) }}
                   />
                 )
               })}

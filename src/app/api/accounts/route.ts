@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextRequest } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import { apiOk, apiError } from "@/lib/api-response"
 
 const createAccountSchema = z.object({
   name: z.string().min(1).max(100),
@@ -16,7 +17,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const accounts = await prisma.tradingAccount.findMany({
@@ -66,10 +67,10 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(accountsWithStats)
+    return apiOk(accountsWithStats)
   } catch (error) {
     console.error("Error fetching accounts:", error instanceof Error ? error.message : "Unknown error")
-    return NextResponse.json({ error: "Failed to fetch accounts" }, { status: 500 })
+    return apiError("Failed to fetch accounts", 500)
   }
 }
 
@@ -78,13 +79,13 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
     const parsed = createAccountSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+      return apiError("Invalid input", 400, parsed.error.flatten().fieldErrors)
     }
 
     const { name, initialBalance, baseCurrency, type, broker, fxRateToUsd } = parsed.data
@@ -107,9 +108,9 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json(newAccount)
+    return apiOk(newAccount)
   } catch (error) {
     console.error("Error creating account:", error instanceof Error ? error.message : "Unknown error")
-    return NextResponse.json({ error: "Failed to create account" }, { status: 500 })
+    return apiError("Failed to create account", 500)
   }
 }

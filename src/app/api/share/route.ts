@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { z } from "zod"
+
+const shareSchema = z.object({
+  entityType: z.enum(["challenge"]),
+  entityId: z.string().min(1),
+})
 
 export async function POST(req: Request) {
   try {
@@ -9,10 +15,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { entityType, entityId } = await req.json()
-    if (!entityType || !entityId) {
-      return NextResponse.json({ error: "Missing entityType or entityId" }, { status: 400 })
+    const body = await req.json()
+    const parsed = shareSchema.safeParse(body)
+
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid payload", details: parsed.error.flatten().fieldErrors }, { status: 400 })
     }
+
+    const { entityType, entityId } = parsed.data
 
     // Verify ownership of the entity
     if (entityType === "challenge") {
@@ -22,8 +32,6 @@ export async function POST(req: Request) {
       if (!challenge || challenge.userId !== session.user.id) {
         return NextResponse.json({ error: "Challenge not found or not owned by user" }, { status: 404 })
       }
-    } else {
-      return NextResponse.json({ error: "Unsupported entity type" }, { status: 400 })
     }
 
     // Upsert ShareLink (one per entity per user)
@@ -52,7 +60,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ url: `/share/${shareLink.id}` })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Failed to generate share link", error)
     return NextResponse.json({ error: "Failed to generate share link" }, { status: 500 })
   }

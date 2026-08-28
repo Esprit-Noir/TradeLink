@@ -273,7 +273,7 @@ export function CalendarView({
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2, delay: i * 0.015 }}
-        className="card-hover relative"
+        className="card-hover relative calendar-day-cell"
         onClick={() => openDay(dateStr)}
         title={pnl !== undefined ? `PnL: ${formatCurrency(Number(pnl), "USD", true)} | Trades: ${dailyTradeCount[dateStr] ?? 0}` : ""}
         style={{
@@ -285,18 +285,7 @@ export function CalendarView({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          transition: "transform 0.15s ease, box-shadow 0.15s ease",
           cursor: "pointer",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.04)"
-          e.currentTarget.style.boxShadow = isDark ? "0 6px 24px rgba(0,0,0,0.4)" : "0 6px 24px rgba(0,0,0,0.12)"
-          e.currentTarget.style.zIndex = "10"
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)"
-          e.currentTarget.style.boxShadow = "none"
-          e.currentTarget.style.zIndex = "1"
         }}
       >
         <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "flex-start" }}>
@@ -467,14 +456,12 @@ export function CalendarView({
                           key={di}
                           title={`${day.date}: ${formatCurrency(day.pnl, "USD", true)}`}
                           onClick={() => inYear && openDay(day.date)}
+                          className={inYear ? "calendar-heatmap-cell" : ""}
                           style={{
                             width: YCELL, height: YCELL, borderRadius: 3, cursor: inYear ? "pointer" : "default",
                             background: heatColor(day.pnl, yearHeatmap.maxPos, yearHeatmap.maxNeg, inYear),
                             opacity: inYear ? 1 : 0,
-                            transition: "transform 0.1s",
                           }}
-                          onMouseEnter={(e) => { if (inYear) { e.currentTarget.style.transform = "scale(1.25)"; e.currentTarget.style.zIndex = "2"; } }}
-                          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.zIndex = "1"; }}
                         />
                       )
                     })}

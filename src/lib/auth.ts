@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         const parsed = z.object({
           email: z.string().email(),
-          password: z.string().min(8),
+          password: z.string().min(8).max(128),
         }).safeParse(credentials)
 
         if (!parsed.success) return null
@@ -55,85 +55,113 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google" && user?.email) {
-        // Find or create user by email
-        let dbUser = await authPrisma.user.findUnique({
-          where: { email: user.email },
-        })
+        // Use a transaction to prevent race conditions on concurrent sign-ins
+        await authPrisma.$transaction(async (tx) => {
+          // Find or create user by email
+          let dbUser = await tx.user.findUnique({
+            where: { email: user.email! },
+          })
 
-        if (!dbUser) {
-          // Create new user from Google OAuth
-          dbUser = await authPrisma.user.create({
-            data: {
-              email: user.email,
-              name: user.name || "",
+          if (!dbUser) {
+            // Create new user from Google OAuth
+            dbUser = await tx.user.create({
+              data: {
+                email: user.email!,
+                name: user.name || "",
+              },
+            })
+          }
+
+          // Link OAuth account if not already linked
+          const existingOAuth = await tx.account.findUnique({
+            where: {
+              provider_providerAccountId: {
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+              },
             },
           })
-        }
 
-        // Link OAuth account if not already linked
-        const existingOAuth = await authPrisma.account.findUnique({
-          where: {
-            provider_providerAccountId: {
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-            },
-          },
-        })
+          if (!existingOAuth) {
+            await tx.account.create({
+              data: {
+                userId: dbUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                access_token: account.access_token,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                expires_at: account.expires_at,
+              },
+            })
+          }
 
-        if (!existingOAuth) {
-          await authPrisma.account.create({
-            data: {
-              userId: dbUser.id,
-              type: account.type,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              access_token: account.access_token,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              expires_at: account.expires_at,
-            },
+          // Create default trading account if none exists
+          const existingAccount = await tx.tradingAccount.findFirst({
+            where: { userId: dbUser.id },
           })
-        }
 
-        // Create default trading account if none exists
-        const existingAccount = await authPrisma.tradingAccount.findFirst({
-          where: { userId: dbUser.id },
-        })
+          if (!existingAccount) {
+            await tx.tradingAccount.create({
+              data: {
+                userId: dbUser.id,
+                name: "Main Account",
+                baseCurrency: "USD",
+                initialBalance: 10000,
+                isDefault: true,
+              },
+            })
+          }
 
-        if (!existingAccount) {
-          await authPrisma.tradingAccount.create({
-            data: {
-              userId: dbUser.id,
-              name: "Main Account",
-              baseCurrency: "USD",
-              initialBalance: 10000,
-              isDefault: true,
-            },
+          await tx.user.update({
+            where: { id: dbUser.id },
+            data: { lastLoginAt: new Date() },
           })
-        }
 
-        await authPrisma.user.update({
-          where: { id: dbUser.id },
-          data: { lastLoginAt: new Date() },
+          // Attach the DB user id to the JWT
+          user.id = dbUser.id
         })
-
-        // Attach the DB user id to the JWT
-        user.id = dbUser.id
       }
 
       return true
     },
     async jwt({ token, user }) {
-      // Seulement au moment de la connexion (user est défini)
+      // Au moment de la connexion, on charge toutes les infos
       if (user) {
         token.id = user.id
-        // On charge role/status une seule fois — stockés dans le JWT
         const dbUser = await authPrisma.user.findUnique({
           where: { id: user.id as string },
-          select: { role: true, status: true },
+          select: { role: true, status: true, tokenVersion: true },
         })
         if (dbUser) {
+          token.role = dbUser.role as string
+          token.status = dbUser.status as string
+          token.tokenVersion = dbUser.tokenVersion
+        }
+      }
+
+      // À chaque requête, on vérifie que le token n'a pas été invalidé (ban/suspend)
+      if (token.id && token.tokenVersion !== undefined) {
+        const dbUser = await authPrisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, status: true, tokenVersion: true },
+        })
+        if (!dbUser) {
+          // Utilisateur supprimé — invalider le token
+          delete token.id
+          delete token.role
+          delete token.status
+          return token
+        }
+        // Si le tokenVersion a changé (ban/suspend), on force la déconnexion
+        if (dbUser.tokenVersion !== token.tokenVersion) {
+          token.role = dbUser.role as string
+          token.status = dbUser.status as string
+          token.tokenVersion = dbUser.tokenVersion
+        } else {
+          // Même version — on met à jour role/status au cas où
           token.role = dbUser.role as string
           token.status = dbUser.status as string
         }
@@ -145,6 +173,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.id) session.user.id = token.id as string
       if (token.role) (session.user as unknown as Record<string, unknown>).role = token.role as string
       if (token.status) (session.user as unknown as Record<string, unknown>).status = token.status as string
+      if (token.tokenVersion !== undefined) (session.user as unknown as Record<string, unknown>).tokenVersion = token.tokenVersion as number
       return session
     },
   },

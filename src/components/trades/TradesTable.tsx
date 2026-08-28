@@ -12,6 +12,25 @@ import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { useTranslations, useLocale } from "next-intl"
 
+export type SerializedTrade = {
+  id: string
+  symbol: string
+  instrumentType: string
+  side: string
+  quantity: number
+  entryPrice: number
+  exitPrice: number | null
+  stopLoss: number | null
+  riskAmount: number | null
+  fees: number
+  netPnl: number | null
+  entryAt: string | Date
+  status: string
+  setupTags?: string[] | null
+  emotionTags?: string[] | null
+  screenshots?: { id: string }[]
+}
+
 export const TRADE_COLUMNS = [
   { key: "entryAt", label: "Entry Time", default: true, sortable: true },
   { key: "symbol", label: "Symbol", default: true, sortable: true },
@@ -32,7 +51,7 @@ export const TRADE_COLUMNS = [
 type ColumnKey = (typeof TRADE_COLUMNS)[number]["key"]
 
 type Props = {
-  trades: any[]
+  trades: SerializedTrade[]
   totals: { count: number; netPnl: number; wins: number; losses: number }
   density: string
   timezone?: string

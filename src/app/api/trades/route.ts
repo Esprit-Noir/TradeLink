@@ -1,10 +1,10 @@
 export const dynamic = "force-dynamic"
 
-import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveAccount } from "@/lib/active-account"
 import { z } from "zod"
+import { apiOk, apiError } from "@/lib/api-response"
 
 const tradeSchema = z.object({
   symbol: z.string().min(1).max(20),
@@ -26,26 +26,26 @@ export async function POST(request: Request) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return apiError("Unauthorized", 401)
     }
 
     const body = await request.json()
     const parsed = tradeSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid input", details: parsed.error.flatten().fieldErrors }, { status: 400 })
+      return apiError("Invalid input", 400, parsed.error.flatten().fieldErrors)
     }
 
     const { symbol, instrumentType, side, quantity, entryPrice, exitPrice, entryAt, exitAt, fees, setupTags, emotionTags, notesPost, screenshotUrl } = parsed.data
 
     if (!symbol || !quantity || !entryPrice || !exitPrice || !entryAt) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return apiError("Missing required fields")
     }
 
     // Retrieve default account
     const account = await getActiveAccount(session.user.id)
 
     if (!account) {
-      return NextResponse.json({ error: "No trading account found." }, { status: 404 })
+      return apiError("No trading account found.", 404)
     }
 
     const isLong = side === "LONG"
@@ -118,9 +118,9 @@ export async function POST(request: Request) {
       .then(m => m.evaluateAchievements(session.user?.id || ""))
       .catch(e => { console.error(e); return [] })
 
-    return NextResponse.json({ success: true, trade, unlocks })
+    return apiOk({ trade, unlocks })
   } catch (error) {
     console.error("Error creating trade:", error instanceof Error ? error.message : "Unknown error")
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return apiError("Internal Server Error", 500)
   }
 }

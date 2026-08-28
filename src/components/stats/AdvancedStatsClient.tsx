@@ -8,6 +8,7 @@ import type { EquityPoint } from "@/lib/metrics"
 import type { Formatter } from "recharts/types/component/DefaultTooltipContent"
 import { Download, TrendingUp, TrendingDown, BarChart3, Target, Activity, AlertTriangle, Clock, Award } from "lucide-react"
 import dynamic from "next/dynamic"
+import { DonutChart } from "./DonutChart"
 
 const EquityCurveChart = dynamic(
   () => import("@/components/dashboard/EquityCurveChart").then(m => ({ default: m.EquityCurveChart })),
@@ -34,6 +35,8 @@ interface Kpis {
   avgWin: number
   avgLoss: number
   sortino: number
+  winRate: number
+  totalTrades: number
 }
 
 interface Streaks {
@@ -62,6 +65,8 @@ interface AdvancedStatsData {
   empty?: boolean
   symbols?: BreakdownItem[]
   setups?: BreakdownItem[]
+  instruments?: BreakdownItem[]
+  sides?: BreakdownItem[]
   kpis: Kpis
   durations: Durations
   streaks: Streaks
@@ -99,6 +104,22 @@ const PERIODS = [
   { key: "ytd", label: "YTD" },
 ]
 
+const INSTRUMENT_COLORS: Record<string, string> = {
+  forex: "#10b981",
+  crypto: "#f59e0b",
+  indices: "#3b82f6",
+  stock: "#8b5cf6",
+  futures: "#ec4899",
+  options: "#06b6d4",
+}
+
+const SIDE_COLORS: Record<string, string> = {
+  LONG: "#10b981",
+  SHORT: "#ef4444",
+}
+
+const SESSION_COLORS = ["#f59e0b", "#3b82f6", "#10b981"]
+
 const tooltipStyle = {
   background: "var(--color-gray-900)",
   border: "1px solid var(--color-gray-700)",
@@ -127,24 +148,6 @@ const CustomDowTooltip = ({ active, payload, label }: any) => {
   return null;
 }
 
-const CustomDurationTooltip = ({ active, payload, label }: any) => {
-  if (active && payload && payload.length) {
-    const val = payload[0].value;
-    const hours = Math.floor(val / 60);
-    const mins = Math.round(val % 60);
-    const text = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    return (
-      <div style={tooltipStyle} className="p-2">
-        <div style={{ color: "var(--color-gray-400)", marginBottom: "4px" }}>{label}</div>
-        <div style={{ color: payload[0].payload.fill, fontWeight: 700 }}>
-          {text}
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
-
 export function AdvancedStatsClient() {
   const [data, setData] = useState<AdvancedStatsData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -154,7 +157,7 @@ export function AdvancedStatsClient() {
   const [side, setSide] = useState("")
   const [available, setAvailable] = useState<{ symbols: string[]; setups: string[] }>({ symbols: [], setups: [] })
 
-  const load = useCallback(async (filters: { period: string; symbol: string; setup: string; side: string }) => {
+  const load = useCallback(async (filters: { period: string; symbol: string; setup: string; side: string }, signal?: AbortSignal) => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -163,7 +166,7 @@ export function AdvancedStatsClient() {
       if (filters.symbol) params.set("symbol", filters.symbol)
       if (filters.setup) params.set("setup", filters.setup)
       if (filters.side) params.set("side", filters.side)
-      const res = await fetch(`/api/metrics/advanced?${params.toString()}`)
+      const res = await fetch(`/api/metrics/advanced?${params.toString()}`, { signal })
       const d = await res.json()
       setData(d)
       if (!d.empty && d.symbols) {
@@ -173,6 +176,7 @@ export function AdvancedStatsClient() {
         }))
       }
     } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return
       toast.error("Failed to load stats")
     } finally {
       setLoading(false)
@@ -180,7 +184,9 @@ export function AdvancedStatsClient() {
   }, [])
 
   useEffect(() => {
-    load({ period, symbol, setup, side })
+    const controller = new AbortController()
+    load({ period, symbol, setup, side }, controller.signal)
+    return () => controller.abort()
   }, [period, symbol, setup, side, load])
 
   const apply = useCallback((patch: FilterPatch) => {
@@ -205,6 +211,8 @@ export function AdvancedStatsClient() {
   const topSetups = data?.topSetups as BreakdownItem[]
   const symbols = data?.symbols ?? []
   const setups = data?.setups ?? []
+  const instruments = (data?.instruments ?? []) as BreakdownItem[]
+  const sides = (data?.sides ?? []) as BreakdownItem[]
 
   const rrData = useMemo(() => Object.entries(rrDistribution).map(([name, value]) => ({ name, value })), [rrDistribution])
   const dowData = useMemo(() => dowPerformance.map((item: any, index: number) => ({
@@ -235,6 +243,37 @@ export function AdvancedStatsClient() {
     ]
   }, [durations])
 
+  const winLossData = useMemo(() => {
+    if (!kpis) return []
+    const wins = Math.round((kpis.winRate / 100) * kpis.totalTrades)
+    const losses = kpis.totalTrades - wins
+    return [
+      { name: "Wins", value: wins, color: "var(--color-profit)" },
+      { name: "Losses", value: losses, color: "var(--color-loss)" },
+    ]
+  }, [kpis])
+
+  const instrumentData = useMemo(() => instruments.map(i => ({
+    name: i.name.charAt(0).toUpperCase() + i.name.slice(1),
+    value: i.count,
+    pnl: i.pnl,
+    color: INSTRUMENT_COLORS[i.name] || "var(--color-gray-500)",
+  })), [instruments])
+
+  const sideData = useMemo(() => sides.map(s => ({
+    name: s.name === "LONG" ? "Long" : "Short",
+    value: s.count,
+    pnl: s.pnl,
+    color: SIDE_COLORS[s.name] || "var(--color-gray-500)",
+  })), [sides])
+
+  const sessionDonutData = useMemo(() => sessionData.map((s, i) => ({
+    name: s.name,
+    value: s.count,
+    pnl: s.pnl,
+    color: SESSION_COLORS[i],
+  })), [sessionData])
+
   const exportBreakdown = useCallback(() => {
     const rows = ["type,name,count,winRate%,netPnl"]
     symbols.forEach((s: BreakdownItem) => rows.push(`symbol,${s.name},${s.count},${s.winRate.toFixed(1)},${s.pnl.toFixed(2)}`))
@@ -252,7 +291,7 @@ export function AdvancedStatsClient() {
     return (
       <div style={{ display: "grid", gap: "1.5rem" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
-          {[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ height: 90, borderRadius: "var(--radius-card)" }} />)}
+          {[1, 2, 3, 4, 5].map(i => <div key={i} className="skeleton" style={{ height: 90, borderRadius: "var(--radius-card)" }} />)}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
           <div className="skeleton" style={{ height: 320, borderRadius: "var(--radius-card)" }} />
@@ -284,8 +323,10 @@ export function AdvancedStatsClient() {
       {/* Filters */}
       <StatsFilters available={available} filters={{ period, symbol, setup, side }} apply={apply} />
 
-      {/* KPI Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 1 — Hero KPIs                                               */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))", gap: "1rem" }}>
         <KpiStat icon={<BarChart3 size={14} />} label="Profit Factor" value={kpis.profitFactor === 99 ? "∞" : kpis.profitFactor.toFixed(2)} color={kpis.profitFactor >= 2 ? "var(--color-profit)" : kpis.profitFactor >= 1 ? "var(--color-warning)" : "var(--color-loss)"} sub="Target > 2.0" />
         <KpiStat icon={<TrendingUp size={14} />} label="Expectancy" value={formatCurrency(kpis.expectancy, "USD", true, 2)} color={kpis.expectancy >= 0 ? "var(--color-profit)" : "var(--color-loss)"} sub={`Win ${formatCurrency(kpis.avgWin, "USD", false, 0)} / Loss ${formatCurrency(kpis.avgLoss, "USD", false, 0)}`} />
         <KpiStat icon={<AlertTriangle size={14} />} label="Max Drawdown" value={formatCurrency(drawdown.maxDrawdown, "USD", true, 2)} color="var(--color-loss)" sub={`${drawdown.maxDrawdownPct.toFixed(1)}% from peak`} />
@@ -293,7 +334,48 @@ export function AdvancedStatsClient() {
         <KpiStat icon={<Award size={14} />} label="Sortino" value={kpis.sortino === 99 ? "∞" : kpis.sortino.toFixed(2)} color={kpis.sortino >= 1 ? "var(--color-profit)" : "var(--color-loss)"} sub="Downside-adjusted" />
       </div>
 
-      {/* Equity Curve + Drawdown Episodes */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 2 — Distribution Donuts: Win/Loss + Side + Instrument + Sessions */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1.5rem" }}>
+        <DonutChart
+          data={winLossData}
+          title="Win / Loss"
+          subtitle={`${kpis.totalTrades} trades`}
+          innerLabel={`${kpis.winRate.toFixed(1)}%`}
+          innerSublabel="Win Rate"
+          height={170}
+          showLegend={false}
+        />
+        <DonutChart
+          data={sideData}
+          title="Long vs Short"
+          subtitle="By trade count"
+          innerLabel={sides.length > 0 ? sides.reduce((a, b) => a.count > b.count ? a : b).name === "LONG" ? "Long" : "Short" : "—"}
+          innerSublabel="Most traded"
+          height={180}
+        />
+        <DonutChart
+          data={instrumentData}
+          title="By Instrument"
+          subtitle="Trade distribution"
+          innerLabel={instruments.length > 0 ? instruments[0].name.charAt(0).toUpperCase() + instruments[0].name.slice(1) : "—"}
+          innerSublabel="Top instrument"
+          height={180}
+        />
+        <DonutChart
+          data={sessionDonutData}
+          title="Sessions"
+          subtitle="Trades per session"
+          innerLabel={sessionData.length > 0 ? sessionData.reduce((a, b) => a.count > b.count ? a : b).name : "—"}
+          innerSublabel="Most active"
+          height={180}
+        />
+      </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 3 — Equity Curve + Drawdown Episodes                       */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", alignItems: "stretch" }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {equityCurve && equityCurve.length > 1 ? (
@@ -345,25 +427,22 @@ export function AdvancedStatsClient() {
         </div>
       </div>
 
-      {/* RR + DoW */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
-        <div className="chart-card" style={{ padding: "1.25rem" }}>
-          <div className="chart-title" style={{ marginBottom: "0.75rem" }}>R:Reward Distribution</div>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={rrData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} width={50} />
-                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} contentStyle={tooltipStyle} itemStyle={{ color: "var(--color-brand-500)", fontWeight: 700 }} />
-                <Bar dataKey="value" name="Trades" fill="var(--color-brand-500)" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 4 — R:Reward Donut + Day of Week + Duration Donut          */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
+        <DonutChart
+          data={rrData.map((d, i) => ({ name: d.name, value: d.value, color: ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"][i] }))}
+          title="R:Reward Distribution"
+          subtitle="Risk : Reward ratio"
+          innerLabel={rrData.length > 0 ? rrData.reduce((a, b) => a.value > b.value ? a : b).name : "—"}
+          innerSublabel="Most common"
+          height={180}
+        />
 
-        <div className="chart-card" style={{ padding: "1.25rem" }}>
+        <div className="chart-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column" }}>
           <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Day of Week</div>
-          <div style={{ height: 220 }}>
+          <div style={{ flex: 1, minHeight: 180 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dowData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} dy={8} />
@@ -379,53 +458,30 @@ export function AdvancedStatsClient() {
             </ResponsiveContainer>
           </div>
         </div>
+
+        <DonutChart
+          data={durationData.map((d, i) => ({ name: d.name, value: d.minutes, color: d.fill }))}
+          title="Avg Duration"
+          subtitle="Minutes per trade"
+          innerLabel={(() => {
+            const avg = durationData.length > 0 ? durationData.reduce((s, d) => s + d.minutes, 0) / durationData.length : 0
+            const h = Math.floor(avg / 60)
+            const m = Math.round(avg % 60)
+            return h > 0 ? `${h}h ${m}m` : `${m}m`
+          })()}
+          innerSublabel="Average"
+          height={180}
+          formatValue={(v) => { const h = Math.floor(v / 60); const m = Math.round(v % 60); return h > 0 ? `${h}h ${m}m` : `${m}m` }}
+        />
       </div>
 
-      {/* Sessions & Duration */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
-        <div className="chart-card" style={{ padding: "1.25rem" }}>
-          <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Session Performance (UTC)</div>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={sessionData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} dy={8} />
-                <YAxis hide />
-                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} content={<CustomDowTooltip />} />
-                <ReferenceLine y={0} stroke="var(--color-gray-800)" />
-                <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-                  {sessionData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className="chart-card" style={{ padding: "1.25rem" }}>
-          <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Average Trade Duration</div>
-          <div style={{ height: 220 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={durationData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
-                <XAxis type="number" hide />
-                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 11, fontWeight: 600 }} width={80} />
-                <Tooltip cursor={{ fill: "var(--color-gray-800)" }} content={<CustomDurationTooltip />} />
-                <Bar dataKey="minutes" radius={[0, 4, 4, 0]} barSize={40}>
-                  {durationData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Hour + Monthly */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 5 — Hour of Day + Monthly                                  */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem" }}>
         <div className="chart-card" style={{ padding: "1.25rem" }}>
           <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Hour of Day</div>
-          <div style={{ height: 220 }}>
+          <div style={{ height: 200 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={hourData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 9 }} interval={2} dy={6} />
@@ -443,8 +499,8 @@ export function AdvancedStatsClient() {
         </div>
 
         <div className="chart-card" style={{ padding: "1.25rem" }}>
-          <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Monthly</div>
-          <div style={{ height: 220 }}>
+          <div className="chart-title" style={{ marginBottom: "0.75rem" }}>Monthly Performance</div>
+          <div style={{ height: 200 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthData} margin={{ top: 16, right: 0, left: 0, bottom: 0 }}>
                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-gray-400)", fontSize: 10, fontWeight: 600 }} dy={8} />
@@ -462,26 +518,32 @@ export function AdvancedStatsClient() {
         </div>
       </div>
 
-      {/* Top / Worst performers */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 6 — Top / Worst performers                                  */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
         <BreakdownCard title="Top Symbols" items={topSymbols} icon={<TrendingUp size={14} />} />
         <BreakdownCard title="Top Setups" items={topSetups} icon={<Target size={14} />} />
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem", marginBottom: "1rem" }}>
         <BreakdownCard title="Worst Symbols" items={worstSymbols} icon={<TrendingDown size={14} />} />
         <BreakdownCard title="Worst Setups" items={worstSetups} icon={<AlertTriangle size={14} />} />
       </div>
 
-      {/* Full Breakdown */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div className="chart-title">Full Breakdown</div>
-        <button className="btn btn-outline btn-sm" onClick={exportBreakdown} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-          <Download size={14} /> CSV
-        </button>
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
-        <BreakdownTable title="By Symbol" rows={symbols} />
-        <BreakdownTable title="By Setup" rows={setups} />
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 7 — Full Breakdown                                          */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      <div style={{ marginBottom: "2rem", }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+          <div className="chart-title" style={{ margin: 0 }}>Full Breakdown</div>
+          <button className="btn btn-outline btn-sm" onClick={exportBreakdown} style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
+            <Download size={14} /> CSV
+          </button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
+          <BreakdownTable title="By Symbol" rows={symbols} />
+          <BreakdownTable title="By Setup" rows={setups} />
+        </div>
       </div>
     </div>
   )
@@ -490,7 +552,7 @@ export function AdvancedStatsClient() {
 function KpiStat({ icon, label, value, color, sub }: { icon: React.ReactNode; label: string; value: string; color: string; sub?: string }) {
   return (
     <div className="kpi-card" style={{
-      display: "flex", flexDirection: "column", gap: "0.4rem",
+      display: "flex", flexDirection: "column", gap: "0.4rem"
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-500)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         {icon} {label}

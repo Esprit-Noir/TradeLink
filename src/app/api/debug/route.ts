@@ -18,6 +18,11 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
+    const status = (session.user as Record<string, unknown>).status
+    if (status === "SUSPENDED" || status === "BANNED") {
+      return NextResponse.json({ error: "Account disabled" }, { status: 403 })
+    }
+
     const c = await prisma.propChallenge.findMany({
       where: { userId: session.user.id },
       include: { account: true },

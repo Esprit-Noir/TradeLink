@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     const parsed = schema.safeParse(Object.fromEntries(request.nextUrl.searchParams))
     if (!parsed.success) {
-      return NextResponse.json({ error: "symbols invalides" }, { status: 400 })
+      return NextResponse.json({ error: "Invalid symbols parameter" }, { status: 400 })
     }
 
     const symbols = parsed.data.symbols
