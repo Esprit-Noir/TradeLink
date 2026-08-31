@@ -4,6 +4,10 @@ import * as Sentry from "@sentry/nextjs";
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
 
+  environment: process.env.NODE_ENV === "production" ? "production" : process.env.NODE_ENV,
+
+  release: process.env.SENTRY_RELEASE,
+
   dataCollection: {
     // userInfo: false,
     // httpBodies: [],
