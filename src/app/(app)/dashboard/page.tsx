@@ -289,7 +289,7 @@ export default async function DashboardPage({
       </div>
 
       {/* Mini Calendar & Macro Events */}
-      <div className="dashboard-row-2-1 dashboard-calendar-row" style={{ marginBottom: "1.5rem" }}>
+      <div className="dashboard-row-2-1" style={{ marginBottom: "1.5rem" }}>
         <div className="chart-card" style={{ flex: 2 }}>
           <div className="chart-title">{t("tradingCalendar")}</div>
           <MiniCalendar dailyPnl={dailyPnlForCalendar} dailyTradeCount={dailyTradeCountForCalendar} />

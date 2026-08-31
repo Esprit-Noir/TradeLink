@@ -1091,7 +1091,7 @@
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .page-header { flex-direction: column; }
   .table-wrapper { overflow-x: auto; }
-  .dashboard-calendar-row { grid-template-columns: 1fr; }
+  .dashboard-row-2-1 { grid-template-columns: 1fr; }
 }
 
 /* ── Backtest Replay ─────────────────────────────────────── */
@@ -2635,9 +2635,6 @@
 @media (max-width: 768px) {
   .bt-ohlc { display: none; }
   .bt-topbar { gap: 0.45rem; }
-  .dashboard-row-2-1 {
-    grid-template-columns: 1fr;
-  }
   .dashboard-row-equal {
     grid-template-columns: 1fr;
   }
