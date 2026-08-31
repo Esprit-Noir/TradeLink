@@ -1091,7 +1091,6 @@
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .page-header { flex-direction: column; }
   .table-wrapper { overflow-x: auto; }
-  .dashboard-row-2-1 { grid-template-columns: 1fr; }
 }
 
 /* ── Backtest Replay ─────────────────────────────────────── */
@@ -2630,6 +2629,10 @@
   /* 3-column stats grid → 2 columns on tablet */
   [style*="grid-template-columns: repeat(3, 1fr)"] {
     grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* dashboard rows → single column on tablet */
+  .dashboard-row-2-1 {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 768px) {

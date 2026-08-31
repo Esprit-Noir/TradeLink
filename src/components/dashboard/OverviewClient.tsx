@@ -140,14 +140,14 @@ export function OverviewClient({ username }: { username?: string }) {
       </motion.div>
 
       {/* Row 1: Market Sessions & Quick Actions */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem" }}>
+      <div className="dashboard-row-2-1">
         {/* World Sessions Map (Takes up ~66% space) */}
-        <motion.div variants={itemVariants} className="chart-card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <motion.div variants={itemVariants} className="chart-card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <WorldSessionsMap />
         </motion.div>
 
         {/* Quick Actions + At a Glance (Takes up ~33% space) */}
-        <div style={{ flex: "1 1 300px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
           <motion.div variants={itemVariants} className="chart-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <span style={{ fontSize: "1rem" }}>&#9889;</span>
@@ -203,14 +203,14 @@ export function OverviewClient({ username }: { username?: string }) {
       </div>
 
       {/* Row 2: Market Overview & Recent Trades */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", alignItems: "flex-start" }}>
+      <div className="dashboard-row-2-1" style={{ alignItems: "flex-start" }}>
         {/* Market Overview */}
-        <motion.div variants={itemVariants} className="chart-card" style={{ flex: "2 1 450px", padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <motion.div variants={itemVariants} className="chart-card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
           <MarketOverview />
         </motion.div>
 
         {/* Recent Trades */}
-        <motion.div variants={itemVariants} className="chart-card" style={{ flex: "1 1 350px" }}>
+        <motion.div variants={itemVariants} className="chart-card">
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Clock size={16} style={{ color: "var(--color-brand-500)" }} />
