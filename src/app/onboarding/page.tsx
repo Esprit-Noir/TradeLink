@@ -63,14 +63,14 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-black text-gray-900 dark:text-white flex items-center justify-center p-4 selection:bg-[var(--color-brand-500)] selection:text-black transition-colors duration-300">
+    <div className="min-h-screen bg-[var(--color-gray-950)] text-[var(--color-gray-100)] flex items-center justify-center p-4 selection:bg-[var(--color-brand-500)] selection:text-black transition-colors duration-300">
       {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-[var(--color-brand-500)]/10 blur-[150px] pointer-events-none" />
 
       <div className="w-full max-w-2xl relative z-10">
         {/* Progress Bar */}
         <div className="flex justify-between mb-12 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 dark:bg-gray-800 -translate-y-1/2 z-0" />
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-[var(--color-gray-800)] -translate-y-1/2 z-0" />
           <div 
             className="absolute top-1/2 left-0 h-1 bg-[var(--color-brand-500)] -translate-y-1/2 z-0 transition-all duration-500 ease-in-out" 
             style={{ width: `${((step - 1) / 2) * 100}%` }}
@@ -85,17 +85,17 @@ export default function OnboardingPage() {
               <div key={s.id} className="relative z-10 flex flex-col items-center">
                 <div 
                   className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                    isActive ? 'bg-[var(--color-brand-500)] text-white dark:text-black shadow-[0_0_20px_rgba(0,199,88,0.4)]' :
-                    isCompleted ? 'bg-[var(--color-brand-500)]/20 text-[var(--color-brand-600)] dark:text-[var(--color-brand-500)]' :
-                    'bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 border border-gray-200 dark:border-gray-800'
+                    isActive ? 'bg-[var(--color-brand-500)] text-white shadow-[0_0_20px_rgba(0,199,88,0.4)]' :
+                    isCompleted ? 'bg-[var(--color-brand-500)]/20 text-[var(--color-brand-600)]' :
+                    'bg-[var(--color-gray-900)] text-[var(--color-gray-400)] border border-[var(--color-gray-800)]'
                   }`}
                 >
                   {isCompleted ? <CheckCircle2 size={24} /> : <Icon size={24} />}
                 </div>
                 <div className={`absolute top-16 text-xs font-semibold whitespace-nowrap transition-colors duration-300 ${
-                  isActive ? 'text-[var(--color-brand-600)] dark:text-[var(--color-brand-500)]' :
-                  isCompleted ? 'text-gray-500 dark:text-gray-300' :
-                  'text-gray-400 dark:text-gray-600'
+                  isActive ? 'text-[var(--color-brand-600)]' :
+                  isCompleted ? 'text-[var(--color-gray-400)]' :
+                  'text-[var(--color-gray-500)]'
                 }`}>
                   {s.title}
                 </div>
@@ -105,7 +105,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Card Content */}
-        <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-colors duration-300">
+        <div className="bg-[var(--color-gray-900)] backdrop-blur-xl border border-[var(--color-gray-800)] rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden transition-colors duration-300">
           <AnimatePresence mode="wait">
             
             {step === 1 && (
@@ -118,17 +118,17 @@ export default function OnboardingPage() {
               >
                 <div className="text-center mb-10">
                   <h2 className="text-3xl font-bold mb-3 tracking-tight">Welcome to TradeLink</h2>
-                  <p className="text-gray-500 dark:text-gray-400">Let&apos;s set up your core preferences.</p>
+                  <p className="text-[var(--color-gray-400)]">Let&apos;s set up your core preferences.</p>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Base Currency</label>
+                    <label className="block text-sm font-semibold text-[var(--color-gray-300)] mb-2">Base Currency</label>
                     <select
                       name="baseCurrency"
                       value={formData.baseCurrency}
                       onChange={handleChange}
-                      className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white focus:outline-none focus:border-[var(--color-brand-500)] dark:focus:border-[var(--color-brand-500)] transition-colors appearance-none"
+                      className="w-full bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-xl px-4 py-3.5 text-[var(--color-gray-100)] focus:outline-none focus:border-[var(--color-brand-500)] transition-colors appearance-none"
                     >
                       <option value="USD">USD ($)</option>
                       <option value="EUR">EUR (€)</option>
@@ -138,18 +138,18 @@ export default function OnboardingPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Timezone</label>
+                    <label className="block text-sm font-semibold text-[var(--color-gray-300)] mb-2">Timezone</label>
                     <select
                       name="timezone"
                       value={formData.timezone}
                       onChange={handleChange}
-                      className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white focus:outline-none focus:border-[var(--color-brand-500)] dark:focus:border-[var(--color-brand-500)] transition-colors appearance-none"
+                      className="w-full bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-xl px-4 py-3.5 text-[var(--color-gray-100)] focus:outline-none focus:border-[var(--color-brand-500)] transition-colors appearance-none"
                     >
                       {Intl.supportedValuesOf('timeZone').map(tz => (
                         <option key={tz} value={tz}>{tz.replace(/_/g, ' ')}</option>
                       ))}
                     </select>
-                    <p className="text-xs text-gray-500 mt-2">All your trades will be displayed in this timezone.</p>
+                    <p className="text-xs text-[var(--color-gray-500)] mt-2">All your trades will be displayed in this timezone.</p>
                   </div>
                 </div>
               </motion.div>
@@ -165,35 +165,35 @@ export default function OnboardingPage() {
               >
                 <div className="text-center mb-10">
                   <h2 className="text-3xl font-bold mb-3 tracking-tight">Set Your Goals</h2>
-                  <p className="text-gray-500 dark:text-gray-400">What are you aiming for? We&apos;ll track your progress.</p>
+                  <p className="text-[var(--color-gray-400)]">What are you aiming for? We&apos;ll track your progress.</p>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Daily Profit Goal (Optional)</label>
+                    <label className="block text-sm font-semibold text-[var(--color-gray-300)] mb-2">Daily Profit Goal (Optional)</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 font-bold">{formData.baseCurrency === "USD" ? "$" : formData.baseCurrency === "EUR" ? "€" : formData.baseCurrency}</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-gray-500)] font-bold">{formData.baseCurrency === "USD" ? "$" : formData.baseCurrency === "EUR" ? "€" : formData.baseCurrency}</span>
                       <input
                         type="number"
                         name="dailyGoal"
                         placeholder="e.g. 500"
                         value={formData.dailyGoal}
                         onChange={handleChange}
-                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-gray-800 rounded-xl pl-12 pr-4 py-3.5 text-gray-900 dark:text-white focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
+                        className="w-full bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-xl pl-12 pr-4 py-3.5 text-[var(--color-gray-100)] focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Monthly Profit Goal (Optional)</label>
+                    <label className="block text-sm font-semibold text-[var(--color-gray-300)] mb-2">Monthly Profit Goal (Optional)</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 font-bold">{formData.baseCurrency === "USD" ? "$" : formData.baseCurrency === "EUR" ? "€" : formData.baseCurrency}</span>
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-gray-500)] font-bold">{formData.baseCurrency === "USD" ? "$" : formData.baseCurrency === "EUR" ? "€" : formData.baseCurrency}</span>
                       <input
                         type="number"
                         name="monthlyGoal"
                         placeholder="e.g. 10000"
                         value={formData.monthlyGoal}
                         onChange={handleChange}
-                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-gray-800 rounded-xl pl-12 pr-4 py-3.5 text-gray-900 dark:text-white focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
+                        className="w-full bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-xl pl-12 pr-4 py-3.5 text-[var(--color-gray-100)] focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
                       />
                     </div>
                   </div>
@@ -211,12 +211,12 @@ export default function OnboardingPage() {
               >
                 <div className="text-center mb-10">
                   <h2 className="text-3xl font-bold mb-3 tracking-tight">Risk Profile</h2>
-                  <p className="text-gray-500 dark:text-gray-400">Help the AI understand your risk parameters.</p>
+                  <p className="text-[var(--color-gray-400)]">Help the AI understand your risk parameters.</p>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Max Risk per Trade (%)</label>
+                    <label className="block text-sm font-semibold text-[var(--color-gray-300)] mb-2">Max Risk per Trade (%)</label>
                     <div className="relative">
                       <input
                         type="number"
@@ -224,14 +224,14 @@ export default function OnboardingPage() {
                         name="riskPerTrade"
                         value={formData.riskPerTrade}
                         onChange={handleChange}
-                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
+                        className="w-full bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-xl px-4 py-3.5 text-[var(--color-gray-100)] focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 font-bold">%</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-gray-500)] font-bold">%</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Recommended: 0.5% - 1.0%</p>
+                    <p className="text-xs text-[var(--color-gray-500)] mt-2">Recommended: 0.5% - 1.0%</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Max Daily Loss Limit (%)</label>
+                    <label className="block text-sm font-semibold text-[var(--color-gray-300)] mb-2">Max Daily Loss Limit (%)</label>
                     <div className="relative">
                       <input
                         type="number"
@@ -239,11 +239,11 @@ export default function OnboardingPage() {
                         name="maxDailyLoss"
                         value={formData.maxDailyLoss}
                         onChange={handleChange}
-                        className="w-full bg-white dark:bg-black/50 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-gray-900 dark:text-white focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
+                        className="w-full bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-xl px-4 py-3.5 text-[var(--color-gray-100)] focus:outline-none focus:border-[var(--color-brand-500)] transition-colors"
                       />
-                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 font-bold">%</span>
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--color-gray-500)] font-bold">%</span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Recommended: 3.0% - 5.0%</p>
+                    <p className="text-xs text-[var(--color-gray-500)] mt-2">Recommended: 3.0% - 5.0%</p>
                   </div>
                 </div>
               </motion.div>
@@ -252,11 +252,11 @@ export default function OnboardingPage() {
           </AnimatePresence>
 
           {/* Navigation Buttons */}
-          <div className="mt-12 flex items-center justify-between pt-8 border-t border-gray-200 dark:border-gray-800">
+          <div className="mt-12 flex items-center justify-between pt-8 border-t border-[var(--color-gray-800)]">
             {step > 1 ? (
               <button 
                 onClick={handlePrev}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-800/50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold transition-colors"
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--color-gray-800)] hover:bg-[var(--color-gray-700)] text-[var(--color-gray-300)] font-semibold transition-colors"
               >
                 <ArrowLeft size={18} />
                 Back
