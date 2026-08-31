@@ -46,7 +46,7 @@ export function GoalWidget({ label, currentPnl, initialGoal, goalKey, placeholde
 
   return (
     <div className="chart-card" style={{ padding: "1.25rem" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
         <div>
           <div className="section-label">{label}</div>
           {goal !== null ? (
@@ -97,7 +97,7 @@ export function GoalWidget({ label, currentPnl, initialGoal, goalKey, placeholde
 
       {goal !== null && goal > 0 && (
         <>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.75rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem", rowGap: "0.35rem" }}>
             <div style={{ fontSize: "1.5rem", fontWeight: 700, color: currentPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontVariantNumeric: "tabular-nums" }}>
               {formatCurrency(currentPnl, "USD", true, 2)}
             </div>

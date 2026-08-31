@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 import { CATEGORY_COLORS as COLORS } from "@/lib/chartColors"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 
 type PieLabelData = {
   cx: number
@@ -77,6 +78,7 @@ export function SetupBarChart() {
   }, [data])
 
   const totalTrades = React.useMemo(() => pieData.reduce((acc, curr) => acc + curr.count, 0), [pieData])
+  const showLabels = !useMediaQuery("(max-width: 640px)")
 
   return (
     <div className="chart-card" style={{ display: "flex", flexDirection: "column", height: "100%", position: "relative" }}>
@@ -89,6 +91,7 @@ export function SetupBarChart() {
           <p style={{ fontSize: "0.85rem" }}>Tag your trades to see this chart.</p>
         </div>
       ) : (
+        <>
         <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart margin={{ top: 20, bottom: 20, left: 40, right: 40 }}>
@@ -102,7 +105,7 @@ export function SetupBarChart() {
                 dataKey="value"
                 stroke="var(--color-gray-900)"
                 strokeWidth={4}
-                label={renderCustomizedLabel}
+                label={showLabels ? renderCustomizedLabel : false}
                 labelLine={false}
                 isAnimationActive={false}
               >
@@ -145,6 +148,17 @@ export function SetupBarChart() {
             </div>
           </div>
         </div>
+        {!showLabels && (
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.5rem 1rem", marginTop: "0.75rem" }}>
+            {pieData.map((entry, index) => (
+              <span key={entry.name} style={{ display: "flex", alignItems: "center", gap: "0.35rem", fontSize: "0.72rem", color: "var(--color-gray-300)" }}>
+                <span style={{ width: 10, height: 10, borderRadius: 2, background: COLORS[index % COLORS.length], flexShrink: 0 }} />
+                {entry.name} · {`${((entry.value / Math.max(1, pieData.reduce((a, b) => a + b.value, 0))) * 100).toFixed(0)}%`}
+              </span>
+            ))}
+          </div>
+        )}
+        </>
       )}
     </div>
   )

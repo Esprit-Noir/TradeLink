@@ -61,7 +61,8 @@ export function HourHeatmap() {
       <div className="chart-title">Performance by Hour & Day</div>
       
       <div style={{ display: "flex", flexDirection: "column", marginTop: "1rem", gap: "0.5rem" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "30px repeat(24, 1fr)", gap: "4px" }}>
+        <div style={{ overflowX: "auto", paddingBottom: "0.5rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "30px repeat(24, 1fr)", gap: "4px", minWidth: 560 }}>
           
           {/* Grid rows for each day (0 = Mon, 6 = Sun) */}
           {DAYS.map((dayLabel, d) => (
@@ -125,7 +126,8 @@ export function HourHeatmap() {
           gap: "4px",
           color: "var(--color-gray-500)", 
           fontSize: "0.7rem",
-          marginTop: "4px"
+          marginTop: "4px",
+          minWidth: 560
         }}>
           <div /> {/* offset for Y labels */}
           {Array.from({ length: 24 }).map((_, h) => (
@@ -133,6 +135,7 @@ export function HourHeatmap() {
               {String(h).padStart(2, "0")}H
             </div>
           ))}
+        </div>
         </div>
       </div>
 

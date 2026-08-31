@@ -64,10 +64,10 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {showCustom && (
-        <div className="flex items-center gap-2 bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] px-2 py-1 rounded-lg">
+        <div className="flex flex-wrap items-center gap-2 bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] px-2 py-1 rounded-lg">
           <input
             type="date"
-            className="input w-[130px] h-8 text-xs px-2"
+            className="input w-[130px] max-w-[45vw] min-w-0 h-8 text-xs px-2"
             value={startDate}
             onChange={e => setStartDate(e.target.value)}
             aria-label="Start date"
@@ -75,7 +75,7 @@ export function DashboardFilter({ accounts }: { accounts: FilterAccount[] }) {
           <span className="text-[var(--color-gray-500)] text-xs">to</span>
           <input
             type="date"
-            className="input w-[130px] h-8 text-xs px-2"
+            className="input w-[130px] max-w-[45vw] min-w-0 h-8 text-xs px-2"
             value={endDate}
             onChange={e => setEndDate(e.target.value)}
             aria-label="End date"

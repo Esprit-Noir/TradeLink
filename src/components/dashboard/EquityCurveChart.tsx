@@ -212,7 +212,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
   return (
     <div className="chart-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", flex: 1 }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "1rem", flexWrap: "wrap", gap: "0.75rem" }}>
         <div>
           <div className="chart-title" style={{ marginBottom: "0.25rem" }}>Equity Curve</div>
           {chartData.length > 0 && (
@@ -233,7 +233,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
           )}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
           {/* Toggle mode */}
           <div style={{ display: "flex", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "10px", padding: "2px", gap: "2px" }}>
             <button

@@ -2766,6 +2766,18 @@
     display: none !important;
   }
 }
+@media (max-width: 480px) {
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpi-value {
+    font-size: 1.5rem;
+  }
+  .card-hover [style*="font-size: 1.75rem"],
+  .chart-card [style*="font-size: 1.75rem"] {
+    font-size: 1.45rem !important;
+  }
+}
 .cmd-k-overlay {
   position: fixed;
   inset: 0;

@@ -189,7 +189,7 @@ export function EconomicCalendarWidget({ limit = 5 }: { limit?: number }) {
                 </div>
                 
                 <div className="flex flex-col flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
                     <span 
                       className="text-[11px] font-bold px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1" 
                       style={{ backgroundColor: `${getImpactColor(e.impact)}20`, color: getImpactColor(e.impact) }}

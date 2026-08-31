@@ -28,7 +28,7 @@ export async function KpiGrid({
 
   if (scope.accounts.length === 0) {
     return (
-    <div className="kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", width: "100%", marginBottom: "1.5rem" }}>
+    <div className="kpi-grid" style={{ width: "100%" }}>
         <AnimatedEmptyKpiCard label={t("netPnl")} icon={<Activity size={16} />} noDataLabel={t("noData")} />
         <AnimatedEmptyKpiCard label={t("winRate")} icon={<Target size={16} />} noDataLabel={t("noData")} />
         <AnimatedEmptyKpiCard label={t("expectancy")} icon={<Lightbulb size={16} />} noDataLabel={t("noData")} />
@@ -70,7 +70,7 @@ export async function KpiGrid({
   const currency = scope.currency
 
   return (
-    <div className="kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", width: "100%", marginBottom: "1.5rem" }}>
+    <div className="kpi-grid" style={{ width: "100%" }}>
       <AnimatedKpiCard
         label={t("netPnl")}
         value={formatCurrency(metrics.netPnl, currency)}

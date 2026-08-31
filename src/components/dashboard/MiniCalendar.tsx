@@ -71,7 +71,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
   return (
     <div style={{ padding: "0.5rem" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <button
             onClick={() => setCurrentDate(new Date(year, month - 1, 1))}
@@ -93,7 +93,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
         </div>
 
         {/* Legend */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.75rem 1rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: colors.profitBg, border: `1px solid ${colors.profitBorder}`, display: "inline-block" }} /> {t("profit")}
           </span>
@@ -175,7 +175,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
 
       {/* Summary */}
       {tradingDays > 0 && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)", fontSize: "0.7rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem 0.75rem", marginTop: "0.75rem", padding: "0.5rem 0.75rem", background: "var(--color-gray-900)", borderRadius: "var(--radius-card)", border: "1px solid var(--color-gray-800)", fontSize: "0.7rem" }}>
           <span style={{ color: "var(--color-profit)", fontWeight: 600 }}>{greenDays} {t("greenDays")}</span>
           <span style={{ color: "var(--color-gray-500)" }}>{tradingDays} {t("tradingDays")}</span>
           <span style={{ color: monthPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 700, fontSize: "0.8rem" }}>

@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
+import { useMediaQuery } from "@/hooks/useMediaQuery"
 
 type PieLabelData = {
   cx: number
@@ -46,6 +47,7 @@ interface WinRateDonutProps {
 export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
   const total = wins + losses
   const winRate = total > 0 ? (wins / total) * 100 : 0
+  const showLabels = !useMediaQuery("(max-width: 480px)")
   
   const data = useMemo(() => [
     { name: "Wins", value: wins, color: "var(--color-profit)" },
@@ -76,7 +78,7 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
               strokeWidth={4}
               dataKey="value"
               isAnimationActive={false}
-              label={renderCustomizedLabel}
+              label={showLabels ? renderCustomizedLabel : false}
               labelLine={false}
             >
               {data.map((entry, index) => (
