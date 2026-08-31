@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useState } from "react"
 import { fmtPrice } from "@/lib/formatters"
 import {
   Save,
@@ -49,7 +49,7 @@ const INDICATOR_TOGGLES: { key: keyof IndicatorsState; label: string }[] = [
   { key: "volume", label: "Vol" },
 ]
 
-export function TradePanel({
+export const TradePanel = memo(function TradePanel({
   symbol,
   currentCandle,
   balance,
@@ -351,4 +351,4 @@ export function TradePanel({
       </div>
     </>
   )
-}
+})

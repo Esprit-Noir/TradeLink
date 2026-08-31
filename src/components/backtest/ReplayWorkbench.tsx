@@ -340,7 +340,6 @@ export function ReplayWorkbench({
   const chartRef = useRef<ReplayChartRef | null>(null)
   const processedTradesRef = useRef<Set<string>>(new Set())
 
-  const [fullscreen, setFullscreen] = useState(false)
   const [watchlistCollapsed, setWatchlistCollapsed] = useState(false)
 
   useEffect(() => {
@@ -375,6 +374,8 @@ export function ReplayWorkbench({
   const lenRef = useRef(state.data.length)
   const prevIndexRef = useRef(-1)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const subDataWindowRef = useRef<Candle[]>([])
+  const subDataWindowOfRef = useRef<Candle[]>([])
 
   useEffect(() => {
     speedRef.current = state.speed
@@ -409,14 +410,32 @@ export function ReplayWorkbench({
     // Determine data source: sub-data filtered by cursor time, or main data
     const useSubNow = !!config.subTf && state.subData.length > 0
     const cursorTime = state.data[idx]?.time ?? null
-    const chartData = useSubNow
-      ? state.subData.filter((c) => cursorTime != null && c.time <= cursorTime)
-      : state.data
 
     const prevIdx = prevIndexRef.current
-    const isSequential = idx === prevIdx + 1 && idx < chartData.length
+    const isSequential = idx === prevIdx + 1
 
-    if (isSequential) {
+    // For sub-data source, avoid a full O(n) filter per tick.
+    // When playing sequentially, extend the previously-computed window
+    // incrementally (sub-data is time-ordered). On jumps/loads, rebuild it.
+    let chartData: Candle[]
+    if (!useSubNow) {
+      chartData = state.data
+    } else if (isSequential && subDataWindowOfRef.current === state.subData) {
+      const win = subDataWindowRef.current
+      const sd = state.subData
+      while (win.length < sd.length && (cursorTime == null || sd[win.length]!.time <= cursorTime)) {
+        win.push(sd[win.length]!)
+      }
+      chartData = win
+    } else {
+      chartData = cursorTime == null ? [] : state.subData.filter((c) => c.time <= cursorTime)
+      subDataWindowRef.current = chartData
+      subDataWindowOfRef.current = state.subData
+    }
+
+    const withinRange = isSequential && idx < chartData.length
+
+    if (withinRange) {
       // Fast path: sequential forward playback → incremental update
       const tick = chartData[idx] ?? state.data[idx]
       if (tick) chart.updateTick(tick)
@@ -425,7 +444,7 @@ export function ReplayWorkbench({
       chart.setData(chartData.slice(0, idx + 1))
     }
     prevIndexRef.current = idx
-     
+
   }, [state.currentIndex, state.data, state.subData, config.subTf, state.loadToken])
 
   // ── data loading ─────────────────────────────────────────────────────────────
@@ -539,6 +558,17 @@ export function ReplayWorkbench({
     (id: string, levels: { stopLoss: number; takeProfit: number }) =>
       dispatch({ type: "UPDATE_LEVELS", id, stopLoss: levels.stopLoss, takeProfit: levels.takeProfit }),
     [],
+  )
+
+  const handleSelectPosition = useCallback((id: string) => dispatch({ type: "SELECT_POSITION", id }), [])
+  const handleCloseManual = useCallback((id: string) => dispatch({ type: "CLOSE_MANUAL", id }), [])
+  const handleDeleteTrade = useCallback((id: string) => dispatch({ type: "DELETE_TRADE", id }), [])
+
+  // Stable reference so PositionsStrip (memoized) only re-renders when the
+  // underlying positions/closedTrades actually change during playback.
+  const combinedPositions = useMemo(
+    () => [...state.positions, ...state.closedTrades],
+    [state.positions, state.closedTrades],
   )
 
   const handleSaveTrade = useCallback(
@@ -830,13 +860,13 @@ export function ReplayWorkbench({
 
           <div className="tz-replay-positions">
             <PositionsStrip
-              positions={[...state.positions, ...state.closedTrades]}
+              positions={combinedPositions}
               selectedPositionId={state.selectedPositionId}
               currentCandle={currentCandle}
               symbol={state.meta.symbol || config.symbol}
-              onSelect={(id) => dispatch({ type: "SELECT_POSITION", id })}
-              onCloseManual={(id) => dispatch({ type: "CLOSE_MANUAL", id })}
-              onDeleteTrade={(id) => dispatch({ type: "DELETE_TRADE", id })}
+              onSelect={handleSelectPosition}
+              onCloseManual={handleCloseManual}
+              onDeleteTrade={handleDeleteTrade}
               onUpdateLevels={handleUpdateLevels}
               onSaveTrade={handleSaveTrade}
             />

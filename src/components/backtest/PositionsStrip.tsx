@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import type { Candle } from "@/lib/market/types"
 import { unrealizedPnl } from "@/lib/market/simulator"
 import { fmtPrice } from "@/lib/formatters"
@@ -19,7 +20,7 @@ interface Props {
   onSaveTrade?: (trade: SimTrade) => void
 }
 
-export function PositionsStrip({
+export const PositionsStrip = memo(function PositionsStrip({
   positions,
   selectedPositionId,
   currentCandle,
@@ -199,7 +200,7 @@ export function PositionsStrip({
       </div>
     </>
   )
-}
+})
 
 
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react"
+import { memo, useEffect, useRef, forwardRef, useImperativeHandle, useState } from "react"
 import { fmtPrice } from "@/lib/formatters"
 import {
   DrawingManager,
@@ -85,7 +85,7 @@ const PALETTES = {
   },
 }
 
-export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function ReplayChart(
+export const ReplayChart = memo(forwardRef<ReplayChartRef, ReplayChartProps>(function ReplayChart(
   {
     indicatorData,
     indicators,
@@ -716,4 +716,4 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
       />
     </div>
   )
-})
+}))
