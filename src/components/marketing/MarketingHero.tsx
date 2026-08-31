@@ -2,58 +2,10 @@
 
 import { useTranslations } from "next-intl"
 import Link from "next/link"
-import { ArrowRight, LayoutDashboard, TrendingUp, TrendingDown, Shield, Zap, Star, Activity, Brain, Target, AlertTriangle } from "lucide-react"
+import { ArrowRight, LayoutDashboard, TrendingUp, Shield, Zap, Star, Activity, Brain, Target, AlertTriangle } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { MarketingBackground } from "./MarketingBackground"
-
-// ─── Live Ticker ──────────────────────────────────────────────────────────────
-const TICKER_DATA = [
-  { symbol: "EUR/USD", price: "1.0847", change: "+0.12%", up: true },
-  { symbol: "BTC/USD", price: "67,234", change: "+2.34%", up: true },
-  { symbol: "SPY",     price: "542.18", change: "-0.08%", up: false },
-  { symbol: "GBP/USD", price: "1.2634", change: "+0.21%", up: true },
-  { symbol: "NQ",      price: "19,842", change: "+1.05%", up: true },
-  { symbol: "GLD",     price: "241.30", change: "-0.33%", up: false },
-  { symbol: "AAPL",    price: "223.45", change: "+0.57%", up: true },
-  { symbol: "XAU/USD", price: "2,312",  change: "+0.44%", up: true },
-  { symbol: "USD/JPY", price: "155.42", change: "-0.18%", up: false },
-  { symbol: "ES",      price: "5,421",  change: "+0.71%", up: true },
-]
-
-function LiveTicker() {
-  const [prices, setPrices] = useState(TICKER_DATA)
-  useEffect(() => {
-    const iv = setInterval(() => {
-      setPrices(prev => prev.map(item => {
-        const d = (Math.random() - 0.48) * 0.05
-        const c = parseFloat(item.price.replace(/,/g, ""))
-        const n = c * (1 + d / 100)
-        return { ...item, price: n > 999 ? n.toLocaleString("en-US", { maximumFractionDigits: 0 }) : n.toFixed(4).slice(0, item.price.length), change: (d > 0 ? "+" : "") + d.toFixed(2) + "%", up: d > 0 }
-      }))
-    }, 2200)
-    return () => clearInterval(iv)
-  }, [])
-  return (
-    <div className="w-full overflow-hidden bg-black/50 backdrop-blur-md border-b border-white/[0.06] relative">
-      <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
-      <div className="flex w-max" style={{ animation: "hero-ticker 55s linear infinite" }}>
-        {[...prices, ...prices].map((item, i) => (
-          <div key={i} className="flex items-center gap-2.5 px-6 py-2 border-r border-white/[0.05] flex-shrink-0">
-            <span className="text-[11px] font-bold text-gray-500 tracking-wider">{item.symbol}</span>
-            <span className="text-[11px] font-mono font-semibold text-white tabular-nums">{item.price}</span>
-            <span className={`text-[11px] font-bold flex items-center gap-0.5 ${item.up ? "text-[var(--color-brand-500)]" : "text-red-400"}`}>
-              {item.up ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-              {item.change}
-            </span>
-          </div>
-        ))}
-      </div>
-      <style dangerouslySetInnerHTML={{__html: `@keyframes hero-ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}} />
-    </div>
-  )
-}
 
 // ─── Animated Counter ─────────────────────────────────────────────────────────
 function AnimatedCounter({ end, prefix = "", suffix = "", duration = 2000, decimals = 0 }: { end: number; prefix?: string; suffix?: string; duration?: number; decimals?: number }) {
@@ -376,10 +328,6 @@ export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
   return (
     <section className="relative min-h-screen flex flex-col items-center overflow-hidden">
       <MarketingBackground />
-
-      <div className="absolute top-[68px] left-0 right-0 z-30">
-        <LiveTicker />
-      </div>
 
       <motion.div className="relative z-10 w-full flex flex-col items-center text-center">
         <div className="h-[140px]" />

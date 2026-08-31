@@ -92,7 +92,7 @@ export function SetupBarChart() {
         </div>
       ) : (
         <>
-        <div style={{ flex: 1, minHeight: 0, position: "relative" }}>
+        <div style={{ flex: 1, minHeight: 260, position: "relative" }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart margin={{ top: 20, bottom: 20, left: 40, right: 40 }}>
               <Pie
