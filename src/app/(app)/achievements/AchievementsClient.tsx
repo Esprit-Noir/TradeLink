@@ -145,7 +145,7 @@ function AchievementCard({ ach }: { ach: Achievement }) {
     <motion.div
       variants={cardVariants}
       whileHover={isUnlocked ? { y: -4, scale: 1.01 } : {}}
-      className={`relative overflow-hidden flex flex-col p-5 rounded-2xl border transition-colors duration-300 ${
+      className={`relative overflow-hidden flex flex-col p-5 rounded-xl border transition-colors duration-300 ${
         isUnlocked 
           ? "bg-[var(--color-gray-900)]/80 backdrop-blur-xl border-[var(--color-brand-500)]/30 shadow-[0_8px_30px_rgba(0,199,88,0.05)] hover:border-[var(--color-brand-500)]/60 hover:shadow-[0_8px_40px_rgba(0,199,88,0.15)]" 
           : "bg-[var(--color-gray-900)]/50 backdrop-blur-md border-[var(--color-gray-800)] grayscale-[0.5] opacity-60"
@@ -376,7 +376,7 @@ export function AchievementsClient() {
   if (loading) {
     return (
       <div className="p-8 mx-auto flex flex-col gap-8">
-        <div className="h-48 rounded-3xl bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] animate-pulse" />
+        <div className="h-48 rounded-xl bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] animate-pulse" />
         <div className="flex gap-3"><div className="h-10 w-24 bg-[var(--color-gray-800)] rounded-full animate-pulse" /><div className="h-10 w-32 bg-[var(--color-gray-800)] rounded-full animate-pulse" /></div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[1,2,3,4,5,6].map(i => <div key={i} className="h-40 rounded-2xl bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] animate-pulse" />)}
@@ -408,13 +408,13 @@ export function AchievementsClient() {
     : data.groups.find(g => g.category === activeTab)?.achievements || []
 
   return (
-    <div className="w-full px-4 md:px-8 pt-8 pb-20 flex flex-col gap-10">
+    <div className="w-full flex flex-col gap-10">
       
       {/* ─── Gamified Hero Header ───────────────────────────────────────── */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-3xl p-8 md:p-10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-10"
+        className="relative overflow-hidden bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-xl p-8 md:p-10 shadow-sm flex flex-col md:flex-row items-center justify-between gap-10"
       >
         {/* Decorative background glow */}
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 bg-[var(--color-brand-500)]/10 rounded-full blur-[100px] pointer-events-none" />
