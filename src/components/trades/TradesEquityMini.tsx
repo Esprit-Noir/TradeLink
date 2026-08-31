@@ -40,9 +40,6 @@ export function TradesEquityMini() {
   const change = last - first
   const changePct = first !== 0 ? ((change / Math.abs(first)) * 100) : 0
   const isPositive = change >= 0
-  const minVal = Math.min(...data.map(d => d.equity)) * 0.999
-  const maxVal = Math.max(...data.map(d => d.equity)) * 1.001
-
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: "1.5rem",

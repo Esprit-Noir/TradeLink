@@ -40,7 +40,6 @@ export function TradeDetailsDrawer() {
   const [trade, setTrade] = useState<Trade | null>(null)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
@@ -66,7 +65,6 @@ export function TradeDetailsDrawer() {
   useEffect(() => {
     if (tradeId) {
       setLoading(true)
-      setUploadError(null)
       setEditMode(false) // Reset edit mode on new trade
       fetch(`/api/trades/${tradeId}`)
         .then(r => r.json())
@@ -93,7 +91,6 @@ export function TradeDetailsDrawer() {
     if (!e.target.files || e.target.files.length === 0 || !tradeId) return
     const file = e.target.files[0]
     setUploading(true)
-    setUploadError(null)
 
     try {
       // 1. Upload to blob storage
@@ -131,7 +128,6 @@ export function TradeDetailsDrawer() {
       }
     } catch (err) {
       const msg = (err as { message?: string })?.message || "Failed to upload image"
-      setUploadError(msg)
       toast.error(`Upload failed: ${msg}`)
     } finally {
       setUploading(false)

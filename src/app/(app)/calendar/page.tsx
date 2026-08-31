@@ -73,25 +73,6 @@ export default async function CalendarPage({
     dailyTradeCount[dateStr] += 1
   }
 
-  // Aggregate prop challenge daily snapshots (keyed by UTC calendar day)
-  const propSnapshots = await prisma.propChallengeDailySnapshot.findMany({
-    where: {
-      challenge: { userId: session.user.id },
-    },
-    select: {
-      date: true,
-      dailyPnl: true,
-      challenge: { select: { id: true, account: { select: { name: true } } } },
-    },
-  })
-
-  const propDailyPnl = propSnapshots.reduce((acc, s) => {
-    const dateStr = dayKey(s.date, "UTC")
-    if (!acc[dateStr]) acc[dateStr] = 0
-    acc[dateStr] += Number(s.dailyPnl)
-    return acc
-  }, {} as Record<string, number>)
-
   // Retrieve accounts for the filter dropdown
   const filterAccounts = await prisma.tradingAccount.findMany({
     where: { userId: session.user.id },
@@ -113,7 +94,7 @@ export default async function CalendarPage({
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.5rem", alignItems: "start" }}>
         <div style={{ gridColumn: "1 / -1" }}>
-          <CalendarView dailyPnl={dailyPnl} dailyTradeCount={dailyTradeCount} propDailyPnl={propDailyPnl} accountId={selectedAccountId || undefined} />
+          <CalendarView dailyPnl={dailyPnl} dailyTradeCount={dailyTradeCount} accountId={selectedAccountId || undefined} />
         </div>
         <div style={{ gridColumn: "1 / -1" }}>
           <EconomicCalendarWidget limit={8} />

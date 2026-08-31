@@ -21,7 +21,7 @@ export interface Plan {
 }
 
 export function SubscriptionsTable({ initialSubscriptions, plans }: { initialSubscriptions: Subscription[]; plans: Plan[] }) {
-  const [subscriptions, setSubscriptions] = useState(initialSubscriptions)
+  const [subscriptions] = useState(initialSubscriptions)
   const [editingUserId, setEditingUserId] = useState<string | null>(null)
   const [selectedPlanId, setSelectedPlanId] = useState("")
   const [isApproving, setIsApproving] = useState<string | null>(null)

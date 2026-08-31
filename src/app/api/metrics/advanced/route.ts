@@ -81,7 +81,6 @@ export async function GET(request: Request) {
 
     // Drawdown
     let maxDrawdown = 0
-    let currentDrawdown = 0
     let peakBalance = 0
     let currentBalance = 0
 
@@ -165,7 +164,6 @@ export async function GET(request: Request) {
       }
       const drawdown = peakBalance - currentBalance
       if (drawdown > maxDrawdown) maxDrawdown = drawdown
-      currentDrawdown = peakBalance - currentBalance
 
       // Risk:Reward (Only if stopLoss exists)
       let rr = 0

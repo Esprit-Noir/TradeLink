@@ -3,7 +3,6 @@ import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import { YearHeatmap } from "@/components/journal/YearHeatmap"
 import { dayKey } from "@/lib/dates"
-import { getTranslations } from "next-intl/server"
 
 export const metadata = {
   title: "Trading Journal",
@@ -15,7 +14,6 @@ export default async function JournalPage() {
     redirect("/login")
   }
 
-  const t = await getTranslations("Journal")
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: { timezone: true }

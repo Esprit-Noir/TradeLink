@@ -3,7 +3,6 @@
 "use client"
 
 import { useEffect, useState, useCallback } from "react"
-import { useTranslations } from "next-intl"
 import { motion } from "framer-motion"
 import { Brain } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts"
@@ -20,7 +19,6 @@ type HistoryPoint = { disciplineScore: number; computedAt: string }
 type RecentFlag = { id: string; symbol: string; side: string; netPnl: number; entryAt: string; type: string; label: string; color: string }
 
 export function BehaviorScore() {
-  const t = useTranslations("behavioral")
   const [data, setData] = useState<(BehavioralResult & { history?: HistoryPoint[]; range?: string; recentFlags?: RecentFlag[] }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [range, setRange] = useState("all")
@@ -50,14 +48,6 @@ export function BehaviorScore() {
   const scoreLabel = score >= 85 ? "Excellent" : score >= 70 ? "Good" : score >= 50 ? "Fair" : score >= 30 ? "Poor" : "Critical"
 
   const history = data.history || []
-  let delta: number | null = null
-  if (history.length >= 2) {
-    const a = history[history.length - 2]?.disciplineScore
-    const b = history[history.length - 1]?.disciplineScore
-    if (typeof a === "number" && typeof b === "number") delta = b - a
-  }
-
-  const hasOvertrading = data.scoreBreakdown?.penalties.some(p => p.type === "overtrading")
 
   return (
     <motion.div 

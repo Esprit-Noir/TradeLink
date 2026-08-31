@@ -30,7 +30,6 @@ export function CalculatorClient() {
 
   const result = useMemo<CalculatorResult | null>(() => {
     const balance = parseFloat(accountBalance)
-    const risk = parseFloat(riskPercent) / 100
     const entry = parseFloat(entryPrice)
     const sl = parseFloat(stopLoss)
     const tp = parseFloat(takeProfit)
@@ -81,8 +80,6 @@ export function CalculatorClient() {
       marginRequired,
     }
   }, [accountBalance, riskPercent, entryPrice, stopLoss, takeProfit, instrumentType, lotSize])
-
-  const isValid = parseFloat(stopLoss) > 0 && parseFloat(entryPrice) > 0 && parseFloat(stopLoss) !== parseFloat(entryPrice)
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>

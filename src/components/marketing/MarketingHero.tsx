@@ -110,7 +110,7 @@ function EquityChart({ animated }: { animated: boolean }) {
   const areaPath = linePath + ` L ${W} ${H} L 0 ${H} Z`
 
   const pathRef = useRef<SVGPathElement>(null)
-  const [pathLen, setPathLen] = useState(0)
+  const [, setPathLen] = useState(0)
   useEffect(() => { if (pathRef.current) setPathLen(pathRef.current.getTotalLength()) }, [])
 
   return (

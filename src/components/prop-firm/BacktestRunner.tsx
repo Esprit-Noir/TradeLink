@@ -233,7 +233,7 @@ export function BacktestRunner({ templates, accounts }: { templates: Template[];
 // ─── Strategy Simulator (Monte Carlo) ───────────────────────────────────────
 function Simulator({ templates }: { templates: Template[] }) {
   const [templateId, setTemplateId] = useState(templates[0]?.id || "")
-  const [initialBalance, setInitialBalance] = useState("100000")
+  const [initialBalance] = useState("100000")
   const [winRate, setWinRate] = useState("45")
   const [avgR, setAvgR] = useState("2.0")
   const [tradesPerDay, setTradesPerDay] = useState("3")

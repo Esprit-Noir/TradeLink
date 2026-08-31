@@ -24,7 +24,7 @@ export function UsersTable({ initialUsers }: { initialUsers: User[] }) {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
   const [roleFilter, setRoleFilter] = useState("")
   const [statusFilter, setStatusFilter] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
 
   const fetchUsers = useCallback(async () => {
     setLoading(true)

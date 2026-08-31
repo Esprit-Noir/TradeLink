@@ -13,7 +13,6 @@ export async function GET(
 ) {
   const sessionOrResponse = await requireAdminApi()
   if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
-  const session = sessionOrResponse
   const { id } = await params
 
   const ticket = await prisma.supportTicket.findUnique({

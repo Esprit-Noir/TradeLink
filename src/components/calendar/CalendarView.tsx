@@ -46,16 +46,14 @@ const MOOD_ICONS: Record<string, string> = {
 export function CalendarView({
   dailyPnl,
   dailyTradeCount = {},
-  propDailyPnl = {},
   accountId
 }: {
   dailyPnl: Record<string, number>
   dailyTradeCount?: Record<string, number>
-  propDailyPnl?: Record<string, number>
   accountId?: string
 }) {
   const [currentDate, setCurrentDate] = useState(() => new Date())
-  const [journalDates, setJournalDates] = useState<string[]>([])
+  const [, setJournalDates] = useState<string[]>([])
   const [view, setView] = useState<"month" | "year">("month")
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
   const [detail, setDetail] = useState<DayDetail | null>(null)
@@ -139,22 +137,6 @@ export function CalendarView({
     }
     return { total, green, red, count, best, worst, avg: count > 0 ? total / count : 0 }
   }, [dailyPnl, year, month])
-
-  // Green streak up to today
-  const streak = useMemo(() => {
-    const today = new Date()
-    const keyOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
-    let cursor = new Date()
-    if ((dailyPnl[keyOf(cursor)] || 0) <= 0) cursor = new Date(cursor.getTime() - 86400000)
-    let s = 0
-    for (let i = 0; i < 730; i++) {
-      const pnl = dailyPnl[keyOf(cursor)]
-      if (pnl !== undefined && pnl > 0) s++
-      else break
-      cursor = new Date(cursor.getTime() - 86400000)
-    }
-    return s
-  }, [dailyPnl])
 
   // Year stats
   const yearStats = useMemo(() => {
@@ -252,8 +234,6 @@ export function CalendarView({
   for (let i = 1; i <= daysInMonth; i++) {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(i).padStart(2, "0")}`
     const pnl = dailyPnl[dateStr]
-    const propPnl = propDailyPnl[dateStr]
-    const hasJournal = journalDates.includes(dateStr)
     const isToday = dateStr === todayStr
 
     let bgColor = colors.cellBg

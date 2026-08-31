@@ -64,7 +64,6 @@ export function ibParser(csvText: string): ParseResult {
   const idxFees      = col("Comm/Fee")
   const idxPnl       = col("Realized P&L")
   const idxAsset     = col("Asset Category")
-  const idxCurrency  = col("Currency")
   const idxTradeId   = col("Trade ID")
 
   if (idxSymbol === -1 || idxDateTime === -1 || idxQty === -1 || idxPrice === -1) {

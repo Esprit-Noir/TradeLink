@@ -16,7 +16,7 @@ const TradePanel = dynamic(() => import("./TradePanel").then(m => ({ default: m.
 import { newId, type IndicatorsState, type SimSide, type SimTrade } from "./types"
 import { atrAt, computeIndicatorSeries } from "./indicators"
 import { atrBasedLevels, positionSizeFromRisk, simulateClose } from "@/lib/market/simulator"
-import { exportSessionCsv, exportSessionPdf, type BacktestExportTrade } from "@/lib/backtest-export"
+import { exportSessionPdf, type BacktestExportTrade } from "@/lib/backtest-export"
 import type { BacktestSessionItem } from "./types"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import Link from "next/link"
@@ -340,7 +340,7 @@ export function ReplayWorkbench({
   const chartRef = useRef<ReplayChartRef | null>(null)
   const processedTradesRef = useRef<Set<string>>(new Set())
 
-  const [watchlistCollapsed, setWatchlistCollapsed] = useState(false)
+  const [, setWatchlistCollapsed] = useState(false)
 
   useEffect(() => {
     const handleToggle = () => setWatchlistCollapsed((v) => !v)
@@ -643,24 +643,6 @@ export function ReplayWorkbench({
         netPnl: t.netPnl ?? 0,
         rMultiple: t.rMultiple,
       }))
-
-  const handleExportCsv = () => {
-    if (state.closedTrades.length === 0) {
-      toast.info("Aucun trade à exporter")
-      return
-    }
-    exportSessionCsv(
-      {
-        symbol: state.meta.symbol,
-        timeframe: state.meta.timeframe,
-        from: state.meta.from,
-        to: state.meta.to,
-        strategyName: state.meta.strategyName || undefined,
-        initialBalance: state.balance,
-      },
-      exportTrades(),
-    )
-  }
 
   const handleExportPdf = () => {
     if (state.closedTrades.length === 0) {

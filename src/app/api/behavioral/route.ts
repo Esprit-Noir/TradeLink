@@ -154,9 +154,4 @@ export async function GET(request: Request) {
   }
 }
 
-function buildSummary(score: number): string {
-  if (score >= 85) return "Excellent discipline. Your trading is consistent and rule-based."
-  if (score >= 70) return "Good discipline with minor areas to improve."
-  if (score >= 50) return "Behavioral patterns detected that are costing you money."
-  return "Critical discipline issues detected. Addressing these patterns should be your top priority."
-}
+

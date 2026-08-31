@@ -13,7 +13,6 @@ const PATCHSchema = z.object({
 export async function GET(request: Request) {
   const sessionOrResponse = await requireAdminApi()
   if (sessionOrResponse instanceof NextResponse) return sessionOrResponse
-  const session = sessionOrResponse
   const { searchParams } = new URL(request.url)
 
   const page = parseInt(searchParams.get("page") || "1")

@@ -1,7 +1,7 @@
 "use client"
 
 import { Star, BadgeCheck } from "lucide-react"
-import { motion, Variants } from "framer-motion"
+import { motion } from "framer-motion"
 
 const TESTIMONIALS = [
   {
@@ -179,14 +179,6 @@ function TestimonialRow({ items, reverse = false }: { items: typeof TESTIMONIALS
       </div>
     </div>
   )
-}
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
 }
 
 export function MarketingTestimonials() {

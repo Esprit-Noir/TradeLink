@@ -6,7 +6,6 @@ import {
   computeMaxDdThreshold,
   computeDdUsedPct,
   computeDailyDdThreshold,
-  computeDdBudget,
   computeProfitTarget,
   computeCurrentProfit,
   biggestDayPnl,
@@ -244,7 +243,6 @@ export async function evaluateChallenge(challengeId: string) {
     const dailyDdThreshold = computeDailyDdThreshold(todayStartBalance, Number(challenge.dailyDDPct))
 
     // Alert thresholds — % of max drawdown used (fire 80% then 90%, once each)
-    const ddBudget = computeDdBudget(maxDdReferenceValue, Number(challenge.maxDDPct))
     const ddUsedPct = computeDdUsedPct(maxDdReferenceValue, currentBalance, Number(challenge.maxDDPct))
 
     if (ddUsedPct >= 90) {

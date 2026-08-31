@@ -22,7 +22,6 @@ export function binanceParser(csvText: string): ParseResult {
   const idxSide   = col("Side")
   const idxPrice  = col("Price") !== -1 ? col("Price") : col("Order Price")
   const idxFilled = col("Filled")
-  const idxTotal  = col("Total")
   const idxFee    = col("Fee")
   const idxStatus = col("Status")
   const idxOrderId = col("Order ID")

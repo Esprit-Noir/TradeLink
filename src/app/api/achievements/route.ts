@@ -10,7 +10,7 @@ export async function GET() {
     }
     const userId = session.user.id
 
-    const [allAchievements, unlocked, closedTrades, accounts, activeChallenges, passedChallenges, journals, payouts] = await Promise.all([
+    const [allAchievements, unlocked, closedTrades, , activeChallenges, passedChallenges, journals, payouts] = await Promise.all([
       prisma.achievement.findMany({ orderBy: { category: "asc" } }),
       prisma.userAchievement.findMany({
         where: { userId },

@@ -25,7 +25,7 @@ export async function PATCH(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    const { id, noteId } = await params
+    const { noteId } = await params
     const note = await assertOwnership(noteId, session.user.id)
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 })
@@ -58,7 +58,7 @@ export async function DELETE(
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-    const { id, noteId } = await params
+    const { noteId } = await params
     const note = await assertOwnership(noteId, session.user.id)
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 })

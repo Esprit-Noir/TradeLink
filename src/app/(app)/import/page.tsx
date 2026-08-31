@@ -16,11 +16,6 @@ interface AccountWithChallenge {
   } | null
 }
 
-interface Setup {
-  name: string
-  isDefault: boolean
-}
-
 const FIELDS = [
   { key: "symbol", label: "Symbol", required: true, hint: "e.g. AAPL, BTCUSDT" },
   { key: "side", label: "Side", required: true, hint: "LONG / SHORT" },
@@ -50,7 +45,7 @@ export default function ImportPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const [defaultSetupName, setDefaultSetupName] = useState<string | null>(null)
+
   const [accounts, setAccounts] = useState<AccountWithChallenge[]>([])
   const [selectedAccountId, setSelectedAccountId] = useState("")
 
@@ -64,14 +59,6 @@ export default function ImportPage() {
   const [undoing, setUndoing] = useState(false)
 
   useEffect(() => {
-    fetch("/api/setups")
-      .then(r => r.json())
-      .then((setups: Setup[]) => {
-        const def = setups.find(s => s.isDefault)
-        if (def) setDefaultSetupName(def.name)
-      })
-      .catch(console.error)
-
     fetch("/api/accounts")
       .then(r => r.json())
       .then((list: AccountWithChallenge[]) => {

@@ -28,11 +28,6 @@ export function PlansManager({ initialPlans }: { initialPlans: Plan[] }) {
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
-  const refreshPlans = async () => {
-    // In a real app we might fetch again or just rely on state updates
-    // For now, state updates are handled inline
-  }
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this plan?")) return
     try {

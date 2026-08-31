@@ -514,7 +514,6 @@ export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailV
 }
 
 function ConsistencySection({ snapshots, challenge }: { snapshots: Snapshot[]; challenge: ChallengeDetailViewProps }) {
-  const [simBiggest, setSimBiggest] = useState<number | null>(null)
   if (!snapshots || snapshots.length === 0) return null
 
   const totalPnl = snapshots.reduce((s, x) => s + Number(x.dailyPnl || 0), 0)
@@ -522,38 +521,6 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: Snapshot[]; c
   const biggestPct = totalPnl > 0 ? (biggestDay / totalPnl) * 100 : 0
   const consistencyRule = Number(challenge.template?.consistencyRulePct || 0)
   const ruleOk = consistencyRule === 0 || biggestPct <= consistencyRule
-
-  const simBiggestPct = totalPnl > 0 ? ((simBiggest ?? biggestDay) / totalPnl) * 100 : 0
-  const simOk = consistencyRule === 0 || simBiggestPct <= consistencyRule
-
-  // Build heatmap grid: weeks × weekdays (Mon..Sun)
-  const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-  const cells: { key: string; date: string; pnl: number }[] = []
-  let minWeek = Infinity
-  let maxWeek = -Infinity
-
-  for (const s of snapshots) {
-    const d = new Date(`${s.date.slice(0, 10)}T00:00:00Z`)
-    const dayIdx = (d.getUTCDay() + 6) % 7 // Mon=0
-    const firstMon = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - dayIdx))
-    const weekNum = Math.floor(firstMon.getTime() / (7 * 86400000))
-    minWeek = Math.min(minWeek, weekNum)
-    maxWeek = Math.max(maxWeek, weekNum)
-    cells.push({ key: `${weekNum}-${dayIdx}`, date: s.date.slice(0, 10), pnl: Number(s.dailyPnl || 0) })
-  }
-
-  if (minWeek === Infinity) return null
-  const weekSpan = maxWeek - minWeek + 1
-  const cellMap = new Map(cells.map(c => [c.key, c]))
-  const maxAbs = Math.max(...snapshots.map(s => Math.abs(Number(s.dailyPnl || 0))), 1)
-
-  const cellColor = (pnl: number) => {
-    if (pnl === 0) return "var(--color-gray-800)"
-    const intensity = Math.min(1, Math.abs(pnl) / maxAbs)
-    const alpha = 0.25 + intensity * 0.75
-    if (pnl > 0) return `rgba(16, 185, 129, ${alpha})`
-    return `rgba(239, 68, 68, ${alpha})`
-  }
 
   return (
     <div style={{ marginTop: "1.5rem", marginBottom: "1.5rem" }}>

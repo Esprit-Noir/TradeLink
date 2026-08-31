@@ -140,11 +140,6 @@ export async function GET() {
       take: 20,
     })
 
-    const avgLoserPct = (() => {
-      if (stopViolations.length === 0) return 0
-      const sum = stopViolations.reduce((acc, t) => acc + Math.abs(Number(t.netPnl || 0)), 0)
-      return sum / stopViolations.length
-    })()
     const consecutiveLosingDays = (() => {
       const days = new Set(stopViolations.filter(t => t.exitAt).map(t => dayKey(t.exitAt!, "UTC")))
       let count = 0

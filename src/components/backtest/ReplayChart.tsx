@@ -150,7 +150,6 @@ export const ReplayChart = memo(forwardRef<ReplayChartRef, ReplayChartProps>(fun
   const onUpdateLevelsRef = useRef(onUpdateLevels)
   const indicatorsRef = useRef(indicators)
   const indicatorDataRef = useRef(indicatorData)
-  const pal = PALETTES[theme]
 
   useEffect(() => {
     activeTradeRef.current = selectedTrade

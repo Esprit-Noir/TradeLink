@@ -44,7 +44,7 @@ export async function GET() {
       return NextResponse.json(data, {
         headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
       })
-    } catch (parseError) {
+    } catch {
       console.warn("Calendar API rate limited. Serving stale cache or fallback.")
       // 3. Fallback to stale cache if API is rate limited
       if (fs.existsSync(CACHE_FILE)) {
