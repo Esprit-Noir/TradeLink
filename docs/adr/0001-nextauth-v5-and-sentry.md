@@ -44,7 +44,14 @@ La revue de code tierce a identifié deux points de risque structurels :
 
 - [x] Intégration SDK Sentry (fichiers `sentry.*.config.ts`, `instrumentation.ts`,
       `global-error.tsx`, `withSentryConfig` dans `next.config.ts`)
-- [x] Vars ajoutées au `.env.example` et au CI (valeurs factices)
-- [ ] Vérifier le DSN réel + org/project slug lors de la mise en production
-- [ ] Penser à ajouter `SENTRY_AUTH_TOKEN` aux secrets GitHub/CI pour l'upload des
-      source maps
+- [x] Vars ajoutées au `.env.example` (placeholders) et au CI (valeurs factices)
+- [x] DSN réel + `environment`/`release` configurés (DSN via `.env.local`, jamais commité)
+- [x] Incident de sécurité traité : token `sntrys_` collé dans `.env.example` (commitable)
+      → purge + déplacement vers `.env.local` (ignoré). Vérifié : aucun secret dans git.
+- [ ] **Slug de projet** (`SENTRY_PROJECT`) : à renseigner dans `.env.local` et les secrets
+      du déploiement (Settings → Projects → <project> dans Sentry). Tant qu'il est vide,
+      l'upload des source maps est skip (warning, pas de crash) et les stack traces restent
+      minifiés.
+- [ ] Confirmer la première erreur vue sur https://sentry.io/issues/
+- [ ] Ajouter `SENTRY_AUTH_TOKEN` (+ `SENTRY_ORG`/`SENTRY_PROJECT`) aux secrets du
+      déploiement CI pour l'upload des source maps
