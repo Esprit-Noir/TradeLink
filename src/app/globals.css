@@ -1091,6 +1091,7 @@
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .page-header { flex-direction: column; }
   .table-wrapper { overflow-x: auto; }
+  .dashboard-calendar-row { grid-template-columns: 1fr; }
 }
 
 /* ── Backtest Replay ─────────────────────────────────────── */
