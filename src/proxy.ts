@@ -2,7 +2,7 @@ import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 
-const PUBLIC_ROUTES = ["/login", "/register", "/", "/marketing"]
+const PUBLIC_ROUTES = ["/login", "/register", "/"]
 
 const PUBLIC_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".webp", ".css", ".js", ".map", ".woff", ".woff2", ".ttf", ".eot"]
 
