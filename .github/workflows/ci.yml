@@ -23,6 +23,8 @@ jobs:
       NEXT_PUBLIC_APP_URL: "http://localhost:3000"
       NEXT_PUBLIC_SUPABASE_URL: "https://ci.supabase.co"
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "ci-anon-key"
+      SENTRY_DSN: "https://ci@sentry.io/0"
+      NEXT_PUBLIC_SENTRY_DSN: "https://ci@sentry.io/0"
 
     steps:
       - name: Checkout
