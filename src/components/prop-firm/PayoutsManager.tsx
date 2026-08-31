@@ -210,7 +210,7 @@ export function PayoutsManager() {
           <div className="chart-card" style={{ width: "100%", maxWidth: 460, padding: "1.5rem" }} onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
               <h3 style={{ fontWeight: 700, fontSize: "1.05rem" }}>Register Payout</h3>
-              <button onClick={() => setModalOpen(false)} style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.4rem" }}>&times;</button>
+              <button onClick={() => setModalOpen(false)} aria-label="Close" style={{ background: "transparent", border: "none", color: "var(--color-gray-400)", cursor: "pointer", fontSize: "1.4rem" }}>&times;</button>
             </div>
 
             {fundedChallenges.length === 0 ? (
@@ -326,6 +326,7 @@ export function PayoutsManager() {
                       <td style={{ padding: "0.5rem 0.75rem", textAlign: "right", whiteSpace: "nowrap" }}>
                         <button
                           onClick={() => deletePayout(p)}
+                          aria-label="Delete payout"
                           className="btn btn-outline"
                           style={{ padding: "0.25rem 0.5rem", fontSize: "0.7rem", color: "var(--color-loss)" }}
                         >

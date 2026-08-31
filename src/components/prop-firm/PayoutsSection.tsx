@@ -213,6 +213,7 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
                 )}
                 <button
                   onClick={() => deletePayout(p.id)}
+                  aria-label="Delete payout"
                   className="btn btn-outline"
                   style={{ padding: "0.3rem 0.6rem", fontSize: "0.75rem", color: "var(--color-loss)" }}
                 >
