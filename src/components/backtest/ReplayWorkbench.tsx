@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react"
 import dynamic from "next/dynamic"
+import Image from "next/image"
 import { useTheme } from "@/components/ThemeProvider"
 import { toast } from "sonner"
 import { Loader2, RefreshCcw, Save, TriangleAlert, Maximize2, Minimize2, Share, X } from "lucide-react"
@@ -694,8 +695,8 @@ export function ReplayWorkbench({
       <div className="tz-replay-topbar">
         <div className="tz-replay-topbar-left">
           <Link href="/dashboard" className="tz-replay-logo">
-            <img src="/logo-light.png" alt="TradeLink" className="logo-light h-[28px] object-contain" />
-            <img src="/logo-dark.png" alt="TradeLink" className="logo-dark h-[28px] object-contain" />
+            <Image src="/logo-light.png" alt="TradeLink" className="logo-light h-[28px] object-contain" width={1024} height={341} style={{ width: "auto" }} />
+            <Image src="/logo-dark.png" alt="TradeLink" className="logo-dark h-[28px] object-contain" width={1024} height={341} style={{ width: "auto" }} />
           </Link>
           {/* Session info badge */}
           {!state.loading && !state.error && (

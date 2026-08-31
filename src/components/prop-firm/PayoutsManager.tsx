@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import Image from "next/image"
 import { toast } from "sonner"
 import { Wallet, CheckCircle2, Clock, Plus } from "lucide-react"
 
@@ -295,9 +296,8 @@ export function PayoutsManager() {
                       <td style={{ padding: "0.5rem 0.75rem", whiteSpace: "nowrap" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
                           {p.logoUrl && (
-                            <span style={{ width: 18, height: 18, borderRadius: 4, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={p.logoUrl} alt={p.firmName} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                            <span style={{ width: 18, height: 18, borderRadius: 4, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
+                              <Image src={p.logoUrl} alt={p.firmName} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                             </span>
                           )}
                           <span style={{ fontWeight: 600, color: "var(--color-gray-100)" }}>{p.firmName}</span>

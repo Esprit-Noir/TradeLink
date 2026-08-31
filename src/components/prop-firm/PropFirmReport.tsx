@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
@@ -146,8 +147,9 @@ export function PropFirmReport() {
                     <td>
                       <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                         {f.logoUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={f.logoUrl} alt={f.firmName} style={{ width: 20, height: 20, objectFit: "contain", borderRadius: 4 }} />
+                          <span style={{ position: "relative", width: 20, height: 20, borderRadius: 4, display: "inline-block", overflow: "hidden" }}>
+                            <Image src={f.logoUrl} alt={f.firmName} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
+                          </span>
                         ) : (
                           <div style={{ width: 20, height: 20, borderRadius: 4, background: "var(--color-gray-800)" }} />
                         )}

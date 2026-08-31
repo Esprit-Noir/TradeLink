@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { CreateAccountModal } from "./CreateAccountModal"
@@ -310,9 +311,8 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
                     {acc.type === 'prop_firm' && acc.propChallenge ? (
                       <span style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
                         {acc.propChallenge.logoUrl && (
-                          <span style={{ width: "18px", height: "18px", borderRadius: "4px", overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={acc.propChallenge.logoUrl} alt={acc.broker || "Broker"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                          <span style={{ width: "18px", height: "18px", borderRadius: "4px", overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
+                            <Image src={acc.propChallenge.logoUrl} alt={acc.broker || "Broker"} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                           </span>
                         )}
                         <span>{acc.propChallenge.firmName}</span>

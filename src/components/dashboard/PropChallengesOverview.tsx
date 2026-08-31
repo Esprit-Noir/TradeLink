@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 interface PropChallengeEvent {
@@ -99,10 +100,9 @@ export function PropChallengesOverview({ challenges }: { challenges: PropChallen
                     <div style={{
                       width: "28px", height: "28px", borderRadius: "6px", flexShrink: 0,
                       background: "var(--color-gray-800)", border: "1px solid var(--color-gray-700)",
-                      display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+                      display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative",
                     }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={c.template.logoUrl} alt={c.template.firmName} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                      <Image src={c.template.logoUrl} alt={c.template.firmName || ""} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                     </div>
                   )}
                   <div style={{ minWidth: 0 }}>

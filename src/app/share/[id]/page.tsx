@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/formatters"
 import { BadgeCheck, Target, TrendingUp, AlertTriangle } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -138,7 +139,7 @@ export default async function SharePage({ params }: { params: Promise<{ id: stri
       <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/50 backdrop-blur-md">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src="/logo-dark.png" alt="TradeLink" className="h-6" />
+            <Image src="/logo-dark.png" alt="TradeLink" className="h-6" width={1024} height={341} style={{ width: "auto" }} />
           </div>
           <div>
             <Link href="/" className="text-sm font-medium hover:text-white text-gray-400 transition-colors">

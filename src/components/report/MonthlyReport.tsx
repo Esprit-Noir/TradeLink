@@ -10,6 +10,7 @@ import { jsPDF } from "jspdf"
 import { autoTable } from "jspdf-autotable"
 import { Download, FileText } from "lucide-react"
 import { motion, Variants } from "framer-motion"
+import Image from "next/image"
 
 const COLORS = ['#C29B3F', '#359B8B', '#4B83E0', '#D4638D', '#9B72E5', '#E57272', '#72E5A1']
 
@@ -805,9 +806,8 @@ export function MonthlyReport() {
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem" }}>
                         <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", color: "var(--color-gray-300)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                           {p.logoUrl && (
-                            <span style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={p.logoUrl} alt="" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                            <span style={{ width: 16, height: 16, borderRadius: 3, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, position: "relative" }}>
+                              <Image src={p.logoUrl} alt="" unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                             </span>
                           )}
                           {p.firmName} — {p.accountName}

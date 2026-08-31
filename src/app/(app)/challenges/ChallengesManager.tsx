@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
@@ -346,10 +347,9 @@ export function ChallengesManager({
                     <div style={{
                       width: "40px", height: "40px", borderRadius: "8px",
                       background: "var(--color-gray-800)", border: "1px solid var(--color-gray-700)",
-                      display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0,
+                      display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, position: "relative",
                     }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={c.template.logoUrl} alt={`${c.template.firmName} logo`} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                      <Image src={c.template.logoUrl} alt={`${c.template.firmName} logo`} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                     </div>
                   )}
                   <div style={{ minWidth: 0 }}>

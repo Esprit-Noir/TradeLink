@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
@@ -167,13 +168,13 @@ export function Sidebar({ open, onClose, asDrawer = false, initialFeatures = {},
         <div className="sidebar-logo">
           {!effectiveCollapsed ? (
             <Link href="/overview" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
-              <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "42px", objectFit: "contain" }} />
-              <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "42px", objectFit: "contain" }} />
+              <Image src="/logo-light.png" alt="TradeLink" className="logo-light" width={1024} height={341} style={{ height: "42px", width: "auto", objectFit: "contain" }} />
+              <Image src="/logo-dark.png" alt="TradeLink" className="logo-dark" width={1024} height={341} style={{ height: "42px", width: "auto", objectFit: "contain" }} />
             </Link>
           ) : (
             <Link href="/overview" style={{ display: "flex", alignItems: "center", textDecoration: "none", overflow: "hidden", width: "36px", height: "36px" }}>
-              <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "36px", width: "140px", maxWidth: "none", objectFit: "cover", objectPosition: "left" }} />
-              <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "36px", width: "140px", maxWidth: "none", objectFit: "cover", objectPosition: "left" }} />
+              <Image src="/logo-light.png" alt="TradeLink" className="logo-light" width={1024} height={341} style={{ height: "36px", width: "140px", maxWidth: "none", objectFit: "cover", objectPosition: "left" }} />
+              <Image src="/logo-dark.png" alt="TradeLink" className="logo-dark" width={1024} height={341} style={{ height: "36px", width: "140px", maxWidth: "none", objectFit: "cover", objectPosition: "left" }} />
             </Link>
           )}
           <button

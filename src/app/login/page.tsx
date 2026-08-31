@@ -4,6 +4,7 @@ import { Suspense, useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { ArrowLeft } from "lucide-react"
 
 function LoginContent() {
@@ -71,8 +72,8 @@ function LoginContent() {
         
         {/* Logo */}
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "2rem" }}>
-          <img src="/logo-light.png" alt="TradeLink" className="logo-light" style={{ height: "80px", objectFit: "contain" }} />
-          <img src="/logo-dark.png" alt="TradeLink" className="logo-dark" style={{ height: "80px", objectFit: "contain" }} />
+          <Image src="/logo-light.png" alt="TradeLink" className="logo-light" width={1024} height={341} style={{ height: "80px", width: "auto", objectFit: "contain" }} />
+          <Image src="/logo-dark.png" alt="TradeLink" className="logo-dark" width={1024} height={341} style={{ height: "80px", width: "auto", objectFit: "contain" }} />
         </div>
 
         <h1 style={{ fontSize: "1.5rem", fontWeight: 700, textAlign: "center", marginBottom: "0.5rem" }}>

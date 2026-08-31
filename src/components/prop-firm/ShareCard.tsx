@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import NextImage from "next/image"
 import { toast } from "sonner"
 
 type CardData = {
@@ -208,8 +209,7 @@ export function ShareCard({ data }: { data: CardData }) {
             </div>
 
             {preview && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={preview} alt="Progress card preview" style={{ width: "100%", borderRadius: "12px", marginBottom: "1rem" }} />
+              <NextImage src={preview} alt="Progress card preview" unoptimized width={800} height={600} style={{ width: "100%", height: "auto", borderRadius: "12px", marginBottom: "1rem" }} />
             )}
 
             {publicUrl && (

@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Bell, CheckCheck, MailOpen, Circle, Filter, Loader2 } from "lucide-react"
@@ -210,9 +211,8 @@ export function NotificationsCenter() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.3rem", fontSize: "0.72rem", color: "var(--color-gray-500)" }}>
                     {e.challenge.template?.logoUrl && (
-                      <span style={{ width: 14, height: 14, borderRadius: 3, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={e.challenge.template.logoUrl} alt={e.challenge.template?.firmName || "Firm"} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                      <span style={{ width: 14, height: 14, borderRadius: 3, overflow: "hidden", background: "var(--color-gray-800)", display: "inline-flex", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                        <Image src={e.challenge.template.logoUrl} alt={e.challenge.template?.firmName || "Firm"} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                       </span>
                     )}
                     <span>{e.challenge.template?.firmName || "Prop Firm"}</span>

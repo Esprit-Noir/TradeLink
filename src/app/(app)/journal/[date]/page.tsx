@@ -8,6 +8,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getActiveAccount } from "@/lib/active-account"
 import { dayKey, zonedTimeToUtc, nextMidnightInTz } from "@/lib/dates"
+import Image from "next/image"
 
 export async function generateMetadata({ params }: { params: Promise<{ date: string }> }) {
   const { date } = await params
@@ -140,7 +141,9 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
                   <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.85rem" }}>
                     <span style={{ color: "var(--color-gray-300)" }}>
                       {s.challenge.template.logoUrl ? (
-                        <img src={s.challenge.template.logoUrl} alt="" style={{ width: "16px", height: "16px", objectFit: "contain", marginRight: "0.35rem", verticalAlign: "middle", borderRadius: "3px" }} />
+                        <span style={{ position: "relative", display: "inline-block", width: "16px", height: "16px", marginRight: "0.35rem", verticalAlign: "middle", borderRadius: "3px", overflow: "hidden" }}>
+                          <Image src={s.challenge.template.logoUrl} alt="" unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
+                        </span>
                       ) : null}
                       {s.challenge.template.firmName}
                     </span>

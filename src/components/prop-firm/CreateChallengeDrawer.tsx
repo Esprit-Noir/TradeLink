@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"
+import Image from "next/image"
 import { toast } from "sonner"
 
 interface DrawerAccount {
@@ -233,9 +234,8 @@ export function CreateChallengeDrawer({
               <label className="label">Prop Firm Logo</label>
               <div className="flex items-center gap-4">
                 {logoUrl ? (
-                  <div className="w-14 h-14 rounded-lg bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] flex items-center justify-center overflow-hidden shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={logoUrl} alt="Prop firm logo" className="max-w-full max-h-full object-contain" />
+                  <div className="w-14 h-14 rounded-lg bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] flex items-center justify-center overflow-hidden shrink-0 relative">
+                    <Image src={logoUrl} alt="Prop firm logo" unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                   </div>
                 ) : (
                   <div className="w-14 h-14 rounded-lg bg-[var(--color-gray-900)] border border-dashed border-[var(--color-gray-700)] flex items-center justify-center text-[var(--color-gray-600)] shrink-0">

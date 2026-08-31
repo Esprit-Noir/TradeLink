@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { formatCurrency } from "@/lib/formatters"
+import Image from "next/image"
 import { X, UploadCloud, Share2, Download } from "lucide-react"
 import { toPng } from "html-to-image"
 import { TradeShareCard } from "./TradeShareCard"
@@ -431,8 +432,9 @@ export function TradeDetailsDrawer() {
                   <div className="grid grid-cols-2 gap-4">
                     {trade.screenshots.map((s: Screenshot) => (
                       <a key={s.id} href={s.storageUrl} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-[var(--color-gray-800)]">
-                        {/* Using standard img tag because next/image requires host config for external URLs */}
-                        <img src={s.storageUrl} alt="Screenshot" className="w-full h-[120px] object-cover block" />
+                        <div className="relative w-full h-[120px]">
+                          <Image src={s.storageUrl} alt="Screenshot" unoptimized fill sizes="100vw" style={{ objectFit: "cover" }} />
+                        </div>
                       </a>
                     ))}
                   </div>

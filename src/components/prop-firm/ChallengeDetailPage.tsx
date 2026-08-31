@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { ChallengeDetailView } from "@/components/prop-firm/ChallengeDetailView"
@@ -267,10 +268,9 @@ export function ChallengeDetailPage({
             <div style={{
               width: "44px", height: "44px", borderRadius: "6px",
               background: "var(--color-gray-800)", border: "1px solid var(--color-gray-700)",
-              display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden"
+              display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative"
             }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={c.template.logoUrl} alt={`${c.template.firmName} logo`} style={{ maxWidth: "80%", maxHeight: "80%", objectFit: "contain" }} />
+              <Image src={c.template.logoUrl} alt={`${c.template.firmName} logo`} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
             </div>
           )}
           <div>

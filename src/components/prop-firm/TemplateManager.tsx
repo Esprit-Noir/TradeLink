@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import Image from "next/image"
 import { toast } from "sonner"
 
 const DRAWDOWN_TYPES = ["static_balance", "trailing_balance", "trailing_equity"]
@@ -229,10 +230,9 @@ export function TemplateManager({
                       <div style={{
                         width: "40px", height: "40px", borderRadius: "8px", flexShrink: 0,
                         background: "var(--color-gray-800)", border: "1px solid var(--color-gray-700)",
-                        display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+                        display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative",
                       }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={t.logoUrl} alt={t.firmName} style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                        <Image src={t.logoUrl} alt={t.firmName} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                       </div>
                     ) : (
                       <div style={{
@@ -327,10 +327,9 @@ export function TemplateManager({
                       <div style={{
                         width: "48px", height: "48px", borderRadius: "8px", flexShrink: 0,
                         background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
-                        display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
+                        display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", position: "relative",
                       }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={logoUrl} alt="logo" style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }} />
+                        <Image src={logoUrl} alt="logo" unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
                       </div>
                     ) : (
                       <div style={{

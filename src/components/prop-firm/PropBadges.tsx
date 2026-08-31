@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useEffect, useState } from "react"
 import { Target, CheckCircle, RefreshCcw, BadgeDollarSign, TrendingUp } from "lucide-react"
 
@@ -203,8 +204,9 @@ export function PropBadges() {
                   {/* header */}
                   <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                     {c.logoUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={c.logoUrl} alt={c.firmName} style={{ width: 28, height: 28, borderRadius: 6, objectFit: "contain", background: "white" }} />
+                      <span style={{ position: "relative", width: 28, height: 28, borderRadius: 6, objectFit: "contain", background: "white", display: "inline-block", overflow: "hidden" }}>
+                        <Image src={c.logoUrl} alt={c.firmName} unoptimized fill sizes="100vw" style={{ objectFit: "contain" }} />
+                      </span>
                     ) : (
                       <div style={{ width: 28, height: 28, borderRadius: 6, background: "var(--color-gray-800)" }} />
                     )}
