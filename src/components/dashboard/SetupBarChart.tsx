@@ -3,8 +3,7 @@
 import React, { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
-
-const COLORS = ['#C29B3F', '#359B8B', '#4B83E0', '#D4638D', '#9B72E5', '#E57272', '#72E5A1']
+import { CATEGORY_COLORS as COLORS } from "@/lib/chartColors"
 
 type PieLabelData = {
   cx: number

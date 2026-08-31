@@ -2,17 +2,7 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
-
-const DEFAULT_COLORS = [
-  "var(--color-brand-500)",
-  "var(--color-profit)",
-  "var(--color-loss)",
-  "var(--color-warning)",
-  "#8b5cf6",
-  "#06b6d4",
-  "#f59e0b",
-  "#ec4899",
-]
+import { CATEGORY_COLORS as DEFAULT_COLORS } from "@/lib/chartColors"
 
 interface DonutSegment {
   name: string
