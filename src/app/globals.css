@@ -13,8 +13,11 @@
   --color-gray-500: var(--gray-500);
   --color-gray-400: var(--gray-400);
   --color-gray-300: var(--gray-300);
+  --color-gray-250: var(--gray-250);
   --color-gray-200: var(--gray-200);
   --color-gray-100: var(--gray-100);
+  --color-gray-650: var(--gray-650);
+  --color-gray-850: var(--gray-850);
 
   /* Brand — emerald green (#22c55e) */
   --color-brand-50:  #f0fdf4;
@@ -56,8 +59,11 @@
   --gray-500: #71717a; 
   --gray-400: #52525b; 
   --gray-300: #27272a; 
+  --gray-250: #1f1f21;
   --gray-200: #18181b;
   --gray-100: #09090b; /* text-primary */
+  --gray-650: #bababe;
+  --gray-850: #f2f2f4;
   
   --profit-muted: #dcfce7;
   --loss-muted: #fee2e2;
@@ -80,8 +86,11 @@
   --gray-500: #4c4c58;
   --gray-400: #85858f;
   --gray-300: #bdbdc6;
+  --gray-250: #cbccd3;
   --gray-200: #d9d9df;
   --gray-100: #ededf0;
+  --gray-650: #222229;
+  --gray-850: #0c0c0f;
 
   --profit-muted: #064e3b;
   --loss-muted: #450a0a;
@@ -103,8 +112,11 @@
   --gray-500: #4c4c58;
   --gray-400: #85858f;
   --gray-300: #bdbdc6;
+  --gray-250: #cbccd3;
   --gray-200: #d9d9df;
   --gray-100: #ededf0;
+  --gray-650: #222229;
+  --gray-850: #0c0c0f;
 
   --color-gray-950: #030304;
   --color-gray-900: #08080a;
@@ -114,8 +126,11 @@
   --color-gray-500: #4c4c58;
   --color-gray-400: #85858f;
   --color-gray-300: #bdbdc6;
+  --color-gray-250: #cbccd3;
   --color-gray-200: #d9d9df;
   --color-gray-100: #ededf0;
+  --color-gray-650: #222229;
+  --color-gray-850: #0c0c0f;
 
   --profit-muted: #064e3b;
   --loss-muted: #450a0a;
@@ -183,11 +198,12 @@
 }
 
 .recent-trade-item--selected {
-  background: rgba(139, 92, 246, 0.08) !important;
+  background: color-mix(in srgb, var(--color-brand-500) 8%, var(--color-gray-900)) !important;
+  border-color: color-mix(in srgb, var(--color-brand-500) 30%, transparent) !important;
 }
 
 .recent-trade-item--selected:hover {
-  background: rgba(139, 92, 246, 0.12) !important;
+  background: color-mix(in srgb, var(--color-brand-500) 14%, var(--color-gray-900)) !important;
 }
 
 .notification-bell-btn {
@@ -381,6 +397,18 @@
 .btn-ghost:hover { 
   background: color-mix(in srgb, var(--color-gray-800) 60%, transparent);
   color: var(--color-gray-200);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-gray-300);
+  border: 1px solid var(--color-gray-700);
+}
+
+.btn-outline:hover { 
+  background: color-mix(in srgb, var(--color-gray-800) 60%, transparent);
+  border-color: var(--color-gray-600);
+  color: var(--color-gray-100);
 }
 
 .btn-danger {
@@ -1222,7 +1250,7 @@
 
 .replay-btn-save { padding: 0.28rem 0.5rem; font-size: 0.68rem; border-radius: 6px; }
 .replay-btn-save.saved {
-  border-color: rgba(16,185,129,0.4);
+  border-color: color-mix(in srgb, var(--color-profit) 40%, transparent);
   color: var(--color-profit);
   background: var(--color-profit-muted);
 }
@@ -1244,7 +1272,7 @@
 .replay-btn-side.active-long {
   background: var(--color-profit-muted);
   color: var(--color-profit);
-  border-color: rgba(16,185,129,0.4);
+  border-color: color-mix(in srgb, var(--color-profit) 40%, transparent);
 }
 .replay-btn-side.active-short {
   background: var(--color-loss-muted);
@@ -1462,8 +1490,8 @@
 .backtest-position-editor { margin-top: 0.6rem; border-top: 1px solid var(--color-gray-800); padding-top: 0.6rem; }
 .backtest-position-editor-title { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-gray-500); font-weight: 700; margin-bottom: 0.5rem; }
 
-.badge-buy { background: rgba(16, 185, 129, 0.15); color: var(--color-profit); border: 1px solid rgba(16, 185, 129, 0.25); }
-.badge-sell { background: rgba(239, 68, 68, 0.15); color: var(--color-loss); border: 1px solid rgba(239, 68, 68, 0.25); }
+.badge-buy { background: color-mix(in srgb, var(--color-profit) 15%, transparent); color: var(--color-profit); border: 1px solid color-mix(in srgb, var(--color-profit) 25%, transparent); }
+.badge-sell { background: color-mix(in srgb, var(--color-loss) 15%, transparent); color: var(--color-loss); border: 1px solid color-mix(in srgb, var(--color-loss) 25%, transparent); }
 
 .sim-rows { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.7rem; }
 .sim-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
@@ -1786,7 +1814,7 @@
 .backtest-trade-reason { font-size: 0.6rem; font-weight: 700; letter-spacing: 0.03em; padding: 0.08rem 0.35rem; border-radius: 4px; background: var(--color-gray-800); color: var(--color-gray-400); }
 .backtest-trade-r { font-family: var(--font-mono); font-size: 0.68rem; color: var(--color-gray-500); }
 .replay-btn-save { padding: 0.26rem 0.5rem; font-size: 0.66rem; border-radius: 6px; }
-.replay-btn-save.saved { border-color: rgba(16,185,129,0.4); color: var(--color-profit); background: var(--color-profit-muted); }
+.replay-btn-save.saved { border-color: color-mix(in srgb, var(--color-profit) 40%, transparent); color: var(--color-profit); background: var(--color-profit-muted); }
 .replay-btn-save:disabled { opacity: 1; }
 
 /* ── Simulation panel (capital / risk / side / SL-TP) ────── */
@@ -1856,8 +1884,8 @@
 .backtest-position-editor { margin-top: 0.6rem; border-top: 1px solid var(--color-gray-800); padding-top: 0.6rem; }
 .backtest-position-editor-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-gray-500); font-weight: 700; margin-bottom: 0.5rem; }
 
-.badge-buy { background: var(--color-profit-muted); color: var(--color-profit); border: 1px solid rgba(16,185,129,0.3); }
-.badge-sell { background: var(--color-loss-muted); color: var(--color-loss); border: 1px solid rgba(239,68,68,0.3); }
+.badge-buy { background: var(--color-profit-muted); color: var(--color-profit); border: 1px solid color-mix(in srgb, var(--color-profit) 30%, transparent); }
+.badge-sell { background: var(--color-loss-muted); color: var(--color-loss); border: 1px solid color-mix(in srgb, var(--color-loss) 30%, transparent); }
 .backtest-empty { padding: 0.9rem 0; color: var(--color-gray-500); font-size: 0.76rem; line-height: 1.5; }
 
 /* ── Transport controls ──────────────────────────────────── */
@@ -2646,7 +2674,7 @@
   flex-shrink: 0;
 }
 .bt-save:hover { background: var(--color-gray-700); }
-.bt-save.saved { border-color: rgba(16, 185, 129, 0.4); color: var(--color-profit); background: var(--color-profit-muted); }
+.bt-save.saved { border-color: color-mix(in srgb, var(--color-profit) 40%, transparent); color: var(--color-profit); background: var(--color-profit-muted); }
 .bt-save:disabled { opacity: 1; }
 
 .bt-past { display: flex; flex-direction: column; gap: 0.3rem; }

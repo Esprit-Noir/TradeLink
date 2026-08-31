@@ -105,20 +105,20 @@ const PERIODS = [
 ]
 
 const INSTRUMENT_COLORS: Record<string, string> = {
-  forex: "#10b981",
-  crypto: "#f59e0b",
-  indices: "#3b82f6",
+  forex: "var(--color-profit)",
+  crypto: "var(--color-warning)",
+  indices: "var(--color-info)",
   stock: "#8b5cf6",
   futures: "#ec4899",
   options: "#06b6d4",
 }
 
 const SIDE_COLORS: Record<string, string> = {
-  LONG: "#10b981",
-  SHORT: "#ef4444",
+  LONG: "var(--color-profit)",
+  SHORT: "var(--color-loss)",
 }
 
-const SESSION_COLORS = ["#f59e0b", "#3b82f6", "#10b981"]
+const SESSION_COLORS = ["var(--color-warning)", "var(--color-info)", "var(--color-profit)"]
 
 const tooltipStyle = {
   background: "var(--color-gray-900)",
@@ -444,7 +444,7 @@ export function AdvancedStatsClient() {
       {/* ═══════════════════════════════════════════════════════════════════ */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "1.5rem" }}>
         <DonutChart
-          data={rrData.map((d, i) => ({ name: d.name, value: d.value, color: ["#ef4444", "#f59e0b", "#10b981", "#3b82f6", "#8b5cf6"][i] }))}
+          data={rrData.map((d, i) => ({ name: d.name, value: d.value, color: ["var(--color-loss)", "var(--color-warning)", "var(--color-profit)", "var(--color-info)", "#8b5cf6"][i] }))}
           title="R:Reward Distribution"
           subtitle="Risk : Reward ratio"
           innerLabel={rrData.length > 0 ? rrData.reduce((a, b) => a.value > b.value ? a : b).name : "—"}
@@ -590,7 +590,7 @@ function StatsFilters({ available, filters, apply }: { available: { symbols: str
             style={{
               padding: "0.3rem 0.65rem", borderRadius: "6px", fontSize: "0.72rem", fontWeight: 600,
               border: "none", cursor: "pointer", transition: "all 0.15s",
-              background: filters.period === p.key ? "rgba(16,185,129,0.15)" : "transparent",
+              background: filters.period === p.key ? "color-mix(in srgb, var(--color-profit) 15%, transparent)" : "transparent",
               color: filters.period === p.key ? "var(--color-profit)" : "var(--color-gray-500)",
             }}
           >{p.label}</button>
@@ -654,7 +654,7 @@ function BreakdownCard({ title, items, icon }: { title: string; items: Breakdown
               <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
                 <div style={{
                   width: "22px", height: "22px", borderRadius: "6px",
-                  background: item.pnl >= 0 ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
+                  background: item.pnl >= 0 ? "var(--profit-muted)" : "var(--loss-muted)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   fontSize: "0.65rem", fontWeight: 700,
                   color: item.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",

@@ -183,7 +183,7 @@ export function CalculatorClient() {
                   type="number"
                   value={takeProfit}
                   onChange={(e) => setTakeProfit(e.target.value)}
-                  style={{ ...inputStyle, borderColor: takeProfit ? "rgba(16,185,129,0.3)" : undefined }}
+                  style={{ ...inputStyle, borderColor: takeProfit ? "color-mix(in srgb, var(--color-profit) 30%, transparent)" : undefined }}
                   placeholder="0.00000"
                   step="any"
                 />

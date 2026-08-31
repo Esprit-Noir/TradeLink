@@ -51,8 +51,8 @@ export function ChallengeStatusWidget() {
           <span style={{
             fontSize: "0.55rem", fontWeight: 800, padding: "0.15rem 0.3rem", borderRadius: "4px",
             background: stats.challengeStatus === "danger" ? "rgba(239,68,68,0.15)"
-              : stats.challengeStatus === "warning" ? "rgba(245,158,11,0.15)"
-              : "rgba(16,185,129,0.1)",
+              : stats.challengeStatus === "warning" ? "color-mix(in srgb, var(--color-warning) 15%, transparent)"
+              : "var(--profit-muted)",
             color: stats.challengeStatus === "danger" ? "var(--color-loss)"
               : stats.challengeStatus === "warning" ? "var(--color-warning)"
               : "var(--color-profit)",

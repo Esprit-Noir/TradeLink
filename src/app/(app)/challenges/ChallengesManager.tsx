@@ -93,8 +93,8 @@ const EVENT_BADGE: Record<string, { label: string; color: string; bg: string }> 
   alert_90pct: { label: "⚠ 90% DD", color: "var(--color-loss)", bg: "rgba(239,68,68,0.15)" },
   alert_80pct: { label: "⚠ 80% DD", color: "var(--color-warning)", bg: "rgba(245,158,11,0.15)" },
   breached: { label: "BREACHED", color: "var(--color-loss)", bg: "rgba(239,68,68,0.15)" },
-  target_hit: { label: "TARGET HIT", color: "var(--color-profit)", bg: "rgba(16,185,129,0.15)" },
-  phase_passed: { label: "PHASE PASSED", color: "var(--color-profit)", bg: "rgba(16,185,129,0.15)" },
+  target_hit: { label: "TARGET HIT", color: "var(--color-profit)", bg: "var(--profit-muted)" },
+  phase_passed: { label: "PHASE PASSED", color: "var(--color-profit)", bg: "var(--profit-muted)" },
 }
 
 export function ChallengesManager({ 

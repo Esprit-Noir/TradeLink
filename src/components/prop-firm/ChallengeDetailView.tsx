@@ -327,7 +327,7 @@ export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailV
               <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Initial Balance</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(challenge.initialBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
             </div>
-            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid #00c758" }}>
+            <div style={{ paddingLeft: "0.75rem", borderLeft: "3px solid var(--color-profit)" }}>
               <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.2rem" }}>Highest Balance</div>
               <div style={{ fontSize: "1.1rem", fontWeight: 600, color: "var(--color-gray-100)" }}>${Number(challenge.highestBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
             </div>
@@ -356,13 +356,13 @@ export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailV
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>Weekend Holding</span>
-              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: challenge.template.weekendHoldingAllowed ? "var(--color-profit)" : "var(--color-loss)", background: challenge.template.weekendHoldingAllowed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>
+              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: challenge.template.weekendHoldingAllowed ? "var(--color-profit)" : "var(--color-loss)", background: challenge.template.weekendHoldingAllowed ? "var(--profit-muted)" : "var(--loss-muted)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>
                 {challenge.template.weekendHoldingAllowed ? "Allowed" : "Not allowed"}
               </span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <span style={{ fontSize: "0.8rem", color: "var(--color-gray-400)" }}>News Trading</span>
-              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: challenge.template.newsTradingAllowed ? "var(--color-profit)" : "var(--color-loss)", background: challenge.template.newsTradingAllowed ? "rgba(16, 185, 129, 0.1)" : "rgba(239, 68, 68, 0.1)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>
+              <span style={{ fontSize: "0.75rem", fontWeight: 600, color: challenge.template.newsTradingAllowed ? "var(--color-profit)" : "var(--color-loss)", background: challenge.template.newsTradingAllowed ? "var(--profit-muted)" : "var(--loss-muted)", padding: "0.2rem 0.5rem", borderRadius: "4px" }}>
                 {challenge.template.newsTradingAllowed ? "Allowed" : "Not allowed"}
               </span>
             </div>
@@ -460,7 +460,7 @@ export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailV
                     <td style={{ padding: "1rem", whiteSpace: "nowrap", fontWeight: 500, color: "var(--color-gray-200)" }}>{formatDate(s.date)}</td>
                     <td style={{ padding: "1rem", textAlign: "right" }}>${Number(s.startBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
                     <td style={{ padding: "1rem", textAlign: "right", fontWeight: 500 }}>${Number(s.endBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
-                    <td style={{ padding: "1rem", textAlign: "right", color: Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600, textShadow: Number(s.dailyPnl) >= 0 ? "0 0 10px rgba(16,185,129,0.2)" : "none" }}>
+                    <td style={{ padding: "1rem", textAlign: "right", color: Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600, textShadow: Number(s.dailyPnl) >= 0 ? "0 0 10px color-mix(in srgb, var(--color-profit) 20%, transparent)" : "none" }}>
                       ${Number(s.dailyPnl) >= 0 ? "+" : ""}{Number(s.dailyPnl).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </td>
                     <td style={{ padding: "1rem", textAlign: "right" }}>{s.tradesCount}</td>
@@ -529,14 +529,14 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: Snapshot[]; c
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "2rem" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
             <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Total Profit</div>
-            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", textShadow: totalPnl >= 0 ? "0 0 10px rgba(16,185,129,0.2)" : "none" }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", textShadow: totalPnl >= 0 ? "0 0 10px color-mix(in srgb, var(--color-profit) 20%, transparent)" : "none" }}>
               {totalPnl >= 0 ? "+" : ""}${totalPnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </div>
           </div>
           <div style={{ width: "1px", background: "var(--color-gray-800)", alignSelf: "stretch", display: "none" }} className="md:block" />
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
             <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Biggest Day</div>
-            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-profit)", textShadow: "0 0 10px rgba(16,185,129,0.2)" }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-profit)", textShadow: "0 0 10px color-mix(in srgb, var(--color-profit) 20%, transparent)" }}>
               +${biggestDay.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </div>
           </div>

@@ -271,12 +271,12 @@ export default function ImportPage() {
 
             {success && (
               <div style={{
-                background: "rgba(16, 185, 129, 0.08)",
+                background: "var(--profit-muted)",
                 color: "var(--color-profit)",
                 padding: "0.85rem",
                 borderRadius: "8px",
                 fontSize: "0.82rem",
-                border: "1px solid rgba(16, 185, 129, 0.25)",
+                border: "1px solid color-mix(in srgb, var(--color-profit) 25%, transparent)",
                 display: "flex",
                 flexDirection: "column",
                 gap: "0.6rem"
@@ -375,7 +375,7 @@ export default function ImportPage() {
                     padding: "2rem 1.5rem",
                     textAlign: "center",
                     cursor: "pointer",
-                    background: file ? "rgba(16,185,129,0.02)" : "rgba(3,3,4,0.4)",
+                    background: file ? "color-mix(in srgb, var(--color-profit) 2%, transparent)" : "rgba(3,3,4,0.4)",
                     borderColor: file ? "var(--color-profit-muted)" : "var(--color-gray-800)",
                     transition: "all 0.2s ease",
                   }}
@@ -558,7 +558,7 @@ export default function ImportPage() {
                               fontWeight: 700,
                               padding: "0.1rem 0.35rem",
                               borderRadius: "4px",
-                              background: r.side === "LONG" ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
+                              background: r.side === "LONG" ? "var(--profit-muted)" : "var(--loss-muted)",
                               color: r.side === "LONG" ? "var(--color-profit)" : "var(--color-loss)",
                             }}>
                               {r.side}

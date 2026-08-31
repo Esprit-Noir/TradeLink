@@ -345,7 +345,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
                   <tr key={t.id}>
                     <td style={{ fontWeight: 600 }}>{t.symbol}</td>
                     <td>
-                      <span className="badge" style={{ background: t.side === "long" ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)", color: t.side === "long" ? "var(--color-profit)" : "var(--color-loss)" }}>
+                      <span className="badge" style={{ background: t.side === "long" ? "var(--profit-muted)" : "var(--loss-muted)", color: t.side === "long" ? "var(--color-profit)" : "var(--color-loss)" }}>
                         {t.side}
                       </span>
                     </td>

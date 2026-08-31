@@ -205,8 +205,8 @@ export function JournalForm({ date, initialData }: JournalFormProps) {
                 style={{
                   display: "flex", alignItems: "center", gap: "0.6rem", cursor: "pointer",
                   padding: "0.65rem 0.75rem", borderRadius: "8px", fontSize: "0.85rem",
-                  background: checks[c.key] ? "rgba(16,185,129,0.08)" : "var(--color-gray-900)",
-                  border: `1px solid ${checks[c.key] ? "rgba(16,185,129,0.3)" : "var(--color-gray-800)"}`,
+                  background: checks[c.key] ? "var(--profit-muted)" : "var(--color-gray-900)",
+                  border: `1px solid ${checks[c.key] ? "color-mix(in srgb, var(--color-profit) 30%, transparent)" : "var(--color-gray-800)"}`,
                   color: checks[c.key] ? "var(--color-gray-100)" : "var(--color-gray-400)",
                   userSelect: "none", transition: "all 0.15s",
                 }}

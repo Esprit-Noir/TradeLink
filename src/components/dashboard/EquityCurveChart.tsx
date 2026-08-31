@@ -224,7 +224,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
                 display: "inline-flex", alignItems: "center", gap: "0.15rem",
                 fontSize: "0.7rem", fontWeight: 700, padding: "0.15rem 0.5rem", borderRadius: "10px",
                 color: isPositive ? "var(--color-profit)" : "var(--color-loss)",
-                background: isPositive ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
+                background: isPositive ? "var(--profit-muted)" : "var(--loss-muted)",
               }}>
                 {isPositive ? "+" : ""}{periodChangePct.toFixed(2)}%
                 <span style={{ marginLeft: "0.25rem", fontWeight: 500, opacity: 0.7 }}>({timeframe})</span>
@@ -242,7 +242,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
                 display: "flex", alignItems: "center", gap: "0.25rem",
                 padding: "0.25rem 0.5rem", borderRadius: "8px", fontSize: "0.7rem", fontWeight: 600,
                 border: "none", cursor: "pointer", transition: "all 0.15s",
-                background: viewMode === "balance" ? "rgba(16,185,129,0.15)" : "transparent",
+                background: viewMode === "balance" ? "color-mix(in srgb, var(--color-profit) 15%, transparent)" : "transparent",
                 color: viewMode === "balance" ? "var(--color-profit)" : "var(--color-gray-500)",
               }}
             >
@@ -271,7 +271,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
                 style={{
                   padding: "0.25rem 0.5rem", borderRadius: "8px", fontSize: "0.7rem", fontWeight: 600,
                   border: "none", cursor: "pointer", transition: "all 0.15s",
-                  background: timeframe === tf ? "rgba(16,185,129,0.15)" : "transparent",
+                  background: timeframe === tf ? "color-mix(in srgb, var(--color-profit) 15%, transparent)" : "transparent",
                   color: timeframe === tf ? "var(--color-profit)" : "var(--color-gray-500)",
                 }}
               >

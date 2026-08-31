@@ -194,8 +194,14 @@ export function CalendarView({
 
   const heatColor = (pnl: number, maxPos: number, maxNeg: number, inYear: boolean) => {
     if (!inYear) return "transparent"
-    if (pnl > 0) return `rgba(16,185,129,${(0.2 + 0.8 * Math.min(1, pnl / maxPos)).toFixed(2)})`
-    if (pnl < 0) return `rgba(239,68,68,${(0.2 + 0.8 * Math.min(1, -pnl / maxNeg)).toFixed(2)})`
+    if (pnl > 0) {
+      const pct = (20 + 80 * Math.min(1, pnl / maxPos)).toFixed(0)
+      return `color-mix(in srgb, var(--color-profit) ${pct}%, transparent)`
+    }
+    if (pnl < 0) {
+      const pct = (20 + 80 * Math.min(1, -pnl / maxNeg)).toFixed(0)
+      return `color-mix(in srgb, var(--color-loss) ${pct}%, transparent)`
+    }
     return colors.cellBg
   }
 
@@ -465,11 +471,11 @@ export function CalendarView({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.7rem", color: colors.cellText, flexWrap: "wrap" }}>
             <span>Loss</span>
             {[0.25, 0.5, 0.75, 1].map((t) => (
-              <div key={`l${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(239,68,68,${(0.25 * t + 0.1).toFixed(2)})` }} />
+              <div key={`l${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `color-mix(in srgb, var(--color-loss) ${(0.25 * t + 0.1) * 100}%, transparent)` }} />
             ))}
             <div style={{ width: YCELL, height: YCELL, borderRadius: 3, background: colors.cellBg }} />
             {[0.25, 0.5, 0.75, 1].map((t) => (
-              <div key={`p${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(16,185,129,${(0.25 * t + 0.1).toFixed(2)})` }} />
+              <div key={`p${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `color-mix(in srgb, var(--color-profit) ${(0.25 * t + 0.1) * 100}%, transparent)` }} />
             ))}
             <span>Profit</span>
             <span style={{ marginLeft: "0.75rem" }}>Click a day for details</span>

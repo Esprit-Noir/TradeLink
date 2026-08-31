@@ -15,7 +15,7 @@ const BROKERS = [
   { name: "Quantower", color: "#06B6D4", letter: "Q" },
   { name: "ATAS", color: "#F97316", letter: "A" },
   { name: "Bookmap", color: "#EC4899", letter: "B" },
-  { name: "Rithmic", color: "#10B981", letter: "R" },
+  { name: "Rithmic", color: "#00c758", letter: "R" },
   { name: "CQG", color: "#6366F1", letter: "C" },
   { name: "FTMO", color: "#14B8A6", letter: "F" },
   { name: "MyForexFunds", color: "#A855F7", letter: "MFF" },

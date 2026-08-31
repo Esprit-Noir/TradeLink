@@ -6,7 +6,7 @@ interface BadgeProps {
 
 const VARIANT_STYLES: Record<string, React.CSSProperties> = {
   default: { background: "var(--color-gray-800)", color: "var(--color-gray-400)", border: "1px solid var(--color-gray-700)" },
-  success: { background: "rgba(16,185,129,0.12)", color: "var(--color-profit)", border: "1px solid rgba(16,185,129,0.25)" },
+  success: { background: "var(--profit-muted)", color: "var(--color-profit)", border: "1px solid color-mix(in srgb, var(--color-profit) 25%, transparent)" },
   warning: { background: "rgba(245,158,11,0.12)", color: "var(--color-warning)", border: "1px solid rgba(245,158,11,0.25)" },
   danger: { background: "rgba(239,68,68,0.12)", color: "var(--color-loss)", border: "1px solid rgba(239,68,68,0.25)" },
   info: { background: "rgba(59,130,246,0.12)", color: "var(--color-info)", border: "1px solid rgba(59,130,246,0.25)" },

@@ -10,7 +10,10 @@ const inter = Inter({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#8b5cf6",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#030304" },
+    { color: "#fafafa" },
+  ],
 }
 
 export const metadata: Metadata = {

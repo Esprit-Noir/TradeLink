@@ -59,23 +59,14 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
   const redDays = cells.filter(c => c && c.pnl < 0).length
   const tradingDays = cells.filter(c => c && c.pnl !== 0).length
 
-  const colors = isDark
-    ? {
-        profitBg: "rgba(16,185,129,0.12)",
-        profitBorder: "rgba(16,185,129,0.3)",
-        profitText: "var(--color-profit)",
-        lossBg: "rgba(239,68,68,0.12)",
-        lossBorder: "rgba(239,68,68,0.3)",
-        lossText: "var(--color-loss)",
-      }
-    : {
-        profitBg: "rgba(16,185,129,0.1)",
-        profitBorder: "rgba(16,185,129,0.25)",
-        profitText: "#065f46",
-        lossBg: "rgba(239,68,68,0.1)",
-        lossBorder: "rgba(239,68,68,0.25)",
-        lossText: "#991b1b",
-      }
+  const colors = {
+    profitBg: "var(--profit-muted)",
+    profitBorder: "color-mix(in srgb, var(--color-profit) 30%, transparent)",
+    profitText: "var(--color-profit)",
+    lossBg: "var(--loss-muted)",
+    lossBorder: "color-mix(in srgb, var(--color-loss) 30%, transparent)",
+    lossText: "var(--color-loss)",
+  }
 
   return (
     <div style={{ padding: "0.5rem" }}>

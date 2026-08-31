@@ -85,7 +85,7 @@ const TESTIMONIALS = [
     rating: 5,
     verified: true,
     metric: "2x P&L",
-    color: "#10b981",
+    color: "#00c758",
     avatar: "DK",
   },
   {
