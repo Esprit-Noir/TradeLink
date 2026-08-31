@@ -126,7 +126,7 @@ export function TicketDetailClient({ ticket }: { ticket: Ticket }) {
                   <span style={{ fontSize: "0.75rem", fontWeight: 600, color: isAdmin ? "#8b5cf6" : "var(--color-gray-300)" }}>
                     {isAdmin ? "Admin" : msg.sender.email}
                   </span>
-                  <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)" }}>
+                  <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
                     {new Date(msg.createdAt).toLocaleString()}
                   </span>
                 </div>

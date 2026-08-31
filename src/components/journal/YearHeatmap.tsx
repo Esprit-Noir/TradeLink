@@ -53,11 +53,11 @@ export function YearHeatmap({ dailyPnl, year }: { dailyPnl: Record<string, numbe
         {/* Heatmap Grid */}
         <div style={{ display: "flex", gap: "4px" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "16px", marginRight: "0.5rem" }}>
-            <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", height: "14px", lineHeight: "14px" }}>Mon</span>
-            <span style={{ fontSize: "0.65rem", color: "transparent", height: "14px", lineHeight: "14px" }}>Tue</span>
-            <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", height: "14px", lineHeight: "14px" }}>Wed</span>
-            <span style={{ fontSize: "0.65rem", color: "transparent", height: "14px", lineHeight: "14px" }}>Thu</span>
-            <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", height: "14px", lineHeight: "14px" }}>Fri</span>
+            <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", height: "14px", lineHeight: "14px" }}>Mon</span>
+            <span style={{ fontSize: "0.7rem", color: "transparent", height: "14px", lineHeight: "14px" }}>Tue</span>
+            <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", height: "14px", lineHeight: "14px" }}>Wed</span>
+            <span style={{ fontSize: "0.7rem", color: "transparent", height: "14px", lineHeight: "14px" }}>Thu</span>
+            <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", height: "14px", lineHeight: "14px" }}>Fri</span>
           </div>
 
           <div style={{ display: "flex", flexWrap: "wrap", flexDirection: "column", height: "130px", alignContent: "flex-start", gap: "4px" }}>

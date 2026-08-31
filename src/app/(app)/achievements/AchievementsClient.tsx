@@ -124,7 +124,7 @@ function CircularProgress({ value, total }: { value: number; total: number }) {
         <span className="text-2xl font-black text-[var(--color-gray-100)] leading-none">
           <AnimatedCounter end={value} />
         </span>
-        <span className="text-[10px] font-bold text-[var(--color-gray-500)] uppercase tracking-widest mt-1">/ {total}</span>
+        <span className="text-[11px] font-bold text-[var(--color-gray-500)] uppercase tracking-widest mt-1">/ {total}</span>
       </div>
     </div>
   )
@@ -194,8 +194,8 @@ function AchievementCard({ ach }: { ach: Achievement }) {
       {ach.target > 1 && (
         <div className="mt-6 relative z-10">
           <div className="flex justify-between items-end mb-2">
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-gray-500)]">Progress</span>
-            <span className="text-[10px] font-black text-[var(--color-gray-300)] tabular-nums">
+            <span className="text-[11px] font-bold uppercase tracking-widest text-[var(--color-gray-500)]">Progress</span>
+            <span className="text-[11px] font-black text-[var(--color-gray-300)] tabular-nums">
               {Math.min(ach.progress, ach.target)} / {ach.target}
             </span>
           </div>
@@ -212,7 +212,7 @@ function AchievementCard({ ach }: { ach: Achievement }) {
       )}
       
       {isUnlocked && ach.unlockedAt && (
-        <div className="mt-4 text-[9px] text-[var(--color-gray-500)] font-bold uppercase tracking-[0.2em] relative z-10">
+        <div className="mt-4 text-[11px] text-[var(--color-gray-500)] font-bold uppercase tracking-[0.2em] relative z-10">
           Unlocked {new Date(ach.unlockedAt).toLocaleDateString()}
         </div>
       )}
@@ -306,7 +306,7 @@ function LeaderboardSection() {
                         </div>
                         <span className={`font-bold truncate max-w-[150px] md:max-w-none ${user.isCurrentUser ? "text-[var(--color-brand-500)]" : "text-[var(--color-gray-100)]"}`}>
                           {user.name}
-                          {user.isCurrentUser && <span className="ml-2 text-[10px] bg-[var(--color-brand-500)]/20 text-[var(--color-brand-500)] px-2 py-0.5 rounded-full border border-[var(--color-brand-500)]/30 hidden md:inline-block">YOU</span>}
+                          {user.isCurrentUser && <span className="ml-2 text-[11px] bg-[var(--color-brand-500)]/20 text-[var(--color-brand-500)] px-2 py-0.5 rounded-full border border-[var(--color-brand-500)]/30 hidden md:inline-block">YOU</span>}
                         </span>
                       </div>
                     </td>
@@ -437,14 +437,14 @@ export function AchievementsClient() {
         <div className="relative z-10 flex flex-col items-center justify-center p-6 bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-2xl backdrop-blur-md min-w-[200px]">
           <div className="flex items-center gap-2 text-amber-500 mb-1">
             <Star size={14} className="fill-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest">Trader Level</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest">Trader Level</span>
             <Star size={14} className="fill-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
           </div>
           <div className="text-4xl font-black text-[var(--color-gray-100)] tracking-tighter mb-3">
             Lv. {level}
           </div>
           <div className="w-full flex flex-col gap-1.5">
-            <div className="flex justify-between text-[9px] font-bold text-[var(--color-gray-500)] uppercase tracking-wider">
+            <div className="flex justify-between text-[11px] font-bold text-[var(--color-gray-500)] uppercase tracking-wider">
               <span>Next Level</span>
               <span>{levelProgress} / 3</span>
             </div>

@@ -116,17 +116,17 @@ export function PropChallengesOverview({ challenges }: { challenges: PropChallen
                   </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "0.25rem", flexShrink: 0 }}>
-                  <span className={`badge ${c.status === 'active' || c.status === 'passed' ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: "0.6rem" }}>
+                  <span className={`badge ${c.status === 'active' || c.status === 'passed' ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: "0.7rem" }}>
                     {c.status.toUpperCase()}
                   </span>
                   {deadlineLabel && (
-                    <span style={{ fontSize: "0.62rem", fontWeight: 600, color: deadlineTone }}>{deadlineLabel}</span>
+                    <span style={{ fontSize: "0.7rem", fontWeight: 600, color: deadlineTone }}>{deadlineLabel}</span>
                   )}
                 </div>
               </div>
 
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
                   <span>Profit Target</span>
                   <span style={{ color: currentProfit >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                     {profitSign}{currentProfit.toLocaleString("en-US", { maximumFractionDigits: 0 })} · {Math.round(profitPct)}%
@@ -138,7 +138,7 @@ export function PropChallengesOverview({ challenges }: { challenges: PropChallen
               </div>
 
               <div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
                   <span>Drawdown Used</span>
                   <span style={{ color: ddPct >= 80 ? "var(--color-warning)" : "var(--color-gray-300)" }}>{Math.round(ddPct)}%</span>
                 </div>
@@ -149,7 +149,7 @@ export function PropChallengesOverview({ challenges }: { challenges: PropChallen
 
               {minDays > 0 && (
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--color-gray-400)", marginBottom: "0.25rem" }}>
                     <span>Min Trading Days</span>
                     <span style={{ color: "var(--color-gray-300)" }}>{c.tradingDaysCount ?? 0}/{minDays}</span>
                   </div>
@@ -160,7 +160,7 @@ export function PropChallengesOverview({ challenges }: { challenges: PropChallen
               )}
 
               {latestEvent && (
-                <div style={{ fontSize: "0.68rem", color: latestEvent.severity === 'critical' ? "var(--color-loss)" : latestEvent.severity === 'warning' ? "var(--color-warning)" : "var(--color-gray-400)" }}>
+                <div style={{ fontSize: "0.7rem", color: latestEvent.severity === 'critical' ? "var(--color-loss)" : latestEvent.severity === 'warning' ? "var(--color-warning)" : "var(--color-gray-400)" }}>
                   {latestEvent.message || latestEvent.eventType.replace(/_/g, " ")}
                 </div>
               )}

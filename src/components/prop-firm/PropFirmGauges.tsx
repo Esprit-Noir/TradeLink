@@ -109,7 +109,7 @@ function NeedleGauge({ label, used, total, formatCurrency = true, reverseColors 
                 x={tick.textX}
                 y={tick.textY}
                 fill="var(--color-gray-500)"
-                className="text-[10px] font-semibold"
+                className="text-[11px] font-semibold"
                 textAnchor="middle"
                 dominantBaseline="middle"
               >

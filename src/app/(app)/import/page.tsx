@@ -435,7 +435,7 @@ export default function ImportPage() {
                           <span style={{ fontSize: "0.76rem", fontWeight: 600, color: "var(--color-gray-300)" }}>
                             {f.label} {f.required && <span style={{ color: "var(--color-loss)" }}>*</span>}
                           </span>
-                          <span style={{ fontSize: "0.65rem", color: "var(--color-gray-600)" }}>{f.hint}</span>
+                          <span style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>{f.hint}</span>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                           <select
@@ -539,7 +539,7 @@ export default function ImportPage() {
                 <div style={{ overflowX: "auto", border: "1px solid var(--color-gray-800)", borderRadius: "8px" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.78rem", textAlign: "left" }}>
                     <thead>
-                      <tr style={{ borderBottom: "1px solid var(--color-gray-800)", background: "var(--color-gray-950)", color: "var(--color-gray-500)", textTransform: "uppercase", fontSize: "0.65rem", fontWeight: 700 }}>
+                      <tr style={{ borderBottom: "1px solid var(--color-gray-800)", background: "var(--color-gray-950)", color: "var(--color-gray-500)", textTransform: "uppercase", fontSize: "0.7rem", fontWeight: 700 }}>
                         <th style={{ padding: "0.5rem 0.65rem" }}>Symbole</th>
                         <th style={{ padding: "0.5rem 0.65rem" }}>Sens</th>
                         <th style={{ padding: "0.5rem 0.65rem" }}>Date d&apos;entrée</th>
@@ -554,7 +554,7 @@ export default function ImportPage() {
                           <td style={{ padding: "0.5rem 0.65rem", fontWeight: 600, color: "var(--color-gray-200)" }}>{r.symbol}</td>
                           <td style={{ padding: "0.5rem 0.65rem" }}>
                             <span style={{
-                              fontSize: "0.65rem",
+                              fontSize: "0.7rem",
                               fontWeight: 700,
                               padding: "0.1rem 0.35rem",
                               borderRadius: "4px",

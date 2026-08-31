@@ -141,7 +141,7 @@ export function NotificationBell() {
             borderRadius: "8px",
             background: "var(--color-loss)",
             color: "white",
-            fontSize: "0.6rem",
+            fontSize: "0.7rem",
             fontWeight: 700,
             display: "flex",
             alignItems: "center",
@@ -212,7 +212,7 @@ export function NotificationBell() {
                   <div style={{ fontSize: "0.78rem", color: "var(--color-gray-200)", lineHeight: 1.35 }}>
                     {e.message || `${e.challenge.template?.firmName || "Challenge"} event`}
                   </div>
-                  <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", marginTop: "0.15rem" }}>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: "0.15rem" }}>
                     {e.challenge.template?.firmName || "Prop Firm"} · {e.challenge.account?.name || e.challenge.phase || ""} · {timeAgo(e.createdAt)}
                   </div>
                 </div>

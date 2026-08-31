@@ -627,9 +627,9 @@ function StatsFilters({ available, filters, apply }: { available: { symbols: str
 function DrawdownStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="kpi-card" style={{ padding: "0.75rem 1rem", display: "flex", flexDirection: "column", gap: "0.2rem" }}>
-      <div style={{ fontSize: "0.62rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.15rem" }}>{label}</div>
+      <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.15rem" }}>{label}</div>
       <div style={{ fontSize: "1.1rem", fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-gray-100)" }}>{value}</div>
-      {sub && <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)" }}>{sub}</div>}
+      {sub && <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>{sub}</div>}
     </div>
   )
 }
@@ -656,7 +656,7 @@ function BreakdownCard({ title, items, icon }: { title: string; items: Breakdown
                   width: "22px", height: "22px", borderRadius: "6px",
                   background: item.pnl >= 0 ? "var(--profit-muted)" : "var(--loss-muted)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "0.65rem", fontWeight: 700,
+                  fontSize: "0.7rem", fontWeight: 700,
                   color: item.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",
                 }}>
                   {i + 1}

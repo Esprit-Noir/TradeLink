@@ -85,7 +85,7 @@ export function BillingClient({ plans, currentPlanId }: { plans: DbPlan[], curre
           >
             {plan.isCurrent && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-brand-500)] text-black text-[10px] font-bold uppercase tracking-wider rounded-full">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-brand-500)] text-black text-[11px] font-bold uppercase tracking-wider rounded-full">
                   <Check size={12} strokeWidth={3} /> Active Plan
                 </div>
               </div>
@@ -93,7 +93,7 @@ export function BillingClient({ plans, currentPlanId }: { plans: DbPlan[], curre
             {!plan.isCurrent && plan.popular && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <div 
-                  className="inline-flex items-center gap-1.5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold uppercase tracking-wider rounded-full"
                   style={{ background: 'var(--color-gray-800)', border: '1px solid var(--color-gray-600)', color: 'var(--color-gray-100)' }}
                 >
                   <Sparkles size={12} /> Most Popular

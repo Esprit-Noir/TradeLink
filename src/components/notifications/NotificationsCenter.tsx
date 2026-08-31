@@ -144,7 +144,7 @@ export function NotificationsCenter() {
             >
               {f.label}
               {f.key === "unread" && unread > 0 && (
-                <span style={{ marginLeft: "0.35rem", fontSize: "0.68rem", fontWeight: 700, color: "var(--color-brand-500)" }}>
+                <span style={{ marginLeft: "0.35rem", fontSize: "0.7rem", fontWeight: 700, color: "var(--color-brand-500)" }}>
                   {unread}
                 </span>
               )}
@@ -200,7 +200,7 @@ export function NotificationsCenter() {
                 <div style={{ width: 10, height: 10, borderRadius: "50%", background: sev, marginTop: "0.25rem", flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                    <span className="badge" style={{ background: `${sev}22`, color: sev, border: `1px solid ${sev}40`, fontSize: "0.66rem" }}>
+                    <span className="badge" style={{ background: `${sev}22`, color: sev, border: `1px solid ${sev}40`, fontSize: "0.7rem" }}>
                       {EVENT_TYPE_LABELS[e.eventType] || e.eventType}
                     </span>
                     <span style={{ fontSize: "0.8rem", color: "var(--color-gray-300)", fontWeight: 600, flex: 1, minWidth: 0 }}>

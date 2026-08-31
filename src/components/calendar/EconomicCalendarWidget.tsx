@@ -128,7 +128,7 @@ export function EconomicCalendarWidget({ limit = 5 }: { limit?: number }) {
         <div className="flex items-center gap-2">
           <CalendarClock size={18} className="text-[var(--color-brand-400)]" />
           <h3 className="font-bold text-[var(--color-gray-100)] text-sm uppercase tracking-wider">Macro Calendar</h3>
-          {error && <span className="text-[10px] bg-[var(--color-gray-800)] px-2 py-0.5 rounded text-[var(--color-gray-400)] ml-2">Demo Data</span>}
+          {error && <span className="text-[11px] bg-[var(--color-gray-800)] px-2 py-0.5 rounded text-[var(--color-gray-400)] ml-2">Demo Data</span>}
         </div>
         <div className="flex items-center gap-2">
           <select 
@@ -191,7 +191,7 @@ export function EconomicCalendarWidget({ limit = 5 }: { limit?: number }) {
                 <div className="flex flex-col flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span 
-                      className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1" 
+                      className="text-[11px] font-bold px-1.5 py-0.5 rounded shrink-0 flex items-center gap-1" 
                       style={{ backgroundColor: `${getImpactColor(e.impact)}20`, color: getImpactColor(e.impact) }}
                     >
                       {getFlag(e.country)} {e.country}
@@ -200,7 +200,7 @@ export function EconomicCalendarWidget({ limit = 5 }: { limit?: number }) {
                       {e.title}
                     </span>
                     <span 
-                      className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
+                      className="text-[11px] font-bold uppercase px-1.5 py-0.5 rounded shrink-0"
                       style={{ backgroundColor: `${getImpactColor(e.impact)}20`, color: getImpactColor(e.impact) }}
                     >
                       {e.impact}
@@ -208,12 +208,12 @@ export function EconomicCalendarWidget({ limit = 5 }: { limit?: number }) {
                   </div>
                   <div className="flex items-center gap-4 mt-1">
                     {e.forecast && (
-                      <span className="text-[10px] text-[var(--color-gray-500)]">
+                      <span className="text-[11px] text-[var(--color-gray-500)]">
                         Forecast: <span className="text-[var(--color-gray-300)]">{e.forecast}</span>
                       </span>
                     )}
                     {e.previous && (
-                      <span className="text-[10px] text-[var(--color-gray-500)]">
+                      <span className="text-[11px] text-[var(--color-gray-500)]">
                         Prev: <span className="text-[var(--color-gray-300)]">{e.previous}</span>
                       </span>
                     )}

@@ -19,7 +19,7 @@ export function Badge({ children, variant = "default", style }: BadgeProps) {
       alignItems: "center",
       padding: "0.2rem 0.5rem",
       borderRadius: 6,
-      fontSize: "0.65rem",
+      fontSize: "0.7rem",
       fontWeight: 600,
       textTransform: "uppercase",
       letterSpacing: "0.03em",

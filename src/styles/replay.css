@@ -116,7 +116,7 @@
   letter-spacing: -0.01em;
 }
 .tz-session-tf {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--color-brand-400);
   text-transform: uppercase;
@@ -132,7 +132,7 @@
   right: -6px;
   background: var(--color-loss);
   color: white;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 800;
   min-width: 16px;
   height: 16px;
@@ -493,7 +493,7 @@
   align-items: center;
   gap: 6px;
   color: var(--color-gray-400);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   cursor: pointer;
 }
 .tz-replay-vtab.active {
@@ -522,7 +522,7 @@
   gap: 2px;
 }
 .tz-sidebar-stat-label {
-  font-size: 0.58rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -613,7 +613,7 @@
 .tz-badge-buy {
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
   background: var(--color-profit-muted);
   color: var(--color-profit);
@@ -621,7 +621,7 @@
 .tz-badge-sell {
   padding: 2px 6px;
   border-radius: 4px;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   font-weight: 700;
   background: var(--color-loss-muted);
   color: var(--color-loss);
@@ -652,7 +652,7 @@
   border-radius: 4px;
   background: var(--color-gray-800);
   color: var(--color-gray-400);
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
 }

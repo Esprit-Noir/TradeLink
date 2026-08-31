@@ -69,7 +69,7 @@ export function HourHeatmap() {
               
               {/* Y Axis Label */}
               <div style={{ 
-                fontSize: "0.65rem", 
+                fontSize: "0.7rem", 
                 color: "var(--color-gray-500)", 
                 display: "flex", 
                 alignItems: "center",
@@ -124,7 +124,7 @@ export function HourHeatmap() {
           gridTemplateColumns: "30px repeat(24, 1fr)", 
           gap: "4px",
           color: "var(--color-gray-500)", 
-          fontSize: "0.65rem",
+          fontSize: "0.7rem",
           marginTop: "4px"
         }}>
           <div /> {/* offset for Y labels */}
@@ -137,7 +137,7 @@ export function HourHeatmap() {
       </div>
 
       {/* Legend */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
         <span>No trades</span>
         <div style={{ width: 12, height: 12, borderRadius: 2, background: "var(--color-gray-800)" }} />
         <span>Loss</span>

@@ -127,7 +127,7 @@ export function DonutChart({
                   {innerLabel}
                 </div>
                 {innerSublabel && (
-                  <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", marginTop: 2, fontWeight: 600 }}>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: 2, fontWeight: 600 }}>
                     {innerSublabel}
                   </div>
                 )}
@@ -154,7 +154,7 @@ export function DonutChart({
                     <span style={{ fontSize: "0.72rem", color: "var(--color-gray-500)", fontWeight: 600, fontFamily: "var(--font-mono)" }}>
                       {formatValue ? formatValue(entry.value) : entry.value.toLocaleString()}
                     </span>
-                    <span style={{ fontSize: "0.65rem", color: "var(--color-gray-600)", fontFamily: "var(--font-mono)", minWidth: 36, textAlign: "right" }}>
+                    <span style={{ fontSize: "0.7rem", color: "var(--color-gray-600)", fontFamily: "var(--font-mono)", minWidth: 36, textAlign: "right" }}>
                       {pct.toFixed(0)}%
                     </span>
                   </div>

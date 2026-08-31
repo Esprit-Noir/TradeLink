@@ -131,7 +131,7 @@ function TestimonialCard({ t, style }: { t: typeof TESTIMONIALS[0], style?: Reac
             ))}
           </div>
           {t.metric && (
-            <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full border shadow-inner" style={{
+            <span className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-widest rounded-full border shadow-inner" style={{
               background: `${t.color}15`,
               color: t.color,
               borderColor: `${t.color}30`
@@ -211,7 +211,7 @@ export function MarketingTestimonials() {
           className="text-center flex flex-col items-center"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
-            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Testimonials</span>
+            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Testimonials</span>
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tighter">
             Trusted by <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,199,88,0.3)]">10,000+ Traders</span>

@@ -261,7 +261,7 @@ export function OverviewClient({ username }: { username?: string }) {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--color-gray-200)" }}>{trade.symbol}</span>
-                      <span className={`badge ${trade.side === "LONG" ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.6rem" }}>{trade.side}</span>
+                      <span className={`badge ${trade.side === "LONG" ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.7rem" }}>{trade.side}</span>
                     </div>
                     <p style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: 2 }}>
                       {trade.entryAt ? formatDateWithTimezone(trade.entryAt, "UTC") : "—"}

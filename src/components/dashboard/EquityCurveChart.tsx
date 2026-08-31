@@ -286,7 +286,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", marginBottom: "1rem" }}>
         {statItems.map((s) => (
           <div key={s.label} style={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "10px", padding: "0.5rem 0.75rem" }}>
-            <div style={{ fontSize: "0.6rem", color: "var(--color-gray-500)", marginBottom: "0.15rem" }}>{s.label}</div>
+            <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.15rem" }}>{s.label}</div>
             <div style={{ fontSize: "0.85rem", fontWeight: 700, fontFamily: "var(--font-mono)", color: s.color }}>{s.value}</div>
           </div>
         ))}

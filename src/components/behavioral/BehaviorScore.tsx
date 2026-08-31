@@ -320,11 +320,11 @@ function PatternCard({ pattern }: { pattern: DetectedPattern }) {
 
       <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid var(--color-gray-800)", paddingTop: "1rem", marginTop: "auto" }}>
         <div>
-          <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Affected Trades</div>
+          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Affected Trades</div>
           <div style={{ fontWeight: 800, color: "var(--color-gray-200)", fontSize: "1.1rem" }}>{pattern.count}</div>
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Impact (P&L)</div>
+          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>Impact (P&L)</div>
           <div style={{ fontWeight: 800, color: "var(--color-loss)", fontSize: "1.1rem" }}>
             {formatCurrency(pattern.impactPnl, "USD", true, 2)}
           </div>

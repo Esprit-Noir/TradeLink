@@ -87,15 +87,15 @@ export function SubscriptionsTable({ initialSubscriptions, plans }: { initialSub
               <option key={p.id} value={p.id}>{p.name} — ${p.price}</option>
             ))}
           </select>
-          <button onClick={() => handleAssignPlan(sub.user.id)} className="btn btn-primary" style={{ fontSize: "0.65rem", padding: "0.2rem 0.5rem" }}>Save</button>
-          <button onClick={() => setEditingUserId(null)} className="btn btn-outline" style={{ fontSize: "0.65rem", padding: "0.2rem 0.5rem" }}>Cancel</button>
+          <button onClick={() => handleAssignPlan(sub.user.id)} className="btn btn-primary" style={{ fontSize: "0.7rem", padding: "0.2rem 0.5rem" }}>Save</button>
+          <button onClick={() => setEditingUserId(null)} className="btn btn-outline" style={{ fontSize: "0.7rem", padding: "0.2rem 0.5rem" }}>Cancel</button>
         </div>
       ) : (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <span>{sub.plan.name}</span>
           <button
             onClick={() => { setEditingUserId(sub.user.id); setSelectedPlanId(sub.plan.id) }}
-            style={{ fontSize: "0.65rem", color: "var(--color-brand-500)", background: "transparent", border: "none", cursor: "pointer" }}
+            style={{ fontSize: "0.7rem", color: "var(--color-brand-500)", background: "transparent", border: "none", cursor: "pointer" }}
           >
             Change
           </button>

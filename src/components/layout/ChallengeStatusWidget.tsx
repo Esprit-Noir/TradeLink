@@ -41,11 +41,11 @@ export function ChallengeStatusWidget() {
       }`,
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-        <span style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-gray-300)" }}>
+        <span style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-gray-300)" }}>
           {stats.challengeName || "Challenge"}
         </span>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: "0.6rem", color: "var(--color-gray-400)" }}>
+          <span style={{ fontSize: "0.7rem", color: "var(--color-gray-400)" }}>
             {stats.challengePct.toFixed(1)}% DD
           </span>
           <span style={{

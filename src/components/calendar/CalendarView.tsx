@@ -304,7 +304,7 @@ export function CalendarView({
               const count = dailyTradeCount[dateStr] ?? 0
               if (count === 0) return null
               return (
-                <span style={{ display: "block", fontSize: "0.68rem", opacity: 0.8, color: textColor, fontWeight: 500 }}>
+                <span style={{ display: "block", fontSize: "0.7rem", opacity: 0.8, color: textColor, fontWeight: 500 }}>
                   {count} {count > 1 ? "trades" : "trade"}
                 </span>
               )
@@ -317,7 +317,7 @@ export function CalendarView({
           </div>
         )}
         {pnl !== undefined && dailyTradeCount[dateStr] !== undefined && (
-          <div style={{ position: "absolute", bottom: "0.25rem", right: "0.4rem", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-gray-500)", opacity: 0.7 }}>
+          <div style={{ position: "absolute", bottom: "0.25rem", right: "0.4rem", fontSize: "0.7rem", fontWeight: 700, color: "var(--color-gray-500)", opacity: 0.7 }}>
             {dailyTradeCount[dateStr]}
           </div>
         )}
@@ -430,7 +430,7 @@ export function CalendarView({
               {/* Month labels */}
               <div style={{ display: "flex", gap: YGAP, marginLeft: YLABEL_W }}>
                 {yearHeatmap.weekMonthLabels.map((label, wi) => (
-                  <div key={wi} style={{ width: YCELL, fontSize: "0.62rem", fontWeight: 600, color: "var(--color-gray-400)", whiteSpace: "nowrap", overflow: "visible" }}>
+                  <div key={wi} style={{ width: YCELL, fontSize: "0.7rem", fontWeight: 600, color: "var(--color-gray-400)", whiteSpace: "nowrap", overflow: "visible" }}>
                     {label || ""}
                   </div>
                 ))}
@@ -440,7 +440,7 @@ export function CalendarView({
               <div style={{ display: "flex", gap: YGAP }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: YGAP, marginRight: "6px", width: YLABEL_W }}>
                   {["", "Mon", "", "Wed", "", "Fri", ""].map((wd, i) => (
-                    <div key={i} style={{ height: YCELL, fontSize: "0.65rem", color: "var(--color-gray-600)", lineHeight: `${YCELL}px`, textAlign: "right", paddingRight: "6px" }}>{wd}</div>
+                    <div key={i} style={{ height: YCELL, fontSize: "0.7rem", color: "var(--color-gray-600)", lineHeight: `${YCELL}px`, textAlign: "right", paddingRight: "6px" }}>{wd}</div>
                   ))}
                 </div>
                 {yearHeatmap.weeks.map((week, wi) => (
@@ -547,10 +547,10 @@ export function CalendarView({
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                       {detail.trades.map((t) => (
                         <div key={t.id} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.5rem 0.6rem", background: "var(--color-gray-900)", borderRadius: "8px", border: "1px solid var(--color-gray-800)" }}>
-                          <span className={`badge ${t.side === "LONG" ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.62rem" }}>{t.side}</span>
+                          <span className={`badge ${t.side === "LONG" ? "badge-profit" : "badge-loss"}`} style={{ fontSize: "0.7rem" }}>{t.side}</span>
                           <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-gray-100)" }}>{t.symbol}</span>
-                          {t.setupTags[0] && <span className="badge badge-neutral" style={{ fontSize: "0.65rem" }}>{t.setupTags[0]}</span>}
-                          <span style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", marginLeft: "auto" }}>
+                          {t.setupTags[0] && <span className="badge badge-neutral" style={{ fontSize: "0.7rem" }}>{t.setupTags[0]}</span>}
+                          <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginLeft: "auto" }}>
                             {new Date(t.entryAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                           </span>
                           <span style={{ fontSize: "0.85rem", fontWeight: 700, color: t.netPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>

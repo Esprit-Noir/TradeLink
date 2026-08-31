@@ -87,7 +87,7 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
           className="text-center mb-16 flex flex-col items-center"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
-            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
+            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tighter">
             {t("title1")} <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,199,88,0.3)]">{t("title2")}</span>
@@ -109,7 +109,7 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
               className={`relative px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${isAnnual ? 'bg-white text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
             >
               Annuel
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${isAnnual ? 'bg-[var(--color-brand-500)] text-black' : 'bg-[var(--color-brand-500)]/20 text-[var(--color-brand-500)]'}`}>
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider transition-all ${isAnnual ? 'bg-[var(--color-brand-500)] text-black' : 'bg-[var(--color-brand-500)]/20 text-[var(--color-brand-500)]'}`}>
                 -40%
               </span>
             </button>

@@ -303,7 +303,7 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: typeColor, boxShadow: `0 0 10px ${typeColor}` }} />
                     <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{acc.name}</span>
                     {acc.isDefault && (
-                      <span style={{ fontSize: "0.65rem", textTransform: "uppercase", fontWeight: 700, background: "var(--color-gray-800)", color: "var(--color-text)", padding: "0.15rem 0.4rem", borderRadius: "4px", flexShrink: 0 }}>Default</span>
+                      <span style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, background: "var(--color-gray-800)", color: "var(--color-text)", padding: "0.15rem 0.4rem", borderRadius: "4px", flexShrink: 0 }}>Default</span>
                     )}
                   </div>
                   <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)" }}>
@@ -396,7 +396,7 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
                     <div style={{ fontSize: "1rem", fontWeight: 500, color: (acc.stats.totalPnlUsd || 0) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                       {formatCurrency(acc.stats.totalPnlUsd || 0, "USD", true, 2)}
                     </div>
-                    <div style={{ fontSize: "0.65rem", color: "var(--color-gray-600)" }}>fx {Number(acc.fxRateToUsd).toFixed(4)}</div>
+                    <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>fx {Number(acc.fxRateToUsd).toFixed(4)}</div>
                   </div>
                 )}
               </div>

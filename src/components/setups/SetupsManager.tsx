@@ -372,7 +372,7 @@ export function SetupsManager() {
                 {hasTrades && !isEditing && (
                   <div>
                     <Sparkline series={setup.series} positive={setup.netPnl >= 0} />
-                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)", textAlign: "right", marginTop: "0.2rem" }}>
+                    <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textAlign: "right", marginTop: "0.2rem" }}>
                       cumulative P&L
                     </div>
                   </div>
@@ -381,29 +381,29 @@ export function SetupsManager() {
                 {/* Main stats */}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", padding: "1rem 0", borderTop: "1px solid var(--color-gray-800)", borderBottom: "1px solid var(--color-gray-800)" }}>
                   <div>
-                    <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Win rate</div>
+                    <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Win rate</div>
                     <div style={{ fontSize: "1.15rem", fontWeight: 700, color: hasTrades ? (setup.winRate >= 50 ? "var(--color-profit)" : "var(--color-loss)") : "var(--color-gray-600)" }}>
                       {hasTrades ? `${setup.winRate.toFixed(0)}%` : "—"}
                     </div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+                    <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
                       {hasTrades ? `${setup.winRate >= 50 ? "✔" : "✖"} ${setup.count - setup.losses}W / ${setup.losses}L` : "no data"}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Net P&L</div>
+                    <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Net P&L</div>
                     <div style={{ fontSize: "1.15rem", fontWeight: 700, color: hasTrades ? (setup.netPnl > 0 ? "var(--color-profit)" : setup.netPnl < 0 ? "var(--color-loss)" : "var(--color-gray-600)") : "var(--color-gray-600)" }}>
                       {hasTrades ? formatCurrency(setup.netPnl, "USD", true, 2) : "—"}
                     </div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+                    <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
                       {hasTrades ? `${setup.count} trade${setup.count > 1 ? "s" : ""}` : "no data"}
                     </div>
                   </div>
                   <div>
-                    <div style={{ fontSize: "0.68rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Profit factor</div>
+                    <div style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 700 }}>Profit factor</div>
                     <div style={{ fontSize: "1.15rem", fontWeight: 700, color: hasTrades ? (setup.profitFactor >= 1.5 ? "var(--color-profit)" : setup.profitFactor >= 1 ? "var(--color-warning)" : "var(--color-loss)") : "var(--color-gray-600)" }}>
                       {hasTrades ? (setup.profitFactor === 99 ? "∞" : setup.profitFactor.toFixed(2)) : "—"}
                     </div>
-                    <div style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>
+                    <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
                       {hasTrades ? `avg R ${setup.avgR >= 0 ? "+" : ""}${setup.avgR.toFixed(2)}` : "no data"}
                     </div>
                   </div>

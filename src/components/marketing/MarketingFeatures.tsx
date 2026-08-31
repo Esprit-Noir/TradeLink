@@ -162,7 +162,7 @@ export function MarketingFeatures() {
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
             <Zap size={12} className="text-[var(--color-brand-500)]" />
-            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
+            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tighter">
             {t("title1")} <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,199,88,0.3)]">{t("title2")}</span>
@@ -192,7 +192,7 @@ export function MarketingFeatures() {
                    <Brain size={28} />
                  </div>
                  {/* AI Badge */}
-                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 rounded-full text-[10px] font-bold text-[var(--color-brand-500)] uppercase tracking-widest">
+                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 rounded-full text-[11px] font-bold text-[var(--color-brand-500)] uppercase tracking-widest">
                    <Sparkles size={10} className="animate-pulse" /> IA
                  </span>
                </div>
@@ -203,7 +203,7 @@ export function MarketingFeatures() {
                <div className="bg-black/30 rounded-2xl border border-white/5 p-4 mb-6">
                  <div className="flex items-center justify-between mb-4">
                    <span className="text-xs font-bold text-white uppercase tracking-widest">Analyse comportementale</span>
-                   <span className="flex items-center gap-1.5 text-[10px] text-[var(--color-brand-500)] font-bold">
+                   <span className="flex items-center gap-1.5 text-[11px] text-[var(--color-brand-500)] font-bold">
                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-500)] animate-pulse" /> LIVE
                    </span>
                  </div>
@@ -228,7 +228,7 @@ export function MarketingFeatures() {
                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-inner shadow-blue-500/20">
                    <BarChart3 size={28} />
                  </div>
-                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-[10px] font-bold text-blue-400 uppercase tracking-widest">
+                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-[11px] font-bold text-blue-400 uppercase tracking-widest">
                    Quant
                  </span>
                </div>
@@ -244,16 +244,16 @@ export function MarketingFeatures() {
                    { label: "Avg R/R", value: "1:2.8", delta: "+0.4", up: true },
                  ].map(stat => (
                    <div key={stat.label} className="bg-black/30 rounded-xl p-3 border border-white/5">
-                     <div className="text-[10px] text-gray-500 font-medium mb-1">{stat.label}</div>
+                     <div className="text-[11px] text-gray-500 font-medium mb-1">{stat.label}</div>
                      <div className="text-lg font-black text-white tracking-tight">{stat.value}</div>
-                     <div className="text-[10px] font-bold text-[var(--color-brand-500)]">{stat.delta}</div>
+                     <div className="text-[11px] font-bold text-[var(--color-brand-500)]">{stat.delta}</div>
                    </div>
                  ))}
                </div>
                
                {/* Mini bar chart */}
                <div className="bg-black/30 rounded-xl p-4 border border-white/5">
-                 <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-3">P&L / Jour (30j)</div>
+                 <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mb-3">P&L / Jour (30j)</div>
                  <MiniBarChart color="#3b82f6" />
                </div>
              </div>
@@ -270,7 +270,7 @@ export function MarketingFeatures() {
                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-inner shadow-emerald-500/20">
                      <Target size={28} />
                    </div>
-                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
+                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[11px] font-bold text-emerald-400 uppercase tracking-widest">
                      Prop Firms
                    </span>
                  </div>
@@ -286,11 +286,11 @@ export function MarketingFeatures() {
                <div className="w-full md:w-[55%] rounded-2xl border border-white/10 overflow-hidden relative shadow-2xl bg-black/60 p-6">
                  <div className="flex items-center justify-between mb-4">
                    <div>
-                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Compte FTMO — Equity</div>
+                     <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mb-1">Compte FTMO — Equity</div>
                      <div className="text-2xl font-black text-white tracking-tight">$112,450 <span className="text-sm font-medium text-[var(--color-brand-500)]">+12.4%</span></div>
                    </div>
                    <div className="text-right">
-                     <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Drawdown</div>
+                     <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mb-1">Drawdown</div>
                      <div className="text-lg font-bold text-emerald-400">2.1% / 10%</div>
                    </div>
                  </div>
@@ -305,7 +305,7 @@ export function MarketingFeatures() {
                      { label: "Max Drawdown", current: 2.1, target: 10, exceeded: false, color: "#a855f7" },
                    ].map(item => (
                      <div key={item.label} className="flex items-center gap-3">
-                       <span className="text-[10px] text-gray-500 w-24 flex-shrink-0">{item.label}</span>
+                       <span className="text-[11px] text-gray-500 w-24 flex-shrink-0">{item.label}</span>
                        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
                          <div
                            className="h-full rounded-full transition-all"
@@ -315,7 +315,7 @@ export function MarketingFeatures() {
                            }}
                          />
                        </div>
-                       <span className="text-[10px] font-bold" style={{ color: item.color }}>{item.current}%</span>
+                       <span className="text-[11px] font-bold" style={{ color: item.color }}>{item.current}%</span>
                      </div>
                    ))}
                  </div>

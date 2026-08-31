@@ -368,7 +368,7 @@ export function ChallengesManager({
                   </span>
                   {isBreached && c.breachReason && (
                     <span style={{
-                      fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase",
+                      fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase",
                       padding: "0.2rem 0.5rem", borderRadius: "4px",
                       background: "rgba(239,68,68,0.15)", color: "var(--color-loss)",
                       border: "1px solid rgba(239,68,68,0.3)",
@@ -378,7 +378,7 @@ export function ChallengesManager({
                   )}
                   {eventBadge && (
                     <span style={{
-                      fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase",
+                      fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase",
                       padding: "0.2rem 0.5rem", borderRadius: "4px",
                       background: eventBadge.bg, color: eventBadge.color,
                     }}>
@@ -430,12 +430,12 @@ export function ChallengesManager({
                             <circle cx="25" cy="25" r={radius} fill="none" stroke="var(--color-gray-800)" strokeWidth="4" />
                             <circle cx="25" cy="25" r={radius} fill="none" stroke="var(--color-profit)" strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={circumference - (profitPct / 100) * circumference} strokeLinecap="round" style={{ transition: "stroke-dashoffset 1s ease" }} />
                           </svg>
-                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
                             {Math.round(profitPct)}%
                           </div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Profit Target</span>
+                          <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Profit Target</span>
                         </div>
                       </div>
 
@@ -445,12 +445,12 @@ export function ChallengesManager({
                             <circle cx="25" cy="25" r={radius} fill="none" stroke="var(--color-gray-800)" strokeWidth="4" />
                             <circle cx="25" cy="25" r={radius} fill="none" stroke={ddPct >= 80 ? "var(--color-warning)" : "var(--color-loss)"} strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={circumference - (ddPct / 100) * circumference} strokeLinecap="round" style={{ transition: "stroke-dashoffset 1s ease" }} />
                           </svg>
-                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
+                          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", fontWeight: 700, color: "var(--color-gray-100)" }}>
                             {Math.round(ddPct)}%
                           </div>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Max DD Used</span>
+                          <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", fontWeight: 600 }}>Max DD Used</span>
                         </div>
                       </div>
                     </>

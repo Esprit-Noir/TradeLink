@@ -43,7 +43,7 @@ function LiveTicker() {
           <div key={i} className="flex items-center gap-2.5 px-6 py-2 border-r border-white/[0.05] flex-shrink-0">
             <span className="text-[11px] font-bold text-gray-500 tracking-wider">{item.symbol}</span>
             <span className="text-[11px] font-mono font-semibold text-white tabular-nums">{item.price}</span>
-            <span className={`text-[10px] font-bold flex items-center gap-0.5 ${item.up ? "text-[var(--color-brand-500)]" : "text-red-400"}`}>
+            <span className={`text-[11px] font-bold flex items-center gap-0.5 ${item.up ? "text-[var(--color-brand-500)]" : "text-red-400"}`}>
               {item.up ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
               {item.change}
             </span>
@@ -182,13 +182,13 @@ function DashboardMockup() {
         <div className="flex-1 flex justify-center">
           <div className="flex items-center gap-2 bg-black/50 border border-white/[0.07] rounded-md px-4 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-500)] animate-pulse" style={{ boxShadow: "0 0 5px var(--color-brand-500)" }} />
-            <span className="text-[10px] font-mono text-gray-400 tracking-wide">app.tradelink.io/dashboard</span>
+            <span className="text-[11px] font-mono text-gray-400 tracking-wide">app.tradelink.io/dashboard</span>
           </div>
         </div>
         {/* Right: account badge */}
         <div className="flex items-center gap-2 bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 rounded-md px-3 py-1">
-          <span className="text-[10px] font-bold text-[var(--color-brand-500)]">FTMO 100K</span>
-          <span className="text-[10px] font-black text-[var(--color-brand-500)]">LIVE</span>
+          <span className="text-[11px] font-bold text-[var(--color-brand-500)]">FTMO 100K</span>
+          <span className="text-[11px] font-black text-[var(--color-brand-500)]">LIVE</span>
         </div>
       </div>
 
@@ -227,11 +227,11 @@ function DashboardMockup() {
                 transition={{ duration: 0.5, delay: 0.1 + i * 0.1, type: "spring", stiffness: 100 }}
                 className="bg-[#111]/60 border border-white/[0.06] rounded-xl p-3"
               >
-                <div className="text-[10px] text-gray-500 font-medium mb-1">{kpi.label}</div>
+                <div className="text-[11px] text-gray-500 font-medium mb-1">{kpi.label}</div>
                 <div className="text-lg font-black tracking-tight" style={{ color: kpi.color }}>
                   {visible ? <AnimatedCounter end={kpi.value} prefix={kpi.prefix} suffix={kpi.suffix} decimals={kpi.decimals} duration={2000} /> : "0"}
                 </div>
-                <div className="text-[10px] text-gray-600 font-medium mt-0.5">{kpi.sub}</div>
+                <div className="text-[11px] text-gray-600 font-medium mt-0.5">{kpi.sub}</div>
               </motion.div>
             ))}
           </div>
@@ -247,7 +247,7 @@ function DashboardMockup() {
             >
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Equity Curve</div>
+                  <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">Equity Curve</div>
                   <div className="text-xl font-black text-white tracking-tight">
                     {visible ? <AnimatedCounter end={142800} prefix="$" duration={2500} /> : "$0"}
                     <span className="text-[var(--color-brand-500)] text-sm font-bold ml-2">+42.8%</span>
@@ -255,7 +255,7 @@ function DashboardMockup() {
                 </div>
                 <div className="flex gap-1.5">
                   {["1W","1M","3M"].map((p, i) => (
-                    <div key={p} className={`px-2 py-1 rounded-md text-[10px] font-bold cursor-default ${i === 2 ? "bg-[var(--color-brand-500)]/15 text-[var(--color-brand-500)] border border-[var(--color-brand-500)]/20" : "text-gray-600"}`}>{p}</div>
+                    <div key={p} className={`px-2 py-1 rounded-md text-[11px] font-bold cursor-default ${i === 2 ? "bg-[var(--color-brand-500)]/15 text-[var(--color-brand-500)] border border-[var(--color-brand-500)]/20" : "text-gray-600"}`}>{p}</div>
                   ))}
                 </div>
               </div>
@@ -273,7 +273,7 @@ function DashboardMockup() {
                 transition={{ duration: 0.5, delay: 0.5 }}
                 className="bg-[#111]/60 border border-white/[0.06] rounded-xl p-4 flex-1"
               >
-                <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-3">Recent Trades</div>
+                <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mb-3">Recent Trades</div>
                 <div className="flex flex-col gap-2">
                   {RECENT_TRADES.map((trade, i) => (
                     <motion.div
@@ -284,17 +284,17 @@ function DashboardMockup() {
                       className="flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
-                        <div className={`text-[9px] font-black px-1.5 py-0.5 rounded ${trade.side === "LONG" ? "bg-[var(--color-brand-500)]/15 text-[var(--color-brand-500)]" : "bg-red-500/15 text-red-400"}`}>
+                        <div className={`text-[11px] font-black px-1.5 py-0.5 rounded ${trade.side === "LONG" ? "bg-[var(--color-brand-500)]/15 text-[var(--color-brand-500)]" : "bg-red-500/15 text-red-400"}`}>
                           {trade.side}
                         </div>
                         <span className="text-[11px] font-bold text-gray-300">{trade.symbol}</span>
-                        <span className="text-[9px] text-gray-600">{trade.time}</span>
+                        <span className="text-[11px] text-gray-600">{trade.time}</span>
                       </div>
                       <div className="text-right">
                         <div className={`text-[11px] font-black ${trade.pnl > 0 ? "text-[var(--color-brand-500)]" : "text-red-400"}`}>
                           {trade.pnl > 0 ? "+" : ""}{trade.pnl.toFixed(0)}$
                         </div>
-                        <div className="text-[9px] text-gray-600">{trade.rr}</div>
+                        <div className="text-[11px] text-gray-600">{trade.rr}</div>
                       </div>
                     </motion.div>
                   ))}
@@ -309,7 +309,7 @@ function DashboardMockup() {
                 className="bg-[#111]/60 border border-white/[0.06] rounded-xl p-4"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">P&L Heatmap</div>
+                  <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest">P&L Heatmap</div>
                 </div>
                 <div className="flex gap-0.5">
                   {HEATMAP[0].map((_, col) => (
@@ -348,7 +348,7 @@ function DashboardMockup() {
               <span className="text-[11px] text-amber-400 font-semibold">IA détecte : </span>
               <span className="text-[11px] text-gray-400">Votre win rate chute de <strong className="text-white">18%</strong> après 13h00 — évitez les trades l&apos;après-midi.</span>
             </div>
-            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md flex-shrink-0 border border-amber-500/15">NOUVEAU</span>
+            <span className="text-[11px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-md flex-shrink-0 border border-amber-500/15">NOUVEAU</span>
           </motion.div>
         </div>
       </div>
@@ -440,7 +440,7 @@ export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
           className="inline-flex items-center gap-4 px-5 py-3 rounded-2xl mb-16 bg-white/[0.04] border border-white/8 backdrop-blur-md">
           <div className="flex -space-x-2.5">
             {[11,12,13,14].map(n => <div key={n} className="w-8 h-8 rounded-full border-2 border-[#050505] bg-gray-800 bg-cover bg-center" style={{ backgroundImage: `url('https://i.pravatar.cc/80?img=${n}')` }} />)}
-            <div className="w-8 h-8 rounded-full border-2 border-[#050505] bg-zinc-800 flex items-center justify-center text-[9px] font-black text-white">+9K</div>
+            <div className="w-8 h-8 rounded-full border-2 border-[#050505] bg-zinc-800 flex items-center justify-center text-[11px] font-black text-white">+9K</div>
           </div>
           <div className="h-4 w-px bg-white/10" />
           <div className="flex items-center gap-1.5">
@@ -473,8 +473,8 @@ export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
               <TrendingUp size={16} className="text-[var(--color-brand-500)]" />
             </div>
             <div>
-              <div className="text-[10px] text-gray-500 font-medium mb-0.5">Win Rate</div>
-              <div className="text-base font-black text-white leading-none">62.7% <span className="text-[var(--color-brand-500)] text-[10px] font-bold">↑4.2%</span></div>
+              <div className="text-[11px] text-gray-500 font-medium mb-0.5">Win Rate</div>
+              <div className="text-base font-black text-white leading-none">62.7% <span className="text-[var(--color-brand-500)] text-[11px] font-bold">↑4.2%</span></div>
             </div>
           </motion.div>
 
@@ -484,8 +484,8 @@ export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
               <Brain size={16} className="text-purple-400" />
             </div>
             <div>
-              <div className="text-[10px] text-gray-500 font-medium mb-0.5">AI Score</div>
-              <div className="text-base font-black text-white leading-none">87<span className="text-purple-400 text-[10px] font-bold">/100</span></div>
+              <div className="text-[11px] text-gray-500 font-medium mb-0.5">AI Score</div>
+              <div className="text-base font-black text-white leading-none">87<span className="text-purple-400 text-[11px] font-bold">/100</span></div>
             </div>
           </motion.div>
 
@@ -509,7 +509,7 @@ export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
               <span className="text-3xl md:text-4xl font-black tracking-tighter mb-1.5" style={{ color: stat.color }}>
                 <AnimatedCounter end={stat.value} suffix={stat.suffix} />
               </span>
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.16em] leading-snug">{stat.label}</span>
+              <span className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.16em] leading-snug">{stat.label}</span>
             </div>
           ))}
         </motion.div>
@@ -517,12 +517,12 @@ export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
         {/* Trusted logos */}
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.7 }}
           className="w-full px-6 border-t border-white/[0.06] pt-10 pb-20">
-          <p className="text-[10px] text-gray-600 uppercase tracking-[0.25em] font-bold mb-8 text-center">{t("trustedBy")}</p>
+          <p className="text-[11px] text-gray-600 uppercase tracking-[0.25em] font-bold mb-8 text-center">{t("trustedBy")}</p>
           <div className="flex flex-wrap justify-center items-center gap-8 md:gap-14 opacity-40 hover:opacity-75 transition-opacity duration-500">
             <span className="text-xl font-black italic tracking-tighter text-white">FTMO</span>
             <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-sm bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center -rotate-12"><div className="w-1.5 h-1.5 bg-white rounded-full" /></div><span className="text-base font-bold text-white">Topstep</span></div>
             <span className="text-base font-extrabold uppercase tracking-widest text-white">A<span className="text-red-500">P</span>EX</span>
-            <div className="flex items-center gap-1.5"><div className="w-5 h-5 rounded-full border-2 border-yellow-500 flex items-center justify-center font-bold text-yellow-500 text-[10px]">5</div><span className="text-base font-bold text-white">The5ers</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-5 h-5 rounded-full border-2 border-yellow-500 flex items-center justify-center font-bold text-yellow-500 text-[11px]">5</div><span className="text-base font-bold text-white">The5ers</span></div>
             <div className="flex items-center gap-2"><div className="flex space-x-0.5"><div className="w-1 h-3.5 bg-emerald-500 rounded-full" /><div className="w-1 h-5 bg-emerald-400 rounded-full" /><div className="w-1 h-2.5 bg-emerald-300 rounded-full" /></div><span className="text-base font-bold text-white">FundedNext</span></div>
             <div className="flex items-center gap-1.5"><div className="relative w-4 h-4"><div className="absolute inset-0 bg-purple-500 rounded-full opacity-50" /><div className="absolute inset-0.5 bg-purple-400 rounded-full" /></div><span className="text-base font-bold text-white lowercase">funding<span className="font-light">pips</span></span></div>
           </div>
@@ -533,7 +533,7 @@ export function MarketingHero({ isLoggedIn }: { isLoggedIn?: boolean }) {
       <motion.div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 pointer-events-none"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.2, duration: 0.6 }}
         style={{ opacity: useTransform(scrollY, [0, 160], [1, 0]) }}>
-        <span className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.3em]">Scroll</span>
+        <span className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.3em]">Scroll</span>
         <div className="w-[22px] h-[36px] rounded-full border border-white/15 flex items-start justify-center pt-1">
           <motion.div className="w-1 h-2.5 rounded-full bg-[var(--color-brand-500)]"
             animate={{ y: [0, 10, 0], opacity: [1, 0.3, 1] }} transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }} />

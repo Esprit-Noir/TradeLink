@@ -307,7 +307,7 @@ export function CalculatorClient() {
 function MetricCard({ label, value, color }: { label: string; value: string; color: string }) {
   return (
     <div style={{ padding: "0.6rem 0.8rem", borderRadius: 8, background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)" }}>
-      <p style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-gray-500)", fontWeight: 600, marginBottom: 2 }}>{label}</p>
+      <p style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--color-gray-500)", fontWeight: 600, marginBottom: 2 }}>{label}</p>
       <p style={{ fontSize: "0.9rem", fontWeight: 600, color, fontVariantNumeric: "tabular-nums" }}>{value}</p>
     </div>
   )

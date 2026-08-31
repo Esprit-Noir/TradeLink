@@ -135,7 +135,7 @@ export function NotesSection({ challengeId }: { challengeId: string }) {
               <>
                 <div style={{ fontSize: "0.88rem", color: "var(--color-gray-200)", whiteSpace: "pre-wrap" }}>{n.content}</div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
-                  <span style={{ fontSize: "0.68rem", color: "var(--color-gray-500)" }}>{formatDate(n.createdAt)}</span>
+                  <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>{formatDate(n.createdAt)}</span>
                   <div style={{ display: "flex", gap: "0.5rem" }}>
                     <button
                       onClick={() => { setEditingId(n.id); setEditContent(n.content) }}

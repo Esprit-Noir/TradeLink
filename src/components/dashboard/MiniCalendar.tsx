@@ -93,7 +93,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
         </div>
 
         {/* Legend */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.65rem", color: "var(--color-gray-500)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
           <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
             <span style={{ width: 10, height: 10, borderRadius: 2, background: colors.profitBg, border: `1px solid ${colors.profitBorder}`, display: "inline-block" }} /> {t("profit")}
           </span>
@@ -161,7 +161,7 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
                   <span style={{ fontSize: "0.78rem", fontWeight: 700, color: textColor, textAlign: "center", textShadow: isDark ? "0 1px 6px rgba(0,0,0,0.4)" : "none" }}>
                     {formatCurrency(cell.pnl, "USD", true, 2)}
                   </span>
-                  <span style={{ fontSize: "0.65rem", color: textColor, opacity: 0.7, textAlign: "center" }}>
+                  <span style={{ fontSize: "0.7rem", color: textColor, opacity: 0.7, textAlign: "center" }}>
                     {t("tradesCount", { count: cell.trades })}
                   </span>
                 </>

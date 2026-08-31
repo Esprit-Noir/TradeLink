@@ -235,7 +235,7 @@ function StatChip({ icon, value, label }: { icon: React.ReactNode; value: number
         {icon}
         <span style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--color-gray-100)" }}>{value}</span>
       </div>
-      <span style={{ fontSize: "0.62rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
+      <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.03em" }}>
         {label}
       </span>
     </div>

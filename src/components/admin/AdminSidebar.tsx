@@ -74,7 +74,7 @@ export function AdminSidebar() {
               <span style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em", color: "var(--color-gray-100)", whiteSpace: "nowrap" }}>
                 Admin
               </span>
-              <span style={{ fontSize: "0.6rem", color: "var(--color-gray-500)", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", whiteSpace: "nowrap" }}>
                 TradeLink Panel
               </span>
             </div>
@@ -94,7 +94,7 @@ export function AdminSidebar() {
       {!effectiveCollapsed && (
         <div style={{ margin: "0 0.5rem", padding: "0.4rem 0.6rem", borderRadius: 6, background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.25)", display: "flex", alignItems: "center", gap: 6 }}>
           <Shield size={12} style={{ color: "#8b5cf6" }} />
-          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+          <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "#8b5cf6", textTransform: "uppercase", letterSpacing: "0.08em" }}>
             Admin Mode
           </span>
         </div>

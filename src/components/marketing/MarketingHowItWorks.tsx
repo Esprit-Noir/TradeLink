@@ -27,7 +27,7 @@ export function MarketingHowItWorks() {
             <div key={f.name} className="flex items-center gap-3 px-4 py-3 bg-black/40 rounded-xl border border-white/5">
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${f.done ? "bg-[#3b82f6]" : "bg-[#3b82f6] animate-pulse"}`} />
               <span className="text-xs font-mono text-gray-400 flex-1 truncate">{f.name}</span>
-              <span className="text-[10px] text-gray-600">{f.size}</span>
+              <span className="text-[11px] text-gray-600">{f.size}</span>
               {f.done ? (
                 <Check size={12} className="text-[#3b82f6] flex-shrink-0" />
               ) : (
@@ -38,8 +38,8 @@ export function MarketingHowItWorks() {
             </div>
           ))}
           <div className="mt-2 flex items-center justify-between px-1">
-            <span className="text-[10px] text-gray-500 font-medium">3 fichiers · 1,247 trades importés</span>
-            <span className="text-[10px] font-bold text-[#3b82f6]">En cours…</span>
+            <span className="text-[11px] text-gray-500 font-medium">3 fichiers · 1,247 trades importés</span>
+            <span className="text-[11px] font-bold text-[#3b82f6]">En cours…</span>
           </div>
         </div>
       ),
@@ -63,7 +63,7 @@ export function MarketingHowItWorks() {
               <div className={`w-1 h-full min-h-[24px] rounded-full flex-shrink-0 mt-0.5 ${item.severity === "high" ? "bg-red-500" : item.severity === "mid" ? "bg-amber-500" : "bg-[var(--color-brand-500)]"}`} />
               <div>
                 <div className="text-xs font-semibold text-gray-200">{item.label}</div>
-                <div className="text-[10px] text-gray-500 font-medium mt-0.5">{item.sub}</div>
+                <div className="text-[11px] text-gray-500 font-medium mt-0.5">{item.sub}</div>
               </div>
             </div>
           ))}
@@ -87,7 +87,7 @@ export function MarketingHowItWorks() {
           ].map((m) => (
             <div key={m.label} className="px-4 py-3 bg-black/40 rounded-xl border border-white/5">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{m.label}</span>
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{m.label}</span>
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-gray-600">{m.before}{m.unit}</span>
                   <ArrowRight size={10} className="text-[#00c758]" />
@@ -127,7 +127,7 @@ export function MarketingHowItWorks() {
           className="text-center mb-24 flex flex-col items-center"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 backdrop-blur-md">
-            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
+            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
           </span>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-5 text-white tracking-tighter">
             {t("title1")}{" "}
@@ -205,7 +205,7 @@ function StepCard({ step, idx }: { step: StepType; idx: number }) {
               <step.icon size={22} style={{ color: step.color }} />
             </div>
             <span
-              className="text-[10px] font-black uppercase tracking-[0.25em] px-3 py-1 rounded-full"
+              className="text-[11px] font-black uppercase tracking-[0.25em] px-3 py-1 rounded-full"
               style={{ color: step.color, background: `${step.color}12`, border: `1px solid ${step.color}25` }}
             >
               Étape {parseInt(step.number)}
@@ -247,7 +247,7 @@ function StepCard({ step, idx }: { step: StepType; idx: number }) {
             {/* Widget header */}
             <div className="flex items-center gap-2 mb-4">
               <div className="w-2 h-2 rounded-full" style={{ background: step.color, boxShadow: `0 0 8px ${step.color}` }} />
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+              <span className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">
                 {idx === 0 ? "Import en cours" : idx === 1 ? "Analyse IA — Rapport" : "Progression — 30 jours"}
               </span>
             </div>

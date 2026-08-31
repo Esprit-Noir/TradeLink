@@ -83,7 +83,7 @@ function SymbolCard({ data }: { data: SymbolData }) {
       <div style={{ display: "flex", width: "100%", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
         <div>
           <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-gray-200)", letterSpacing: "0.05em", marginBottom: 2 }}>{data.symbol}</div>
-          <div style={{ fontSize: "0.65rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{data.name}</div>
+          <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.08em" }}>{data.name}</div>
         </div>
         <div style={{ textAlign: "right" }}>
           <div style={{ fontSize: "0.95rem", fontWeight: 700, color: "var(--color-gray-200)", fontVariantNumeric: "tabular-nums" }}>{data.price}</div>
@@ -109,7 +109,7 @@ function SymbolCard({ data }: { data: SymbolData }) {
         </ResponsiveContainer>
       </div>
 
-      <span className={`badge ${signalClass}`} style={{ marginBottom: 20, fontSize: "0.6rem", padding: "4px 14px" }}>
+      <span className={`badge ${signalClass}`} style={{ marginBottom: 20, fontSize: "0.7rem", padding: "4px 14px" }}>
         {data.signal}
       </span>
 
@@ -118,7 +118,7 @@ function SymbolCard({ data }: { data: SymbolData }) {
       <div style={{ display: "flex", width: "100%", justifyContent: "space-between", marginTop: 20, padding: "0 8px", textAlign: "center" }}>
         {(["short", "medium", "long"] as const).map(k => (
           <div key={k} style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: "0.6rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>{k}</span>
+            <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>{k}</span>
             <span style={{ fontSize: "0.8rem", fontWeight: 700, color: data[k] >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
               {data[k] > 0 ? "+" : ""}{data[k]}
             </span>
@@ -128,7 +128,7 @@ function SymbolCard({ data }: { data: SymbolData }) {
 
       <div style={{ width: "100%", height: 1, background: "var(--color-gray-800)", margin: "14px 0" }} />
 
-      <div style={{ fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-gray-500)", textTransform: "uppercase" }}>
+      <div style={{ fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.08em", color: "var(--color-gray-500)", textTransform: "uppercase" }}>
         Trend <span style={{ color: trendColor }}>{data.trend}</span>
       </div>
     </div>
@@ -289,7 +289,7 @@ export function MarketOverview() {
                     }}>
                     <div>
                       <div style={{ fontSize: "0.8rem", fontWeight: 600 }}>{sym.symbol}</div>
-                      <div style={{ fontSize: "0.6rem", opacity: 0.7 }}>{sym.name}</div>
+                      <div style={{ fontSize: "0.7rem", opacity: 0.7 }}>{sym.name}</div>
                     </div>
                     <div style={{
                       width: 18, height: 18, borderRadius: 4, border: `1px solid ${isChecked ? "var(--color-brand-500)" : "var(--color-gray-600)"}`,

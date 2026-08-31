@@ -133,7 +133,7 @@ export function UserDetailClient({ user }: { user: User }) {
           { label: "Journal Entries", value: user._count.dailyJournals },
         ].map(s => (
           <div key={s.label} className="chart-card" style={{ padding: "1rem" }}>
-            <p style={{ fontSize: "0.65rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 600, letterSpacing: "0.08em" }}>{s.label}</p>
+            <p style={{ fontSize: "0.7rem", textTransform: "uppercase", color: "var(--color-gray-500)", fontWeight: 600, letterSpacing: "0.08em" }}>{s.label}</p>
             <p style={{ fontSize: "1.25rem", fontWeight: 700, color: "var(--color-gray-200)", marginTop: 4 }}>{s.value}</p>
           </div>
         ))}
@@ -168,7 +168,7 @@ export function UserDetailClient({ user }: { user: User }) {
                 <div key={log.id} style={{ padding: "0.5rem 0.75rem", borderRadius: 6, background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontWeight: 500, color: "var(--color-gray-200)", fontSize: "0.8rem" }}>{log.action}</span>
-                    <span style={{ fontSize: "0.65rem", color: "var(--color-gray-500)" }}>{new Date(log.createdAt).toLocaleDateString()}</span>
+                    <span style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>{new Date(log.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)" }}>
                     by {log.admin.email} {log.reason && `· ${log.reason}`}

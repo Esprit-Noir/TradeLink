@@ -77,7 +77,7 @@ export function MarketingIntegrations() {
         <div className="text-center mb-20 flex flex-col items-center">
           <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
             <span className="w-2 h-2 rounded-full bg-[var(--color-brand-500)] animate-pulse shadow-[0_0_10px_var(--color-brand-500)]" />
-            <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest">Seamless Sync</span>
+            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">Seamless Sync</span>
           </motion.div>
           <motion.h2 variants={itemVariants} className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tighter">
             Your Entire Portfolio,<br />

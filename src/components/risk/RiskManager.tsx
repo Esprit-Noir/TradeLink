@@ -289,7 +289,7 @@ export function RiskManager() {
 function MiniStat({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div style={{ padding: "0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-      <div style={{ fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.3rem" }}>{label}</div>
+      <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.3rem" }}>{label}</div>
       <div style={{ fontSize: "1.05rem", fontWeight: 700, color: color || "var(--color-gray-100)" }}>{value}</div>
       {sub && <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>{sub}</div>}
     </div>
@@ -299,7 +299,7 @@ function MiniStat({ label, value, sub, color }: { label: string; value: string; 
 function ResultStat({ label, value, sub, color }: { label: string; value: string; sub?: string; color?: string }) {
   return (
     <div style={{ padding: "0.9rem", borderRadius: "10px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-      <div style={{ fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.35rem" }}>{label}</div>
+      <div style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.35rem" }}>{label}</div>
       <div style={{ fontSize: "1.3rem", fontWeight: 800, color: color || "var(--color-gray-100)", fontVariantNumeric: "tabular-nums" }}>{value}</div>
       {sub && <div style={{ fontSize: "0.72rem", color: "var(--color-gray-600)", marginTop: "0.15rem" }}>{sub}</div>}
     </div>

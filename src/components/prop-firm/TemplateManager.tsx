@@ -238,7 +238,7 @@ export function TemplateManager({
                       <div style={{
                         width: "40px", height: "40px", borderRadius: "8px", flexShrink: 0,
                         background: "var(--color-gray-800)", border: "1px dashed var(--color-gray-700)",
-                        display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-600)", fontSize: "0.65rem", textAlign: "center",
+                        display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-600)", fontSize: "0.7rem", textAlign: "center",
                       }}>No logo</div>
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -249,7 +249,7 @@ export function TemplateManager({
                         {t.drawdownType.replace(/_/g, " ")} {t.maxDDPct ? `· Max ${t.maxDDPct}%` : ""} {t.dailyDDPct ? `· Daily ${t.dailyDDPct}%` : ""}
                       </div>
                     </div>
-                    <span className={`badge ${t.isActive ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: "0.65rem" }}>
+                    <span className={`badge ${t.isActive ? 'badge-profit' : 'badge-loss'}`} style={{ fontSize: "0.7rem" }}>
                       {t.isActive ? "ACTIVE" : "HIDDEN"}
                     </span>
                     <button
@@ -336,7 +336,7 @@ export function TemplateManager({
                       <div style={{
                         width: "48px", height: "48px", borderRadius: "8px", flexShrink: 0,
                         background: "var(--color-gray-900)", border: "1px dashed var(--color-gray-700)",
-                        display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-600)", fontSize: "0.6rem", textAlign: "center",
+                        display: "flex", alignItems: "center", justifyContent: "center", color: "var(--color-gray-600)", fontSize: "0.7rem", textAlign: "center",
                       }}>No logo</div>
                     )}
                     <label style={{ flex: 1, cursor: "pointer" }}>

@@ -190,7 +190,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
                         </div>
                         <div style={{ flex: "0 0 90px", textAlign: "right", fontSize: "0.82rem", fontWeight: 600, color: isBest ? "var(--color-profit)" : isWorst ? "var(--color-loss)" : "var(--color-gray-200)", fontVariantNumeric: "tabular-nums" }}>
                           {display}
-                          {isBest && <span style={{ fontSize: "0.65rem", marginLeft: "0.3rem" }}>✓</span>}
+                          {isBest && <span style={{ fontSize: "0.7rem", marginLeft: "0.3rem" }}>✓</span>}
                         </div>
                       </div>
                     )
@@ -229,7 +229,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
                     </div>
                   </div>
                   <span style={{
-                    fontSize: "0.62rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
+                    fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em",
                     padding: "0.15rem 0.4rem", borderRadius: "5px",
                     background: "var(--color-gray-800)", color: STATUS_COLORS[c.status] || "var(--color-gray-400)",
                   }}>
@@ -239,7 +239,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
 
                 {/* Profit target progress */}
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-500)", marginBottom: "0.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.25rem" }}>
                     <span>Profit target</span>
                     <span style={{ color: c.targetProgressPct >= 100 ? "var(--color-profit)" : "var(--color-gray-300)" }}>
                       {c.currentProfitPct >= 0 ? "+" : ""}{c.currentProfitPct}%
@@ -256,7 +256,7 @@ export function ChallengeCompare({ challenges }: { challenges: CompareChallenge[
 
                 {/* Max drawdown */}
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--color-gray-500)", marginBottom: "0.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.25rem" }}>
                     <span>Max drawdown ({c.maxDDPct}%)</span>
                     <span style={{ color: c.ddUsedPct >= 80 ? "var(--color-loss)" : c.ddUsedPct >= 60 ? "var(--color-warning)" : "var(--color-gray-300)" }}>
                       {c.ddUsedPct.toFixed(1)}%

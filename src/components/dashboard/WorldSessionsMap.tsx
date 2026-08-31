@@ -134,7 +134,7 @@ function MapPin({ session, now, summer, isDark }: { session: Session; now: Date;
           <span style={{ fontSize: "0.7rem", fontWeight: 800, color: open ? session.color : (isDark ? "var(--color-gray-300)" : "var(--color-gray-700)"), textTransform: "uppercase", letterSpacing: "0.05em" }}>
             {SESSION_NAMES[session.id]}
           </span>
-          <span style={{ fontSize: "0.65rem", fontWeight: 700, color: open ? (isDark ? "#ffffff" : "#000000") : (isDark ? "var(--color-gray-400)" : "var(--color-gray-500)"), marginTop: -1 }}>
+          <span style={{ fontSize: "0.7rem", fontWeight: 700, color: open ? (isDark ? "#ffffff" : "#000000") : (isDark ? "var(--color-gray-400)" : "var(--color-gray-500)"), marginTop: -1 }}>
             {String(h.open).padStart(2, "0")}:00 - {String(h.close).padStart(2, "0")}:00
           </span>
         </div>
@@ -181,7 +181,7 @@ export function WorldSessionsMap() {
               Market Sessions
             </h3>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: "0.65rem", color: "var(--color-gray-400)", fontWeight: 600, letterSpacing: "0.05em" }}>CURRENT TIME (UTC)</span>
+              <span style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", fontWeight: 600, letterSpacing: "0.05em" }}>CURRENT TIME (UTC)</span>
               <span style={{ fontSize: "0.7rem", fontWeight: 700, color: "var(--color-gray-100)", background: "var(--color-gray-800)", padding: "1px 6px", borderRadius: 4 }}>
                 {currentUtcString}
               </span>

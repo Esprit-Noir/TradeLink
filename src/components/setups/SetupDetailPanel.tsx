@@ -197,7 +197,7 @@ function SetupDataView({ data }: { data: SetupDetail }) {
 function Stat({ label, value, sub, color, icon }: { label: string; value: string; sub?: string; color?: string; icon?: React.ReactNode }) {
   return (
     <div style={{ padding: "0.6rem 0.75rem", borderRadius: "8px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.65rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.2rem" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "0.3rem", fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, color: "var(--color-gray-500)", marginBottom: "0.2rem" }}>
         {icon}{label}
       </div>
       <div style={{ fontSize: "1rem", fontWeight: 700, color: color || "var(--color-gray-100)", whiteSpace: "nowrap" }}>{value}</div>

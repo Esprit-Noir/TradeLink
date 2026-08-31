@@ -160,7 +160,7 @@ export function PropBadges() {
                   </div>
                 ) : (
                   <div style={{
-                    marginTop: "1.25rem", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em",
+                    marginTop: "1.25rem", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.05em",
                     padding: "0.35rem 0.75rem", borderRadius: "6px",
                     color: "var(--color-gray-500)",
                     background: "var(--color-gray-800)",
@@ -217,7 +217,7 @@ export function PropBadges() {
                       </div>
                     </div>
                     <span style={{
-                      fontSize: "0.65rem", fontWeight: 800, padding: "0.3rem 0.6rem", borderRadius: "6px",
+                      fontSize: "0.7rem", fontWeight: 800, padding: "0.3rem 0.6rem", borderRadius: "6px",
                       color: "var(--color-brand-400)", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.2)", textTransform: "uppercase", letterSpacing: "0.05em"
                     }}>
                       {PHASE_LABEL[c.phase] || c.phase.replace("_", " ")}
@@ -257,11 +257,11 @@ export function PropBadges() {
                   {/* footer stats */}
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: "auto", paddingTop: "0.85rem", borderTop: "1px solid var(--color-gray-800)", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-gray-500)" }}>
                     <span style={{ display: "flex", flexDirection: "column" }}>
-                      <span style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-600)" }}>Balance</span>
+                      <span style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-600)" }}>Balance</span>
                       <span style={{ color: "var(--color-gray-300)", fontSize: "0.85rem", fontVariantNumeric: "tabular-nums" }}>${c.currentBalance.toLocaleString("en-US", { minimumFractionDigits: 0 })}</span>
                     </span>
                     <span style={{ display: "flex", flexDirection: "column", textAlign: "right" }}>
-                      <span style={{ fontSize: "0.6rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-600)" }}>Traded</span>
+                      <span style={{ fontSize: "0.7rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-600)" }}>Traded</span>
                       <span style={{ color: "var(--color-gray-300)", fontSize: "0.85rem", fontVariantNumeric: "tabular-nums" }}>{c.daysTraded} <span style={{ color: "var(--color-gray-600)", fontSize: "0.75rem" }}>/ {c.minTradingDays} days</span></span>
                     </span>
                   </div>
