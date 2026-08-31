@@ -135,13 +135,13 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
     if (tool !== "cursor") {
       chartRef.current?.applyOptions({ handleScroll: false, handleScale: false })
       draftPointsRef.current = []
-      drawingManagerRef.current?.setActiveTool(tool as any)
+      drawingManagerRef.current?.setActiveTool(tool)
     } else {
       chartRef.current?.applyOptions({
         handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true, vertTouchDrag: true },
         handleScale: { axisPressedMouseMove: true, mouseWheel: true, pinch: true }
       })
-      drawingManagerRef.current?.setActiveTool(null as any)
+      drawingManagerRef.current?.setActiveTool(null)
     }
   }
 
@@ -366,7 +366,7 @@ export const ReplayChart = forwardRef<ReplayChartRef, ReplayChartProps>(function
           if (drawing) {
             drawingManagerRef.current.addDrawing(drawing)
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error(err)
         }
         draftPointsRef.current = []

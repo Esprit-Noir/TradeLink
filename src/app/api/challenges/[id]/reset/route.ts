@@ -23,7 +23,7 @@ export async function POST(
     }
 
     // Initial phase based on the challenge structure
-    const metadata = (challenge.metadata as any) || {}
+    const metadata = (challenge.metadata as Record<string, unknown>) || {}
     const steps = String(metadata.steps || "2")
     const initialPhase = steps === "1" ? "funded" : "phase_1"
 
@@ -61,7 +61,7 @@ export async function POST(
     await evaluateChallenge(id)
 
     return NextResponse.json(updated)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error resetting challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to reset challenge" }, { status: 500 })
   }

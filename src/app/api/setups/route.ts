@@ -138,8 +138,8 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json(newSetup)
-  } catch (error: any) {
-    if (error.code === 'P2002') {
+  } catch (error: unknown) {
+    if ((error as { code?: string })?.code === 'P2002') {
       return NextResponse.json({ error: "A setup with this name already exists" }, { status: 400 })
     }
     console.error("Error creating setup", error instanceof Error ? error.message : "Unknown error")

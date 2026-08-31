@@ -3,7 +3,6 @@
 import { useTheme } from "@/components/ThemeProvider"
 import { Sun, Moon } from "lucide-react"
 import { useEffect, useState } from "react"
-import { toast } from "sonner"
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()

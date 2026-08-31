@@ -50,7 +50,7 @@ export function CreateAccountModal({
       setInitialBalance("10000")
       setBaseCurrency("USD")
       setFxRateToUsd("1")
-    } catch (error) {
+    } catch {
       toast.error("Error creating account")
     } finally {
       setIsSubmitting(false)

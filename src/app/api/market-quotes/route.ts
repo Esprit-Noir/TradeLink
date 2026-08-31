@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     const quotes = await provider.fetchQuotes(symbols)
     cache.set(key, { at: now, quotes })
     return NextResponse.json({ quotes })
-  } catch (error) {
+  } catch {
     const message = "Internal Server Error"
     console.error("Quotes error:", message)
     return NextResponse.json({ error: message }, { status: 500 })

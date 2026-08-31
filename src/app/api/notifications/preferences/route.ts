@@ -3,6 +3,14 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
+interface NotificationPrefs {
+  eventTypes?: Record<string, boolean>
+  defaults?: {
+    stopTradingPct?: number
+    profitGoalPct?: number
+  }
+}
+
 const notificationPrefsSchema = z.object({
   eventTypes: z.record(z.string(), z.boolean()).optional(),
   defaults: z.object({
@@ -40,7 +48,7 @@ export async function GET() {
       select: { notificationPrefs: true },
     })
 
-    const prefs = (user?.notificationPrefs as any) || {}
+    const prefs = (user?.notificationPrefs as unknown as NotificationPrefs | null) || {}
     return NextResponse.json({
       eventTypes: { ...DEFAULT_EVENT_TYPES, ...(prefs.eventTypes || {}) },
       defaults: { ...DEFAULT_PREFS.defaults, ...(prefs.defaults || {}) },
@@ -68,7 +76,7 @@ export async function PATCH(request: Request) {
       where: { id: session.user.id },
       select: { notificationPrefs: true },
     })
-    const prev = (existing?.notificationPrefs as any) || {}
+    const prev = (existing?.notificationPrefs as unknown as NotificationPrefs | null) || {}
 
     const merged = {
       eventTypes: { ...DEFAULT_EVENT_TYPES, ...(prev.eventTypes || {}), ...(parsed.data.eventTypes || {}) },

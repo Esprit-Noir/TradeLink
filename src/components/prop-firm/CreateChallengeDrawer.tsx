@@ -1,20 +1,50 @@
 import React, { useState, useEffect, useRef } from "react"
 import { toast } from "sonner"
 
+interface DrawerAccount {
+  id: string
+  name: string
+}
+
+interface DrawerTemplate {
+  id: string
+  firmName: string
+  logoUrl?: string | null
+  drawdownType: string
+  profitTargetPhase1Pct?: number | null
+  profitTargetPhase2Pct?: number | null
+  maxDDPct?: number | null
+  dailyDDPct?: number | null
+  minTradingDays?: number | null
+}
+
+interface DrawerChallenge {
+  id: string
+  account?: { name?: string } | null
+  initialBalance?: number | null
+  templateId?: string
+  profitTargetPct?: number | null
+  maxDDPct?: number | null
+  dailyDDPct?: number | null
+  minTradingDays?: number | null
+  cost?: number | null
+  metadata?: Record<string, unknown> | null
+  template?: { logoUrl?: string | null }
+}
+
 export function CreateChallengeDrawer({
   isOpen,
   onClose,
-  accounts,
   templates,
   challenge,
   onSubmit
 }: {
   isOpen: boolean
   onClose: () => void
-  accounts: any[]
-  templates: any[]
-  challenge?: any | null
-  onSubmit: (data: any) => Promise<void>
+  accounts: DrawerAccount[]
+  templates: DrawerTemplate[]
+  challenge?: DrawerChallenge | null
+  onSubmit: (data: Record<string, unknown>) => Promise<void>
 }) {
   const isEditing = Boolean(challenge)
 
@@ -49,15 +79,17 @@ export function CreateChallengeDrawer({
       setChallengeName(challenge.account?.name || "")
       setInitialBalance(String(challenge.initialBalance ?? ""))
       setSelectedTemplateId(challenge.templateId || "")
-      setProfitTargetPct(challenge.metadata?.phase1Target?.toString() ?? String(challenge.profitTargetPct ?? ""))
-      setPhase2Target(challenge.metadata?.phase2Target?.toString() ?? "")
-      setFundedTarget(challenge.metadata?.fundedTarget?.toString() ?? "")
+      const meta = challenge.metadata
+      const metaVal = (k: string) => (meta ? (meta[k] as number | string | undefined) : undefined)
+      setProfitTargetPct(metaVal("phase1Target")?.toString() ?? String(challenge.profitTargetPct ?? ""))
+      setPhase2Target(metaVal("phase2Target")?.toString() ?? "")
+      setFundedTarget(metaVal("fundedTarget")?.toString() ?? "")
       setMaxDDPct(String(challenge.maxDDPct ?? ""))
       setDailyDDPct(String(challenge.dailyDDPct ?? ""))
       setMinTradingDays(challenge.minTradingDays != null ? String(challenge.minTradingDays) : "0")
       setCost(challenge.cost != null ? String(challenge.cost) : "")
-      setSteps(challenge.metadata?.steps || "2")
-      setPayoutSplit(challenge.metadata?.payoutSplit || "")
+      setSteps(metaVal("steps")?.toString() || "2")
+      setPayoutSplit(metaVal("payoutSplit")?.toString() || "")
       setLogoUrl(challenge.template?.logoUrl || "")
       setLogoFile(null)
       logoTouched.current = false
@@ -115,7 +147,7 @@ export function CreateChallengeDrawer({
     try {
       const url = await uploadLogo(file)
       setLogoUrl(url)
-    } catch (err) {
+    } catch {
       toast.error("Failed to upload logo")
       setLogoFile(null)
     }
@@ -152,8 +184,8 @@ export function CreateChallengeDrawer({
         logoUrl
       })
       onClose()
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save challenge")
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed to save challenge")
     } finally {
       setIsSubmitting(false)
     }

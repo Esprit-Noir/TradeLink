@@ -3,11 +3,29 @@
 import { useState } from "react"
 import { Plus, Edit2, Trash2, Check, X } from "lucide-react"
 import { toast } from "sonner"
+import { Prisma } from "@prisma/client"
 import { PlanForm } from "./PlanForm"
 
-export function PlansManager({ initialPlans }: { initialPlans: any[] }) {
+type Plan = {
+  id: string
+  name: string
+  price: number | string
+  maxAccounts: number
+  maxTradesPerMonth: number | null
+  backtestAccess: boolean
+  isActive: boolean
+  features?: Prisma.JsonValue | null
+}
+
+function featureFlag(features: Prisma.JsonValue | null | undefined, key: string): boolean {
+  return typeof features === "object" && features !== null && !Array.isArray(features)
+    ? Boolean(Reflect.get(features, key))
+    : false
+}
+
+export function PlansManager({ initialPlans }: { initialPlans: Plan[] }) {
   const [plans, setPlans] = useState(initialPlans)
-  const [editingPlan, setEditingPlan] = useState<any | null>(null)
+  const [editingPlan, setEditingPlan] = useState<Plan | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
   const refreshPlans = async () => {
@@ -22,8 +40,8 @@ export function PlansManager({ initialPlans }: { initialPlans: any[] }) {
       if (!res.ok) throw new Error("Failed to delete")
       setPlans(plans.filter(p => p.id !== id))
       toast.success("Plan deleted")
-    } catch (e: any) {
-      toast.error(e.message)
+    } catch (e: unknown) {
+      toast.error((e as Error).message)
     }
   }
 
@@ -97,9 +115,9 @@ export function PlansManager({ initialPlans }: { initialPlans: any[] }) {
                 <td>
                   <div style={{ display: "flex", gap: "0.25rem", flexWrap: "wrap" }}>
                     {plan.backtestAccess && <span className="badge badge-brand">Backtest</span>}
-                    {plan.features?.replayAccess && <span className="badge badge-brand">Replay</span>}
-                    {plan.features?.propFirmAccess && <span className="badge badge-brand">PropFirm</span>}
-                    {plan.features?.advancedStats && <span className="badge badge-brand">Stats</span>}
+                    {featureFlag(plan.features, "replayAccess") && <span className="badge badge-brand">Replay</span>}
+                    {featureFlag(plan.features, "propFirmAccess") && <span className="badge badge-brand">PropFirm</span>}
+                    {featureFlag(plan.features, "advancedStats") && <span className="badge badge-brand">Stats</span>}
                   </div>
                 </td>
                 <td style={{ textAlign: "right" }}>

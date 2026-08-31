@@ -171,9 +171,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string
-      if (token.role) (session.user as unknown as Record<string, unknown>).role = token.role as string
-      if (token.status) (session.user as unknown as Record<string, unknown>).status = token.status as string
-      if (token.tokenVersion !== undefined) (session.user as unknown as Record<string, unknown>).tokenVersion = token.tokenVersion as number
+      if (token.role) session.user.role = token.role as string
+      if (token.status) session.user.status = token.status as string
+      if (token.tokenVersion !== undefined) session.user.tokenVersion = token.tokenVersion as number
       return session
     },
   },

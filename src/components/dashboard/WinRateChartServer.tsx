@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import type { Prisma } from "@prisma/client"
 import { WinRateDonut } from "./LazyCharts"
 import { resolveAccountScope } from "@/lib/active-account"
 
@@ -17,7 +18,7 @@ export async function WinRateChartServer({
 
   if (scope.accounts.length === 0) return <WinRateDonut wins={0} losses={0} />
 
-  const whereClause: any = scope.all
+  const whereClause: Prisma.TradeWhereInput = scope.all
     ? { userId: session.user.id, status: "closed" }
     : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {

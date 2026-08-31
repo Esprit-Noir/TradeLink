@@ -3,7 +3,14 @@
 import { useState } from "react"
 import { toast } from "sonner"
 
-export function AlertSettings({ challengeId, initialConfig }: { challengeId: string; initialConfig: any }) {
+interface AlertConfig {
+  stopTradingPct?: number
+  profitGoalPct?: number
+  enableStopTrading?: boolean
+  enableProfitGoal?: boolean
+}
+
+export function AlertSettings({ challengeId, initialConfig }: { challengeId: string; initialConfig?: AlertConfig | null }) {
   const [config, setConfig] = useState(() => ({
     stopTradingPct: Number(initialConfig?.stopTradingPct ?? 85),
     profitGoalPct: Number(initialConfig?.profitGoalPct ?? 50),

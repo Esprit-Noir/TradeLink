@@ -6,8 +6,18 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 
 const COLORS = ['#C29B3F', '#359B8B', '#4B83E0', '#D4638D', '#9B72E5', '#E57272', '#72E5A1']
 
-const renderCustomizedLabel = (props: any) => {
-  const { cx, cy, midAngle, outerRadius, fill, payload, percent } = props
+type PieLabelData = {
+  cx: number
+  cy: number
+  midAngle: number
+  outerRadius: number
+  fill: string
+  percent: number
+  payload: { name?: string; pnl?: number }
+}
+
+const renderCustomizedLabel = (props: unknown) => {
+  const { cx, cy, midAngle, outerRadius, fill, payload, percent } = props as PieLabelData
   const RADIAN = Math.PI / 180
   
   const sin = Math.sin(-RADIAN * midAngle)
@@ -112,7 +122,7 @@ export function SetupBarChart() {
                   boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                 }}
                 itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
-                formatter={(value: any, name: any, props: any) => {
+                formatter={(value, name, props) => {
                   const { count, winRate, pnl } = props.payload
                   return [`$${Number(pnl).toFixed(2)}`, `${count} trades · ${winRate}% WR`]
                 }}

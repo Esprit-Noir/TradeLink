@@ -29,7 +29,7 @@ export async function POST(
       return NextResponse.json({ error: "Challenge cannot be upgraded" }, { status: 400 })
     }
 
-    const metadata = challenge.metadata as any || {}
+    const metadata = (challenge.metadata as Record<string, unknown>) || {}
     const steps = metadata.steps || '1'
 
     const phase2Target = metadata.phase2Target ? Number(metadata.phase2Target) : 5
@@ -93,7 +93,7 @@ export async function POST(
 
     return NextResponse.json(fundedChallenge)
 
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error upgrading challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }

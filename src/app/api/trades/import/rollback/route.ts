@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       deleted: result.count,
       challengeStatus,
     })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

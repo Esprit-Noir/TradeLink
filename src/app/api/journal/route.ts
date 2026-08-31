@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
@@ -12,7 +13,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const month = searchParams.get("month") // Optional YYYY-MM
     
-    const whereClause: any = { userId: session.user.id }
+    const whereClause: Prisma.DailyJournalWhereInput = { userId: session.user.id }
     if (month) {
       whereClause.date = { startsWith: month }
     }

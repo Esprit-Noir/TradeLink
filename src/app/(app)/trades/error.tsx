@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, RefreshCw, ArrowLeft, List } from "lucide-react"
+import { RefreshCw, ArrowLeft, List } from "lucide-react"
 
 export default function TradesError({
   error,

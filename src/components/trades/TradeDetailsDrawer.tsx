@@ -24,11 +24,13 @@ type Trade = {
   setupTags: string[]
   emotionTags: string[]
   notesPost: string | null
-  screenshots: { id: string; storageUrl: string; fileName: string | null }[]
+  screenshots: Screenshot[]
   instrumentType: string
 }
 
 type Setup = { id: string; name: string; isDefault: boolean }
+
+type Screenshot = { id: string; storageUrl: string; fileName: string | null }
 
 export function TradeDetailsDrawer() {
   const router = useRouter()
@@ -82,7 +84,7 @@ export function TradeDetailsDrawer() {
   }, [tradeId])
 
   const closeDrawer = () => {
-    const params = new URLSearchParams(searchParams as any)
+    const params = new URLSearchParams(searchParams ?? undefined)
     params.delete("tradeId")
     router.push(`?${params.toString()}`)
   }
@@ -127,9 +129,10 @@ export function TradeDetailsDrawer() {
       } else if (blob.error) {
         throw new Error(blob.error)
       }
-    } catch (err: any) {
-      setUploadError(err.message || "Failed to upload image")
-      toast.error(`Upload failed: ${err.message || "Unknown error"}`)
+    } catch (err) {
+      const msg = (err as { message?: string })?.message || "Failed to upload image"
+      setUploadError(msg)
+      toast.error(`Upload failed: ${msg}`)
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -145,8 +148,8 @@ export function TradeDetailsDrawer() {
       toast.success("Trade deleted")
       closeDrawer()
       router.refresh()
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete trade")
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed to delete trade")
     }
   }
 
@@ -173,7 +176,7 @@ export function TradeDetailsDrawer() {
       setTrade({ ...updatedTrade, screenshots: trade?.screenshots || [] })
       setEditMode(false)
       router.refresh()
-    } catch (error) {
+    } catch {
       toast.error("Failed to save changes. Please try again.")
     } finally {
       setSaving(false)
@@ -430,7 +433,7 @@ export function TradeDetailsDrawer() {
 
                 {trade.screenshots?.length > 0 ? (
                   <div className="grid grid-cols-2 gap-4">
-                    {trade.screenshots.map((s: any) => (
+                    {trade.screenshots.map((s: Screenshot) => (
                       <a key={s.id} href={s.storageUrl} target="_blank" rel="noopener noreferrer" className="block rounded-lg overflow-hidden border border-[var(--color-gray-800)]">
                         {/* Using standard img tag because next/image requires host config for external URLs */}
                         <img src={s.storageUrl} alt="Screenshot" className="w-full h-[120px] object-cover block" />

@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
+import { requireAdminApi } from "@/lib/admin-auth"
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth()
-    if (!session || !session.user || ((session.user as any).role !== "ADMIN" && (session.user as any).role !== "SUPER_ADMIN")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const authResult = await requireAdminApi()
+    if (authResult instanceof NextResponse) return authResult
 
     const { id } = await params
     const json = await req.json()
@@ -27,24 +25,22 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     return NextResponse.json(plan)
-  } catch (error: any) {
-    console.error("Update Plan Error:", error)
+  } catch (error) {
+    console.error("Update Plan Error:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to update plan" }, { status: 500 })
   }
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await auth()
-    if (!session || !session.user || ((session.user as any).role !== "ADMIN" && (session.user as any).role !== "SUPER_ADMIN")) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+    const authResult = await requireAdminApi()
+    if (authResult instanceof NextResponse) return authResult
 
     const { id } = await params
     await prisma.plan.delete({ where: { id } })
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error("Delete Plan Error:", error)
+  } catch (error) {
+    console.error("Delete Plan Error:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to delete plan" }, { status: 500 })
   }
 }

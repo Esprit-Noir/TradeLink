@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState, useMemo } from "react"
-import { AlertCircle, CalendarClock, TrendingUp, TrendingDown, Minus, Filter } from "lucide-react"
+import { CalendarClock } from "lucide-react"
 
 type EcoEvent = {
   title: string

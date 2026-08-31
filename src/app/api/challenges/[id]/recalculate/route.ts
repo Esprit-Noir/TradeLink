@@ -30,7 +30,7 @@ export async function POST(
     revalidatePath(`/challenges`)
 
     return NextResponse.json(updatedChallenge)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error recalculating challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to recalculate" }, { status: 500 })
   }

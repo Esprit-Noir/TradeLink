@@ -50,8 +50,8 @@ export function CreateSetupModal({ onCreated }: CreateSetupModalProps) {
       setName("")
       setDescription("")
       setSelectedTemplate(null)
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed to create setup")
     } finally {
       setLoading(false)
     }

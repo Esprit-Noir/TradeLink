@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, RefreshCw, ArrowLeft, LayoutDashboard } from "lucide-react"
+import { RefreshCw, ArrowLeft, LayoutDashboard } from "lucide-react"
 
 export default function OverviewError({
   error,

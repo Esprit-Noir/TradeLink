@@ -77,8 +77,8 @@ export function BacktestRunner({ templates, accounts }: { templates: Template[];
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Backtest failed")
       setResult(data)
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Backtest failed")
     } finally {
       setLoading(false)
     }
@@ -419,7 +419,7 @@ function Simulator({ templates }: { templates: Template[] }) {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} />
                 <XAxis dataKey="day" tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} interval={Math.max(1, Math.floor(chartData.length / 15))} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} tickFormatter={(v: any) => `${v}%`} />
+                <YAxis tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} tickFormatter={(v: number) => `${v}%`} />
                 <Tooltip
                   contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "8px", fontSize: "0.8rem" }}
                    formatter={(val, name) => [`${Number(val).toFixed(1)}%`, name === "median" ? "Median" : name === "low" ? "P10 (worst)" : "P90 (best)"]}

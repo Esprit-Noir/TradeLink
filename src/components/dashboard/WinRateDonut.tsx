@@ -3,8 +3,18 @@
 import React, { useMemo } from "react"
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts"
 
-const renderCustomizedLabel = (props: any) => {
-  const { cx, cy, midAngle, outerRadius, fill, payload, percent } = props
+type PieLabelData = {
+  cx: number
+  cy: number
+  midAngle: number
+  outerRadius: number
+  fill: string
+  percent: number
+  payload: { name?: string }
+}
+
+const renderCustomizedLabel = (props: unknown) => {
+  const { cx, cy, midAngle, outerRadius, fill, payload, percent } = props as PieLabelData
   const RADIAN = Math.PI / 180
   
   const sin = Math.sin(-RADIAN * midAngle)

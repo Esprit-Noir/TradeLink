@@ -1,6 +1,5 @@
 "use client"
 
-import { Sidebar } from "./Sidebar"
 import { PageTransition } from "./PageTransition"
 
 /**

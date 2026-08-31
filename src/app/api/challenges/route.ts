@@ -81,8 +81,8 @@ export async function POST(request: NextRequest) {
       where: { id: session.user.id },
       select: { notificationPrefs: true },
     })
-    const prefs = (user?.notificationPrefs as any) || {}
-    const alertDefaults = (prefs.defaults as any) || {}
+    const prefs = (user?.notificationPrefs as Record<string, unknown>) || {}
+    const alertDefaults = (prefs.defaults as Record<string, unknown> | undefined) || {}
     const alertConfig = {
       stopTradingPct: Number(alertDefaults.stopTradingPct ?? 85),
       profitGoalPct: Number(alertDefaults.profitGoalPct ?? 50),
@@ -127,13 +127,13 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(challenge)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error creating challenge:", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Failed to create challenge" }, { status: 500 })
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json(challenges)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch challenges" }, { status: 500 })
   }
 }

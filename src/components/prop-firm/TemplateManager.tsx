@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
 import { toast } from "sonner"
 
 const DRAWDOWN_TYPES = ["static_balance", "trailing_balance", "trailing_equity"]
@@ -152,8 +152,8 @@ export function TemplateManager({
       const list = await fetch("/api/templates")
       const data = await list.json()
       onTemplatesChange(data)
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save template")
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed to save template")
     } finally {
       setSaving(false)
     }
@@ -171,8 +171,8 @@ export function TemplateManager({
       const list = await fetch("/api/templates")
       const data = await list.json()
       onTemplatesChange(data)
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete template")
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed to delete template")
     } finally {
       setDeleting(null)
     }

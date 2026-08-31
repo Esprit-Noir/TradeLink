@@ -46,7 +46,7 @@ export function formatDateWithTimezone(date: Date | string | number, timezone: s
 
   try {
     return new Intl.DateTimeFormat("en-US", options).format(new Date(date))
-  } catch (e) {
+  } catch {
     // Fallback if timezone is invalid
     return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(new Date(date))
   }

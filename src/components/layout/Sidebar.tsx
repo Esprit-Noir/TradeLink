@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
 
-import { ThemeToggle } from "@/components/ThemeToggle"
 import { AccountSwitcher } from "@/components/layout/AccountSwitcher"
 import { useTranslations } from "next-intl"
 import {
@@ -27,7 +26,6 @@ import {
   HandCoins,
   FileText,
   Bell,
-  Menu,
   X,
   Eye,
   PanelLeftClose,
@@ -35,16 +33,6 @@ import {
   Calculator,
   Trophy,
 } from "lucide-react"
-
-type SidebarStats = {
-  todayPnl: number
-  todayTrades: number
-  challengeStatus: "safe" | "warning" | "danger" | null
-  challengeName: string | null
-  challengePct: number
-  features: Record<string, boolean>
-  backtestAccess: boolean
-}
 
 const iconProps = { size: 18, strokeWidth: 1.75, style: { opacity: 0.9, flexShrink: 0 } }
 
@@ -56,11 +44,16 @@ interface SidebarProps {
   initialBacktestAccess?: boolean
 }
 
+interface SidebarStats {
+  features: Record<string, boolean>
+  backtestAccess: boolean
+}
+
 export function Sidebar({ open, onClose, asDrawer = false, initialFeatures = {}, initialBacktestAccess = false }: SidebarProps) {
   const pathname = usePathname()
   
   // Initialize stats with server-provided defaults for instant rendering
-  const [stats, setStats] = useState<any>({
+  const [stats, setStats] = useState<SidebarStats>({
     features: initialFeatures,
     backtestAccess: initialBacktestAccess,
   })
@@ -115,7 +108,7 @@ export function Sidebar({ open, onClose, asDrawer = false, initialFeatures = {},
   useEffect(() => {
     fetch("/api/sidebar-stats")
       .then(r => r.json())
-      .then(d => setStats((prev: any) => ({ ...prev, ...d })))
+      .then(d => setStats((prev: SidebarStats) => ({ ...prev, ...(d as Partial<SidebarStats>) })))
       .catch(() => {})
   }, [pathname])
 

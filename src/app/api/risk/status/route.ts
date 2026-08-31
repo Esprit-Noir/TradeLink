@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { resolveAccountScope } from "@/lib/active-account"
 
 export async function GET(request: Request) {
@@ -21,13 +22,18 @@ export async function GET(request: Request) {
       resolveAccountScope(session.user.id, accountId),
     ])
 
-    const prefs = (user?.riskPrefs as any) || {}
+    const prefs = (user?.riskPrefs as {
+      dailyLossLimit?: number | null
+      maxTradesPerDay?: number | null
+      maxConsecutiveLosses?: number | null
+      maxRiskPerTradePct?: number | null
+    }) || {}
 
     // Today's realized stats
     const dayStart = new Date()
     dayStart.setHours(0, 0, 0, 0)
 
-    const whereClause: any = scope.all
+    const whereClause: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id, status: "closed", exitAt: { gte: dayStart } }
       : { accountId: scope.accounts[0]?.id, status: "closed", exitAt: { gte: dayStart } }
 
@@ -109,7 +115,7 @@ export async function GET(request: Request) {
       baseCurrency: scope.currency,
       alerts,
     })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

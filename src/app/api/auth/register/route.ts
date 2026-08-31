@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     const passwordHash = await bcrypt.hash(password, 10)
 
     // Create user and a default trading account in a transaction
-    const user = await prisma.$transaction(async (tx: any) => {
+    const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
           name,
@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     }).catch(console.error)
 
     return NextResponse.json({ id: user.id, email: user.email, name: user.name })
-  } catch (error: unknown) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

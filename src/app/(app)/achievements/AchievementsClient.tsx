@@ -346,13 +346,13 @@ export function AchievementsClient() {
       try {
         const res = await fetch("/api/achievements")
         if (!res.ok) throw new Error("Failed to fetch")
-        const json = await res.json()
+        const json: AchievementsData = await res.json()
         setData(json)
         
         if (json.newlyUnlocked && json.newlyUnlocked.length > 0) {
           json.newlyUnlocked.forEach((code: string) => {
             for (const group of json.groups) {
-              const ach = group.achievements.find((a: any) => a.code === code)
+              const ach = group.achievements.find(a => a.code === code)
               if (ach) {
                 toast.success(`Achievement Unlocked: ${ach.name}! 🏆`, {
                   description: ach.description,

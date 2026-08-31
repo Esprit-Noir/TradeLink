@@ -2,8 +2,26 @@
 
 import { useState } from "react"
 import { toast } from "sonner"
+import { Prisma } from "@prisma/client"
 
-export function PlanForm({ plan, onClose, onSave }: { plan?: any, onClose: () => void, onSave: (p: any) => void }) {
+type Plan = {
+  id: string
+  name: string
+  price: number | string
+  maxAccounts: number
+  maxTradesPerMonth: number | null
+  backtestAccess: boolean
+  isActive: boolean
+  features?: Prisma.JsonValue | null
+}
+
+function featureFlag(features: Prisma.JsonValue | null | undefined, key: string): boolean {
+  return typeof features === "object" && features !== null && !Array.isArray(features)
+    ? Boolean(Reflect.get(features, key))
+    : false
+}
+
+export function PlanForm({ plan, onClose, onSave }: { plan?: Plan | null, onClose: () => void, onSave: (p: Plan) => void }) {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     name: plan?.name || "",
@@ -13,9 +31,9 @@ export function PlanForm({ plan, onClose, onSave }: { plan?: any, onClose: () =>
     backtestAccess: plan?.backtestAccess || false,
     isActive: plan?.isActive ?? true,
     features: {
-      replayAccess: plan?.features?.replayAccess || false,
-      propFirmAccess: plan?.features?.propFirmAccess || false,
-      advancedStats: plan?.features?.advancedStats || false,
+      replayAccess: featureFlag(plan?.features, "replayAccess"),
+      propFirmAccess: featureFlag(plan?.features, "propFirmAccess"),
+      advancedStats: featureFlag(plan?.features, "advancedStats"),
     }
   })
 
@@ -41,8 +59,8 @@ export function PlanForm({ plan, onClose, onSave }: { plan?: any, onClose: () =>
       const saved = await res.json()
       toast.success(plan ? "Plan updated" : "Plan created")
       onSave(saved)
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     } finally {
       setLoading(false)
     }

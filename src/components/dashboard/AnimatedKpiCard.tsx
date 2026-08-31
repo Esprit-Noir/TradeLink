@@ -25,10 +25,9 @@ export function AnimatedKpiCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       whileHover={{ y: -2 }}
-      className="relative overflow-hidden flex flex-col justify-center"
+      className="relative overflow-hidden flex flex-col justify-center kpi-card"
       style={{
         padding: "1.25rem",
-        flex: "1 1 180px",
         gap: "0.35rem",
         borderRadius: "12px",
         background: "var(--color-gray-900)",

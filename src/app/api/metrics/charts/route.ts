@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
+import type { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveAccountScope } from "@/lib/active-account"
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
     })
     const timezone = user?.timezone ?? "UTC"
 
-    const whereClause: any = scope.all
+    const whereClause: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id, status: "closed" }
       : { accountId: scope.accounts[0].id, status: "closed" }
 
@@ -70,9 +71,10 @@ export async function GET(request: Request) {
     if (toDate) toDate.setHours(23, 59, 59, 999)
 
     if (fromDate || toDate) {
-      whereClause.entryAt = {}
-      if (fromDate) whereClause.entryAt.gte = fromDate
-      if (toDate) whereClause.entryAt.lte = toDate
+      whereClause.entryAt = {
+        ...(fromDate ? { gte: fromDate } : {}),
+        ...(toDate ? { lte: toDate } : {}),
+      }
     }
 
     const trades = await prisma.trade.findMany({
@@ -101,13 +103,13 @@ export async function GET(request: Request) {
       }
     }
 
-    trades.forEach((t: any) => {
+    trades.forEach((t) => {
       const pnl = Number(t.netPnl)
       const isWin = pnl > 0
       
       // Setups
       if (t.setupTags && t.setupTags.length > 0) {
-        t.setupTags.forEach((tag: any) => {
+        t.setupTags.forEach((tag) => {
           if (!setupMap[tag]) setupMap[tag] = { pnl: 0, count: 0, wins: 0 }
           setupMap[tag].pnl += pnl
           setupMap[tag].count++

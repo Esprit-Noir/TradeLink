@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 import { computeMetrics, computeEquityCurve, computeDailyPnL, computePnLByTag } from "@/lib/metrics"
 
 export async function GET(
@@ -36,7 +37,7 @@ export async function GET(
     })
     const timezone = user?.timezone || "UTC"
 
-    const where: any = { accountId: account.id }
+    const where: Prisma.TradeWhereInput = { accountId: account.id }
     const trades = await prisma.trade.findMany({
       where,
       orderBy: { entryAt: "desc" },

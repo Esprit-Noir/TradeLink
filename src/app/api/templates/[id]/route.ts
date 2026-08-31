@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { z } from "zod"
 
 interface AdminSession {
@@ -25,9 +26,9 @@ const updateTemplateSchema = z.object({
   isActive: z.boolean().optional(),
 })
 
-function parseOptionalNumber(value: any): number | null {
+function parseOptionalNumber(value: string | number | null | undefined): number | null {
   if (value === undefined || value === null || value === "") return null
-  const n = parseFloat(value)
+  const n = parseFloat(String(value))
   return isNaN(n) ? null : n
 }
 
@@ -56,7 +57,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Template not found" }, { status: 404 })
     }
 
-    const data: any = {}
+    const data: Prisma.PropFirmTemplateUpdateInput = {}
     if (parsed.data.firmName !== undefined) data.firmName = parsed.data.firmName
     if (parsed.data.programName !== undefined) data.programName = parsed.data.programName
     if (parsed.data.drawdownType !== undefined) data.drawdownType = parsed.data.drawdownType

@@ -12,13 +12,75 @@ import { formatCurrency } from "@/lib/formatters"
 import { toast } from "sonner"
 import { EquityCurveChart } from "@/components/dashboard/EquityCurveChart"
 
+type AccountInfo = {
+  id: string
+  name: string
+  initialBalance: number
+  fxRateToUsd: number | null
+  baseCurrency: string | null
+  isDefault: boolean
+  broker: string | null
+  createdAt: string
+}
+
+type StatsInfo = {
+  currentEquity: number
+  netPnl: number
+  returnPct: number
+  maxDrawdownPct: number
+  maxDrawdown: number
+  winRate: number
+  profitFactor: number
+  avgRR: number
+  expectancy: number
+  totalTrades: number
+}
+
+type ChallengeInfo = {
+  id: string
+  firmName: string
+  status: string
+  logoUrl: string | null
+  phase: string
+  currentEquity: number
+}
+
+type DailyPoint = { date: string; pnl: number }
+type SymbolStat = { symbol: string; count: number; wins: number; pnl: number }
+type SetupStat = { tag: string; count: number; winRate: number; pnl: number }
+type RecentTrade = {
+  id: string
+  symbol: string
+  side: string
+  exitAt: string | null
+  rMultiple: number | null
+  setupTags: string[] | null
+  netPnl: number
+}
+
+type DetailData = {
+  account: AccountInfo
+  challenge: ChallengeInfo | null
+  stats: StatsInfo
+  equityCurve: { date: string; equity: number; drawdown: number }[]
+  daily: DailyPoint[]
+  symbols: SymbolStat[]
+  setups: SetupStat[]
+  recentTrades: RecentTrade[]
+}
+
 export function AccountDetail({ accountId }: { accountId: string }) {
   const router = useRouter()
-  const [data, setData] = useState<any>(null)
+  const [data, setData] = useState<DetailData | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [editing, setEditing] = useState(false)
-  const [editForm, setEditForm] = useState<any>(null)
+  const [editForm, setEditForm] = useState<{
+    name: string
+    initialBalance: string
+    fxRateToUsd: string
+    isDefault: boolean
+  } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -57,15 +119,17 @@ export function AccountDetail({ accountId }: { accountId: string }) {
 
   const saveEdit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const form = editForm
+    if (!form) return
     try {
       const res = await fetch(`/api/accounts/${accountId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: editForm.name,
-          initialBalance: editForm.initialBalance,
-          fxRateToUsd: editForm.fxRateToUsd,
-          isDefault: editForm.isDefault,
+          name: form.name,
+          initialBalance: form.initialBalance,
+          fxRateToUsd: form.fxRateToUsd,
+          isDefault: form.isDefault,
         }),
       })
       if (!res.ok) throw new Error("Failed to update")
@@ -205,7 +269,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
               <Tooltip contentStyle={{ background: "var(--color-gray-800)", border: "1px solid var(--color-gray-700)", borderRadius: 8, fontSize: 12, color: "var(--color-gray-200)" }} />
               <ReferenceLine y={0} stroke="var(--color-gray-600)" />
               <Bar dataKey="pnl" radius={[3, 3, 0, 0]}>
-                {daily.map((d: any, i: number) => (
+                {daily.map((d: DailyPoint, i: number) => (
                   <Cell key={i} fill={d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                 ))}
               </Bar>
@@ -222,7 +286,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
             <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No trades yet.</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-              {symbols.slice(0, 10).map((s: any) => (
+              {symbols.slice(0, 10).map((s: SymbolStat) => (
                 <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem" }}>
                   <span style={{ color: "var(--color-gray-300)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {s.symbol}
@@ -242,7 +306,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
             <div style={{ color: "var(--color-gray-500)", fontSize: "0.85rem" }}>No setups yet.</div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.55rem" }}>
-              {setups.slice(0, 10).map((s: any) => (
+              {setups.slice(0, 10).map((s: SetupStat) => (
                 <div key={s.tag} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.5rem", fontSize: "0.85rem" }}>
                   <span style={{ color: "var(--color-gray-300)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                     {s.tag}
@@ -277,7 +341,7 @@ export function AccountDetail({ accountId }: { accountId: string }) {
                 </tr>
               </thead>
               <tbody>
-                {recentTrades.map((t: any) => (
+                {recentTrades.map((t: RecentTrade) => (
                   <tr key={t.id}>
                     <td style={{ fontWeight: 600 }}>{t.symbol}</td>
                     <td>

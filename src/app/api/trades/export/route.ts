@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveAccountScope } from "@/lib/active-account"
+import { Prisma } from "@prisma/client"
 
 const HEADERS = [
   "entryAt", "exitAt", "symbol", "instrumentType", "side", "quantity",
@@ -9,7 +10,7 @@ const HEADERS = [
   "grossPnl", "netPnl", "netPnlUsd", "setupTags", "emotionTags", "status",
 ]
 
-function escapeCsv(value: any): string {
+function escapeCsv(value: unknown): string {
   const str = value === null || value === undefined ? "" : String(value)
   if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`
   return str
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
       return new Response("")
     }
 
-    const whereClause: any = scope.all
+    const whereClause: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id }
       : { accountId: scope.accounts[0].id }
 
@@ -57,8 +58,8 @@ export async function GET(request: Request) {
       else if (date === "this_month") whereClause.entryAt = { gte: new Date(now.getFullYear(), now.getMonth(), 1) }
     }
 
-    const orderBy: any = {}
-    if (sort && sort in HEADERS) orderBy[sort] = "asc"
+    const orderBy: Prisma.TradeOrderByWithRelationInput = {}
+    if (sort && sort in HEADERS) orderBy[sort as keyof Prisma.TradeOrderByWithRelationInput] = "asc"
     else orderBy.entryAt = "desc"
 
     const format = url.searchParams.get("format")

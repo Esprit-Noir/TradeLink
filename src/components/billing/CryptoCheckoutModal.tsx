@@ -4,7 +4,9 @@ import { useState } from "react"
 import { toast } from "sonner"
 import { X, Copy, CheckCircle2 } from "lucide-react"
 
-export function CryptoCheckoutModal({ plan, onClose }: { plan: any, onClose: () => void }) {
+type Plan = { id: string; name: string; price: number | string }
+
+export function CryptoCheckoutModal({ plan, onClose }: { plan: Plan, onClose: () => void }) {
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [step, setStep] = useState<"pay" | "confirm" | "success">("pay")
@@ -38,8 +40,8 @@ export function CryptoCheckoutModal({ plan, onClose }: { plan: any, onClose: () 
       if (!res.ok) throw new Error("Failed to submit subscription request")
       
       setStep("success")
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err: unknown) {
+      toast.error((err as Error).message)
     } finally {
       setLoading(false)
     }

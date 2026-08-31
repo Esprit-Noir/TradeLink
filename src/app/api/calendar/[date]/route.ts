@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveAccountScope } from "@/lib/active-account"
 import { dayKey } from "@/lib/dates"
+import type { Prisma } from "@prisma/client"
 
 export async function GET(req: Request, { params }: { params: Promise<{ date: string }> }) {
   try {
@@ -25,7 +26,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ date: st
     ])
     const timezone = user?.timezone ?? "UTC"
 
-    const whereClause: any = scope.all
+    const whereClause: Prisma.TradeWhereInput | null = scope.all
       ? { userId: session.user.id, status: "closed" }
       : scope.accounts.length > 0
         ? { accountId: scope.accounts[0].id, status: "closed" }
@@ -97,7 +98,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ date: st
         dailyPnl: Number(s.dailyPnl),
       })),
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error("[CALENDAR_DAY]", error instanceof Error ? error.message : "Unknown error")
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }

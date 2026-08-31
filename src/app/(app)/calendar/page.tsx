@@ -7,6 +7,7 @@ import { CalendarFilter } from "@/components/calendar/CalendarFilter"
 import { EconomicCalendarWidget } from "@/components/calendar/EconomicCalendarWidget"
 import { resolveAccountScope } from "@/lib/active-account"
 import { dayKey } from "@/lib/dates"
+import type { Prisma } from "@prisma/client"
 
 export const metadata = {
   title: "P&L Calendar",
@@ -38,7 +39,7 @@ export default async function CalendarPage({
       ? (scope.accounts[0]?.id ?? null)
       : null
 
-  let trades: any[] = []
+  let trades: Prisma.TradeGetPayload<{ select: { exitAt: true; netPnl: true } }>[] = []
   if (scope.all) {
     trades = await prisma.trade.findMany({
       where: { userId: session.user.id, status: "closed" },

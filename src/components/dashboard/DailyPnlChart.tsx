@@ -72,7 +72,7 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
             boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
           }}
           itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
-          formatter={(value: any) => [formatCurrency(Number(value)), "P&L"]}
+          formatter={(value: unknown) => [formatCurrency(Number(value)), "P&L"]}
           labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.5rem", fontWeight: 500, fontSize: "0.8rem" }}
         />
         <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>

@@ -33,7 +33,7 @@ async function AppLayoutLoader({ children }: { children: React.ReactNode }) {
   }
 
   const plan = await getActivePlan(session.user.id)
-  const userRole = (session.user as any).role
+  const userRole = session.user.role
   const isAdmin = userRole === "ADMIN" || userRole === "SUPER_ADMIN"
 
   const baseFeatures = plan?.features as Record<string, boolean> | undefined || {}

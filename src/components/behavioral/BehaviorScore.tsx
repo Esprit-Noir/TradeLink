@@ -5,8 +5,8 @@
 import { useEffect, useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { motion } from "framer-motion"
-import { AlertTriangle, Brain } from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts"
+import { Brain } from "lucide-react"
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
 import type { BehavioralResult, DetectedPattern } from "@/lib/behavioral"
 
@@ -16,9 +16,12 @@ const RANGES = [
   { key: "30d", label: "30 days" },
 ]
 
+type HistoryPoint = { disciplineScore: number; computedAt: string }
+type RecentFlag = { id: string; symbol: string; side: string; netPnl: number; entryAt: string; type: string; label: string; color: string }
+
 export function BehaviorScore() {
   const t = useTranslations("behavioral")
-  const [data, setData] = useState<(BehavioralResult & { history?: any[]; range?: string; recentFlags?: any[] }) | null>(null)
+  const [data, setData] = useState<(BehavioralResult & { history?: HistoryPoint[]; range?: string; recentFlags?: RecentFlag[] }) | null>(null)
   const [loading, setLoading] = useState(true)
   const [range, setRange] = useState("all")
 
@@ -148,7 +151,7 @@ export function BehaviorScore() {
               <LineChart data={history}>
                 <XAxis dataKey="computedAt" tickFormatter={(d) => new Date(d).toLocaleDateString()} tick={{ fontSize: 12, fill: "var(--color-gray-500)" }} tickLine={false} axisLine={false} minTickGap={20} />
                 <YAxis domain={[0, 100]} tick={{ fontSize: 12, fill: "var(--color-gray-500)" }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "var(--radius-sm)", fontSize: 12 }} labelFormatter={(l: any) => new Date(l).toLocaleString()} />
+                <Tooltip contentStyle={{ background: "var(--color-gray-900)", border: "1px solid var(--color-gray-700)", borderRadius: "var(--radius-sm)", fontSize: 12 }} labelFormatter={(l: unknown) => new Date(l as string).toLocaleString()} />
                 <Line type="monotone" dataKey="disciplineScore" stroke="var(--color-brand-500)" strokeWidth={3} dot={{ r: 4, fill: "var(--color-brand-500)", stroke: "var(--color-gray-900)" }} activeDot={{ r: 6 }} />
               </LineChart>
             </ResponsiveContainer>

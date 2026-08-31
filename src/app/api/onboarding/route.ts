@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json({ success: true, user: updatedUser })
-  } catch (error: any) {
+  } catch (error) {
     console.error("Onboarding failed:", error)
     return NextResponse.json({ error: "Onboarding failed" }, { status: 500 })
   }

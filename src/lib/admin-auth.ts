@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { Prisma } from "@prisma/client"
 import { redirect } from "next/navigation"
 import { NextResponse } from "next/server"
 
@@ -113,7 +114,7 @@ export async function logAdminAction(params: {
       targetUserId: params.targetUserId || null,
       action: params.action,
       reason: params.reason || null,
-      metadata: (params.metadata as any) || undefined,
+      metadata: (params.metadata as Prisma.InputJsonValue) ?? undefined,
     },
   })
 }

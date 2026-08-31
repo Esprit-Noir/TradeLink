@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback } from "react"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
-  LineChart, Line, ReferenceLine, ComposedChart, PieChart, Pie, Area
+  ReferenceLine, ComposedChart, PieChart, Pie, Area, type PieLabelRenderProps
 } from "recharts"
 import { toast } from "sonner"
 import { jsPDF } from "jspdf"
@@ -13,16 +13,17 @@ import { motion, Variants } from "framer-motion"
 
 const COLORS = ['#C29B3F', '#359B8B', '#4B83E0', '#D4638D', '#9B72E5', '#E57272', '#72E5A1']
 
-const renderCustomizedLabel = (props: any) => {
-  const { cx, cy, midAngle, outerRadius, fill, payload, percent } = props
+const renderCustomizedLabel = (props: PieLabelRenderProps) => {
+  const { cx, cy, midAngle, outerRadius, fill, percent } = props
+  const { name, pnl } = (props.payload ?? {}) as { name?: string; pnl?: string | number }
   const RADIAN = Math.PI / 180
-  
-  const sin = Math.sin(-RADIAN * midAngle)
-  const cos = Math.cos(-RADIAN * midAngle)
-  const sx = cx + (outerRadius + 8) * cos
-  const sy = cy + (outerRadius + 8) * sin
-  const mx = cx + (outerRadius + 25) * cos
-  const my = cy + (outerRadius + 25) * sin
+
+  const sin = Math.sin(-RADIAN * (midAngle ?? 0))
+  const cos = Math.cos(-RADIAN * (midAngle ?? 0))
+  const sx = (cx ?? 0) + ((outerRadius ?? 0) + 8) * cos
+  const sy = (cy ?? 0) + ((outerRadius ?? 0) + 8) * sin
+  const mx = (cx ?? 0) + ((outerRadius ?? 0) + 25) * cos
+  const my = (cy ?? 0) + ((outerRadius ?? 0) + 25) * sin
   const ex = mx + (cos >= 0 ? 1 : -1) * 20
   const ey = my
   const textAnchor = cos >= 0 ? 'start' : 'end'
@@ -32,10 +33,10 @@ const renderCustomizedLabel = (props: any) => {
       <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke="var(--color-gray-700)" strokeWidth={1} fill="none" />
       <circle cx={sx} cy={sy} r={3} fill={fill} stroke="none" />
       <text x={ex + (cos >= 0 ? 1 : -1) * 8} y={ey} dy={-4} textAnchor={textAnchor} fill="var(--color-gray-200)" fontSize={12} fontWeight={700}>
-        {payload.name}
+        {name}
       </text>
       <text x={ex + (cos >= 0 ? 1 : -1) * 8} y={ey} dy={14} textAnchor={textAnchor} fill="var(--color-gray-500)" fontSize={11} fontWeight={500}>
-        {`${(percent * 100).toFixed(0)}% · $${Number(payload.pnl).toFixed(0)}`}
+        {`${((percent ?? 0) * 100).toFixed(0)}% · $${Number(pnl).toFixed(0)}`}
       </text>
     </g>
   )
@@ -408,15 +409,12 @@ export function MonthlyReport() {
     label: d.date.slice(5),
   }))
 
-  const dowPieData = React.useMemo(() => {
-    if (!data?.dow) return []
-    return data.dow
-      .map((d: DowItem) => ({ ...d, value: Math.abs(d.pnl) || 0 }))
-      .filter(d => d.value > 0)
-      .sort((a, b) => b.value - a.value)
-  }, [data?.dow])
+  const dowPieData = (data?.dow ?? [])
+    .map((d: DowItem) => ({ ...d, value: Math.abs(d.pnl) || 0 }))
+    .filter(d => d.value > 0)
+    .sort((a, b) => b.value - a.value)
 
-  const totalDowTrades = React.useMemo(() => dowPieData.reduce((acc, curr) => acc + curr.count, 0), [dowPieData])
+  const totalDowTrades = dowPieData.reduce((acc, curr) => acc + curr.count, 0)
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
@@ -588,7 +586,7 @@ export function MonthlyReport() {
                         labelLine={false}
                         isAnimationActive={false}
                       >
-                        {dowPieData.map((entry: any, index: number) => (
+                        {dowPieData.map((entry: DowItem & { value: number }, index: number) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -603,8 +601,9 @@ export function MonthlyReport() {
                           boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
                         }}
                         itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
-                        formatter={(value: any, name: any, props: any) => {
-                          const { count, wins, pnl } = props.payload
+                        formatter={(value: unknown, name: unknown, props: unknown) => {
+                          const payload = (props as { payload?: { count: number; wins: number; pnl: number } }).payload ?? { count: 0, wins: 0, pnl: 0 }
+                          const { count, wins, pnl } = payload
                           return [`$${Number(pnl).toFixed(2)}`, `${count} trades · ${count > 0 ? ((wins / count) * 100).toFixed(0) : 0}% WR`]
                         }}
                       />

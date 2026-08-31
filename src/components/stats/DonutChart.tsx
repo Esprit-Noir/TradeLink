@@ -34,6 +34,47 @@ interface DonutChartProps {
   formatTooltip?: (v: number, name: string) => string
 }
 
+function CustomTooltip({
+  active,
+  payload,
+  total,
+  formatValue,
+  formatTooltip,
+}: {
+  active?: boolean
+  payload?: Array<{ payload: DonutSegment }>
+  total: number
+  formatValue?: (v: number) => string
+  formatTooltip?: (v: number, name: string) => string
+}) {
+  if (!active || !payload?.length) return null
+  const d = payload[0].payload as DonutSegment
+  const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : "0"
+  return (
+    <div style={{
+      background: "var(--color-gray-900)",
+      border: "1px solid var(--color-gray-700)",
+      borderRadius: "10px",
+      padding: "0.6rem 0.8rem",
+      fontSize: "0.75rem",
+      boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+    }}>
+      <div style={{ color: d.color || "var(--color-gray-200)", fontWeight: 700, marginBottom: 2 }}>
+        {d.name}
+      </div>
+      <div style={{ color: "var(--color-gray-300)" }}>
+        {formatTooltip ? formatTooltip(d.value, d.name) : formatValue ? formatValue(d.value) : d.value.toLocaleString()}
+        <span style={{ color: "var(--color-gray-500)", marginLeft: 6 }}>({pct}%)</span>
+      </div>
+      {d.pnl !== undefined && (
+        <div style={{ color: d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600, marginTop: 2 }}>
+          {formatCurrency(d.pnl, "USD", true, 0)}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function DonutChart({
   data,
   title,
@@ -47,35 +88,6 @@ export function DonutChart({
   formatTooltip,
 }: DonutChartProps) {
   const total = data.reduce((s, d) => s + d.value, 0)
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (!active || !payload?.length) return null
-    const d = payload[0].payload as DonutSegment
-    const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : "0"
-    return (
-      <div style={{
-        background: "var(--color-gray-900)",
-        border: "1px solid var(--color-gray-700)",
-        borderRadius: "10px",
-        padding: "0.6rem 0.8rem",
-        fontSize: "0.75rem",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
-      }}>
-        <div style={{ color: d.color || "var(--color-gray-200)", fontWeight: 700, marginBottom: 2 }}>
-          {d.name}
-        </div>
-        <div style={{ color: "var(--color-gray-300)" }}>
-          {formatTooltip ? formatTooltip(d.value, d.name) : formatValue ? formatValue(d.value) : d.value.toLocaleString()}
-          <span style={{ color: "var(--color-gray-500)", marginLeft: 6 }}>({pct}%)</span>
-        </div>
-        {d.pnl !== undefined && (
-          <div style={{ color: d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600, marginTop: 2 }}>
-            {formatCurrency(d.pnl, "USD", true, 0)}
-          </div>
-        )}
-      </div>
-    )
-  }
 
   return (
     <div className="chart-card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column" }}>
@@ -109,7 +121,7 @@ export function DonutChart({
                     />
                   ))}
                 </Pie>
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip total={total} formatValue={formatValue} formatTooltip={formatTooltip} />} />
               </PieChart>
             </ResponsiveContainer>
             {innerLabel && (

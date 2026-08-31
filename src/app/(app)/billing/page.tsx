@@ -23,7 +23,8 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
 
   const serializedPlans = plans.map(p => ({
     ...p,
-    price: p.price.toNumber()
+    price: p.price.toNumber(),
+    features: p.features as Record<string, boolean>,
   }))
   
   const serializedCurrentPlan = currentPlan ? {
@@ -44,7 +45,7 @@ export default async function BillingPage({ searchParams }: { searchParams: Prom
         </p>
       </div>
 
-      <BillingClient plans={serializedPlans as any} currentPlanId={serializedCurrentPlan?.id} />
+      <BillingClient plans={serializedPlans} currentPlanId={serializedCurrentPlan?.id} />
     </div>
   )
 }

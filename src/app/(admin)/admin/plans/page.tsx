@@ -25,7 +25,7 @@ export default async function AdminPlansPage() {
       </div>
       
       {/* Client component to handle CRUD operations on Plans */}
-      <PlansManager initialPlans={serializedPlans as any} />
+      <PlansManager initialPlans={serializedPlans} />
     </div>
   )
 }

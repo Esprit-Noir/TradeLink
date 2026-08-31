@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { getActiveAccount } from "@/lib/active-account"
@@ -66,12 +67,19 @@ export async function POST(request: Request) {
     }
 
     // Trade window
-    const where: any = {
+    const where: Prisma.TradeWhereInput = {
       accountId: account.id,
       status: "closed",
     }
-    if (startDate) where.exitAt = { gte: new Date(`${startDate}T00:00:00`) }
-    if (endDate) where.exitAt = { ...(where.exitAt || {}), lte: new Date(`${endDate}T23:59:59.999`) }
+    let exitAtFilter: Prisma.DateTimeNullableFilter | undefined
+    if (startDate) exitAtFilter = { gte: new Date(`${startDate}T00:00:00`) }
+    if (endDate) {
+      exitAtFilter = {
+        ...(exitAtFilter || {}),
+        lte: new Date(`${endDate}T23:59:59.999`),
+      }
+    }
+    if (exitAtFilter) where.exitAt = exitAtFilter
 
     const trades = await prisma.trade.findMany({
       where,
@@ -236,7 +244,7 @@ export async function POST(request: Request) {
       equityCurve,
       dailyBreakdown,
     })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

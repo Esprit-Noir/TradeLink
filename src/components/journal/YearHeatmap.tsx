@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "framer-motion"
 import { formatCurrency } from "@/lib/formatters"
 import Link from "next/link"
@@ -11,7 +10,7 @@ export function YearHeatmap({ dailyPnl, year }: { dailyPnl: Record<string, numbe
   const endDate = new Date(year, 11, 31)
   
   const days = []
-  let current = new Date(startDate)
+  const current = new Date(startDate)
   while (current <= endDate) {
     days.push(new Date(current))
     current.setDate(current.getDate() + 1)
@@ -44,7 +43,7 @@ export function YearHeatmap({ dailyPnl, year }: { dailyPnl: Record<string, numbe
         
         {/* Months Row */}
         <div style={{ display: "flex", marginLeft: "2rem", marginBottom: "0.5rem" }}>
-          {months.map((m, i) => (
+          {months.map((m) => (
             <div key={m} style={{ flex: 1, fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 600 }}>
               {m}
             </div>
@@ -67,7 +66,7 @@ export function YearHeatmap({ dailyPnl, year }: { dailyPnl: Record<string, numbe
               <div key={`empty-${i}`} style={{ width: "14px", height: "14px" }} />
             ))}
 
-            {days.map((day, i) => {
+            {days.map((day) => {
               const key = formatKey(day)
               const pnl = dailyPnl[key]
               

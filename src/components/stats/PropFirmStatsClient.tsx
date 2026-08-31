@@ -1,12 +1,20 @@
 "use client"
 
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend,
 } from "recharts"
 import { Trophy, TrendingUp, AlertCircle, DollarSign } from "lucide-react"
 import Link from "next/link"
 
 const FIRM_COLORS = ["var(--color-profit)", "var(--color-brand-500)", "var(--color-warning)", "var(--color-loss)", "#a78bfa", "#22d3ee"]
+
+interface PropFirmStat {
+  firmName: string
+  passed: number
+  failed: number
+  active: number
+  totalPaid: number
+}
 
 const tooltipStyle = {
   background: "var(--color-gray-900)",
@@ -20,7 +28,7 @@ export function PropFirmStatsClient({
   firms,
   totals,
 }: {
-  firms: any[]
+  firms: PropFirmStat[]
   totals: {
     total: number
     passed: number

@@ -169,7 +169,7 @@ export async function GET() {
     alerts.sort((a, b) => order[a.severity] - order[b.severity])
 
     return NextResponse.json({ alerts })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

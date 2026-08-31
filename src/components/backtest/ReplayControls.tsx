@@ -21,13 +21,6 @@ export interface ReplayControlsProps {
 
 const SPEEDS = [0.5, 1, 2, 5, 10]
 
-function fmtTime(time: number | null): string {
-  if (time == null) return "--:--"
-  const d = new Date(time * 1000)
-  const pad = (n: number) => String(n).padStart(2, "0")
-  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
 export function ReplayControls({
   playing,
   speed,

@@ -4,6 +4,7 @@ import { resolveAccountScope } from "@/lib/active-account"
 import { formatCurrency, formatDateWithTimezone } from "@/lib/formatters"
 import { cookies } from "next/headers"
 import Link from "next/link"
+import type { Prisma } from "@prisma/client"
 
 export async function RecentTradesTable({
   dateRange,
@@ -23,7 +24,7 @@ export async function RecentTradesTable({
 
   if (scope.accounts.length === 0) return <EmptyTable />
 
-  const whereClause: any = scope.all
+  const whereClause: Prisma.TradeWhereInput = scope.all
     ? { userId: session.user.id, status: "closed" }
     : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {
@@ -55,7 +56,7 @@ export async function RecentTradesTable({
           </tr>
         </thead>
         <tbody>
-          {trades.map((t: any) => (
+          {trades.map((t) => (
             <tr key={t.id}>
               <td>
                 <Link href={`/trades?id=${t.id}`} style={{ textDecoration: "none", color: "inherit" }}>

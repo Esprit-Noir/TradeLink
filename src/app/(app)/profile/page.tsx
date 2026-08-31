@@ -38,11 +38,17 @@ export default async function ProfilePage() {
     prisma.propChallenge.count({ where: { userId: session.user.id } }),
     prisma.tradingSetup.count({ where: { userId: session.user.id } }),
     prisma.dailyJournal.count({ where: { userId: session.user.id } }),
-    prisma.trade.count({ where: { accountId: { in: accountIds.map((a: any) => a.id) } } }),
+    prisma.trade.count({ where: { accountId: { in: accountIds.map(a => a.id) } } }),
   ])
 
   const cookieStore = await cookies()
   const uiDensity = cookieStore.get("ui_density")?.value || "comfortable"
+
+  const profileUser = {
+    ...user,
+    dailyGoal: user.dailyGoal ? Number(user.dailyGoal) : null,
+    monthlyGoal: user.monthlyGoal ? Number(user.monthlyGoal) : null,
+  }
 
   return (
     <div>
@@ -58,7 +64,7 @@ export default async function ProfilePage() {
         )}
       </div>
       <ProfileManager
-        user={{ ...user, dailyGoal: user.dailyGoal ? Number(user.dailyGoal) : null, monthlyGoal: user.monthlyGoal ? Number(user.monthlyGoal) : null } as any}
+        user={profileUser}
         initialDensity={uiDensity}
         stats={{ accounts: accountCount, challenges: challengeCount, setups: setupCount, journals: journalCount, trades: tradeCount }}
       />

@@ -34,7 +34,6 @@ export function AdminTable<T extends { id: string }>({
   onSearch,
   searchPlaceholder = "Search...",
   sortBy,
-  sortOrder,
   onSort,
 }: AdminTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("")

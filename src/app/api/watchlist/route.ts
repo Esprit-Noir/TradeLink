@@ -40,7 +40,7 @@ export async function GET() {
     if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     await seedDefaults(session.user.id)
     return NextResponse.json({ items: await rowsFor(session.user.id) })
-  } catch (error) {
+  } catch {
     const message = "Internal Server Error"
     console.error("Watchlist list error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ success: true, items: await rowsFor(session.user.id) })
-  } catch (error) {
+  } catch {
     const message = "Internal Server Error"
     console.error("Watchlist add error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
@@ -89,7 +89,7 @@ export async function DELETE(request: NextRequest) {
     await prisma.watchlistItem.deleteMany({ where: { userId: session.user.id, symbol } })
 
     return NextResponse.json({ success: true, items: await rowsFor(session.user.id) })
-  } catch (error) {
+  } catch {
     const message = "Internal Server Error"
     console.error("Watchlist delete error:", message)
     return NextResponse.json({ error: message }, { status: 500 })

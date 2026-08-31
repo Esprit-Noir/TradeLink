@@ -5,7 +5,7 @@ import { CreateSetupModal } from "./CreateSetupModal"
 import { SetupDetailPanel } from "./SetupDetailPanel"
 import { toast } from "sonner"
 import { formatCurrency } from "@/lib/formatters"
-import { Check, Trash2, Target, TrendingUp, Pencil, X, Save, ArrowDownWideNarrow, Search, Eye } from "lucide-react"
+import { Check, Trash2, Target, Pencil, X, Save, ArrowDownWideNarrow, Search, Eye } from "lucide-react"
 
 type Setup = {
   id: string
@@ -87,7 +87,7 @@ export function SetupsManager() {
       const res = await fetch("/api/setups")
       const data = await res.json()
       setSetups(data)
-    } catch (err) {
+    } catch {
       toast.error("Failed to load setups")
     } finally {
       setLoading(false)
@@ -150,8 +150,8 @@ export function SetupsManager() {
       toast.success("Setup updated")
       cancelEdit()
       loadSetups()
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed")
     } finally {
       setSaving(false)
     }
@@ -167,8 +167,8 @@ export function SetupsManager() {
       if (!res.ok) throw new Error("Failed to set default")
       toast.success(`${name} is now your default setup`)
       loadSetups()
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed")
     }
   }
 
@@ -179,8 +179,8 @@ export function SetupsManager() {
       if (!res.ok) throw new Error("Failed to delete setup")
       toast.success(`Setup deleted`)
       loadSetups()
-    } catch (err: any) {
-      toast.error(err.message)
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed")
     }
   }
 

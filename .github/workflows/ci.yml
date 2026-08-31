@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Lint, TypeCheck, Tests & Build
+    runs-on: ubuntu-latest
+    env:
+      # Valeurs factices — uniquement pour permettre au build de compiler sans
+      # base de données. Les vraies valeurs sont injectées en production uniquement.
+      DATABASE_URL: "postgresql://user:pass@localhost:5432/tradelink?schema=public"
+      DIRECT_URL: "postgresql://user:pass@localhost:5432/tradelink"
+      AUTH_SECRET: "ci-test-secret-that-is-long-enough-for-nextauth"
+      AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      NEXT_PUBLIC_SUPABASE_URL: "https://ci.supabase.co"
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: "ci-anon-key"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm run test:run
+
+      - name: Build
+        run: npm run build

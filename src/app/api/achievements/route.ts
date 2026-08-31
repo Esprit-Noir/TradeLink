@@ -134,7 +134,7 @@ export async function GET() {
       newlyUnlocked,
       groups: grouped,
     })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

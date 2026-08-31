@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { ArrowRight, LayoutDashboard, TrendingUp, TrendingDown, Shield, Zap, Star, Activity, Brain, Target, AlertTriangle } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
-import { motion, useScroll, useTransform, useMotionValue, useSpring, animate } from "framer-motion"
+import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion"
 import { MarketingBackground } from "./MarketingBackground"
 
 // ─── Live Ticker ──────────────────────────────────────────────────────────────

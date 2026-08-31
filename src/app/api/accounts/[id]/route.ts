@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import type { Prisma } from "@prisma/client"
 
 const updateAccountSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -46,7 +47,7 @@ export async function PATCH(
       })
     }
 
-    const dataToUpdate: any = {}
+    const dataToUpdate: Prisma.TradingAccountUpdateInput = {}
     if (name !== undefined) dataToUpdate.name = name
     if (initialBalance !== undefined) {
       const v = parseFloat(String(initialBalance))

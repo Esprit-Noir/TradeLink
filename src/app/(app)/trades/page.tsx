@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { prisma } from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 import { formatCurrency } from "@/lib/formatters"
 import { AddTradeModal } from "@/components/trades/AddTradeModal"
 import { TradesFilter } from "@/components/trades/TradesFilter"
@@ -47,7 +48,7 @@ export default async function TradesPage({
   const currentPage = Number(searchParamsObj?.page) || 1
   const skip = (currentPage - 1) * ITEMS_PER_PAGE
 
-  const whereClause: any = { userId: session.user.id }
+  const whereClause: Prisma.TradeWhereInput = { userId: session.user.id }
   let baseCurrency: string | undefined
   if (searchParamsObj?.accountId) {
     whereClause.accountId = searchParamsObj.accountId
@@ -152,7 +153,7 @@ export default async function TradesPage({
     netPnlUsd: t.netPnlUsd ? Number(t.netPnlUsd) : null,
     stopLoss: t.stopLoss ? Number(t.stopLoss) : null,
     riskAmount: t.riskAmount ? Number(t.riskAmount) : null,
-    screenshots: (t.screenshots || []).map((s: any) => s),
+    screenshots: (t.screenshots || []).map(s => s),
   }))
 
   return (

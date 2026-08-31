@@ -82,7 +82,7 @@ export async function GET(
         "Content-Disposition": `attachment; filename="challenge-${id}.csv"`,
       },
     })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, X, CalendarDays, List, TrendingUp, Target, Activity, Calendar as CalendarIcon, Award } from "lucide-react"
 import { useTheme } from "@/components/ThemeProvider"

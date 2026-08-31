@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Calculator, AlertTriangle, TrendingUp, TrendingDown, Info } from "lucide-react"
+import { Calculator, AlertTriangle, TrendingUp, Info } from "lucide-react"
 
 interface CalculatorResult {
   positionSize: number

@@ -7,11 +7,47 @@ import { Wallet, Target, Activity, TrendingUp, Pencil, Trash2, ExternalLink } fr
 import { formatCurrency } from "@/lib/formatters"
 import { toast } from "sonner"
 
-export function AccountsManager({ accounts }: { accounts: any[] }) {
+type AccountStats = {
+  totalPnl: number
+  totalPnlUsd?: number
+  tradesCount: number
+}
+
+type PropChallenge = {
+  id: string
+  currentEquity: number
+  status: string
+  logoUrl?: string | null
+  firmName: string
+  phase: string
+}
+
+type AccountListItem = {
+  id: string
+  name: string
+  type: string
+  initialBalance: number
+  baseCurrency: string
+  broker: string | null
+  isDefault: boolean
+  fxRateToUsd?: number | null
+  stats: AccountStats
+  propChallenge?: PropChallenge | null
+}
+
+type EditForm = {
+  id: string
+  name: string
+  initialBalance: string
+  fxRateToUsd: string
+  isDefault: boolean
+}
+
+export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
   const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
   const [filterType, setFilterType] = useState<string>("all")
-  const [editing, setEditing] = useState<any>(null)
+  const [editing, setEditing] = useState<EditForm | null>(null)
 
   // Global KPIs
   const kpis = useMemo(() => {
@@ -56,7 +92,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
     }
   }
 
-  const openAccount = async (acc: any) => {
+  const openAccount = async (acc: AccountListItem) => {
     if (acc.propChallenge?.id) {
       router.push(`/challenges/${acc.propChallenge.id}`)
       return
@@ -64,7 +100,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
     router.push(`/accounts/${acc.id}`)
   }
 
-  const handleDelete = async (acc: any) => {
+  const handleDelete = async (acc: AccountListItem) => {
     if (!confirm(`Delete account "${acc.name}" and all its trades? This cannot be undone.`)) return
     try {
       const res = await fetch(`/api/accounts/${acc.id}`, { method: "DELETE" })
@@ -74,8 +110,8 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
       }
       toast.success("Account deleted")
       router.refresh()
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete account")
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Failed to delete account")
     }
   }
 
@@ -306,7 +342,7 @@ export function AccountsManager({ accounts }: { accounts: any[] }) {
                       onClick={() => setEditing({
                         id: acc.id, name: acc.name,
                         initialBalance: String(acc.initialBalance),
-                        fxRateToUsd: acc.fxRateToUsd || "1",
+                        fxRateToUsd: String(acc.fxRateToUsd || "1"),
                         isDefault: acc.isDefault,
                       })}
                       aria-label="Edit account"

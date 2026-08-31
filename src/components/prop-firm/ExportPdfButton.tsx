@@ -5,6 +5,26 @@ import { jsPDF } from "jspdf"
 import { autoTable } from "jspdf-autotable"
 import { toast } from "sonner"
 
+type PdfWithAutoTable = jsPDF & {
+  lastAutoTable?: { finalY: number }
+}
+
+interface ReportSnapshot {
+  date: string
+  startBalance: number
+  endBalance: number
+  dailyPnl: number
+  tradesCount: number
+  dailyDDUsedPct?: number | null
+}
+
+interface ReportEvent {
+  createdAt: string
+  eventType: string
+  severity: string
+  message: string | null
+}
+
 export function ExportPdfButton({ challengeId, accountName }: { challengeId: string; accountName: string }) {
   const [busy, setBusy] = useState(false)
 
@@ -56,14 +76,14 @@ export function ExportPdfButton({ challengeId, accountName }: { challengeId: str
         columnStyles: { 0: { cellWidth: 120 }, 1: { cellWidth: 220 }, 2: { cellWidth: 120 }, 3: { cellWidth: 220 } },
       })
 
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as PdfWithAutoTable).lastAutoTable!.finalY + 22
 
       // Daily breakdown
       doc.setFontSize(13)
       doc.setFont("helvetica", "bold")
       doc.text("Daily Breakdown", 40, y)
       y += 8
-      const snapRows = (c.dailySnapshots || []).map((s: any) => [
+      const snapRows = (c.dailySnapshots || []).map((s: ReportSnapshot) => [
         s.date.slice(0, 10),
         `$${Number(s.startBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
         `$${Number(s.endBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}`,
@@ -79,16 +99,16 @@ export function ExportPdfButton({ challengeId, accountName }: { challengeId: str
         styles: { fontSize: 8.5, cellPadding: 4 },
         headStyles: { fillColor: [80, 70, 229], textColor: 255 },
         columnStyles: {
-          0: { cellWidth: 90 },
-          1: { cellWidth: 120, halign: "right" },
-          2: { cellWidth: 120, halign: "right" },
-          3: { cellWidth: 130, halign: "right" },
-          4: { cellWidth: 70, halign: "right" },
-          5: { cellWidth: 80, halign: "right" },
-        },
-      })
+           0: { cellWidth: 90 },
+           1: { cellWidth: 120, halign: "right" },
+           2: { cellWidth: 120, halign: "right" },
+           3: { cellWidth: 130, halign: "right" },
+           4: { cellWidth: 70, halign: "right" },
+           5: { cellWidth: 80, halign: "right" },
+         },
+       })
 
-      y = (doc as any).lastAutoTable.finalY + 22
+      y = (doc as PdfWithAutoTable).lastAutoTable!.finalY + 22
 
       // Events
       if ((c.events || []).length > 0) {
@@ -96,7 +116,7 @@ export function ExportPdfButton({ challengeId, accountName }: { challengeId: str
         doc.setFont("helvetica", "bold")
         doc.text("Events", 40, y)
         y += 8
-        const eventRows = c.events.map((e: any) => [
+        const eventRows = c.events.map((e: ReportEvent) => [
           new Date(e.createdAt).toLocaleString("en-US", { dateStyle: "short", timeStyle: "short" }),
           e.eventType.replace(/_/g, " "),
           e.severity,

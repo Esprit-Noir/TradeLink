@@ -29,7 +29,7 @@ export async function PATCH(
     })
 
     return NextResponse.json({ ok: true })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

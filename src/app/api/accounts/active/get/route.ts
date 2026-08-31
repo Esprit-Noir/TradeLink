@@ -9,7 +9,7 @@ export async function GET() {
 
     const account = await getActiveAccount(session.user.id)
     return NextResponse.json({ activeAccountId: account?.id || null })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ activeAccountId: null })
   }
 }

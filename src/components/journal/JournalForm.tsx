@@ -3,11 +3,22 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { Moon, Sun, ClipboardCheck, ClipboardList } from "lucide-react"
+import { Moon, Sun, ClipboardCheck } from "lucide-react"
+
+interface JournalInitialData {
+  mood?: string | null
+  sleepHours?: number | null
+  macroContext?: string | null
+  sessionPlan?: string | null
+  endOfDaySummary?: string | null
+  nightReflection?: string | null
+  rating?: number | null
+  disciplineChecks?: unknown | null
+}
 
 type JournalFormProps = {
   date: string
-  initialData?: any
+  initialData?: JournalInitialData | null
 }
 
 const MOODS = [

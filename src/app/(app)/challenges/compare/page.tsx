@@ -32,7 +32,7 @@ export default async function ComparePage() {
     const maxDdRef = initial
     const ddBudget = maxDdRef * (Number(c.maxDDPct) / 100)
     const ddUsedPct = ddBudget > 0 ? ((maxDdRef - current) / ddBudget) * 100 : 0
-    const tradingDays = Number(((c.metadata as any)?.tradingDaysCount) ?? 0)
+    const tradingDays = Number(((c.metadata as unknown as { tradingDaysCount?: number } | null)?.tradingDaysCount) ?? 0)
     const daysRemaining = c.deadlineAt
       ? Math.max(0, Math.ceil((c.deadlineAt.getTime() - Date.now()) / 86400000))
       : null

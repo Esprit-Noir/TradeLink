@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { toast } from "sonner"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, AreaChart, Area } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts"
 import { formatCurrency } from "@/lib/formatters"
 import type { EquityPoint } from "@/lib/metrics"
 import type { Formatter } from "recharts/types/component/DefaultTooltipContent"
-import { Download, TrendingUp, TrendingDown, BarChart3, Target, Activity, AlertTriangle, Clock, Award } from "lucide-react"
+import { Download, TrendingUp, TrendingDown, BarChart3, Target, Activity, AlertTriangle, Award } from "lucide-react"
 import dynamic from "next/dynamic"
 import { DonutChart } from "./DonutChart"
 
@@ -130,7 +130,19 @@ const tooltipStyle = {
 
 const pnlFormatter: Formatter = (val) => [formatCurrency(Number(val), "USD", true, 2), "P&L"]
 
-const CustomDowTooltip = ({ active, payload, label }: any) => {
+interface DowTooltipEntry {
+  pnl: number
+  count: number
+  winRate: number
+}
+
+interface DowTooltipProps {
+  active?: boolean
+  payload?: Array<{ payload: DowTooltipEntry }>
+  label?: string
+}
+
+const CustomDowTooltip = ({ active, payload, label }: DowTooltipProps) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
@@ -215,12 +227,12 @@ export function AdvancedStatsClient() {
   const sides = (data?.sides ?? []) as BreakdownItem[]
 
   const rrData = useMemo(() => Object.entries(rrDistribution).map(([name, value]) => ({ name, value })), [rrDistribution])
-  const dowData = useMemo(() => dowPerformance.map((item: any, index: number) => ({
+  const dowData = useMemo(() => dowPerformance.map((item, index: number) => ({
     name: dayNames[index].substring(0, 3),
     pnl: item.pnl,
     winRate: item.count > 0 ? (item.wins / item.count) * 100 : 0,
     count: item.count
-  })).filter((d: any, i: number) => !(d.count === 0 && (i === 0 || i === 6))), [dowPerformance])
+  })).filter((d, i: number) => !(d.count === 0 && (i === 0 || i === 6))), [dowPerformance])
   const hourData = useMemo(() => hourPerformance.map((pnl: number, h: number) => ({ hour: `${String(h).padStart(2, "0")}H`, pnl })), [hourPerformance])
   const monthData = useMemo(() => monthlyPerformance.map((m: { month: string; pnl: number }) => ({ name: m.month.slice(5), pnl: m.pnl })), [monthlyPerformance])
   const worstSymbols = useMemo(() => [...symbols].reverse().slice(0, 3), [symbols])
@@ -450,7 +462,7 @@ export function AdvancedStatsClient() {
                 <Tooltip cursor={{ fill: "var(--color-gray-800)" }} content={<CustomDowTooltip />} />
                 <ReferenceLine y={0} stroke="var(--color-gray-800)" />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-                  {dowData.map((entry: any, index: number) => (
+                  {dowData.map((entry, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
                   ))}
                 </Bar>
@@ -460,7 +472,7 @@ export function AdvancedStatsClient() {
         </div>
 
         <DonutChart
-          data={durationData.map((d, i) => ({ name: d.name, value: d.minutes, color: d.fill }))}
+          data={durationData.map((d) => ({ name: d.name, value: d.minutes, color: d.fill }))}
           title="Avg Duration"
           subtitle="Minutes per trade"
           innerLabel={(() => {
@@ -652,7 +664,7 @@ function BreakdownCard({ title, items, icon }: { title: string; items: Breakdown
                 <span style={{ fontWeight: 600, fontSize: "0.85rem", color: "var(--color-gray-200)" }}>{item.name}</span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                <span style={{ fontSize: "0.72rem", color: "var(--color-gray-500)" }}>{item.count} trades · {(item.winRate * 100).toFixed(0)}% W</span>
+                <span style={{ fontSize: "0.72rem", color: "var(--color-gray-500)" }}>{item.count} trades · {item.winRate.toFixed(0)}% W</span>
                 <span style={{ fontWeight: 700, fontFamily: "var(--font-mono)", fontSize: "0.85rem", color: item.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", minWidth: "80px", textAlign: "right" }}>
                   {formatCurrency(item.pnl, "USD", true, 0)}
                 </span>

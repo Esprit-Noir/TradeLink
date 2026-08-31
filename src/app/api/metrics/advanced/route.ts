@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 
 import { NextResponse } from "next/server"
+import type { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveAccountScope } from "@/lib/active-account"
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
     const setup = url.searchParams.get("setup") || ""
     const side = url.searchParams.get("side") || ""
 
-    const where: any = scope.all
+    const where: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id, status: "closed" }
       : { accountId: scope.accounts[0].id, status: "closed" }
     if (period && period !== "all") {
@@ -263,13 +264,13 @@ export async function GET(request: Request) {
 
     // Top Symbols (Sort by PnL desc)
     const topSymbols = Object.entries(symbolMap)
-      .map(([name, data]) => ({ name, pnl: data.pnl, count: data.count }))
+      .map(([name, data]) => ({ name, pnl: data.pnl, count: data.count, winRate: data.count > 0 ? (data.wins / data.count) * 100 : 0 }))
       .sort((a, b) => b.pnl - a.pnl)
       .slice(0, 3)
 
     // Top Setups (Sort by PnL desc)
     const topSetups = Object.entries(setupMap)
-      .map(([name, data]) => ({ name, pnl: data.pnl, count: data.count }))
+      .map(([name, data]) => ({ name, pnl: data.pnl, count: data.count, winRate: data.count > 0 ? (data.wins / data.count) * 100 : 0 }))
       .sort((a, b) => b.pnl - a.pnl)
       .slice(0, 3)
 

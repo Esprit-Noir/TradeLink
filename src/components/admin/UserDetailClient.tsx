@@ -4,7 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Badge } from "@/components/admin/Badge"
 import { ConfirmDialog } from "@/components/admin/ConfirmDialog"
-import { ArrowLeft, Shield, UserX, UserCheck, Trash2, LogIn, AlertTriangle } from "lucide-react"
+import { ArrowLeft, UserX, UserCheck, Trash2, LogIn, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 
 interface User {

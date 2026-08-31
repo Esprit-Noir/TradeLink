@@ -23,7 +23,7 @@ export function CalendarFilter({ accounts }: { accounts: FilterAccount[] }) {
   }, [searchParams, accountId])
 
   const pushParams = (updates: Record<string, string | null>) => {
-    const params = new URLSearchParams(searchParams as any)
+    const params = new URLSearchParams(searchParams)
     for (const [k, v] of Object.entries(updates)) {
       if (v === null) params.delete(k)
       else params.set(k, v)

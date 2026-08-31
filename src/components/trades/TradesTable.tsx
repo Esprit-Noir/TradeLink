@@ -48,8 +48,6 @@ export const TRADE_COLUMNS = [
   { key: "status", label: "Status", default: true, sortable: false },
 ] as const
 
-type ColumnKey = (typeof TRADE_COLUMNS)[number]["key"]
-
 type Props = {
   trades: SerializedTrade[]
   totals: { count: number; netPnl: number; wins: number; losses: number }
@@ -84,7 +82,7 @@ export function TradesTable({
   const locale = useLocale()
 
   const [visible, setVisible] = useState<Record<string, boolean>>(() => {
-    return TRADE_COLUMNS.reduce((acc: any, c) => ({ ...acc, [c.key]: c.default }), {})
+    return TRADE_COLUMNS.reduce((acc: Record<string, boolean>, c) => ({ ...acc, [c.key]: c.default }), {})
   })
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [columnsOpen, setColumnsOpen] = useState(false)
@@ -176,8 +174,8 @@ export function TradesTable({
       toast.success(t("messages.updatedTrades", { count: data.count }))
       setSelected(new Set())
       router.refresh()
-    } catch (err: any) {
-      toast.error(err.message || t("messages.actionFailed"))
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || t("messages.actionFailed"))
     } finally {
       setBusy(false)
       setBulkOpen(false)
@@ -212,7 +210,7 @@ export function TradesTable({
     try {
       const res = await fetch(`/api/trades/export?${params.toString()}`)
       if (!res.ok) throw new Error("Export failed")
-      const { trades: exportTrades } = await res.json()
+      const { trades: exportTrades } = await res.json() as { trades: SerializedTrade[] }
       
       const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" })
       
@@ -223,9 +221,9 @@ export function TradesTable({
       doc.setTextColor(100)
       doc.text(t("report.generatedOn", { date: new Date().toLocaleDateString(locale) }), 40, 55)
 
-      const totalPnl = exportTrades.reduce((sum: number, t: any) => sum + Number(t.netPnl || 0), 0)
+      const totalPnl = exportTrades.reduce((sum: number, tr) => sum + Number(tr.netPnl || 0), 0)
       const winRate = exportTrades.length > 0 
-        ? ((exportTrades.filter((t: any) => Number(t.netPnl || 0) > 0).length / exportTrades.length) * 100).toFixed(1) 
+        ? ((exportTrades.filter(tr => Number(tr.netPnl || 0) > 0).length / exportTrades.length) * 100).toFixed(1) 
         : 0
       
       doc.setFontSize(12)
@@ -235,15 +233,15 @@ export function TradesTable({
       autoTable(doc, {
         startY: 100,
         head: [["Date", "Symbol", "Side", "Qty", "Entry", "Exit", "P&L", "Status"]],
-        body: exportTrades.map((t: any) => [
-          new Date(t.entryAt).toLocaleString(),
-          t.symbol,
-          t.side,
-          t.quantity,
-          t.entryPrice || "-",
-          t.exitPrice || "-",
-          Number(t.netPnl || 0).toFixed(2),
-          t.status
+        body: exportTrades.map((tr) => [
+          new Date(tr.entryAt).toLocaleString(),
+          tr.symbol,
+          tr.side,
+          tr.quantity,
+          tr.entryPrice || "-",
+          tr.exitPrice || "-",
+          Number(tr.netPnl || 0).toFixed(2),
+          tr.status
         ]),
         theme: 'grid',
         headStyles: { fillColor: [15, 23, 42] },

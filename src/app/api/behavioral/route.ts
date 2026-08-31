@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { analyzeBehavior } from "@/lib/behavioral"
 import { NextResponse } from "next/server"
 import { resolveAccountScope } from "@/lib/active-account"
+import type { Prisma } from "@prisma/client"
 
 const RANGES: Record<string, number> = { "30d": 30, "90d": 90, "all": 0 }
 
@@ -33,11 +34,11 @@ export async function GET(request: Request) {
     })
     const timezone = user?.timezone ?? "UTC"
 
-    const tradeWhere: any = scope.all
+    const tradeWhere: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id, status: "closed" }
       : { accountId: scope.accounts[0].id, status: "closed" }
 
-    const historyWhere: any = scope.all
+    const historyWhere: Prisma.BehavioralSnapshotWhereInput = scope.all
       ? { userId: session.user.id }
       : { accountId: scope.accounts[0].id }
 
@@ -112,7 +113,7 @@ export async function GET(request: Request) {
 
       // Risk Alert Email Logic (Cooldown 24h)
       if (result.disciplineScore < 40 && user?.email) {
-        const prefs = (user.notificationPrefs as any) || {}
+        const prefs = ((user.notificationPrefs as unknown as { lastRiskAlertAt?: string } | null) ?? {}) as { lastRiskAlertAt?: string }
         const lastAlert = prefs.lastRiskAlertAt ? new Date(prefs.lastRiskAlertAt) : new Date(0)
         const now = new Date()
 

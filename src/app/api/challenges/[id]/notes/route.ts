@@ -37,7 +37,7 @@ export async function GET(
       orderBy: { createdAt: "desc" },
     })
     return NextResponse.json(notes)
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -68,7 +68,7 @@ export async function POST(
       data: { challengeId: id, content },
     })
     return NextResponse.json(note, { status: 201 })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

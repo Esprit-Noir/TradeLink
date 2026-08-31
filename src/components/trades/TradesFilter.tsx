@@ -24,7 +24,7 @@ export function TradesFilter({ accounts = [] }: { accounts?: Account[] }) {
 
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault()
-    const params = new URLSearchParams(searchParams as any)
+    const params = new URLSearchParams(searchParams ?? undefined)
     
     if (accountId) params.set("accountId", accountId)
     else params.delete("accountId")

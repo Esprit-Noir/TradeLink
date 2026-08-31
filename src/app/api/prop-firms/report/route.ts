@@ -77,7 +77,7 @@ export async function GET() {
         const current = Number(c.currentBalance ?? initial)
         const profitTargetPct = Number(c.profitTargetPct || 0)
         const maxDDPct = Number(c.maxDDPct || 0)
-        const daysTraded = Number((c.metadata as any)?.tradingDaysCount || 0)
+        const daysTraded = Number((c.metadata as Record<string, unknown> | null)?.tradingDaysCount || 0)
         const minDays = Number(c.minTradingDays || 0)
 
         const profitPct = initial > 0 ? ((current - initial) / initial) * 100 : 0
@@ -122,7 +122,7 @@ export async function GET() {
       byFirm: byFirmOut,
       activeChallenges,
     })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { resolveAccountScope } from "@/lib/active-account"
 import { formatCurrency } from "@/lib/formatters"
-import type { Trade } from "@prisma/client"
+import type { Trade, Prisma } from "@prisma/client"
 import { getTranslations } from "next-intl/server"
 
 import { Activity, Target, Lightbulb, TrendingUp, AlertTriangle, List } from "lucide-react"
@@ -28,7 +28,7 @@ export async function KpiGrid({
 
   if (scope.accounts.length === 0) {
     return (
-      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%", marginBottom: "1.5rem" }}>
+    <div className="kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", width: "100%", marginBottom: "1.5rem" }}>
         <AnimatedEmptyKpiCard label={t("netPnl")} icon={<Activity size={16} />} noDataLabel={t("noData")} />
         <AnimatedEmptyKpiCard label={t("winRate")} icon={<Target size={16} />} noDataLabel={t("noData")} />
         <AnimatedEmptyKpiCard label={t("expectancy")} icon={<Lightbulb size={16} />} noDataLabel={t("noData")} />
@@ -39,7 +39,7 @@ export async function KpiGrid({
     )
   }
 
-  const whereClause: any = scope.all
+  const whereClause: Prisma.TradeWhereInput = scope.all
     ? { userId: session.user.id, status: "closed" }
     : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {
@@ -70,7 +70,7 @@ export async function KpiGrid({
   const currency = scope.currency
 
   return (
-    <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", width: "100%", marginBottom: "1.5rem" }}>
+    <div className="kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem", width: "100%", marginBottom: "1.5rem" }}>
       <AnimatedKpiCard
         label={t("netPnl")}
         value={formatCurrency(metrics.netPnl, currency)}

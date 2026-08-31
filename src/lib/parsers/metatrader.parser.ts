@@ -211,8 +211,8 @@ export function metatraderParser(csvText: string): ParseResult {
         instrumentType: classifySymbol(symbol),
         importSource: "csv",
       })
-    } catch (err: any) {
-      errors.push({ row: i + 1, message: `Row ${i + 1}: ${err.message}` })
+    } catch (err) {
+      errors.push({ row: i + 1, message: `Row ${i + 1}: ${(err as Error).message}` })
     }
   }
 

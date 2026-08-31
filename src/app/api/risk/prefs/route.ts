@@ -3,6 +3,13 @@ import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
+interface RiskPrefs {
+  dailyLossLimit?: number | null
+  maxTradesPerDay?: number | null
+  maxConsecutiveLosses?: number | null
+  maxRiskPerTradePct?: number | null
+}
+
 const riskPrefsSchema = z.object({
   dailyLossLimit: z.union([z.string(), z.number(), z.null()]).optional(),
   maxTradesPerDay: z.union([z.string(), z.number(), z.null()]).optional(),
@@ -27,7 +34,7 @@ export async function GET() {
       where: { id: session.user.id },
       select: { riskPrefs: true },
     })
-    const prefs = (user?.riskPrefs as any) || {}
+    const prefs = (user?.riskPrefs as unknown as RiskPrefs | null) || {}
     return NextResponse.json({
       dailyLossLimit: prefs.dailyLossLimit ?? DEFAULT_RISK_PREFS.dailyLossLimit,
       maxTradesPerDay: prefs.maxTradesPerDay ?? DEFAULT_RISK_PREFS.maxTradesPerDay,
@@ -57,7 +64,7 @@ export async function PATCH(request: Request) {
       where: { id: session.user.id },
       select: { riskPrefs: true },
     })
-    const prev = (existing?.riskPrefs as any) || {}
+    const prev = (existing?.riskPrefs as unknown as RiskPrefs | null) || {}
 
     const merged = {
       dailyLossLimit: parsed.data.dailyLossLimit !== undefined ? (parsed.data.dailyLossLimit === "" || parsed.data.dailyLossLimit === null ? null : Number(parsed.data.dailyLossLimit)) : prev.dailyLossLimit ?? null,

@@ -55,7 +55,7 @@ export async function GET() {
       // 4. Ultimate fallback to static data (no cache exists)
       return NextResponse.json(FALLBACK_EVENTS)
     }
-  } catch (error) {
+  } catch {
     // 5. Catch any execution errors (curl failure)
     if (fs.existsSync(CACHE_FILE)) {
       const staleData = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf-8'))

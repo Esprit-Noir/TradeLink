@@ -89,7 +89,7 @@ export async function GET() {
         })),
       })),
     )
-  } catch (error) {
+  } catch {
     const message = "Internal Server Error"
     console.error("Backtest sessions list error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
@@ -169,7 +169,7 @@ export async function POST(request: Request) {
     })
 
     return NextResponse.json({ success: true, session: backtestSession })
-  } catch (error) {
+  } catch {
     const message = "Internal Server Error"
     console.error("Backtest session save error:", message)
     return NextResponse.json({ error: message }, { status: 500 })

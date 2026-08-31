@@ -2,7 +2,37 @@
 
 import { useRouter } from "next/navigation"
 
-export function PropChallengesOverview({ challenges }: { challenges: any[] }) {
+interface PropChallengeEvent {
+  severity: string
+  message?: string | null
+  eventType: string
+}
+
+interface PropChallengeTemplate {
+  firmName?: string
+  logoUrl?: string | null
+  drawdownType: string
+}
+
+interface PropChallengeSummary {
+  id: string
+  phase: string
+  status: string
+  initialBalance: number | string
+  currentEquity: number | string
+  highestBalance?: number | string | null
+  highestEquity?: number | string | null
+  maxDDPct: number | string
+  profitTargetPct: number | string
+  minTradingDays?: number | null
+  tradingDaysCount?: number | null
+  deadlineAt?: string | null
+  events?: PropChallengeEvent[] | null
+  template: PropChallengeTemplate
+  account: { name: string }
+}
+
+export function PropChallengesOverview({ challenges }: { challenges: PropChallengeSummary[] }) {
   const router = useRouter()
   const now = Date.now()
 

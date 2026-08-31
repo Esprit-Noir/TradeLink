@@ -22,8 +22,16 @@ function formatDate(iso: string): string {
   }
 }
 
+interface SectionPayout {
+  id: string
+  status: string
+  amount: number | string
+  requestedAt: string
+  note?: string | null
+}
+
 export function PayoutsSection({ challengeId }: { challengeId: string }) {
-  const [payouts, setPayouts] = useState<any[]>([])
+  const [payouts, setPayouts] = useState<SectionPayout[]>([])
   const [payoutAmount, setPayoutAmount] = useState("")
   const [payoutDate, setPayoutDate] = useState("")
 
@@ -68,7 +76,7 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
       setPayoutNote("")
       await refresh()
       toast.success("Payout requested")
-    } catch (err) {
+    } catch {
       toast.error("Failed to request payout")
     } finally {
       setSavingPayout(false)
@@ -84,7 +92,7 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
       })
       if (!res.ok) throw new Error("Failed to update payout")
       await refresh()
-    } catch (err) {
+    } catch {
       toast.error("Failed to update payout")
     }
   }
@@ -97,7 +105,7 @@ export function PayoutsSection({ challengeId }: { challengeId: string }) {
       if (!res.ok) throw new Error("Failed to delete payout")
       setPayouts(payouts.filter(p => p.id !== payoutId))
       toast.success("Payout removed")
-    } catch (err) {
+    } catch {
       toast.error("Failed to delete payout")
     }
   }

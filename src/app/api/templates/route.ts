@@ -21,9 +21,9 @@ const createTemplateSchema = z.object({
   isActive: z.boolean().optional(),
 })
 
-function parseOptionalNumber(value: any): number | null {
+function parseOptionalNumber(value: string | number | null | undefined): number | null {
   if (value === undefined || value === null || value === "") return null
-  const n = parseFloat(value)
+  const n = parseFloat(String(value))
   return isNaN(n) ? null : n
 }
 
@@ -47,7 +47,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth() as any
+    const session = await auth() as { user?: { id?: string; role?: string } }
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }

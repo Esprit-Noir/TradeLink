@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { signOut } from "next-auth/react"
 import { Save, Wallet, Target, List, LayoutList, BookOpenText } from "lucide-react"
 import { toast } from "sonner"
 import { NotificationPreferences } from "@/components/prop-firm/NotificationPreferences"

@@ -3,9 +3,15 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
+interface SwitcherAccount {
+  id: string
+  name: string
+  type: string
+}
+
 export function AccountSwitcher() {
   const router = useRouter()
-  const [accounts, setAccounts] = useState<any[]>([])
+  const [accounts, setAccounts] = useState<SwitcherAccount[]>([])
   const [activeId, setActiveId] = useState<string>("")
   const [loading, setLoading] = useState(true)
 

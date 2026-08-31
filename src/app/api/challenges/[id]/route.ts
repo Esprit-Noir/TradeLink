@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import type { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
@@ -68,7 +69,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Challenge not found" }, { status: 404 })
     }
 
-    const dataToUpdate: any = {}
+    const dataToUpdate: Prisma.PropChallengeUpdateInput = {}
     if (parsed.data.profitTargetPct !== undefined) dataToUpdate.profitTargetPct = parseFloat(parsed.data.profitTargetPct)
     if (parsed.data.maxDDPct !== undefined) dataToUpdate.maxDDPct = parseFloat(parsed.data.maxDDPct)
     if (parsed.data.dailyDDPct !== undefined) dataToUpdate.dailyDDPct = parseFloat(parsed.data.dailyDDPct)
@@ -98,7 +99,7 @@ export async function PATCH(
 
     // Update the linked trading account (name / balance)
     if (parsed.data.challengeName !== undefined || parsed.data.initialBalance !== undefined) {
-      const accountData: any = {}
+      const accountData: Prisma.TradingAccountUpdateInput = {}
       if (parsed.data.challengeName !== undefined) accountData.name = parsed.data.challengeName
       if (parsed.data.initialBalance !== undefined) accountData.initialBalance = parseFloat(String(parsed.data.initialBalance))
       await prisma.tradingAccount.update({

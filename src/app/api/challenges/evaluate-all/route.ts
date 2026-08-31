@@ -15,7 +15,7 @@ export async function POST() {
       select: { id: true }
     })
 
-    const results: any[] = []
+    const results: { id: string; status: string }[] = []
     for (const c of active) {
       try {
         const updated = await evaluateChallenge(c.id)

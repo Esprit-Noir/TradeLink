@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { parseCSV } from "@/lib/parsers"
+import { parseCSV, type Broker } from "@/lib/parsers"
 import { parseGenericCSV, type GenericMapping } from "@/lib/parsers/generic.parser"
 import { classifySymbol } from "@/lib/market/symbols"
 import { getActiveAccount } from "@/lib/active-account"
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       }
       parseResult = parseGenericCSV(text, mapping)
     } else {
-      parseResult = await parseCSV(text, broker as any)
+      parseResult = await parseCSV(text, broker as Broker)
     }
 
     if (parseResult.errors.length > 0 && parseResult.trades.length === 0) {
@@ -198,7 +198,7 @@ export async function POST(request: Request) {
         challengeId: targetChallenge?.id || null,
       },
     })
-  } catch (error: unknown) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

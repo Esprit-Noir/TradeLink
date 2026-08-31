@@ -8,11 +8,12 @@
 import { Ratelimit } from "@upstash/ratelimit"
 import { Redis } from "@upstash/redis"
 
-// Upstash Redis client (production)
+// Upstash Redis singleton client (production)
+let upstashRedisClient: Redis | null = null
 let upstashRatelimit: Ratelimit | null = null
 
-function getUpstashRatelimit(): Ratelimit | null {
-  if (upstashRatelimit) return upstashRatelimit
+function getUpstashRedis(): Redis | null {
+  if (upstashRedisClient) return upstashRedisClient
 
   const url = process.env.UPSTASH_REDIS_REST_URL
   const token = process.env.UPSTASH_REDIS_REST_TOKEN
@@ -27,7 +28,16 @@ function getUpstashRatelimit(): Ratelimit | null {
     return null
   }
 
-  const redis = new Redis({ url, token })
+  upstashRedisClient = new Redis({ url, token })
+  return upstashRedisClient
+}
+
+function getUpstashRatelimit(): Ratelimit | null {
+  if (upstashRatelimit) return upstashRatelimit
+
+  const redis = getUpstashRedis()
+  if (!redis) return null
+
   upstashRatelimit = new Ratelimit({
     redis,
     limiter: Ratelimit.slidingWindow(10, "60 s"),
@@ -118,13 +128,10 @@ export async function rateLimitAsync(
   key: string,
   { limit = 10, windowMs = 60000 }: { limit?: number; windowMs?: number } = {}
 ): Promise<RateLimitResult> {
-  const upstash = getUpstashRatelimit()
+  // Reuse the singleton Redis client — never recreate on each call
+  const redis = getUpstashRedis()
 
-  if (upstash) {
-    const redis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    })
+  if (redis) {
     const perKeyRatelimit = new Ratelimit({
       redis,
       limiter: Ratelimit.slidingWindow(limit, `${windowMs} ms`),

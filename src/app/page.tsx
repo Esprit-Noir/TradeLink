@@ -32,6 +32,16 @@ export default async function HomePage() {
     price: p.price.toNumber()
   }))
 
+  const pricingPlans = serializedPlans as {
+    id: string
+    name: string
+    price: number
+    maxAccounts: number
+    maxTradesPerMonth: number | null
+    backtestAccess: boolean
+    features: Record<string, boolean>
+  }[]
+
   return (
     <div className="dark force-dark bg-black text-white min-h-screen font-sans selection:bg-[var(--color-brand-500)] selection:text-black">
       <MarketingAnimations />
@@ -40,7 +50,7 @@ export default async function HomePage() {
       <MarketingHowItWorks />
       <MarketingFeatures />
       <MarketingIntegrations />
-      <MarketingPricing plans={serializedPlans as any} />
+      <MarketingPricing plans={pricingPlans} />
       <MarketingTestimonials />
       <MarketingFaq />
       <MarketingCta isLoggedIn={isLoggedIn} />

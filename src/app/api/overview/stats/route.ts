@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import type { Prisma } from "@prisma/client"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveAccountScope } from "@/lib/active-account"
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ totalTrades: 0, winRate: 0, netPnl: 0, profitFactor: 0, recentTrades: [] })
     }
 
-    const where: any = scope.all
+    const where: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id, status: "closed" }
       : { accountId: scope.accounts[0].id, status: "closed" }
 

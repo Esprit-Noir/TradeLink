@@ -44,7 +44,7 @@ export async function PATCH(
       data: { content },
     })
     return NextResponse.json(updated)
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
@@ -66,7 +66,7 @@ export async function DELETE(
 
     await prisma.propChallengeNote.delete({ where: { id: noteId } })
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

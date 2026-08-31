@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/lib/auth"
+import type { Prisma } from "@prisma/client"
 import { resolveAccountScope } from "@/lib/active-account"
 import { DailyPnlChart } from "./LazyCharts"
 
@@ -22,7 +23,7 @@ export async function DailyPnlChartServer({
     select: { timezone: true },
   })
 
-  const whereClause: any = scope.all
+  const whereClause: Prisma.TradeWhereInput = scope.all
     ? { userId: session.user.id, status: "closed" }
     : { accountId: scope.accounts[0].id, status: "closed" }
   if (dateRange?.from || dateRange?.to) {

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import dynamic from "next/dynamic"
 import { useTheme } from "@/components/ThemeProvider"
 import { toast } from "sonner"
-import { Loader2, RefreshCcw, Save, FileDown, FileText, TriangleAlert, Play, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, Share, X } from "lucide-react"
+import { Loader2, RefreshCcw, Save, TriangleAlert, Maximize2, Minimize2, Share, X } from "lucide-react"
 import type { Candle, MarketTimeframe } from "@/lib/market/types"
 import { MARKET_TIMEFRAMES } from "@/lib/market/types"
 import { fetchCandles } from "@/lib/market/client"
@@ -13,7 +13,7 @@ import { ReplayChart, type ReplayChartRef } from "./ReplayChart"
 import { PositionsStrip } from "./PositionsStrip"
 
 const TradePanel = dynamic(() => import("./TradePanel").then(m => ({ default: m.TradePanel })), { ssr: false })
-import { DEFAULT_INDICATORS, newId, type IndicatorsState, type SimSide, type SimTrade } from "./types"
+import { newId, type IndicatorsState, type SimSide, type SimTrade } from "./types"
 import { atrAt, computeIndicatorSeries } from "./indicators"
 import { atrBasedLevels, positionSizeFromRisk, simulateClose } from "@/lib/market/simulator"
 import { exportSessionCsv, exportSessionPdf, type BacktestExportTrade } from "@/lib/backtest-export"

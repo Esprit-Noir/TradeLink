@@ -56,7 +56,7 @@ export default function OnboardingPage() {
       toast.success("Welcome to TradeLink!")
       router.push("/dashboard")
       router.refresh()
-    } catch (error) {
+    } catch {
       toast.error("An error occurred. Please try again.")
       setLoading(false)
     }
@@ -76,7 +76,7 @@ export default function OnboardingPage() {
             style={{ width: `${((step - 1) / 2) * 100}%` }}
           />
           
-          {STEPS.map((s, i) => {
+          {STEPS.map((s) => {
             const isActive = s.id === step
             const isCompleted = s.id < step
             const Icon = s.icon

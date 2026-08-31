@@ -77,7 +77,7 @@ export async function GET() {
     }
 
     return NextResponse.json(leaderboard)
-  } catch (error: any) {
+  } catch (error) {
     console.error("Leaderboard API Error:", error)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }

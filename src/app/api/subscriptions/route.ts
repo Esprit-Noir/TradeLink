@@ -29,6 +29,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid or inactive plan" }, { status: 400 })
     }
 
+    // Idempotence : un même hash de transaction ne doit jamais générer plusieurs
+    // demandes d'abonnement (protège contre les retries client et le replay).
+    const existing = await prisma.subscription.findFirst({
+      where: { cryptoTxId },
+      select: { id: true, status: true },
+    })
+    if (existing) {
+      return NextResponse.json(
+        { error: "This transaction has already been submitted", existingStatus: existing.status },
+        { status: 409 }
+      )
+    }
+
     const subscription = await prisma.subscription.create({
       data: {
         userId: session.user.id,

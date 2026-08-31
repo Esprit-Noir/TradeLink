@@ -12,8 +12,15 @@ type RiskStatus = {
   alerts: { severity: "critical" | "warning" | "info"; message: string }[]
 }
 
+interface RiskAccount {
+  id: string
+  name: string
+  isActive?: boolean
+  initialBalance?: number | null
+}
+
 export function RiskManager() {
-  const [accounts, setAccounts] = useState<any[]>([])
+  const [accounts, setAccounts] = useState<RiskAccount[]>([])
   const [status, setStatus] = useState<RiskStatus | null>(null)
 
   // Calculator inputs
@@ -36,7 +43,7 @@ export function RiskManager() {
       .then(d => {
         if (d.accounts) {
           setAccounts(d.accounts)
-          const active = d.accounts.find((a: any) => a.isActive) || d.accounts[0]
+          const active = d.accounts.find((a: RiskAccount) => a.isActive) || d.accounts[0]
           if (active) {
             setCalcAccount(active.id)
             setCalcBalance(String(Number(active.initialBalance ?? 0) || 100000))

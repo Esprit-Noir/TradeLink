@@ -23,10 +23,31 @@ function formatDate(iso: string): string {
   }
 }
 
+interface Payout {
+  id: string
+  challengeId: string
+  amount: number
+  status: string
+  requestedAt: string
+  note: string | null
+  accountName: string
+  firmName: string
+  logoUrl: string | null
+}
+
+interface FundedChallenge {
+  id: string
+  accountName: string
+  firmName: string
+  logoUrl: string | null
+  currentEquity: number
+  status: string
+}
+
 export function PayoutsManager() {
-  const [payouts, setPayouts] = useState<any[]>([])
+  const [payouts, setPayouts] = useState<Payout[]>([])
   const [totals, setTotals] = useState({ paid: 0, approved: 0, requested: 0, pending: 0 })
-  const [fundedChallenges, setFundedChallenges] = useState<any[]>([])
+  const [fundedChallenges, setFundedChallenges] = useState<FundedChallenge[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
 
@@ -90,14 +111,14 @@ export function PayoutsManager() {
       setNote("")
       setModalOpen(false)
       await refresh()
-    } catch (err: any) {
-      toast.error(err.message || "Failed to register payout")
+    } catch (err) {
+      toast.error((err as { message?: string })?.message || "Failed to register payout")
     } finally {
       setSaving(false)
     }
   }
 
-  const updateStatus = async (p: any, status: string) => {
+  const updateStatus = async (p: Payout, status: string) => {
     if (status === p.status) return
     try {
       const res = await fetch(`/api/challenges/${p.challengeId}/payouts/${p.id}`, {
@@ -113,7 +134,7 @@ export function PayoutsManager() {
     }
   }
 
-  const deletePayout = async (p: any) => {
+  const deletePayout = async (p: Payout) => {
     if (!confirm("Delete this payout?")) return
     try {
       const res = await fetch(`/api/challenges/${p.challengeId}/payouts/${p.id}`, { method: "DELETE" })

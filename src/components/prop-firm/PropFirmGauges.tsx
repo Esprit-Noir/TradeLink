@@ -11,7 +11,22 @@ interface GaugeProps {
   reverseColors?: boolean
 }
 
-function NeedleGauge({ label, used, total, isBreached, formatCurrency = true, reverseColors = false }: GaugeProps) {
+interface GaugeChallenge {
+  initialBalance: number | string
+  highestBalance?: number | string | null
+  highestEquity?: number | string | null
+  maxDDPct: number | string
+  currentEquity?: number | string | null
+  currentBalance?: number | string | null
+  todayStartBalance?: number | string | null
+  dailyDDPct: number | string
+  profitTargetPct: number | string
+  minTradingDays?: number | null
+  metadata?: { steps?: string; tradingDaysCount?: number | string } | null
+  template: { drawdownType: string }
+}
+
+function NeedleGauge({ label, used, total, formatCurrency = true, reverseColors = false }: GaugeProps) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
@@ -140,7 +155,7 @@ function NeedleGauge({ label, used, total, isBreached, formatCurrency = true, re
   )
 }
 
-export function PropFirmGauges({ challenge }: { challenge: any }) {
+export function PropFirmGauges({ challenge }: { challenge: GaugeChallenge }) {
   if (!challenge) return null
 
   const maxDdReference = 

@@ -2,6 +2,18 @@ import { prisma } from "./prisma"
 import { dayKey, nextMidnightInTz } from "@/lib/dates"
 import { sendEmail } from "@/lib/email"
 import { PropAlertEmail } from "@/emails/PropAlertEmail"
+import {
+  computeMaxDdThreshold,
+  computeDdUsedPct,
+  computeDailyDdThreshold,
+  computeDdBudget,
+  computeProfitTarget,
+  computeCurrentProfit,
+  biggestDayPnl,
+  computeConsistencyViolation,
+  maxDdReference,
+  type DrawdownType,
+} from "@/lib/prop-firm/math"
 
 type EventSeverity = "info" | "warning" | "critical"
 
@@ -173,7 +185,10 @@ export async function evaluateChallenge(challengeId: string) {
   let todayStartBalance = Number(challenge.initialBalance)
   let todayResetAt = challenge.todayResetAt || new Date(challenge.startedAt)
 
-  const profitTarget = Number(challenge.initialBalance) * (Number(challenge.profitTargetPct) / 100)
+  const profitTarget = computeProfitTarget(
+    Number(challenge.initialBalance),
+    Number(challenge.profitTargetPct),
+  )
 
   // Per-trading-day accumulation (keys in the template's reset timezone)
   const days = new Map<string, DayAccum>()
@@ -212,17 +227,25 @@ export async function evaluateChallenge(challengeId: string) {
     days.set(key, acc)
 
     // Evaluate breaches
-    const maxDdReference =
-      challenge.template.drawdownType === 'static_balance' ? Number(challenge.initialBalance) :
-      challenge.template.drawdownType === 'trailing_balance' ? highestBalance :
-      highestEquity
-
-    const maxDdThreshold = maxDdReference * (1 - Number(challenge.maxDDPct) / 100)
-    const dailyDdThreshold = todayStartBalance * (1 - Number(challenge.dailyDDPct) / 100)
+    const drawdownType = challenge.template.drawdownType as DrawdownType
+    const maxDdReferenceValue = maxDdReference(
+      drawdownType,
+      Number(challenge.initialBalance),
+      highestBalance,
+      highestEquity,
+    )
+    const maxDdThreshold = computeMaxDdThreshold(
+      drawdownType,
+      Number(challenge.initialBalance),
+      highestBalance,
+      highestEquity,
+      Number(challenge.maxDDPct),
+    )
+    const dailyDdThreshold = computeDailyDdThreshold(todayStartBalance, Number(challenge.dailyDDPct))
 
     // Alert thresholds — % of max drawdown used (fire 80% then 90%, once each)
-    const ddBudget = maxDdReference * (Number(challenge.maxDDPct) / 100)
-    const ddUsedPct = ddBudget > 0 ? ((maxDdReference - currentBalance) / ddBudget) * 100 : 0
+    const ddBudget = computeDdBudget(maxDdReferenceValue, Number(challenge.maxDDPct))
+    const ddUsedPct = computeDdUsedPct(maxDdReferenceValue, currentBalance, Number(challenge.maxDDPct))
 
     if (ddUsedPct >= 90) {
       collectEvent(pendingEvents,
@@ -256,7 +279,7 @@ export async function evaluateChallenge(challengeId: string) {
     }
     if (alertConfig.enableProfitGoal && Number(alertConfig.profitGoalPct) > 0) {
       const profitGoal = profitTarget * (Number(alertConfig.profitGoalPct) / 100)
-      const currentProfit = currentBalance - Number(challenge.initialBalance)
+      const currentProfit = computeCurrentProfit(currentBalance, Number(challenge.initialBalance))
       if (currentProfit >= profitGoal && profitGoal > 0) {
         collectEvent(pendingEvents,
           "goal_reached",
@@ -292,7 +315,7 @@ export async function evaluateChallenge(challengeId: string) {
   const tradingDays = days.size
   const minTradingDays = Number(challenge.minTradingDays || 0)
   // Check Profit Target
-  const currentProfit = currentBalance - Number(challenge.initialBalance)
+  const currentProfit = computeCurrentProfit(currentBalance, Number(challenge.initialBalance))
 
   if (currentProfit >= profitTarget) {
     // Funded accounts don't "pass" — they become eligible for payouts.
@@ -323,16 +346,13 @@ export async function evaluateChallenge(challengeId: string) {
 
     // Consistency rule gate
     const consistencyPct = Number(challenge.template.consistencyRulePct || 0)
-    if (consistencyPct > 0 && currentProfit > 0) {
-      let biggestDay = 0
-      for (const acc of days.values()) biggestDay = Math.max(biggestDay, acc.pnl)
-      const biggestPct = (biggestDay / currentProfit) * 100
-      if (biggestPct > consistencyPct) {
-        await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
-        await markFailed(challenge.id, 'consistency', `Consistency rule violated: largest day was ${Math.round(biggestPct)}% of total profit (max ${consistencyPct}%).`, prefs, pendingEvents)
-        await flushEvents(challenge.id, pendingEvents, challengeInfo)
-        return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
-      }
+    const biggestDay = biggestDayPnl([...days.values()].map(a => a.pnl))
+    const biggestPct = currentProfit > 0 ? (biggestDay / currentProfit) * 100 : 0
+    if (computeConsistencyViolation(biggestDay, currentProfit, consistencyPct)) {
+      await updateLive(challenge.id, currentBalance, highestBalance, highestEquity, todayStartBalance, todayResetAt, tradingDays)
+      await markFailed(challenge.id, 'consistency', `Consistency rule violated: largest day was ${Math.round(biggestPct)}% of total profit (max ${consistencyPct}%).`, prefs, pendingEvents)
+      await flushEvents(challenge.id, pendingEvents, challengeInfo)
+      return prisma.propChallenge.findUnique({ where: { id: challenge.id } })
     }
 
     collectEvent(pendingEvents,

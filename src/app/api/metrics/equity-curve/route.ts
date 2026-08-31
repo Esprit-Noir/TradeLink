@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic"
 // Renvoie les points de l'equity curve pour le compte par défaut
 
 import { auth } from "@/lib/auth"
+import type { Prisma } from "@prisma/client"
 import { prisma } from "@/lib/prisma"
 import { computeEquityCurve } from "@/lib/metrics"
 import { NextResponse } from "next/server"
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
       select: { timezone: true },
     })
 
-    const whereClause: any = scope.all
+    const whereClause: Prisma.TradeWhereInput = scope.all
       ? { userId: session.user.id, status: "closed" }
       : { accountId: scope.accounts[0].id, status: "closed" }
 
@@ -72,9 +73,10 @@ export async function GET(request: Request) {
     if (toDate) toDate.setHours(23, 59, 59, 999)
 
     if (fromDate || toDate) {
-      whereClause.exitAt = {}
-      if (fromDate) whereClause.exitAt.gte = fromDate
-      if (toDate) whereClause.exitAt.lte = toDate
+      whereClause.exitAt = {
+        ...(fromDate ? { gte: fromDate } : {}),
+        ...(toDate ? { lte: toDate } : {}),
+      }
     }
 
     const trades = await prisma.trade.findMany({
@@ -97,7 +99,7 @@ export async function GET(request: Request) {
       maxDrawdown: Math.round(maxDrawdown * 100) / 100,
       currentDrawdown: Math.round(currentDrawdown * 100) / 100,
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }

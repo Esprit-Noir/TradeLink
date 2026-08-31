@@ -185,8 +185,8 @@ export function MarketOverview() {
           ...item,
           price: String(price),
           change: change,
-          trend: trend as any,
-          signal: signal as any,
+          trend: trend as SymbolData["trend"],
+          signal: signal as SymbolData["signal"],
           score,
           short,
           medium,
@@ -195,6 +195,7 @@ export function MarketOverview() {
       })
       setAllData(updatedData)
     } catch (err) {
+      if ((err as Error)?.name === "AbortError") return
       console.error(err)
     } finally {
       setLoading(false)
@@ -204,12 +205,15 @@ export function MarketOverview() {
   useEffect(() => {
     const controller = new AbortController()
     fetchRealData(controller.signal)
+    let intervalController: AbortController | null = null
     const interval = setInterval(() => {
-      const ctrl = new AbortController()
-      fetchRealData(ctrl.signal)
+      intervalController?.abort()
+      intervalController = new AbortController()
+      fetchRealData(intervalController.signal)
     }, 60000)
     return () => {
       controller.abort()
+      intervalController?.abort()
       clearInterval(interval)
     }
   }, [])

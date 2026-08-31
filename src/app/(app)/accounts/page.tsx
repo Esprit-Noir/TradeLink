@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import type { Prisma } from "@prisma/client"
 import { redirect } from "next/navigation"
 import { AccountsManager } from "@/components/accounts/AccountsManager"
 
@@ -27,7 +28,7 @@ export default async function AccountsPage() {
   })
 
   const accounts = await Promise.all(dbAccounts.map(async acc => {
-    const where: any = { accountId: acc.id, status: 'closed' }
+    const where: Prisma.TradeWhereInput = { accountId: acc.id, status: 'closed' }
     const trades = await prisma.trade.findMany({
       where,
       select: { netPnl: true, netPnlUsd: true, status: true }

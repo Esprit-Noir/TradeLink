@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { z } from "zod"
+import type { Prisma } from "@prisma/client"
 
 interface AdminSession {
   user?: { id?: string; role?: string }
@@ -41,7 +42,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Payout not found" }, { status: 404 })
     }
 
-    const data: any = {}
+    const data: Prisma.PropPayoutUpdateInput = {}
     if (parsed.data.status !== undefined) {
       // Only admins can change payout status
       if (session.user.role !== "ADMIN" && session.user.role !== "SUPER_ADMIN") {

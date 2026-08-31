@@ -20,14 +20,26 @@ interface EquityData {
   currentDrawdown: number
 }
 
+interface TooltipEntry {
+  dataKey?: string | number
+  value?: number
+}
+
+interface CustomTooltipProps {
+  active?: boolean
+  payload?: TooltipEntry[]
+  label?: string | number
+  initialBalance?: number
+}
+
 function formatCurrency(val: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(val)
 }
 
-function CustomTooltip({ active, payload, label, initialBalance }: any) {
+function CustomTooltip({ active, payload, label, initialBalance }: CustomTooltipProps) {
   if (!active || !payload?.length) return null
-  const balance = payload.find((p: any) => p.dataKey === "Balance")?.value ?? 0
-  const drawdown = payload.find((p: any) => p.dataKey === "Drawdown")?.value ?? 0
+  const balance = payload.find((p) => p.dataKey === "Balance")?.value ?? 0
+  const drawdown = payload.find((p) => p.dataKey === "Drawdown")?.value ?? 0
   const change = balance - (initialBalance || balance)
   const changePct = initialBalance ? ((change / initialBalance) * 100).toFixed(2) : "0.00"
   const isPos = change >= 0

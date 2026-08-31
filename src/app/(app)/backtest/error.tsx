@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { AlertTriangle, RefreshCw, ArrowLeft, TrendingUp } from "lucide-react"
+import { RefreshCw, ArrowLeft, TrendingUp } from "lucide-react"
 
 export default function BacktestError({
   error,

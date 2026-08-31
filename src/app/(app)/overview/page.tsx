@@ -7,7 +7,8 @@ export const metadata = {
 
 export default async function OverviewPage() {
   const session = await auth()
-  const username = (session?.user as any)?.name || (session?.user as any)?.username || null
+  const sessionUser = session?.user as { name?: string | null; username?: string | null } | undefined
+  const username = sessionUser?.name || sessionUser?.username || undefined
 
   return (
     <div>

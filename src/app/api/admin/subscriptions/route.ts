@@ -54,6 +54,12 @@ export async function PATCH(request: Request) {
     const sub = await prisma.subscription.findUnique({ where: { id: subscriptionId }, include: { user: true, plan: true } })
     if (!sub) return NextResponse.json({ error: "Subscription not found" }, { status: 404 })
 
+    // Une souscription ne peut passer ACTIVE que depuis l'état PENDING.
+    // Empêche les double-activations et la ré-approbation d'une souscription déjà traitée.
+    if (sub.status !== "PENDING") {
+      return NextResponse.json({ error: "Subscription is not pending", status: sub.status }, { status: 409 })
+    }
+
     // Cancel other active subs for this user
     await prisma.subscription.updateMany({
       where: { userId: sub.userId, status: "ACTIVE", id: { not: subscriptionId } },

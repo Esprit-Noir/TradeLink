@@ -5,13 +5,19 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { CFD_SYMBOLS } from "@/lib/market/symbols"
 
+interface SetupOption {
+  id: string
+  name: string
+  isDefault?: boolean
+}
+
 export function AddTradeModal() {
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [file, setFile] = useState<File | null>(null)
-  const [setups, setSetups] = useState<any[]>([])
+  const [setups, setSetups] = useState<SetupOption[]>([])
 
   useEffect(() => {
     if (isOpen && setups.length === 0) {
@@ -42,7 +48,7 @@ export function AddTradeModal() {
     })
   }, [])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
@@ -236,7 +242,7 @@ export function AddTradeModal() {
               
               <div className="form-group">
                 <label className="label">Trade Notes</label>
-                <textarea name="notesPost" value={formData.notesPost} onChange={(e: any) => handleChange(e)} className="input" placeholder="What happened in this trade?" style={{ minHeight: "80px", resize: "vertical" }} />
+                <textarea name="notesPost" value={formData.notesPost} onChange={handleChange} className="input" placeholder="What happened in this trade?" style={{ minHeight: "80px", resize: "vertical" }} />
               </div>
 
               <div className="form-group">

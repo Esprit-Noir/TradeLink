@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       candles: filtered,
       provider: getMarketDataProvider().name,
     })
-  } catch (error) {
+  } catch {
     const message = "Internal Server Error"
     console.error("Market data error:", message)
     return NextResponse.json({ error: message }, { status: 500 })
