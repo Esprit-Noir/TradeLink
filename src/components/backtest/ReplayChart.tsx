@@ -55,7 +55,7 @@ const PALETTES = {
     crosshair: "#3f3f46",
     up: "#00c758",
     down: "#ef4444",
-    volUp: "color-mix(in srgb, var(--color-profit) 35%, transparent)",
+    volUp: "rgba(0, 199, 88, 0.35)",
     volDown: "rgba(239,68,68,0.35)",
     brand: "#00c758",
     ema9: "#f59e0b",

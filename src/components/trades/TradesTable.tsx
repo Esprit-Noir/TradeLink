@@ -267,7 +267,7 @@ export function TradesTable({
       <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
         {/* Selection */}
         {selectedIds.length > 0 ? (
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.6rem", borderRadius: "8px", background: "color-mix(in srgb, var(--color-brand-500) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--color-brand-500) 30%, transparent)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.35rem 0.6rem", borderRadius: "8px", background: "rgba(0, 199, 88, 0.12)", border: "1px solid rgba(0, 199, 88, 0.30)" }}>
             <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--color-brand-300)" }}>
               {t("selection.selected", { count: selectedIds.length })}
             </span>

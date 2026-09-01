@@ -61,10 +61,10 @@ export function MiniCalendar({ dailyPnl, dailyTradeCount = {} }: { dailyPnl: Rec
 
   const colors = {
     profitBg: "var(--profit-muted)",
-    profitBorder: "color-mix(in srgb, var(--color-profit) 30%, transparent)",
+    profitBorder: "rgba(0, 199, 88, 0.30)",
     profitText: "var(--color-profit)",
     lossBg: "var(--loss-muted)",
-    lossBorder: "color-mix(in srgb, var(--color-loss) 30%, transparent)",
+    lossBorder: "rgba(239, 68, 68, 0.30)",
     lossText: "var(--color-loss)",
   }
 

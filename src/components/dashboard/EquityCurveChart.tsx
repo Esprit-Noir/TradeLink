@@ -262,7 +262,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
                 display: "flex", alignItems: "center", gap: "0.25rem",
                 padding: "0.25rem 0.5rem", borderRadius: "8px", fontSize: "0.7rem", fontWeight: 600,
                 border: "none", cursor: "pointer", transition: "all 0.15s",
-                background: viewMode === "balance" ? "color-mix(in srgb, var(--color-profit) 15%, transparent)" : "transparent",
+                background: viewMode === "balance" ? "rgba(0, 199, 88, 0.15)" : "transparent",
                 color: viewMode === "balance" ? "var(--color-profit)" : "var(--color-gray-500)",
               }}
             >
@@ -290,7 +290,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
                 style={{
                   padding: "0.25rem 0.5rem", borderRadius: "8px", fontSize: "0.7rem", fontWeight: 600,
                   border: "none", cursor: "pointer", transition: "all 0.15s",
-                  background: timeframe === tf ? "color-mix(in srgb, var(--color-profit) 15%, transparent)" : "transparent",
+                  background: timeframe === tf ? "rgba(0, 199, 88, 0.15)" : "transparent",
                   color: timeframe === tf ? "var(--color-profit)" : "var(--color-gray-500)",
                 }}
               >

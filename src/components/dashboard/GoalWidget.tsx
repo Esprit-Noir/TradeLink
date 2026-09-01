@@ -59,7 +59,7 @@ export function GoalWidget({ label, currentPnl, initialGoal, goalKey, placeholde
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           {isAchieved && (
-            <span style={{ fontSize: "0.7rem", fontWeight: 700, padding: "0.2rem 0.5rem", borderRadius: "6px", background: "var(--profit-muted)", color: "var(--color-profit)", border: "1px solid color-mix(in srgb, var(--color-profit) 25%, transparent)" }}>
+            <span style={{ fontSize: "0.7rem", fontWeight: 700, padding: "0.2rem 0.5rem", borderRadius: "6px", background: "var(--profit-muted)", color: "var(--color-profit)", border: "1px solid rgba(0, 199, 88, 0.25)" }}>
               ✓ ACHIEVED
             </span>
           )}
@@ -114,7 +114,7 @@ export function GoalWidget({ label, currentPnl, initialGoal, goalKey, placeholde
                 ? "var(--color-profit)"
                 : isNegative
                 ? "var(--color-loss)"
-                : `linear-gradient(90deg, color-mix(in srgb, var(--color-profit) 40%, transparent), var(--color-profit))`,
+                : `linear-gradient(90deg, rgba(0, 199, 88, 0.40), var(--color-profit))`,
               transition: "width 0.5s ease-out",
             }} />
           </div>

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
-import { GitCompare, ArrowLeft } from "lucide-react"
+import { GitCompare, ArrowLeft, Loader2 } from "lucide-react"
 import { formatCurrency } from "@/lib/formatters"
 
 interface CompareData {
@@ -18,10 +18,6 @@ interface CompareData {
 }
 
 interface CompareModeProps {
-  dataA: CompareData
-  dataB: CompareData
-  onPeriodAChange: (period: string) => void
-  onPeriodBChange: (period: string) => void
   onExit: () => void
 }
 
@@ -74,7 +70,35 @@ function CompareKpi({ label, valueA, valueB, format = "number" }: {
   )
 }
 
-export function CompareMode({ dataA, dataB, onPeriodAChange, onPeriodBChange, onExit }: CompareModeProps) {
+export function CompareMode({ onExit }: CompareModeProps) {
+  const [periodA, setPeriodA] = useState("30d")
+  const [periodB, setPeriodB] = useState("90d")
+  const [dataA, setDataA] = useState<CompareData | null>(null)
+  const [dataB, setDataB] = useState<CompareData | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/metrics/compare?periodA=${periodA}&periodB=${periodB}&accountId=all`)
+      const data = await res.json()
+      setDataA(data.dataA)
+      setDataB(data.dataB)
+    } catch {
+      // silent
+    } finally {
+      setLoading(false)
+    }
+  }, [periodA, periodB])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  const emptyData: CompareData = { period: "", totalTrades: 0, winRate: 0, netPnl: 0, profitFactor: 0, avgWin: 0, avgLoss: 0, expectancy: 0, maxDrawdown: 0 }
+  const a = dataA ?? emptyData
+  const b = dataB ?? emptyData
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -85,11 +109,7 @@ export function CompareMode({ dataA, dataB, onPeriodAChange, onPeriodBChange, on
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button
-            onClick={onExit}
-            className="topbar-btn"
-            style={{ width: 32, height: 32 }}
-          >
+          <button onClick={onExit} className="topbar-btn" style={{ width: 32, height: 32 }}>
             <ArrowLeft size={16} />
           </button>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -97,6 +117,7 @@ export function CompareMode({ dataA, dataB, onPeriodAChange, onPeriodBChange, on
             <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-gray-100)" }}>Compare Periods</h2>
           </div>
         </div>
+        {loading && <Loader2 size={16} style={{ color: "var(--color-gray-400)", animation: "spin 1s linear infinite" }} />}
       </div>
 
       {/* Period Selectors */}
@@ -107,44 +128,36 @@ export function CompareMode({ dataA, dataB, onPeriodAChange, onPeriodBChange, on
         <div className="compare-panel">
           <div className="compare-header">
             <span className="compare-label">Period A</span>
-            <select
-              className="compare-select"
-              value={dataA.period}
-              onChange={(e) => onPeriodAChange(e.target.value)}
-            >
+            <select className="compare-select" value={periodA} onChange={(e) => setPeriodA(e.target.value)}>
               {PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
           </div>
-          <CompareKpi label="Total Trades" valueA={dataA.totalTrades} valueB={dataB.totalTrades} format="number" />
-          <CompareKpi label="Win Rate" valueA={dataA.winRate} valueB={dataB.winRate} format="percent" />
-          <CompareKpi label="Net P&L" valueA={dataA.netPnl} valueB={dataB.netPnl} format="currency" />
-          <CompareKpi label="Profit Factor" valueA={dataA.profitFactor} valueB={dataB.profitFactor} format="number" />
-          <CompareKpi label="Avg Win" valueA={dataA.avgWin} valueB={dataB.avgWin} format="currency" />
-          <CompareKpi label="Avg Loss" valueA={dataA.avgLoss} valueB={dataB.avgLoss} format="currency" />
-          <CompareKpi label="Expectancy" valueA={dataA.expectancy} valueB={dataB.expectancy} format="currency" />
-          <CompareKpi label="Max Drawdown" valueA={dataA.maxDrawdown} valueB={dataB.maxDrawdown} format="currency" />
+          <CompareKpi label="Total Trades" valueA={a.totalTrades} valueB={b.totalTrades} format="number" />
+          <CompareKpi label="Win Rate" valueA={a.winRate} valueB={b.winRate} format="percent" />
+          <CompareKpi label="Net P&L" valueA={a.netPnl} valueB={b.netPnl} format="currency" />
+          <CompareKpi label="Profit Factor" valueA={a.profitFactor} valueB={b.profitFactor} format="number" />
+          <CompareKpi label="Avg Win" valueA={a.avgWin} valueB={b.avgWin} format="currency" />
+          <CompareKpi label="Avg Loss" valueA={a.avgLoss} valueB={b.avgLoss} format="currency" />
+          <CompareKpi label="Expectancy" valueA={a.expectancy} valueB={b.expectancy} format="currency" />
+          <CompareKpi label="Max Drawdown" valueA={a.maxDrawdown} valueB={b.maxDrawdown} format="currency" />
         </div>
 
         {/* Period B */}
         <div className="compare-panel">
           <div className="compare-header">
             <span className="compare-label">Period B</span>
-            <select
-              className="compare-select"
-              value={dataB.period}
-              onChange={(e) => onPeriodBChange(e.target.value)}
-            >
+            <select className="compare-select" value={periodB} onChange={(e) => setPeriodB(e.target.value)}>
               {PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
           </div>
-          <CompareKpi label="Total Trades" valueA={dataB.totalTrades} valueB={dataA.totalTrades} format="number" />
-          <CompareKpi label="Win Rate" valueA={dataB.winRate} valueB={dataA.winRate} format="percent" />
-          <CompareKpi label="Net P&L" valueA={dataB.netPnl} valueB={dataA.netPnl} format="currency" />
-          <CompareKpi label="Profit Factor" valueA={dataB.profitFactor} valueB={dataA.profitFactor} format="number" />
-          <CompareKpi label="Avg Win" valueA={dataB.avgWin} valueB={dataA.avgWin} format="currency" />
-          <CompareKpi label="Avg Loss" valueA={dataB.avgLoss} valueB={dataA.avgLoss} format="currency" />
-          <CompareKpi label="Expectancy" valueA={dataB.expectancy} valueB={dataA.expectancy} format="currency" />
-          <CompareKpi label="Max Drawdown" valueA={dataB.maxDrawdown} valueB={dataA.maxDrawdown} format="currency" />
+          <CompareKpi label="Total Trades" valueA={b.totalTrades} valueB={a.totalTrades} format="number" />
+          <CompareKpi label="Win Rate" valueA={b.winRate} valueB={a.winRate} format="percent" />
+          <CompareKpi label="Net P&L" valueA={b.netPnl} valueB={a.netPnl} format="currency" />
+          <CompareKpi label="Profit Factor" valueA={b.profitFactor} valueB={a.profitFactor} format="number" />
+          <CompareKpi label="Avg Win" valueA={b.avgWin} valueB={a.avgWin} format="currency" />
+          <CompareKpi label="Avg Loss" valueA={b.avgLoss} valueB={a.avgLoss} format="currency" />
+          <CompareKpi label="Expectancy" valueA={b.expectancy} valueB={a.expectancy} format="currency" />
+          <CompareKpi label="Max Drawdown" valueA={b.maxDrawdown} valueB={a.maxDrawdown} format="currency" />
         </div>
       </div>
     </motion.div>

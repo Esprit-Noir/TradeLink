@@ -1279,33 +1279,37 @@
 }
 
 /* ── Widget Grid ────────────────────────────────────────── */
-.widget-grid {
+.wg-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
+  align-items: start;
 }
 
-.widget-cell {
+.wg-cell {
   position: relative;
   min-height: 120px;
   border-radius: 12px;
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: box-shadow 0.2s, opacity 0.15s;
 }
 
-.widget-cell:hover .widget-drag-handle {
+.wg-cell:hover .wg-handle,
+.wg-cell:hover .wg-resize {
   opacity: 1;
 }
 
-.widget-cell.dragging {
-  opacity: 0.5;
-  transform: scale(0.98);
+.wg-dragging {
+  opacity: 0.3 !important;
 }
 
-.widget-drag-handle {
+.wg-over {
+  box-shadow: 0 0 0 2px var(--color-brand-500);
+}
+
+.wg-handle {
   position: absolute;
   top: 8px;
-  right: 8px;
+  left: 8px;
   width: 24px;
   height: 24px;
   display: flex;
@@ -1318,23 +1322,52 @@
   opacity: 0;
   transition: opacity 0.2s, background 0.2s;
   z-index: 10;
+  touch-action: none;
+  user-select: none;
 }
 
-.widget-drag-handle:hover {
-  background: var(--color-gray-700);
-  color: var(--color-gray-200);
+.wg-handle:active {
+  cursor: grabbing;
 }
 
-.widget-sm { grid-column: span 1; }
-.widget-md { grid-column: span 1; }
-.widget-lg { grid-column: span 2; }
-.widget-full { grid-column: 1 / -1; }
+.wg-handle:hover {
+  background: var(--color-brand-500);
+  color: #000;
+}
+
+.wg-resize {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background: var(--color-gray-800);
+  color: var(--color-gray-400);
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, background 0.2s;
+  z-index: 10;
+}
+
+.wg-resize:hover {
+  background: var(--color-brand-500);
+  color: #000;
+}
+
+.wg-span-1 { grid-column: span 1; }
+.wg-span-2 { grid-column: span 2; }
+.wg-span-3 { grid-column: span 3; }
 
 @media (max-width: 768px) {
-  .widget-grid {
+  .wg-grid {
     grid-template-columns: 1fr;
   }
-  .widget-sm, .widget-md, .widget-lg, .widget-full {
+  .wg-span-1, .wg-span-2, .wg-span-3 {
     grid-column: span 1;
   }
 }

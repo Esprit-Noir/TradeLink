@@ -460,7 +460,7 @@ export function ChallengeDetailView({ challenge }: { challenge: ChallengeDetailV
                     <td style={{ padding: "1rem", whiteSpace: "nowrap", fontWeight: 500, color: "var(--color-gray-200)" }}>{formatDate(s.date)}</td>
                     <td style={{ padding: "1rem", textAlign: "right" }}>${Number(s.startBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
                     <td style={{ padding: "1rem", textAlign: "right", fontWeight: 500 }}>${Number(s.endBalance).toLocaleString("en-US", { minimumFractionDigits: 2 })}</td>
-                    <td style={{ padding: "1rem", textAlign: "right", color: Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600, textShadow: Number(s.dailyPnl) >= 0 ? "0 0 10px color-mix(in srgb, var(--color-profit) 20%, transparent)" : "none" }}>
+                    <td style={{ padding: "1rem", textAlign: "right", color: Number(s.dailyPnl) >= 0 ? "var(--color-profit)" : "var(--color-loss)", fontWeight: 600, textShadow: Number(s.dailyPnl) >= 0 ? "0 0 10px rgba(0, 199, 88, 0.20)" : "none" }}>
                       ${Number(s.dailyPnl) >= 0 ? "+" : ""}{Number(s.dailyPnl).toLocaleString("en-US", { minimumFractionDigits: 2 })}
                     </td>
                     <td style={{ padding: "1rem", textAlign: "right" }}>{s.tradesCount}</td>
@@ -529,14 +529,14 @@ function ConsistencySection({ snapshots, challenge }: { snapshots: Snapshot[]; c
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "2rem" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
             <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Total Profit</div>
-            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", textShadow: totalPnl >= 0 ? "0 0 10px color-mix(in srgb, var(--color-profit) 20%, transparent)" : "none" }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", textShadow: totalPnl >= 0 ? "0 0 10px rgba(0, 199, 88, 0.20)" : "none" }}>
               {totalPnl >= 0 ? "+" : ""}${totalPnl.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </div>
           </div>
           <div style={{ width: "1px", background: "var(--color-gray-800)", alignSelf: "stretch", display: "none" }} className="md:block" />
           <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
             <div style={{ fontSize: "0.7rem", color: "var(--color-gray-400)", textTransform: "uppercase", fontWeight: 600, letterSpacing: "0.05em" }}>Biggest Day</div>
-            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-profit)", textShadow: "0 0 10px color-mix(in srgb, var(--color-profit) 20%, transparent)" }}>
+            <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-profit)", textShadow: "0 0 10px rgba(0, 199, 88, 0.20)" }}>
               +${biggestDay.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </div>
           </div>

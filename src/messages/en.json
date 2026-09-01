@@ -263,5 +263,35 @@
       "startFree": "Start Free — No Card Needed",
       "disclaimer": "Join now. Upgrade when you need to. Cancel anytime."
     }
+  },
+  "playbooks": {
+    "title": "Playbooks",
+    "new": "New Playbook",
+    "edit": "Edit Playbook",
+    "emptyTitle": "No playbooks yet",
+    "emptyDesc": "Create strategy playbooks with entry, exit, and risk rules to stay consistent and improve your trading.",
+    "form": {
+      "name": "Name",
+      "namePh": "e.g. Breakout Long",
+      "description": "Description",
+      "descriptionPh": "Optional description of this playbook",
+      "tags": "Tags",
+      "tagsPh": "trend, breakout, scalping (comma separated)",
+      "entryRules": "Entry Rules",
+      "entryRulesPh": "price > EMA200, volume spike",
+      "exitRules": "Exit Rules",
+      "exitRulesPh": "takeProfit: 2R, stopLoss: 1R",
+      "riskRules": "Risk Rules",
+      "riskRulesPh": "maxRisk: 1%, maxDailyLoss: 3%",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "card": {
+      "entry": "Entry Rules",
+      "exit": "Exit Rules",
+      "risk": "Risk Rules",
+      "edit": "Edit",
+      "delete": "Delete"
+    }
   }
 }

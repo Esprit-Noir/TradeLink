@@ -73,23 +73,23 @@ export function CalendarView({
 
   const colors = isDark
     ? {
-        profitBg: "color-mix(in srgb, var(--color-profit) 10%, transparent)",
-        profitBorder: "color-mix(in srgb, var(--color-profit) 25%, transparent)",
+        profitBg: "rgba(0, 199, 88, 0.10)",
+        profitBorder: "rgba(0, 199, 88, 0.25)",
         profitText: "var(--color-profit)",
-        lossBg: "color-mix(in srgb, var(--color-loss) 10%, transparent)",
-        lossBorder: "color-mix(in srgb, var(--color-loss) 25%, transparent)",
+        lossBg: "rgba(239, 68, 68, 0.10)",
+        lossBorder: "rgba(239, 68, 68, 0.25)",
         lossText: "var(--color-loss)",
-        cellBg: "color-mix(in srgb, var(--color-gray-900) 40%, transparent)",
+        cellBg: "rgba(15, 15, 18, 0.40)",
         cellBorder: "var(--color-gray-800)",
         cellText: "var(--color-gray-400)",
         zeroText: "var(--color-gray-500)",
       }
     : {
-        profitBg: "color-mix(in srgb, var(--color-profit) 15%, transparent)",
-        profitBorder: "color-mix(in srgb, var(--color-profit) 35%, transparent)",
+        profitBg: "rgba(0, 199, 88, 0.15)",
+        profitBorder: "rgba(0, 199, 88, 0.35)",
         profitText: "var(--color-profit)",
-        lossBg: "color-mix(in srgb, var(--color-loss) 15%, transparent)",
-        lossBorder: "color-mix(in srgb, var(--color-loss) 35%, transparent)",
+        lossBg: "rgba(239, 68, 68, 0.15)",
+        lossBorder: "rgba(239, 68, 68, 0.35)",
         lossText: "var(--color-loss)",
         cellBg: "rgba(255, 255, 255, 0.5)",
         cellBorder: "#e4e4e7",
@@ -195,12 +195,12 @@ export function CalendarView({
   const heatColor = (pnl: number, maxPos: number, maxNeg: number, inYear: boolean) => {
     if (!inYear) return "transparent"
     if (pnl > 0) {
-      const pct = (20 + 80 * Math.min(1, pnl / maxPos)).toFixed(0)
-      return `color-mix(in srgb, var(--color-profit) ${pct}%, transparent)`
+      const alpha = (0.20 + 0.80 * Math.min(1, pnl / maxPos)).toFixed(2)
+      return `rgba(0, 199, 88, ${alpha})`
     }
     if (pnl < 0) {
-      const pct = (20 + 80 * Math.min(1, -pnl / maxNeg)).toFixed(0)
-      return `color-mix(in srgb, var(--color-loss) ${pct}%, transparent)`
+      const alpha = (0.20 + 0.80 * Math.min(1, -pnl / maxNeg)).toFixed(2)
+      return `rgba(239, 68, 68, ${alpha})`
     }
     return colors.cellBg
   }
@@ -471,11 +471,11 @@ export function CalendarView({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem", marginTop: "1rem", fontSize: "0.7rem", color: colors.cellText, flexWrap: "wrap" }}>
             <span>Loss</span>
             {[0.25, 0.5, 0.75, 1].map((t) => (
-              <div key={`l${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `color-mix(in srgb, var(--color-loss) ${(0.25 * t + 0.1) * 100}%, transparent)` }} />
+              <div key={`l${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(239, 68, 68, ${(0.25 * t + 0.1).toFixed(2)})` }} />
             ))}
             <div style={{ width: YCELL, height: YCELL, borderRadius: 3, background: colors.cellBg }} />
             {[0.25, 0.5, 0.75, 1].map((t) => (
-              <div key={`p${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `color-mix(in srgb, var(--color-profit) ${(0.25 * t + 0.1) * 100}%, transparent)` }} />
+              <div key={`p${t}`} style={{ width: YCELL, height: YCELL, borderRadius: 3, background: `rgba(0, 199, 88, ${(0.25 * t + 0.1).toFixed(2)})` }} />
             ))}
             <span>Profit</span>
             <span style={{ marginLeft: "0.75rem" }}>Click a day for details</span>

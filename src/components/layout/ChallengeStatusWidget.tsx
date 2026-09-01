@@ -33,7 +33,7 @@ export function ChallengeStatusWidget() {
       marginRight: "0.5rem",
       padding: "0.35rem 0.75rem",
       borderRadius: "8px",
-      background: "color-mix(in srgb, var(--color-gray-900) 50%, transparent)",
+      background: "rgba(15, 15, 18, 0.50)",
       border: `1px solid ${
         stats.challengeStatus === "danger" ? "rgba(239,68,68,0.35)"
         : stats.challengeStatus === "warning" ? "rgba(245,158,11,0.3)"
@@ -51,7 +51,7 @@ export function ChallengeStatusWidget() {
           <span style={{
             fontSize: "0.55rem", fontWeight: 800, padding: "0.15rem 0.3rem", borderRadius: "4px",
             background: stats.challengeStatus === "danger" ? "rgba(239,68,68,0.15)"
-              : stats.challengeStatus === "warning" ? "color-mix(in srgb, var(--color-warning) 15%, transparent)"
+              : stats.challengeStatus === "warning" ? "rgba(245, 158, 11, 0.15)"
               : "var(--profit-muted)",
             color: stats.challengeStatus === "danger" ? "var(--color-loss)"
               : stats.challengeStatus === "warning" ? "var(--color-warning)"

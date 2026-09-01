@@ -66,7 +66,7 @@ export default async function RootLayout({
             toastOptions={{
               className: 'custom-toast',
               style: {
-                background: 'color-mix(in srgb, var(--color-gray-900) 80%, transparent)',
+                background: 'rgba(15, 15, 18, 0.80)',
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
                 border: '1px solid var(--color-gray-800)',

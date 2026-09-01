@@ -12,6 +12,7 @@ import {
   Target,
   User,
   LogOut,
+  BookOpen,
 } from "lucide-react"
 
 export interface NavCategory {
@@ -50,6 +51,12 @@ export function PrimarySidebar({ activeCategory, onCategoryChange, featureFlags 
       icon: <CandlestickChart size={20} strokeWidth={1.75} />,
       label: t("trades"),
       href: "/trades",
+    },
+    {
+      id: "playbooks",
+      icon: <BookOpen size={20} strokeWidth={1.75} />,
+      label: "Playbooks",
+      href: "/playbooks",
     },
     ...(featureFlags.propFirmAccess
       ? [

@@ -388,7 +388,7 @@ export function AdvancedStatsClient() {
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {/* ROW 3 — Equity Curve + Drawdown Episodes                       */}
       {/* ═══════════════════════════════════════════════════════════════════ */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "1.5rem", alignItems: "stretch" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "1.5rem", alignItems: "stretch" }}>
         <div style={{ display: "flex", flexDirection: "column" }}>
           {equityCurve && equityCurve.length > 1 ? (
             <EquityCurveChart
@@ -590,7 +590,7 @@ function StatsFilters({ available, filters, apply }: { available: { symbols: str
             style={{
               padding: "0.3rem 0.65rem", borderRadius: "6px", fontSize: "0.72rem", fontWeight: 600,
               border: "none", cursor: "pointer", transition: "all 0.15s",
-              background: filters.period === p.key ? "color-mix(in srgb, var(--color-profit) 15%, transparent)" : "transparent",
+              background: filters.period === p.key ? "rgba(0, 199, 88, 0.15)" : "transparent",
               color: filters.period === p.key ? "var(--color-profit)" : "var(--color-gray-500)",
             }}
           >{p.label}</button>

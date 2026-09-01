@@ -263,5 +263,35 @@
       "startFree": "Démarrer Gratuitement — Sans Carte",
       "disclaimer": "Rejoignez-nous maintenant. Améliorez votre plan quand vous en avez besoin. Annulez à tout moment."
     }
+  },
+  "playbooks": {
+    "title": "Playbooks",
+    "new": "Nouveau Playbook",
+    "edit": "Modifier le Playbook",
+    "emptyTitle": "Pas encore de playbooks",
+    "emptyDesc": "Créez des playbooks de stratégie avec des règles d'entrée, de sortie et de risque pour rester cohérent et améliorer votre trading.",
+    "form": {
+      "name": "Nom",
+      "namePh": "ex. Breakout Long",
+      "description": "Description",
+      "descriptionPh": "Description optionnelle de ce playbook",
+      "tags": "Tags",
+      "tagsPh": "trend, breakout, scalping (séparés par des virgules)",
+      "entryRules": "Règles d'entrée",
+      "entryRulesPh": "price > EMA200, volume spike",
+      "exitRules": "Règles de sortie",
+      "exitRulesPh": "takeProfit: 2R, stopLoss: 1R",
+      "riskRules": "Règles de risque",
+      "riskRulesPh": "maxRisk: 1%, maxDailyLoss: 3%",
+      "cancel": "Annuler",
+      "save": "Enregistrer"
+    },
+    "card": {
+      "entry": "Règles d'entrée",
+      "exit": "Règles de sortie",
+      "risk": "Règles de risque",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    }
   }
 }

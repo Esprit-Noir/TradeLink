@@ -277,7 +277,7 @@ export default function ImportPage() {
                 padding: "0.85rem",
                 borderRadius: "8px",
                 fontSize: "0.82rem",
-                border: "1px solid color-mix(in srgb, var(--color-profit) 25%, transparent)",
+                border: "1px solid rgba(0, 199, 88, 0.25)",
                 display: "flex",
                 flexDirection: "column",
                 gap: "0.6rem"
@@ -376,7 +376,7 @@ export default function ImportPage() {
                     padding: "2rem 1.5rem",
                     textAlign: "center",
                     cursor: "pointer",
-                    background: file ? "color-mix(in srgb, var(--color-profit) 2%, transparent)" : "rgba(3,3,4,0.4)",
+                    background: file ? "rgba(0, 199, 88, 0.02)" : "rgba(3,3,4,0.4)",
                     borderColor: file ? "var(--color-profit-muted)" : "var(--color-gray-800)",
                     transition: "all 0.2s ease",
                   }}
