@@ -61,7 +61,8 @@ export default function ImportPage() {
   useEffect(() => {
     fetch("/api/accounts")
       .then(r => r.json())
-      .then((list: AccountWithChallenge[]) => {
+      .then((res) => {
+        const list: AccountWithChallenge[] = Array.isArray(res) ? res : res.data || []
         setAccounts(list)
         const def = list.find((a) => a.isDefault) || list[0]
         if (def) setSelectedAccountId(def.id)
@@ -246,7 +247,7 @@ export default function ImportPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem", alignItems: "start" }}>
         {/* Left Column: Form & Configuration */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          <div className="chart-card" style={{ padding: "1.5rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div className="chart-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
             <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem", marginBottom: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <FileSpreadsheet size={18} style={{ color: "var(--color-brand-400)" }} />
               Configuration de l&apos;import
@@ -482,7 +483,7 @@ export default function ImportPage() {
           </div>
 
           {/* Formats info card */}
-          <div className="chart-card" style={{ padding: "1.25rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "12px" }}>
+          <div className="chart-card" style={{ padding: "1.25rem" }}>
             <h3 style={{ fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.75rem", color: "var(--color-gray-200)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Formats de fichiers supportés
             </h3>
@@ -499,7 +500,7 @@ export default function ImportPage() {
         {/* Right Column: Live Preview & Action */}
         <div style={{ height: "100%" }}>
           {preview ? (
-            <div className="chart-card" style={{ padding: "1.5rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "12px", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+          <div className="chart-card" style={{ padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1.25rem" }}>
               <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-gray-100)", borderBottom: "1px solid var(--color-gray-800)", paddingBottom: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <Eye size={18} style={{ color: "var(--color-brand-400)" }} />
                 Aperçu avant importation
@@ -607,7 +608,7 @@ export default function ImportPage() {
               </button>
             </div>
           ) : (
-            <div className="chart-card" style={{ padding: "2.5rem 2rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "12px", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: "360px" }}>
+            <div className="chart-card" style={{ padding: "2.5rem 2rem", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", minHeight: "360px" }}>
               <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "rgba(255,255,255,0.02)", border: "1px solid var(--color-gray-800)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.75rem", marginBottom: "1.25rem" }}>
                 📊
               </div>

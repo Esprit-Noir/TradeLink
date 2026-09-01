@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useCallback, useEffect, useRef, useState } from "react"
+import { Bell } from "lucide-react"
 
 type PropEvent = {
   id: string
@@ -42,7 +43,6 @@ export function NotificationBell() {
       const nextEvents: PropEvent[] = data.events || []
       const nextUnread = data.unreadCount || 0
 
-      // Fire browser notifications for newly-arrived unread events
       if (
         nextUnread > unreadRef.current &&
         typeof window !== "undefined" &&
@@ -121,103 +121,55 @@ export function NotificationBell() {
   }
 
   return (
-    <div ref={ref} style={{ position: "relative" }}>
+    <div ref={ref} className="notif-wrapper">
       <button
         onClick={() => { setOpen(o => !o); if (!open) refresh() }}
         aria-label="Notifications"
-        className="notification-bell-btn"
+        className="notif-bell"
       >
-        <svg viewBox="0 0 16 16" fill="none" width="17" height="17">
-          <path d="M8 1.5a4 4 0 00-4 4v2.3L3 10.5h10l-1-2.7V5.5a4 4 0 00-4-4z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
-          <path d="M6.5 13a1.8 1.8 0 003 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
-        </svg>
+        <Bell size={18} strokeWidth={1.75} />
         {unread > 0 && (
-          <span style={{
-            position: "absolute",
-            top: -2,
-            right: -2,
-            minWidth: 15,
-            height: 15,
-            borderRadius: "8px",
-            background: "var(--color-loss)",
-            color: "white",
-            fontSize: "0.7rem",
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "0 3px",
-          }}>
+          <span className="notif-badge">
             {unread > 99 ? "99+" : unread}
           </span>
         )}
       </button>
 
       {open && (
-        <div style={{
-          position: "absolute",
-          top: 34,
-          right: 0,
-          width: 320,
-          maxWidth: "85vw",
-          background: "var(--color-gray-900)",
-          border: "1px solid var(--color-gray-700)",
-          borderRadius: "12px",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.45)",
-          zIndex: 100,
-          overflow: "hidden",
-        }}>
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "0.6rem 0.8rem", borderBottom: "1px solid var(--color-gray-800)",
-          }}>
-            <span style={{ fontSize: "0.78rem", fontWeight: 700, color: "var(--color-gray-300)" }}>
-              Notifications
-            </span>
+        <div className="notif-dropdown">
+          <div className="notif-dropdown-header">
+            <span className="notif-dropdown-title">Notifications</span>
             {unread > 0 && (
-              <button
-                onClick={markAllRead}
-                style={{
-                  fontSize: "0.7rem", color: "var(--color-brand-500)", background: "transparent",
-                  border: "none", cursor: "pointer",
-                }}
-              >
+              <button onClick={markAllRead} className="notif-mark-read">
                 Mark all as read
               </button>
             )}
           </div>
 
-          <div style={{ maxHeight: 360, overflowY: "auto" }}>
+          <div className="notif-dropdown-list">
             {loading && (
-              <div style={{ padding: "1.5rem", textAlign: "center", fontSize: "0.78rem", color: "var(--color-gray-500)" }}>Loading…</div>
+              <div className="notif-empty">Loading...</div>
             )}
             {!loading && events.length === 0 && (
-              <div style={{ padding: "1.5rem", textAlign: "center", fontSize: "0.78rem", color: "var(--color-gray-500)" }}>
-                No notifications yet.
-              </div>
+              <div className="notif-empty">No notifications yet.</div>
             )}
             {events.map(e => (
               <button
                 key={e.id}
                 onClick={() => openEvent(e)}
-                style={{
-                  display: "flex", gap: "0.6rem", padding: "0.65rem 0.8rem", width: "100%",
-                  background: e.readAt ? "transparent" : "rgba(139,92,246,0.06)",
-                  border: "none", borderBottom: "1px solid var(--color-gray-800)",
-                  cursor: "pointer", textAlign: "left", alignItems: "flex-start",
-                }}
+                className={`notif-item ${!e.readAt ? "unread" : ""}`}
               >
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: SEVERITY_COLORS[e.severity] || "var(--color-gray-600)", marginTop: "0.3rem", flexShrink: 0 }} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: "0.78rem", color: "var(--color-gray-200)", lineHeight: 1.35 }}>
+                <div className="notif-dot" style={{ background: SEVERITY_COLORS[e.severity] || "var(--color-gray-600)" }} />
+                <div className="notif-item-content">
+                  <div className="notif-item-message">
                     {e.message || `${e.challenge.template?.firmName || "Challenge"} event`}
                   </div>
-                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: "0.15rem" }}>
+                  <div className="notif-item-meta">
                     {e.challenge.template?.firmName || "Prop Firm"} · {e.challenge.account?.name || e.challenge.phase || ""} · {timeAgo(e.createdAt)}
                   </div>
                 </div>
                 {!e.readAt && (
-                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--color-brand-500)", flexShrink: 0, marginTop: "0.3rem" }} />
+                  <div className="notif-unread-dot" />
                 )}
               </button>
             ))}

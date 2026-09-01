@@ -13,13 +13,12 @@ export function LanguageSwitcher() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [currentLocale, setCurrentLocale] = useState("en")
-  
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const match = document.cookie.match(/(^| )NEXT_LOCALE=([^;]+)/)
     if (match) setCurrentLocale(match[2])
   }, [])
-
-  const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -49,25 +48,32 @@ export function LanguageSwitcher() {
   const activeLang = LANGUAGES.find(l => l.code === currentLocale) || LANGUAGES[0]
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button 
+    <div className="lang-wrapper" ref={dropdownRef}>
+      <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-xs font-semibold text-[var(--color-gray-100)] bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] px-2.5 py-1.5 rounded-md hover:bg-[var(--color-gray-800)] transition-colors"
+        className="lang-btn"
       >
         <span style={{ fontSize: "14px" }}>{activeLang.flag}</span>
         <span className="uppercase">{activeLang.code}</span>
-        <ChevronDown size={14} className={`text-[var(--color-gray-400)] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown
+          size={14}
+          style={{
+            color: "var(--color-gray-400)",
+            transition: "transform 0.2s",
+            transform: open ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
       </button>
 
       {open && (
-        <div className="absolute top-full right-0 mt-2 w-36 bg-[var(--color-gray-900)] border border-[var(--color-gray-800)] rounded-md shadow-lg overflow-hidden z-50">
+        <div className="lang-dropdown">
           {LANGUAGES.map((lang) => (
             <button
               key={lang.code}
               onClick={() => setLanguage(lang.code)}
-              className={`w-full flex items-center gap-2.5 px-3 py-2 text-sm text-left hover:bg-[var(--color-gray-800)] transition-colors ${currentLocale === lang.code ? 'bg-[var(--color-gray-800)] text-white' : 'text-[var(--color-gray-400)]'}`}
+              className={`lang-option ${currentLocale === lang.code ? "active" : ""}`}
             >
-              <span style={{ fontSize: "16px" }}>{lang.flag}</span>
+              <span style={{ fontSize: "15px" }}>{lang.flag}</span>
               <span>{lang.label}</span>
             </button>
           ))}

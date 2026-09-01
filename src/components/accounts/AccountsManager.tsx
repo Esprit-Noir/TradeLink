@@ -288,6 +288,7 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
               role="button"
               tabIndex={0}
               style={{
+                background: "var(--color-gray-900)",
                 border: `1px solid ${typeColor}40`,
                 padding: "1.5rem",
                 borderRadius: "16px",

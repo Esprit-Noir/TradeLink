@@ -132,7 +132,7 @@ export default async function JournalDatePage({ params }: { params: Promise<{ da
           </div>
 
           {propSnapshots.length > 0 && (
-            <div className="chart-card" style={{ padding: "1rem", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
+            <div className="chart-card" style={{ padding: "1rem" }}>
               <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--color-gray-500)", marginBottom: "0.75rem" }}>
                 Prop Firm P&L
               </div>

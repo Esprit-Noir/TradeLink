@@ -8,7 +8,6 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
-  // Avoid hydration mismatch
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -20,18 +19,16 @@ export function ThemeToggle() {
   const isDark = theme === "dark"
 
   const toggleTheme = () => {
-    const newTheme = isDark ? "light" : "dark"
-    setTheme(newTheme)
+    setTheme(isDark ? "light" : "dark")
   }
 
   return (
     <button
       onClick={toggleTheme}
-      className="btn btn-ghost"
-      style={{ padding: "0.5rem", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}
+      className="topbar-btn"
       aria-label={`Switch to ${isDark ? "Light" : "Dark"} Mode`}
     >
-      {isDark ? <Sun size={20} /> : <Moon size={20} />}
+      {isDark ? <Sun size={18} strokeWidth={1.75} /> : <Moon size={18} strokeWidth={1.75} />}
     </button>
   )
 }
