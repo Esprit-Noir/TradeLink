@@ -61,7 +61,7 @@ export function AppShell({
   }
 
   return (
-    <div className="app-layout">
+    <div className="app-layout" >
       <ROINotification />
 
       {/* Mobile backdrop */}
@@ -111,7 +111,9 @@ export function AppShell({
           </div>
         </div>
 
-        <PageTransition>{children}</PageTransition>
+        <div className="main-content-inner">
+          <PageTransition>{children}</PageTransition>
+        </div>
       </main>
     </div>
   )

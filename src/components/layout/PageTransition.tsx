@@ -28,9 +28,16 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
         transform: state === "exiting" ? "translateY(-4px)" : state === "entering" ? "translateY(4px)" : "none",
         transition: "opacity 180ms ease-out, transform 180ms ease-out",
         willChange: state === "visible" ? "auto" : "opacity, transform",
+        flex: 1,
+        minHeight: 0,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      {children}
+      <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem 2rem 2rem" }}>
+        {children}
+      </div>
     </div>
   )
 }
