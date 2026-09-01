@@ -1,328 +1,273 @@
 "use client"
 
 import { useTranslations } from "next-intl"
-import { motion, Variants } from "framer-motion"
-import { Brain, BarChart3, Target, AlertTriangle, Eye, FileText, Activity, Shield, Zap, Sparkles } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { Brain, BarChart3, Activity, Target, Shield, Check } from "lucide-react"
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    }
-  }
-}
+const TABS = [
+  { id: "journal", icon: Brain, label: "Journaling" },
+  { id: "backtest", icon: BarChart3, label: "Backtesting" },
+  { id: "replay", icon: Activity, label: "Trade Replay" },
+  { id: "ai", icon: Target, label: "AI Insights" },
+  { id: "prop", icon: Shield, label: "Prop Firm Sync" },
+]
 
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 40, damping: 15 }
-  }
-}
-
-// Mini SVG chart component — animated profit curve
-function MiniProfitChart({ color = "#00c758", height = 60 }: { color?: string; height?: number }) {
-  const [animated, setAnimated] = useState(false)
-  const ref = useRef<SVGSVGElement>(null)
-
-  const points = [
-    { x: 0, y: 45 }, { x: 15, y: 38 }, { x: 25, y: 42 }, { x: 40, y: 28 },
-    { x: 55, y: 35 }, { x: 65, y: 18 }, { x: 80, y: 22 }, { x: 90, y: 10 }, { x: 100, y: 8 }
-  ]
-  const pathD = points.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
-  const areaD = pathD + ` L 100 ${height} L 0 ${height} Z`
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setAnimated(true) },
-      { threshold: 0.5 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
-
+function JournalPreview() {
   return (
-    <svg ref={ref} viewBox={`0 0 100 ${height}`} className="w-full" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id={`gradient-${color.replace("#","")}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
-          <stop offset="100%" stopColor={color} stopOpacity="0" />
-        </linearGradient>
-        <clipPath id={`clip-${color.replace("#","")}`}>
-          <motion.rect
-            x="0" y="0" height={height}
-            initial={{ width: 0 }}
-            animate={{ width: animated ? 100 : 0 }}
-            transition={{ duration: 1.5, ease: "easeOut", delay: 0.3 }}
-          />
-        </clipPath>
-      </defs>
-      <path
-        d={areaD}
-        fill={`url(#gradient-${color.replace("#","")})`}
-        clipPath={`url(#clip-${color.replace("#","")})`}
-      />
-      <path
-        d={pathD}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        clipPath={`url(#clip-${color.replace("#","")})`}
-      />
-    </svg>
-  )
-}
-
-// Mini bar chart
-function MiniBarChart({ color = "#3b82f6" }: { color?: string }) {
-  const bars = [40, 65, 45, 80, 55, 90, 70, 85, 60, 95]
-  const [animated, setAnimated] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setAnimated(true) },
-      { threshold: 0.5 }
-    )
-    if (ref.current) observer.observe(ref.current)
-    return () => observer.disconnect()
-  }, [])
-
-  return (
-    <div ref={ref} className="flex items-end gap-1 h-14 w-full">
-      {bars.map((h, i) => (
-        <div key={i} className="flex-1 rounded-t transition-all duration-700 ease-out" style={{
-          height: animated ? `${h}%` : "0%",
-          background: color,
-          opacity: 0.4 + (i / bars.length) * 0.6,
-          transitionDelay: `${i * 60}ms`
-        }} />
-      ))}
-    </div>
-  )
-}
-
-// Animated behavior pattern detector
-function BehaviorDetector() {
-  const [tick, setTick] = useState(0)
-  const patterns = [
-    { label: "Revenge trading", score: 82, color: "#f59e0b" },
-    { label: "Overtrading", score: 34, color: "#3b82f6" },
-    { label: "FOMO entries", score: 67, color: "#a855f7" },
-    { label: "Tilt sessions", score: 19, color: "#ef4444" },
-  ]
-
-  useEffect(() => {
-    const t = setInterval(() => setTick(v => v + 1), 3000)
-    return () => clearInterval(t)
-  }, [])
-
-  return (
-    <div className="flex flex-col gap-3 w-full">
-      {patterns.map((p) => (
-        <div key={p.label} className="flex items-center gap-3">
-          <span className="text-xs text-gray-400 w-28 flex-shrink-0 font-medium">{p.label}</span>
-          <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: p.color }}
-              initial={{ width: 0 }}
-              animate={{ width: `${p.score + (tick % 2 === 0 ? Math.random() * 5 - 2.5 : 0)}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-            />
-          </div>
-          <span className="text-xs font-bold w-8 text-right" style={{ color: p.color }}>{p.score}%</span>
+    <div className="bg-[#060806] border border-white/[0.04] rounded-lg p-3 space-y-2">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-[#00c758]"></div>
+        <span className="text-[9px] text-gray-500 tracking-widest">TRADE JOURNAL</span>
+      </div>
+      {["EUR/USD", "NQ", "ES", "GC", "CL"].map((pair, i) => (
+        <div key={pair} className="bg-[#0a0c0a] border border-white/[0.03] rounded px-3 py-2 flex items-center gap-3">
+          <span className={`text-[8px] font-bold px-2 py-0.5 rounded ${i % 3 === 2 ? "bg-red-500/10 text-red-400" : "bg-[#00c758]/10 text-[#00c758]"}`}>
+            {i % 3 === 2 ? "SHORT" : "LONG"}
+          </span>
+          <span className="text-[10px] text-gray-300 flex-1">{pair}</span>
+          <span className="text-[10px] font-mono text-gray-600">14:32</span>
+          <span className={`text-[10px] font-semibold ${i % 3 === 2 ? "text-red-400" : "text-[#00c758]"}`}>
+            {i % 3 === 2 ? "-$" + (30 + i * 20) : "+$" + (150 + i * 80)}
+          </span>
         </div>
       ))}
     </div>
   )
 }
 
+function BacktestPreview() {
+  return (
+    <div className="bg-[#060806] border border-white/[0.04] rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-[#a855f7]"></div>
+        <span className="text-[9px] text-gray-500 tracking-widest">BACKTEST RESULTS</span>
+      </div>
+      <div className="grid grid-cols-3 gap-2 mb-3">
+        {[
+          { label: "Total Trades", val: "1,247" },
+          { label: "Win Rate", val: "58.4%" },
+          { label: "Sharpe", val: "1.82" },
+        ].map((s) => (
+          <div key={s.label} className="bg-[#0a0c0a] border border-white/[0.03] rounded p-2 text-center">
+            <div className="text-[8px] text-gray-600">{s.label}</div>
+            <div className="text-[11px] font-bold text-white">{s.val}</div>
+          </div>
+        ))}
+      </div>
+      <svg viewBox="0 0 300 60" className="w-full h-12" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="btGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a855f7" stopOpacity="0.2"/>
+            <stop offset="100%" stopColor="#a855f7" stopOpacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M0,50 L20,45 L40,48 L60,40 L80,42 L100,35 L120,38 L140,30 L160,32 L180,25 L200,28 L220,20 L240,22 L260,15 L280,18 L300,10 L300,60 L0,60 Z" fill="url(#btGrad)"/>
+        <polyline points="0,50 20,45 40,48 60,40 80,42 100,35 120,38 140,30 160,32 180,25 200,28 220,20 240,22 260,15 280,18 300,10" fill="none" stroke="#a855f7" strokeWidth="2"/>
+      </svg>
+    </div>
+  )
+}
+
+function ReplayPreview() {
+  return (
+    <div className="bg-[#060806] border border-white/[0.04] rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-[#3b82f6]"></div>
+        <span className="text-[9px] text-gray-500 tracking-widest">TRADE REPLAY</span>
+      </div>
+      <div className="bg-[#0a0c0a] border border-white/[0.03] rounded p-3 mb-2">
+        <svg viewBox="0 0 300 50" className="w-full h-10" preserveAspectRatio="none">
+          {Array.from({ length: 20 }).map((_, i) => {
+            const h = 8 + Math.random() * 30
+            const y = 45 - h
+            const green = i % 3 !== 0
+            return <rect key={i} x={i * 15} y={y} width="10" height={h} rx="1" fill={green ? "#00c758" : "#ef4444"} opacity={green ? 0.6 : 0.5}/>
+          })}
+        </svg>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-full bg-[#3b82f6]/15 flex items-center justify-center">
+          <span className="text-[#3b82f6] text-[8px]">&#9654;</span>
+        </div>
+        <div className="flex-1 h-1 bg-[#0a0c0a] rounded-full overflow-hidden">
+          <div className="h-full bg-[#3b82f6] rounded-full" style={{ width: "45%" }}></div>
+        </div>
+        <span className="text-[8px] text-gray-600">2:34 / 5:12</span>
+      </div>
+    </div>
+  )
+}
+
+function AiPreview() {
+  return (
+    <div className="bg-[#060806] border border-white/[0.04] rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-[#f59e0b]"></div>
+        <span className="text-[9px] text-gray-500 tracking-widest">AI ANALYSIS</span>
+      </div>
+      <div className="space-y-2">
+        <div className="bg-[#0a0c0a] border border-white/[0.03] rounded p-2.5 flex items-start gap-2">
+          <span className="text-[#f59e0b] text-[10px] mt-0.5">&#9888;</span>
+          <div>
+            <div className="text-[9px] text-white font-medium mb-0.5">Revenge Trading Detected</div>
+            <div className="text-[8px] text-gray-500">You took 5 trades in 8 minutes after a -$340 loss. Average entry quality dropped 40%.</div>
+          </div>
+        </div>
+        <div className="bg-[#0a0c0a] border border-white/[0.03] rounded p-2.5 flex items-start gap-2">
+          <span className="text-[#00c758] text-[10px] mt-0.5">&#10003;</span>
+          <div>
+            <div className="text-[9px] text-white font-medium mb-0.5">Best Setup: London Breakout</div>
+            <div className="text-[8px] text-gray-500">78% win rate, 2.8 profit factor on EUR/USD 15min opens.</div>
+          </div>
+        </div>
+        <div className="bg-[#0a0c0a] border border-white/[0.03] rounded p-2.5 flex items-start gap-2">
+          <span className="text-[#3b82f6] text-[10px] mt-0.5">&#9733;</span>
+          <div>
+            <div className="text-[9px] text-white font-medium mb-0.5">Time-of-Day Pattern</div>
+            <div className="text-[8px] text-gray-500">Win rate drops 18% after 1pm EST. Consider stopping at lunch.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PropPreview() {
+  return (
+    <div className="bg-[#060806] border border-white/[0.04] rounded-lg p-3">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-2 h-2 rounded-full bg-[#00c758]"></div>
+        <span className="text-[9px] text-gray-500 tracking-widest">PROP FIRM DASHBOARD</span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {[
+          { firm: "FTMO", status: "Passing", progress: 72, color: "#00c758" },
+          { firm: "Apex", status: "Phase 2", progress: 45, color: "#3b82f6" },
+          { firm: "TopStep", status: "Funded", progress: 100, color: "#00c758" },
+          { firm: "The5ers", status: "At Risk", progress: 88, color: "#ef4444" },
+        ].map((p) => (
+          <div key={p.firm} className="bg-[#0a0c0a] border border-white/[0.03] rounded p-2">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[9px] font-semibold text-white">{p.firm}</span>
+              <span className="text-[7px] font-bold px-1.5 py-0.5 rounded" style={{ color: p.color, backgroundColor: `${p.color}15` }}>{p.status}</span>
+            </div>
+            <div className="h-1 bg-[#121512] rounded-full overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${p.progress}%`, backgroundColor: p.color }}></div>
+            </div>
+            <div className="text-[7px] text-gray-600 mt-1">{p.progress}% complete</div>
+          </div>
+        ))}
+      </div>
+      <div className="bg-[#0a0c0a] border border-[#00c758]/10 rounded p-2 flex items-center gap-2">
+        <span className="text-[#00c758] text-[10px]">&#10003;</span>
+        <span className="text-[8px] text-gray-400">All daily loss limits within safe range. 2 accounts on track for funding.</span>
+      </div>
+    </div>
+  )
+}
+
+const PREVIEWS: Record<string, () => React.JSX.Element> = {
+  journal: JournalPreview,
+  backtest: BacktestPreview,
+  replay: ReplayPreview,
+  ai: AiPreview,
+  prop: PropPreview,
+}
+
 export function MarketingFeatures() {
   const t = useTranslations("Marketing.Features")
+  const [active, setActive] = useState("journal")
+
+  const CONTENT: Record<string, { tag: string; title: string; desc: string; bullets: string[] }> = {
+    journal: {
+      tag: "AUTOMATED JOURNALING",
+      title: t("aiTitle"),
+      desc: t("aiDesc"),
+      bullets: [t("aiF1"), t("aiF2"), t("aiF3"), "Real-time sync"],
+    },
+    backtest: {
+      tag: "BACKTESTING",
+      title: t("quantTitle"),
+      desc: t("quantDesc"),
+      bullets: ["Tick-level data", "Bar-by-bar replay", "Multi-strategy comparison", "Playbook library"],
+    },
+    replay: {
+      tag: "TRADE REPLAY",
+      title: "Replay every trade, bar by bar.",
+      desc: "Re-watch the chart exactly as it printed. Spot the hesitation, the early exit, the level you should have respected.",
+      bullets: ["Synced with your fills", "Variable playback speed", "Drawing tools", "Share with your space"],
+    },
+    ai: {
+      tag: "AI INSIGHTS",
+      title: "Find what's costing you.",
+      desc: "TradeLink AI reads your trades and surfaces the leaks: time-of-day patterns, tilt cycles, the setups that quietly print.",
+      bullets: ["Trained on 20.2B trades", "Behavior & tilt detection", "Plain-English Q&A", "Weekly digest"],
+    },
+    prop: {
+      tag: "PROP FIRM SYNC",
+      title: t("propTitle"),
+      desc: t("propDesc"),
+      bullets: [t("propF1"), t("propF2"), "Pass-rate forecasting", "Multi-account dashboards"],
+    },
+  }
+
+  const content = CONTENT[active]
+  const Preview = PREVIEWS[active]
+
   return (
-    <section className="py-32 bg-[#050505] relative overflow-hidden" id="features">
-      {/* Background Glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-[var(--color-brand-500)]/10 blur-[150px] pointer-events-none rounded-[100%]" />
-      
-      <div className="max-w-[1200px] mx-auto px-6 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-20 flex flex-col items-center"
-        >
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-6 shadow-[0_0_15px_rgba(255,255,255,0.05)] backdrop-blur-md">
-            <Zap size={12} className="text-[var(--color-brand-500)]" />
-            <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">{t("badge")}</span>
+    <section className="py-24 bg-[#050505] border-t border-white/[0.04]" id="features">
+      <div className="max-w-[1100px] mx-auto px-6">
+        <div className="text-center mb-12">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] mb-4">
+            <span className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">{t("badge")}</span>
           </span>
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tighter">
-            {t("title1")} <span className="bg-gradient-to-br from-[var(--color-brand-500)] to-emerald-200 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,199,88,0.3)]">{t("title2")}</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">
+            {t("title1")} <span className="text-[var(--color-brand-500)]">{t("title2")}</span>
           </h2>
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed font-medium">
-            Du coaching comportemental par IA à la gestion des risques en temps réel — TradeLink donne
-            aux traders financés les outils pour réussir les challenges et préserver leurs comptes.
-          </p>
-        </motion.div>
+          <p className="text-sm text-gray-400 max-w-lg mx-auto">{t("subtitle")}</p>
+        </div>
 
-        {/* Bento Grid */}
-        <motion.div 
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-3 auto-rows-[minmax(280px,auto)] gap-6"
-        >
-          {/* AI Behavioral Coaching - Large */}
-          <motion.div variants={itemVariants} className="col-span-1 md:col-span-2 md:row-span-2 relative bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden group hover:border-[var(--color-brand-500)]/50 transition-all duration-500 shadow-[0_0_0_rgba(0,0,0,0)] hover:shadow-[0_0_40px_rgba(0,199,88,0.15)]">
-             <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-brand-500)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-             <div className="absolute -top-[60%] -right-[40%] w-[400px] h-[400px] rounded-full bg-[var(--color-brand-500)] blur-[120px] opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none" />
-             
-             <div className="relative p-10 h-full flex flex-col">
-               <div className="flex items-start justify-between mb-8">
-                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--color-brand-500)]/20 to-[var(--color-brand-500)]/5 border border-[var(--color-brand-500)]/30 text-[var(--color-brand-500)] flex items-center justify-center shadow-inner shadow-[var(--color-brand-500)]/20">
-                   <Brain size={28} />
-                 </div>
-                 {/* AI Badge */}
-                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--color-brand-500)]/10 border border-[var(--color-brand-500)]/20 rounded-full text-[11px] font-bold text-[var(--color-brand-500)] uppercase tracking-widest">
-                   <Sparkles size={10} className="animate-pulse" /> IA
-                 </span>
-               </div>
-               <h3 className="text-3xl font-extrabold text-white mb-4 tracking-tight">{t("aiTitle")}</h3>
-               <p className="text-gray-400 leading-relaxed mb-6 max-w-lg font-medium text-lg">{t("aiDesc")}</p>
-               
-               {/* Live Behavior Detector */}
-               <div className="bg-black/30 rounded-2xl border border-white/5 p-4 mb-6">
-                 <div className="flex items-center justify-between mb-4">
-                   <span className="text-xs font-bold text-white uppercase tracking-widest">Analyse comportementale</span>
-                   <span className="flex items-center gap-1.5 text-[11px] text-[var(--color-brand-500)] font-bold">
-                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand-500)] animate-pulse" /> LIVE
-                   </span>
-                 </div>
-                 <BehaviorDetector />
-               </div>
-               
-               <div className="flex flex-col gap-4">
-                 <div className="flex items-center gap-3 text-sm text-gray-300 font-medium"><AlertTriangle size={18} className="text-amber-500 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" /> {t("aiF1")}</div>
-                 <div className="flex items-center gap-3 text-sm text-gray-300 font-medium"><Eye size={18} className="text-blue-500 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" /> {t("aiF2")}</div>
-                 <div className="flex items-center gap-3 text-sm text-gray-300 font-medium"><FileText size={18} className="text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]" /> {t("aiF3")}</div>
-               </div>
-             </div>
-          </motion.div>
+        <div className="flex flex-wrap justify-center gap-2 mb-10">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActive(tab.id)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
+                active === tab.id ? "bg-white text-black" : "text-gray-400 hover:text-white hover:bg-white/[0.06]"
+              }`}
+            >
+              <tab.icon size={13} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-          {/* Deep Analytics - Medium */}
-          <motion.div variants={itemVariants} className="col-span-1 md:row-span-2 relative bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden group hover:border-blue-500/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.15)] flex flex-col">
-             <div className="absolute inset-0 bg-gradient-to-bl from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-             <div className="absolute -top-[60%] -right-[40%] w-[400px] h-[400px] rounded-full bg-blue-500 blur-[120px] opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none" />
-             
-             <div className="relative p-10 flex flex-col flex-1">
-               <div className="flex items-start justify-between mb-8">
-                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 text-blue-400 flex items-center justify-center shadow-inner shadow-blue-500/20">
-                   <BarChart3 size={28} />
-                 </div>
-                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-[11px] font-bold text-blue-400 uppercase tracking-widest">
-                   Quant
-                 </span>
-               </div>
-               <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">{t("quantTitle")}</h3>
-               <p className="text-gray-400 leading-relaxed mb-6 font-medium text-sm">{t("quantDesc")}</p>
-               
-               {/* Mini Stats */}
-               <div className="grid grid-cols-2 gap-3 mb-6">
-                 {[
-                   { label: "Win Rate", value: "67.3%", delta: "+4.2%", up: true },
-                   { label: "Profit Factor", value: "2.41", delta: "+0.3", up: true },
-                   { label: "Max DD", value: "3.8%", delta: "-1.2%", up: true },
-                   { label: "Avg R/R", value: "1:2.8", delta: "+0.4", up: true },
-                 ].map(stat => (
-                   <div key={stat.label} className="bg-black/30 rounded-xl p-3 border border-white/5">
-                     <div className="text-[11px] text-gray-500 font-medium mb-1">{stat.label}</div>
-                     <div className="text-lg font-black text-white tracking-tight">{stat.value}</div>
-                     <div className="text-[11px] font-bold text-[var(--color-brand-500)]">{stat.delta}</div>
-                   </div>
-                 ))}
-               </div>
-               
-               {/* Mini bar chart */}
-               <div className="bg-black/30 rounded-xl p-4 border border-white/5">
-                 <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mb-3">P&L / Jour (30j)</div>
-                 <MiniBarChart color="#3b82f6" />
-               </div>
-             </div>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.25 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center"
+          >
+            <div>
+              <span className="text-[10px] font-semibold text-[var(--color-brand-500)] uppercase tracking-wider mb-2 block">{content.tag}</span>
+              <h3 className="text-2xl font-bold text-white mb-3">{content.title}</h3>
+              <p className="text-sm text-gray-400 leading-relaxed mb-5">{content.desc}</p>
+              <ul className="space-y-2.5">
+                {content.bullets.map((b) => (
+                  <li key={b} className="flex items-center gap-2 text-sm text-gray-300">
+                    <Check size={12} className="text-[var(--color-brand-500)] flex-shrink-0" strokeWidth={3} />
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <Preview />
           </motion.div>
-
-          {/* Accounts & Prop Firms - Wide */}
-          <motion.div variants={itemVariants} className="col-span-1 md:col-span-3 relative bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden group hover:border-emerald-500/50 transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-             <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-             <div className="absolute -bottom-[60%] -left-[20%] w-[500px] h-[500px] rounded-full bg-emerald-500 blur-[150px] opacity-10 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none" />
-             
-             <div className="relative p-10 flex flex-col md:flex-row gap-12 items-center h-full">
-               <div className="flex-1 z-20">
-                 <div className="flex items-start justify-between mb-8">
-                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-inner shadow-emerald-500/20">
-                     <Target size={28} />
-                   </div>
-                   <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[11px] font-bold text-emerald-400 uppercase tracking-widest">
-                     Prop Firms
-                   </span>
-                 </div>
-                 <h3 className="text-3xl font-extrabold text-white mb-4 tracking-tight">{t("propTitle")}</h3>
-                 <p className="text-gray-400 leading-relaxed mb-8 font-medium text-lg">{t("propDesc")}</p>
-                 <div className="flex flex-col gap-4">
-                   <div className="flex items-center gap-3 text-sm text-gray-300 font-medium"><Activity size={18} className="text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" /> {t("propF1")}</div>
-                   <div className="flex items-center gap-3 text-sm text-gray-300 font-medium"><Shield size={18} className="text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" /> {t("propF2")}</div>
-                 </div>
-               </div>
-               
-               {/* Equity chart preview */}
-               <div className="w-full md:w-[55%] rounded-2xl border border-white/10 overflow-hidden relative shadow-2xl bg-black/60 p-6">
-                 <div className="flex items-center justify-between mb-4">
-                   <div>
-                     <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mb-1">Compte FTMO — Equity</div>
-                     <div className="text-2xl font-black text-white tracking-tight">$112,450 <span className="text-sm font-medium text-[var(--color-brand-500)]">+12.4%</span></div>
-                   </div>
-                   <div className="text-right">
-                     <div className="text-[11px] text-gray-500 font-bold uppercase tracking-widest mb-1">Drawdown</div>
-                     <div className="text-lg font-bold text-emerald-400">2.1% / 10%</div>
-                   </div>
-                 </div>
-                 <div className="h-20">
-                   <MiniProfitChart color="#00c758" height={60} />
-                 </div>
-                 {/* Progress bars */}
-                 <div className="mt-4 space-y-2">
-                   {[
-                     { label: "Profit Target", current: 12.4, target: 10, exceeded: true, color: "#00c758" },
-                     { label: "Daily Loss", current: 0.8, target: 5, exceeded: false, color: "#3b82f6" },
-                     { label: "Max Drawdown", current: 2.1, target: 10, exceeded: false, color: "#a855f7" },
-                   ].map(item => (
-                     <div key={item.label} className="flex items-center gap-3">
-                       <span className="text-[11px] text-gray-500 w-24 flex-shrink-0">{item.label}</span>
-                       <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                         <div
-                           className="h-full rounded-full transition-all"
-                           style={{
-                             width: `${Math.min((item.current / item.target) * 100, 100)}%`,
-                             background: item.color
-                           }}
-                         />
-                       </div>
-                       <span className="text-[11px] font-bold" style={{ color: item.color }}>{item.current}%</span>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-             </div>
-          </motion.div>
-        </motion.div>
+        </AnimatePresence>
       </div>
     </section>
   )

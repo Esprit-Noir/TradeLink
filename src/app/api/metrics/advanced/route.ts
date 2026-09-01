@@ -310,6 +310,13 @@ export async function GET(request: Request) {
       : 0
     const sortino = downsideDev > 0 ? meanR / downsideDev : meanR > 0 ? 99 : 0
 
+    // Sharpe (daily returns, rf = 0, annualized)
+    const variance = nDays > 1
+      ? dailyReturns.reduce((s, r) => s + (r - meanR) ** 2, 0) / (nDays - 1)
+      : 0
+    const stdDev = Math.sqrt(variance)
+    const sharpe = stdDev > 0 ? (meanR / stdDev) * Math.sqrt(252) : meanR > 0 ? 99 : 0
+
     // Drawdown episodes (from daily equity)
     let peakEq = 0
     let ddStartIdx = -1
@@ -356,6 +363,31 @@ export async function GET(request: Request) {
     const maxDrawdownStart = worstEp?.startDate ?? null
     const maxDrawdownRecovery = worstEp?.endDate ?? null
 
+    // Calmar (annualized return / max drawdown)
+    const annualizedReturn = nDays > 0 ? (meanR * 252) : 0
+    const calmar = ddMaxPct > 0 ? annualizedReturn / (ddMaxPct / 100) : annualizedReturn > 0 ? 99 : 0
+
+    // Mood vs Performance correlation
+    const journalDates = dayRows.map(d => d.date)
+    const journals = await prisma.dailyJournal.findMany({
+      where: {
+        userId: session.user.id,
+        date: { in: journalDates },
+      },
+      select: { date: true, mood: true },
+    })
+
+    const moodMap = new Map(journals.filter(j => j.mood).map(j => [j.date, j.mood!]))
+    const moodPerf: Record<string, { pnl: number; count: number; wins: number }> = {}
+    for (const row of dayRows) {
+      const mood = moodMap.get(row.date)
+      if (!mood) continue
+      if (!moodPerf[mood]) moodPerf[mood] = { pnl: 0, count: 0, wins: 0 }
+      moodPerf[mood].pnl += row.pnl
+      moodPerf[mood].count++
+      if (row.pnl > 0) moodPerf[mood].wins++
+    }
+
     return NextResponse.json({
       empty: false,
       filters: { period, symbol, setup, side },
@@ -367,6 +399,8 @@ export async function GET(request: Request) {
         winRate: winRate * 100,
         totalTrades,
         sortino: Math.round(sortino * 100) / 100,
+        sharpe: Math.round(sharpe * 100) / 100,
+        calmar: Math.round(calmar * 100) / 100,
       },
       durations: {
         avgWinDurationMinutes: winTradesWithDuration > 0 ? (winTotalDurationMs / winTradesWithDuration) / 60000 : null,
@@ -404,6 +438,7 @@ export async function GET(request: Request) {
       sides: Object.entries(sideMap)
         .map(([name, data]) => ({ name, pnl: data.pnl, count: data.count, winRate: data.count > 0 ? (data.wins / data.count) * 100 : 0 }))
         .sort((a, b) => b.count - a.count),
+      moodPerformance: moodPerf,
     })
   } catch (error) {
     console.error("[ADVANCED_METRICS_GET]", error instanceof Error ? error.message : "Unknown error")

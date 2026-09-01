@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675">
+  <!-- Background -->
+  <rect width="1200" height="675" fill="#111318"/>
+  
+  <!-- Top bar -->
+  <rect x="0" y="0" width="1200" height="40" fill="#1a1d23"/>
+  <circle cx="20" cy="20" r="6" fill="#ff5f57"/>
+  <circle cx="40" cy="20" r="6" fill="#febc2e"/>
+  <circle cx="60" cy="20" r="6" fill="#28c840"/>
+  <rect x="450" y="12" width="300" height="16" rx="4" fill="#22262d"/>
+  <text x="600" y="24" text-anchor="middle" fill="#888" font-family="system-ui, sans-serif" font-size="11">app.tradelink.io/dashboard</text>
+  
+  <!-- Sidebar -->
+  <rect x="0" y="40" width="200" height="635" fill="#15181e"/>
+  <rect x="20" y="65" width="140" height="10" rx="3" fill="#2a2e36"/>
+  <rect x="20" y="90" width="120" height="10" rx="3" fill="#2a2e36"/>
+  <rect x="20" y="115" width="160" height="10" rx="3" fill="#00c758" opacity="0.4"/>
+  <rect x="20" y="140" width="130" height="10" rx="3" fill="#2a2e36"/>
+  <rect x="20" y="165" width="150" height="10" rx="3" fill="#2a2e36"/>
+  <rect x="20" y="200" width="100" height="10" rx="3" fill="#2a2e36"/>
+  <rect x="20" y="225" width="130" height="10" rx="3" fill="#2a2e36"/>
+  
+  <!-- Main content area -->
+  <rect x="200" y="40" width="1000" height="635" fill="#111318"/>
+  
+  <!-- KPI Cards -->
+  <rect x="220" y="60" width="230" height="90" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <rect x="470" y="60" width="230" height="90" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <rect x="720" y="60" width="230" height="90" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <rect x="970" y="60" width="210" height="90" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  
+  <text x="240" y="88" fill="#888" font-size="11" font-family="system-ui, sans-serif">Net P&L</text>
+  <text x="240" y="118" fill="#00c758" font-size="26" font-weight="bold" font-family="system-ui, sans-serif">+$10,970</text>
+  <text x="240" y="140" fill="#666" font-size="10" font-family="system-ui, sans-serif">110 trades</text>
+  
+  <text x="490" y="88" fill="#888" font-size="11" font-family="system-ui, sans-serif">Win Rate</text>
+  <text x="490" y="118" fill="#3b82f6" font-size="26" font-weight="bold" font-family="system-ui, sans-serif">62.7%</text>
+  <text x="490" y="140" fill="#666" font-size="10" font-family="system-ui, sans-serif">69W / 41L</text>
+  
+  <text x="740" y="88" fill="#888" font-size="11" font-family="system-ui, sans-serif">Profit Factor</text>
+  <text x="740" y="118" fill="#a855f7" font-size="26" font-weight="bold" font-family="system-ui, sans-serif">2.34</text>
+  <text x="740" y="140" fill="#666" font-size="10" font-family="system-ui, sans-serif">$18.5K gross</text>
+  
+  <text x="990" y="88" fill="#888" font-size="11" font-family="system-ui, sans-serif">Max DD</text>
+  <text x="990" y="118" fill="#f59e0b" font-size="26" font-weight="bold" font-family="system-ui, sans-serif">0.9%</text>
+  <text x="990" y="140" fill="#666" font-size="10" font-family="system-ui, sans-serif">$890 / 4%</text>
+  
+  <!-- Chart card -->
+  <rect x="220" y="170" width="660" height="320" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <text x="240" y="200" fill="#888" font-size="11" font-weight="600" font-family="system-ui, sans-serif" letter-spacing="1.5">EQUITY CURVE</text>
+  <text x="240" y="235" fill="#ffffff" font-size="28" font-weight="bold" font-family="system-ui, sans-serif">$142,800</text>
+  <text x="390" y="235" fill="#00c758" font-size="16" font-family="system-ui, sans-serif">+42.8%</text>
+  
+  <!-- Grid lines -->
+  <line x1="240" y1="280" x2="860" y2="280" stroke="#22262d" stroke-width="1"/>
+  <line x1="240" y1="330" x2="860" y2="330" stroke="#22262d" stroke-width="1"/>
+  <line x1="240" y1="380" x2="860" y2="380" stroke="#22262d" stroke-width="1"/>
+  <line x1="240" y1="430" x2="860" y2="430" stroke="#22262d" stroke-width="1"/>
+  
+  <!-- Equity curve fill -->
+  <path d="M240,420 L290,400 L340,410 L390,380 L440,390 L490,350 L540,360 L590,320 L640,330 L690,290 L740,300 L790,270 L840,280 L860,260 L860,460 L240,460 Z" fill="url(#gradient)" opacity="0.3"/>
+  
+  <!-- Equity curve line -->
+  <polyline points="240,420 290,400 340,410 390,380 440,390 490,350 540,360 590,320 640,330 690,290 740,300 790,270 840,280 860,260" 
+    fill="none" stroke="#00c758" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#00c758" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#00c758" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Right sidebar - Recent Trades -->
+  <rect x="900" y="170" width="280" height="320" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <text x="920" y="200" fill="#888" font-size="11" font-weight="600" font-family="system-ui, sans-serif" letter-spacing="1.5">RECENT TRADES</text>
+  
+  <!-- Trade rows -->
+  <rect x="920" y="218" width="240" height="36" rx="6" fill="#15181e"/>
+  <rect x="930" y="228" width="44" height="16" rx="4" fill="#00c758" opacity="0.15"/>
+  <text x="938" y="240" fill="#00c758" font-size="9" font-weight="600" font-family="system-ui, sans-serif">LONG</text>
+  <text x="984" y="240" fill="#ffffff" font-size="10" font-family="system-ui, sans-serif">EUR/USD</text>
+  <text x="1148" y="240" fill="#00c758" font-size="10" font-weight="600" font-family="system-ui, sans-serif" text-anchor="end">+$342</text>
+  
+  <rect x="920" y="262" width="240" height="36" rx="6" fill="#15181e"/>
+  <rect x="930" y="272" width="44" height="16" rx="4" fill="#ef4444" opacity="0.15"/>
+  <text x="938" y="284" fill="#ef4444" font-size="9" font-weight="600" font-family="system-ui, sans-serif">SHORT</text>
+  <text x="984" y="284" fill="#ffffff" font-size="10" font-family="system-ui, sans-serif">NQ</text>
+  <text x="1148" y="284" fill="#ef4444" font-size="10" font-weight="600" font-family="system-ui, sans-serif" text-anchor="end">-$128</text>
+  
+  <rect x="920" y="306" width="240" height="36" rx="6" fill="#15181e"/>
+  <rect x="930" y="316" width="44" height="16" rx="4" fill="#00c758" opacity="0.15"/>
+  <text x="938" y="328" fill="#00c758" font-size="9" font-weight="600" font-family="system-ui, sans-serif">LONG</text>
+  <text x="984" y="328" fill="#ffffff" font-size="10" font-family="system-ui, sans-serif">ES</text>
+  <text x="1148" y="328" fill="#00c758" font-size="10" font-weight="600" font-family="system-ui, sans-serif" text-anchor="end">+$615</text>
+  
+  <rect x="920" y="350" width="240" height="36" rx="6" fill="#15181e"/>
+  <rect x="930" y="360" width="44" height="16" rx="4" fill="#00c758" opacity="0.15"/>
+  <text x="938" y="372" fill="#00c758" font-size="9" font-weight="600" font-family="system-ui, sans-serif">LONG</text>
+  <text x="984" y="372" fill="#ffffff" font-size="10" font-family="system-ui, sans-serif">GC</text>
+  <text x="1148" y="372" fill="#00c758" font-size="10" font-weight="600" font-family="system-ui, sans-serif" text-anchor="end">+$892</text>
+  
+  <!-- Bottom section -->
+  <!-- P&L Heatmap -->
+  <rect x="220" y="510" width="320" height="155" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <text x="240" y="538" fill="#888" font-size="11" font-weight="600" font-family="system-ui, sans-serif" letter-spacing="1.5">P&L HEATMAP</text>
+  
+  <!-- Heatmap grid -->
+  <rect x="240" y="555" width="35" height="22" rx="3" fill="#00c758" opacity="0.8"/>
+  <rect x="282" y="555" width="35" height="22" rx="3" fill="#34d399" opacity="0.6"/>
+  <rect x="324" y="555" width="35" height="22" rx="3" fill="#ef4444" opacity="0.7"/>
+  <rect x="366" y="555" width="35" height="22" rx="3" fill="#00c758" opacity="0.4"/>
+  <rect x="408" y="555" width="35" height="22" rx="3" fill="#6ee7b7" opacity="0.5"/>
+  <rect x="450" y="555" width="35" height="22" rx="3" fill="#00c758" opacity="0.7"/>
+  
+  <rect x="240" y="585" width="35" height="22" rx="3" fill="#6ee7b7" opacity="0.5"/>
+  <rect x="282" y="585" width="35" height="22" rx="3" fill="#00c758" opacity="0.8"/>
+  <rect x="324" y="585" width="35" height="22" rx="3" fill="#34d399" opacity="0.4"/>
+  <rect x="366" y="585" width="35" height="22" rx="3" fill="#ef4444" opacity="0.5"/>
+  <rect x="408" y="585" width="35" height="22" rx="3" fill="#00c758" opacity="0.7"/>
+  <rect x="450" y="585" width="35" height="22" rx="3" fill="#34d399" opacity="0.5"/>
+  
+  <rect x="240" y="615" width="35" height="22" rx="3" fill="#00c758" opacity="0.6"/>
+  <rect x="282" y="615" width="35" height="22" rx="3" fill="#ef4444" opacity="0.3"/>
+  <rect x="324" y="615" width="35" height="22" rx="3" fill="#00c758" opacity="0.8"/>
+  <rect x="366" y="615" width="35" height="22" rx="3" fill="#34d399" opacity="0.6"/>
+  <rect x="408" y="615" width="35" height="22" rx="3" fill="#6ee7b7" opacity="0.4"/>
+  <rect x="450" y="615" width="35" height="22" rx="3" fill="#00c758" opacity="0.7"/>
+  
+  <!-- AI Insight -->
+  <rect x="560" y="510" width="620" height="65" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <rect x="580" y="528" width="24" height="24" rx="6" fill="#f59e0b" opacity="0.15"/>
+  <text x="592" y="545" fill="#f59e0b" font-size="14" font-family="system-ui, sans-serif">!</text>
+  <text x="616" y="545" fill="#ffffff" font-size="12" font-family="system-ui, sans-serif">AI Insight: Your win rate drops 18% after 1pm — consider avoiding afternoon sessions.</text>
+  
+  <!-- Quick Stats -->
+  <rect x="560" y="590" width="300" height="75" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <text x="580" y="615" fill="#888" font-size="11" font-weight="600" font-family="system-ui, sans-serif" letter-spacing="1.5">STREAK</text>
+  <text x="580" y="645" fill="#00c758" font-size="22" font-weight="bold" font-family="system-ui, sans-serif">5 Wins</text>
+  
+  <rect x="880" y="590" width="300" height="75" rx="10" fill="#1a1d23" stroke="#2a2e36" stroke-width="1"/>
+  <text x="900" y="615" fill="#888" font-size="11" font-weight="600" font-family="system-ui, sans-serif" letter-spacing="1.5">BEST DAY</text>
+  <text x="900" y="645" fill="#00c758" font-size="22" font-weight="bold" font-family="system-ui, sans-serif">+$2,340</text>
+</svg>

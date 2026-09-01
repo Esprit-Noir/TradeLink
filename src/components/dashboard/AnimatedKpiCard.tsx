@@ -44,7 +44,7 @@ function CountUpValue({ value, color, size }: { value: string; color: string; si
 
   return (
     <span style={{ fontSize: size, fontWeight: 800, color, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
-      {prefix}{animated.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}
+      {prefix}{animated.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}
     </span>
   )
 }

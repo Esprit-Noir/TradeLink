@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Save, Wallet, Target, List, LayoutList, BookOpenText } from "lucide-react"
+import { Save, Wallet, Target, List, LayoutList, BookOpenText, Share2, Link as LinkIcon } from "lucide-react"
 import { toast } from "sonner"
 import { NotificationPreferences } from "@/components/prop-firm/NotificationPreferences"
 
@@ -43,6 +43,8 @@ export function ProfileManager({
 
   const [savingPersonal, setSavingPersonal] = useState(false)
   const [savingPrefs, setSavingPrefs] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [sharing, setSharing] = useState(false)
 
   const memberSince = new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })
   const initials = (user.name || user.email)
@@ -102,6 +104,28 @@ export function ProfileManager({
     }
   }
 
+  const handleShareProfile = async () => {
+    setSharing(true)
+    try {
+      const res = await fetch("/api/share", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entityType: "profile" }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        const fullUrl = `${window.location.origin}${data.url}`
+        setShareUrl(fullUrl)
+        await navigator.clipboard.writeText(fullUrl)
+        toast.success("Profile link copied to clipboard!")
+      }
+    } catch {
+      toast.error("Failed to generate share link")
+    } finally {
+      setSharing(false)
+    }
+  }
+
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
@@ -134,6 +158,23 @@ export function ProfileManager({
           <StatChip icon={<LayoutList size={15} />} value={stats.setups} label="Setups" />
           <StatChip icon={<BookOpenText size={15} />} value={stats.journals} label="Journals" />
         </div>
+
+        <button
+          onClick={handleShareProfile}
+          disabled={sharing}
+          style={{
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "0.4rem 0.8rem", borderRadius: 8,
+            background: shareUrl ? "rgba(0,199,88,0.15)" : "var(--color-gray-800)",
+            border: `1px solid ${shareUrl ? "rgba(0,199,88,0.3)" : "var(--color-gray-700)"}`,
+            color: shareUrl ? "var(--color-brand-400)" : "var(--color-gray-300)",
+            fontSize: "0.75rem", fontWeight: 600, cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+        >
+          {shareUrl ? <LinkIcon size={14} /> : <Share2 size={14} />}
+          {shareUrl ? "Copied!" : sharing ? "..." : "Share"}
+        </button>
       </div>
 
       {/* ─── Personal details ───────────────────────────────────────────── */}

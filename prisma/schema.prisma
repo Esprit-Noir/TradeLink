@@ -213,6 +213,10 @@ model Trade {
   notesPost      String?  @map("notes_post")
   personalRating Int?     @map("personal_rating") // 1-5
 
+  // Pre/Post Trade Checklists
+  preChecklist   Json?    @map("pre_checklist")   // { planFollowed: bool, stopSet: bool, ... }
+  postChecklist  Json?    @map("post_checklist")  // { followedPlan: bool, emotionsManaged: bool, ... }
+
   // Behavioral flags (computed)
   isRevengeTrade   Boolean @default(false) @map("is_revenge_trade")
   isOvertrading    Boolean @default(false) @map("is_overtrading")

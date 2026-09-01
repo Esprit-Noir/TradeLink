@@ -213,27 +213,54 @@ export function TradesTable({
       const { trades: exportTrades } = await res.json() as { trades: SerializedTrade[] }
       
       const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" })
+      const W = doc.internal.pageSize.getWidth()
       
+      // Header
+      doc.setFillColor(15, 17, 23)
+      doc.rect(0, 0, W, 70, "F")
+      doc.setTextColor(255, 255, 255)
+      doc.setFont("helvetica", "bold")
       doc.setFontSize(18)
-      doc.text(t("report.tradesReport"), 40, 40)
-      
+      doc.text("TradeLink — Trade Report", 40, 32)
+      doc.setFont("helvetica", "normal")
       doc.setFontSize(10)
-      doc.setTextColor(100)
-      doc.text(t("report.generatedOn", { date: new Date().toLocaleDateString(locale) }), 40, 55)
+      doc.setTextColor(200, 200, 210)
+      doc.text(`Generated on ${new Date().toLocaleDateString(locale)}`, 40, 50)
 
       const totalPnl = exportTrades.reduce((sum: number, tr) => sum + Number(tr.netPnl || 0), 0)
-      const winRate = exportTrades.length > 0 
-        ? ((exportTrades.filter(tr => Number(tr.netPnl || 0) > 0).length / exportTrades.length) * 100).toFixed(1) 
-        : 0
-      
-      doc.setFontSize(12)
-      doc.setTextColor(totalPnl >= 0 ? 0 : 200, totalPnl >= 0 ? 150 : 0, 0)
-      doc.text(`${t("report.totalPnl")}${totalPnl >= 0 ? '+' : ''}${formatCurrency(totalPnl, baseCurrency)} | ${t("report.winRate")}${winRate}% | ${t("report.trades")}${exportTrades.length}`, 40, 80)
+      const wins = exportTrades.filter(tr => Number(tr.netPnl || 0) > 0)
+      const losses = exportTrades.filter(tr => Number(tr.netPnl || 0) < 0)
+      const grossProfit = wins.reduce((s, tr) => s + Number(tr.netPnl || 0), 0)
+      const grossLoss = losses.reduce((s, tr) => s + Math.abs(Number(tr.netPnl || 0)), 0)
+      const winRate = exportTrades.length > 0 ? (wins.length / exportTrades.length * 100) : 0
+      const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? 99 : 0
+      const totalFees = exportTrades.reduce((s, tr) => s + Number(tr.fees || 0), 0)
 
+      // Summary table
       autoTable(doc, {
-        startY: 100,
-        head: [["Date", "Symbol", "Side", "Qty", "Entry", "Exit", "P&L", "Status"]],
-        body: exportTrades.map((tr) => [
+        startY: 90,
+        head: [["Summary", "Value"]],
+        body: [
+          ["Total Trades", String(exportTrades.length)],
+          ["Wins / Losses", `${wins.length} / ${losses.length}`],
+          ["Win Rate", `${winRate.toFixed(1)}%`],
+          ["Net P&L", `${totalPnl >= 0 ? "+" : ""}${formatCurrency(totalPnl, baseCurrency)}`],
+          ["Profit Factor", profitFactor === 99 ? "∞" : profitFactor.toFixed(2)],
+          ["Total Fees", formatCurrency(totalFees, baseCurrency)],
+        ],
+        theme: "grid",
+        styles: { fontSize: 10 },
+        headStyles: { fillColor: [15, 17, 23] },
+      })
+
+      const yStart = ((doc as unknown as { lastAutoTable?: { finalY?: number } }).lastAutoTable?.finalY ?? 0) + 24
+
+      // Trades table
+      autoTable(doc, {
+        startY: yStart,
+        head: [["#", "Date", "Symbol", "Side", "Qty", "Entry", "Exit", "P&L", "Fees", "Status"]],
+        body: exportTrades.map((tr, i) => [
+          String(i + 1),
           new Date(tr.entryAt).toLocaleString(),
           tr.symbol,
           tr.side,
@@ -241,12 +268,23 @@ export function TradesTable({
           tr.entryPrice || "-",
           tr.exitPrice || "-",
           Number(tr.netPnl || 0).toFixed(2),
+          Number(tr.fees || 0).toFixed(2),
           tr.status
         ]),
-        theme: 'grid',
-        headStyles: { fillColor: [15, 23, 42] },
+        theme: "striped",
         styles: { fontSize: 8 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
+        headStyles: { fillColor: [15, 17, 23] },
+        columnStyles: {
+          7: { halign: "right" },
+          8: { halign: "right" },
+        },
+        didParseCell: (data) => {
+          if (data.column.index === 7 && data.section === "body" && data.cell.raw) {
+            const val = String(data.cell.raw)
+            if (val.startsWith("-")) data.cell.styles.textColor = [220, 50, 50]
+            else data.cell.styles.textColor = [0, 150, 50]
+          }
+        },
       })
 
       doc.save(`trades-export-${new Date().toISOString().slice(0, 10)}.pdf`)

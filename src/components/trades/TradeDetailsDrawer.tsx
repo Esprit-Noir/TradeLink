@@ -8,6 +8,7 @@ import Image from "next/image"
 import { X, UploadCloud, Share2, Download } from "lucide-react"
 import { toPng } from "html-to-image"
 import { TradeShareCard } from "./TradeShareCard"
+import { TradeChecklist } from "./TradeChecklist"
 
 type Trade = {
   id: string
@@ -25,6 +26,8 @@ type Trade = {
   setupTags: string[]
   emotionTags: string[]
   notesPost: string | null
+  preChecklist: Record<string, boolean> | null
+  postChecklist: Record<string, boolean> | null
   screenshots: Screenshot[]
   instrumentType: string
 }
@@ -404,6 +407,14 @@ export function TradeDetailsDrawer() {
                         {trade.notesPost || <span className="text-[var(--color-gray-600)]">No notes added.</span>}
                       </div>
                     </div>
+
+                    {/* Pre/Post Trade Checklists */}
+                    {tradeId && (
+                      <div className="flex flex-col gap-2">
+                        <span className="text-sm text-[var(--color-gray-500)]">Trade Checklist</span>
+                        <TradeChecklistInline tradeId={tradeId} preChecklist={trade.preChecklist} postChecklist={trade.postChecklist} />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -461,5 +472,14 @@ export function TradeDetailsDrawer() {
       </div>
     </>
   )
+}
+
+function TradeChecklistInline({ tradeId, preChecklist, postChecklist }: {
+  tradeId: string
+  preChecklist?: Record<string, boolean> | null
+  postChecklist?: Record<string, boolean> | null
+}) {
+  const [, setTick] = useState(0)
+  return <TradeChecklist tradeId={tradeId} preChecklist={preChecklist} postChecklist={postChecklist} onUpdate={() => setTick(t => t + 1)} />
 }
 

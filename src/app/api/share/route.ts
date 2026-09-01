@@ -4,8 +4,8 @@ import { prisma } from "@/lib/prisma"
 import { z } from "zod"
 
 const shareSchema = z.object({
-  entityType: z.enum(["challenge"]),
-  entityId: z.string().min(1),
+  entityType: z.enum(["challenge", "profile"]),
+  entityId: z.string().min(1).optional(),
 })
 
 export async function POST(req: Request) {
@@ -35,11 +35,12 @@ export async function POST(req: Request) {
     }
 
     // Upsert ShareLink (one per entity per user)
+    const effectiveEntityId = entityType === "profile" ? session.user.id : entityId!
     let shareLink = await prisma.shareLink.findFirst({
       where: {
         userId: session.user.id,
         entityType,
-        entityId,
+        entityId: effectiveEntityId,
       }
     })
 
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
         data: {
           userId: session.user.id,
           entityType,
-          entityId,
+          entityId: effectiveEntityId,
           isPublic: true,
         }
       })

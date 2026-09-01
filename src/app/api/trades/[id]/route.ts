@@ -7,6 +7,8 @@ const updateTradeSchema = z.object({
   setupTags: z.array(z.string()).optional(),
   emotionTags: z.array(z.string()).optional(),
   notesPost: z.string().max(5000).optional(),
+  preChecklist: z.record(z.string(), z.boolean()).optional(),
+  postChecklist: z.record(z.string(), z.boolean()).optional(),
 })
 
 export async function GET(

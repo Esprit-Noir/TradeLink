@@ -35,6 +35,8 @@ interface Kpis {
   avgWin: number
   avgLoss: number
   sortino: number
+  sharpe: number
+  calmar: number
   winRate: number
   totalTrades: number
 }
@@ -80,6 +82,7 @@ interface AdvancedStatsData {
   monthlyPerformance: { month: string; pnl: number }[]
   topSymbols: BreakdownItem[]
   topSetups: BreakdownItem[]
+  moodPerformance?: Record<string, { pnl: number; count: number; wins: number }>
 }
 
 type FilterPatch = {
@@ -208,9 +211,9 @@ export function AdvancedStatsClient() {
     if (patch.side !== undefined) setSide(patch.side)
   }, [])
 
-  const kpis = data?.kpis as Kpis
-  const streaks = data?.streaks as Streaks
-  const drawdown = data?.drawdown as Drawdown
+  const kpis = data?.kpis as Kpis | undefined
+  const streaks = data?.streaks as Streaks | undefined
+  const drawdown = data?.drawdown as Drawdown | undefined
   const drawdownEpisodes = data?.drawdownEpisodes ?? []
   const equityCurve = data?.equityCurve as EquityPoint[]
   const rrDistribution = data?.rrDistribution ?? {}
@@ -313,7 +316,7 @@ export function AdvancedStatsClient() {
     )
   }
 
-  if (!data || data.empty) {
+  if (!data || data.empty || !kpis || !streaks || !drawdown) {
     return (
       <div>
         <StatsFilters available={available} filters={{ period, symbol, setup, side }} apply={apply} />
@@ -344,6 +347,8 @@ export function AdvancedStatsClient() {
         <KpiStat icon={<AlertTriangle size={14} />} label="Max Drawdown" value={formatCurrency(drawdown.maxDrawdown, "USD", true, 2)} color="var(--color-loss)" sub={`${drawdown.maxDrawdownPct.toFixed(1)}% from peak`} />
         <KpiStat icon={<Activity size={14} />} label="Streaks" value={`${streaks.longestWinStreak}W / ${streaks.longestLossStreak}L`} color="var(--color-gray-100)" sub={`Current: ${streaks.currentWinStreak > 0 ? `${streaks.currentWinStreak}W` : `${streaks.currentLossStreak}L`}`} />
         <KpiStat icon={<Award size={14} />} label="Sortino" value={kpis.sortino === 99 ? "∞" : kpis.sortino.toFixed(2)} color={kpis.sortino >= 1 ? "var(--color-profit)" : "var(--color-loss)"} sub="Downside-adjusted" />
+        <KpiStat icon={<TrendingUp size={14} />} label="Sharpe" value={kpis.sharpe === 99 ? "∞" : kpis.sharpe.toFixed(2)} color={kpis.sharpe >= 1 ? "var(--color-profit)" : kpis.sharpe >= 0 ? "var(--color-warning)" : "var(--color-loss)"} sub="Risk-adjusted return" />
+        <KpiStat icon={<BarChart3 size={14} />} label="Calmar" value={kpis.calmar === 99 ? "∞" : kpis.calmar.toFixed(2)} color={kpis.calmar >= 1 ? "var(--color-profit)" : kpis.calmar >= 0 ? "var(--color-warning)" : "var(--color-loss)"} sub="Return / Max DD" />
       </div>
 
       {/* ═══════════════════════════════════════════════════════════════════ */}
@@ -384,6 +389,44 @@ export function AdvancedStatsClient() {
           height={180}
         />
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* ROW 2.5 — Mood vs Performance                                  */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {data?.moodPerformance && Object.keys(data.moodPerformance).length > 0 && (
+        <div className="chart-card" style={{ padding: "1.25rem" }}>
+          <div className="chart-title" style={{ marginBottom: "1rem" }}>Mood vs Performance</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "0.75rem" }}>
+            {Object.entries(data.moodPerformance).map(([mood, stats]) => {
+              const winRate = stats.count > 0 ? (stats.wins / stats.count) * 100 : 0
+              const avgPnl = stats.count > 0 ? stats.pnl / stats.count : 0
+              return (
+                <div key={mood} style={{
+                  padding: "0.75rem", borderRadius: 10,
+                  background: "var(--color-gray-950)", border: "1px solid var(--color-gray-800)",
+                  textAlign: "center",
+                }}>
+                  <div style={{ fontSize: "0.75rem", color: "var(--color-gray-400)", textTransform: "capitalize", marginBottom: 6 }}>
+                    {mood}
+                  </div>
+                  <div style={{
+                    fontSize: "1.1rem", fontWeight: 700, fontVariantNumeric: "tabular-nums",
+                    color: stats.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)",
+                  }}>
+                    {formatCurrency(stats.pnl, "USD", true)}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginTop: 4 }}>
+                    {stats.count} days · {winRate.toFixed(0)}% WR
+                  </div>
+                  <div style={{ fontSize: "0.68rem", color: "var(--color-gray-600)", marginTop: 2 }}>
+                    avg {formatCurrency(avgPnl, "USD", true)}/day
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════ */}
       {/* ROW 3 — Equity Curve + Drawdown Episodes                       */}

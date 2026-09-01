@@ -61,23 +61,23 @@ export default async function RootLayout({
           <ThemeProvider>
             {children}
             <ServiceWorkerRegister />
-          <Toaster 
-            position="bottom-right"
-            toastOptions={{
-              className: 'custom-toast',
-              style: {
-                background: 'rgba(15, 15, 18, 0.80)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid var(--color-gray-800)',
-                color: 'var(--color-gray-100)',
-                borderRadius: '12px',
-                boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
-                padding: '16px',
-                fontSize: '0.85rem'
-              }
-            }}
-          />
+            <Toaster
+              position="bottom-right"
+              toastOptions={{
+                className: 'custom-toast',
+                style: {
+                  background: 'rgba(15, 15, 18, 0.80)',
+                  backdropFilter: 'blur(12px)',
+                  WebkitBackdropFilter: 'blur(12px)',
+                  border: '1px solid var(--color-gray-800)',
+                  color: 'var(--color-gray-100)',
+                  borderRadius: '12px',
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+                  padding: '16px',
+                  fontSize: '0.85rem'
+                }
+              }}
+            />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
