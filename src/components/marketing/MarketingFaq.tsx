@@ -27,7 +27,7 @@ export function MarketingFaq() {
 
         <div className="space-y-2">
           {FAQS.map((faq, i) => (
-            <div key={i} className={`bg-[#050505] border rounded-lg overflow-hidden transition-colors ${open === i ? "border-white/[0.1]" : "border-white/[0.04] hover:border-white/[0.08]"}`}>
+            <div key={i} className={`bg-transparent border rounded-lg overflow-hidden transition-colors ${open === i ? "border-white/[0.1]" : "border-white/[0.04] hover:border-white/[0.08]"}`}>
               <button className="w-full flex items-center justify-between px-5 py-3.5 text-left" onClick={() => setOpen(open === i ? null : i)}>
                 <span className="text-sm font-medium text-gray-200">{faq.q}</span>
                 <ChevronDown size={14} className={`transition-transform duration-200 ml-3 text-gray-500 flex-shrink-0 ${open === i ? "rotate-180" : ""}`} />

@@ -10,7 +10,7 @@ const BROKERS = [
 
 export function MarketingIntegrations() {
   return (
-    <section className="py-20 bg-[#050505] border-t border-white/[0.04]">
+    <section className="py-20 bg-transparent border-t border-white/[0.04]">
       <div className="max-w-[1000px] mx-auto px-6">
         <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} className="text-center mb-8">
           <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-2">

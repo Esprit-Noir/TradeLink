@@ -8,7 +8,7 @@ import { motion } from "framer-motion"
 export function MarketingCta({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const t = useTranslations("Marketing.Cta")
   return (
-    <section className="py-24 bg-[#050505] border-t border-white/[0.04]">
+    <section className="py-24 bg-transparent border-t border-white/[0.04]">
       <div className="max-w-[640px] mx-auto px-6 text-center">
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }}>
           <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-4">

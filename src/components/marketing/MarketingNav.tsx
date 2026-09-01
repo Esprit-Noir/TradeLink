@@ -19,8 +19,8 @@ export function MarketingNav({ isLoggedIn }: { isLoggedIn?: boolean }) {
   }, [])
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] flex justify-center px-4 mt-4">
-      <div className={`w-full max-w-[1100px] transition-all duration-300 rounded-xl ${scrolled ? 'bg-[#0a0a0a]/80 backdrop-blur-xl border border-white/[0.06] shadow-[0_2px_16px_rgba(0,0,0,0.3)]' : 'bg-transparent border-transparent'}`}>
+    <nav className="fixed top-6 left-0 right-0 z-[100] flex justify-center px-4">
+      <div className={`w-full max-w-[900px] transition-all duration-300 rounded-full ${scrolled ? 'bg-black/40 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]' : 'bg-black/10 backdrop-blur-md border border-white/5'}`}>
         <div className="px-5 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image src="/logo-dark.png" alt="TradeLink" width={160} height={40} className="h-8 w-auto" />
@@ -61,7 +61,7 @@ export function MarketingNav({ isLoggedIn }: { isLoggedIn?: boolean }) {
         </div>
 
         {mobileOpen && (
-          <div className="md:hidden flex flex-col px-5 pb-5 bg-[#0a0a0a]/95 backdrop-blur-xl border-t border-white/[0.06] rounded-b-xl">
+          <div className="absolute top-[120%] left-0 right-0 md:hidden flex flex-col px-5 pb-5 pt-3 bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl shadow-2xl">
             <a href="#features" className="py-3 text-xs text-gray-400 border-b border-white/[0.04] hover:text-white transition-colors" onClick={() => setMobileOpen(false)}>{t("features")}</a>
             <a href="#pricing" className="py-3 text-xs text-gray-400 border-b border-white/[0.04] hover:text-white transition-colors" onClick={() => setMobileOpen(false)}>{t("pricing")}</a>
             <a href="#testimonials" className="py-3 text-xs text-gray-400 border-b border-white/[0.04] hover:text-white transition-colors" onClick={() => setMobileOpen(false)}>{t("reviews")}</a>

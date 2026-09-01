@@ -40,27 +40,33 @@ export function MarketingPricing({ plans = [] }: { plans?: DbPlan[] }) {
   })
 
   return (
-    <section id="pricing" className="py-24 bg-[#0a0a0a] border-t border-white/[0.04]">
-      <div className="max-w-[1000px] mx-auto px-6">
-        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">
-            {t("title1")} <span className="text-[var(--color-brand-500)]">{t("title2")}</span>
+    <section id="pricing" className="py-24 relative border-t border-white/[0.04]">
+      {/* Background glow for pricing */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-[var(--color-brand-500)]/[0.03] blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="max-w-[1000px] mx-auto px-6 relative z-10">
+        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4 }} className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
+            {t("title1")} <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--color-brand-400)] to-[#00f2fe]">{t("title2")}</span>
           </h2>
-          <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">{t("subtitle")}</p>
-          <div className="inline-flex items-center gap-1 p-0.5 bg-white/[0.04] rounded-lg border border-white/[0.06]">
-            <button onClick={() => setAnnual(false)} className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors ${!annual ? "bg-white text-black" : "text-gray-400 hover:text-white"}`}>Mensuel</button>
-            <button onClick={() => setAnnual(true)} className={`px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${annual ? "bg-white text-black" : "text-gray-400 hover:text-white"}`}>
-              Annuel <span className="text-[9px] font-semibold text-[var(--color-brand-500)] bg-[var(--color-brand-500)]/10 px-1.5 py-0.5 rounded">-40%</span>
+          <p className="text-base md:text-lg text-gray-400 max-w-xl mx-auto font-light leading-relaxed mb-8">{t("subtitle")}</p>
+          
+          <div className="inline-flex items-center gap-1 p-1 bg-white/[0.02] backdrop-blur-md rounded-xl border border-white/[0.06]">
+            <button onClick={() => setAnnual(false)} className={`px-5 py-2 rounded-lg text-xs font-semibold transition-colors ${!annual ? "bg-white text-black shadow-md" : "text-gray-400 hover:text-white"}`}>Mensuel</button>
+            <button onClick={() => setAnnual(true)} className={`px-5 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center gap-2 ${annual ? "bg-white text-black shadow-md" : "text-gray-400 hover:text-white"}`}>
+              Annuel <span className="text-[9px] font-bold text-[var(--color-brand-500)] bg-[var(--color-brand-500)]/10 px-1.5 py-0.5 rounded uppercase tracking-wider">-40%</span>
             </button>
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {items.map((plan, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.4, delay: i * 0.06 }}
-              className={`relative flex flex-col bg-[#050505] border rounded-xl p-6 ${plan.popular ? "border-[var(--color-brand-500)]/25 md:-mt-3 md:mb-[-0.75rem] z-10" : "border-white/[0.06]"}`}>
-              {plan.popular && <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[9px] font-semibold text-[var(--color-brand-500)] bg-[#050505] border border-[var(--color-brand-500)]/20 px-2.5 py-0.5 rounded-full">Popular</span>}
-              <h3 className="text-lg font-bold text-white mb-1">{plan.name}</h3>
+              className={`relative flex flex-col bg-white/[0.01] backdrop-blur-sm border rounded-2xl p-8 transition-transform hover:-translate-y-1 ${plan.popular ? "border-[var(--color-brand-500)]/50 shadow-[0_0_40px_rgba(0,199,88,0.1)] md:-mt-4 md:mb-[-1rem] z-10 bg-gradient-to-b from-[var(--color-brand-500)]/[0.05] to-transparent" : "border-white/[0.06] hover:border-white/[0.12]"}`}>
+              
+              {plan.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold text-black uppercase tracking-widest bg-[var(--color-brand-500)] px-3 py-1 rounded-full shadow-[0_0_12px_rgba(0,199,88,0.6)]">Most Popular</span>}
+              
+              <h3 className="text-xl font-bold text-white mb-2">{plan.name}</h3>
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="text-3xl font-bold text-white">{plan.price}</span>
                 <span className="text-xs text-gray-500">{plan.period}</span>
