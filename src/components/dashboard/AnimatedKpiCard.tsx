@@ -1,7 +1,8 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { ReactNode } from "react"
+import { ReactNode, useMemo } from "react"
+import { useCountUp } from "@/hooks/useCountUp"
 
 interface AnimatedKpiCardProps {
   label: string
@@ -13,10 +14,46 @@ interface AnimatedKpiCardProps {
   size?: "normal" | "large"
 }
 
+function CountUpValue({ value, color, size }: { value: string; color: string; size: string }) {
+  const numericPart = useMemo(() => {
+    const cleaned = value.replace(/[^0-9.\-]/g, "")
+    const num = parseFloat(cleaned)
+    return isNaN(num) ? 0 : num
+  }, [value])
+
+  const decimals = useMemo(() => {
+    const match = value.match(/\.(\d+)/)
+    return match ? match[1].length : 0
+  }, [value])
+
+  const prefix = useMemo(() => {
+    const match = value.match(/^([^0-9.\-]*)/)
+    return match ? match[1] : ""
+  }, [value])
+
+  const suffix = useMemo(() => {
+    const match = value.match(/([^0-9.\-]*)$/)
+    return match ? match[1] : ""
+  }, [value])
+
+  const animated = useCountUp(numericPart, 900, decimals)
+
+  if (numericPart === 0 && value === "—") {
+    return <span style={{ fontSize: size, fontWeight: 800, color, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>—</span>
+  }
+
+  return (
+    <span style={{ fontSize: size, fontWeight: 800, color, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>
+      {prefix}{animated.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}
+    </span>
+  )
+}
+
 export function AnimatedKpiCard({
   label, value, sub, type = "neutral", id, icon, size = "normal"
 }: AnimatedKpiCardProps) {
   const color = type === "profit" ? "var(--color-profit)" : type === "loss" ? "var(--color-loss)" : "var(--color-gray-100)"
+  const fontSize = size === "large" ? "1.8rem" : "1.3rem"
 
   return (
     <motion.div
@@ -38,8 +75,8 @@ export function AnimatedKpiCard({
         {icon && <span style={{ color }}>{icon}</span>}
         {label}
       </div>
-      <div style={{ fontSize: size === "large" ? "1.8rem" : "1.3rem", fontWeight: 800, color, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em", position: "relative", zIndex: 10 }}>
-        {value}
+      <div style={{ position: "relative", zIndex: 10 }}>
+        <CountUpValue value={value} color={color} size={fontSize} />
       </div>
       {sub && <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", fontWeight: 500, position: "relative", zIndex: 10 }}>{sub}</div>}
     </motion.div>

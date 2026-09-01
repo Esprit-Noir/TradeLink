@@ -1,12 +1,9 @@
 "use client"
 
-import React, { useEffect, useState, useMemo } from "react"
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine, ComposedChart,
-} from "recharts"
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react"
 import { Activity, BarChart2 } from "lucide-react"
 import { useSearchParams } from "next/navigation"
+import { createChart, ColorType, CrosshairMode, AreaSeries, type IChartApi, type ISeriesApi } from "lightweight-charts"
 import type { EquityPoint } from "@/lib/metrics"
 
 type ViewMode = "balance" | "drawdown"
@@ -18,63 +15,6 @@ interface EquityData {
   currentBalance: number
   maxDrawdown: number
   currentDrawdown: number
-}
-
-interface TooltipEntry {
-  dataKey?: string | number
-  value?: number
-}
-
-interface CustomTooltipProps {
-  active?: boolean
-  payload?: TooltipEntry[]
-  label?: string | number
-  initialBalance?: number
-}
-
-function formatCurrency(val: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(val)
-}
-
-function CustomTooltip({ active, payload, label, initialBalance }: CustomTooltipProps) {
-  if (!active || !payload?.length) return null
-  const balance = payload.find((p) => p.dataKey === "Balance")?.value ?? 0
-  const drawdown = payload.find((p) => p.dataKey === "Drawdown")?.value ?? 0
-  const change = balance - (initialBalance || balance)
-  const changePct = initialBalance ? ((change / initialBalance) * 100).toFixed(2) : "0.00"
-  const isPos = change >= 0
-
-  return (
-    <div style={{
-      background: "var(--color-gray-900)",
-      border: "1px solid var(--color-gray-800)",
-      borderRadius: "8px",
-      padding: "0.75rem",
-      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
-      fontSize: "0.75rem",
-      minWidth: "180px",
-    }}>
-      <div style={{ color: "var(--color-gray-500)", marginBottom: "0.5rem", fontWeight: 500 }}>
-        {label ? new Date(label).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
-        <span style={{ color: "var(--color-gray-500)" }}>Balance</span>
-        <span style={{ fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-gray-100)" }}>{formatCurrency(balance)}</span>
-      </div>
-      {drawdown > 0 && (
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.35rem" }}>
-          <span style={{ color: "var(--color-gray-500)" }}>Drawdown</span>
-          <span style={{ fontWeight: 600, fontFamily: "var(--font-mono)", color: "var(--color-warning)" }}>-{drawdown.toFixed(2)}%</span>
-        </div>
-      )}
-      <div style={{ display: "flex", justifyContent: "space-between", paddingTop: "0.35rem", borderTop: "1px solid var(--color-gray-800)" }}>
-        <span style={{ color: "var(--color-gray-500)" }}>Since start</span>
-        <span style={{ fontWeight: 600, fontFamily: "var(--font-mono)", color: isPos ? "var(--color-profit)" : "var(--color-loss)" }}>
-          {isPos ? "+" : ""}{changePct}%
-        </span>
-      </div>
-    </div>
-  )
 }
 
 interface ChallengeSnapshot {
@@ -98,6 +38,10 @@ interface EquityCurveChartProps {
   showTargetLine?: boolean
 }
 
+function formatCurrency(val: number) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 0 }).format(val)
+}
+
 export const EquityCurveChart = React.memo(function EquityCurveChart({
   snapshots,
   equityData,
@@ -113,6 +57,9 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
   const [loading, setLoading] = useState(true)
   const [timeframe, setTimeframe] = useState("ALL")
   const [viewMode, setViewMode] = useState<ViewMode>("balance")
+  const chartContainerRef = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+  const seriesRef = useRef<ISeriesApi<"Area"> | null>(null)
 
   useEffect(() => {
     if (equityData && equityData.length > 0) {
@@ -126,11 +73,9 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
     }
 
     if (snapshots && snapshots.length > 0) {
-      let runningHigh = propInitial ?? snapshots[0].endBalance
       const points: EquityPoint[] = snapshots.map(s => {
         const anchor = maxDDLevel ?? (propInitial ?? s.endBalance)
         const dd = anchor > 0 ? ((anchor - s.lowestEquity) / anchor) * 100 : 0
-        runningHigh = Math.max(runningHigh, s.endBalance)
         return { date: s.date, equity: s.endBalance, drawdown: Math.max(0, dd) }
       })
       const initial = propInitial ?? points[0]?.equity ?? 0
@@ -156,27 +101,103 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
 
   const chartData = useMemo(() =>
     filteredData.map((p) => ({
-      date: p.date,
-      Balance: p.equity,
-      Drawdown: p.drawdown ?? 0,
+      time: p.date as string,
+      value: viewMode === "balance" ? p.equity : (p.drawdown ?? 0),
     })),
-    [filteredData]
+    [filteredData, viewMode]
   )
 
+  const isPositive = useMemo(() => {
+    if (chartData.length < 2) return true
+    return chartData[chartData.length - 1].value >= chartData[0].value
+  }, [chartData])
+
+  const gradColor = isPositive ? "#22c55e" : "#ef4444"
   const initialBalance = rawData?.initialBalance ?? 0
   const currentBalance = rawData?.currentBalance ?? 0
   const maxDrawdown = rawData?.maxDrawdown ?? 0
   const currentDrawdown = rawData?.currentDrawdown ?? 0
-
-  const firstBalance = chartData[0]?.Balance ?? initialBalance
-  const lastBalance = chartData[chartData.length - 1]?.Balance ?? currentBalance
+  const lastBalance = chartData.length > 0 ? (viewMode === "balance" ? chartData[chartData.length - 1].value : currentBalance) : currentBalance
+  const firstBalance = chartData.length > 0 ? (viewMode === "balance" ? chartData[0].value : initialBalance) : initialBalance
   const periodChange = lastBalance - firstBalance
   const periodChangePct = firstBalance !== 0 ? ((periodChange / Math.abs(firstBalance)) * 100) : 0
-  const isPositive = periodChange >= 0
-  const gradColor = isPositive ? "var(--color-profit)" : "var(--color-loss)"
 
-  const minVal = chartData.length ? Math.min(...chartData.map((d) => d.Balance)) * 0.998 : 0
-  const maxVal = chartData.length ? Math.max(...chartData.map((d) => d.Balance)) * 1.002 : 0
+  const initChart = useCallback(() => {
+    if (!chartContainerRef.current) return
+
+    if (chartRef.current) {
+      chartRef.current.remove()
+      chartRef.current = null
+      seriesRef.current = null
+    }
+
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: "transparent" },
+        textColor: "#6b7280",
+        fontSize: 11,
+      },
+      grid: {
+        vertLines: { color: "rgba(42, 42, 51, 0.4)" },
+        horzLines: { color: "rgba(42, 42, 51, 0.4)" },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { color: "rgba(255,255,255,0.15)", labelBackgroundColor: "#1a1a20" },
+        horzLine: { color: "rgba(255,255,255,0.15)", labelBackgroundColor: "#1a1a20" },
+      },
+      rightPriceScale: { borderColor: "rgba(42, 42, 51, 0.4)" },
+      timeScale: { borderColor: "rgba(42, 42, 51, 0.4)", timeVisible: false },
+      handleScroll: { vertTouchDrag: false },
+    })
+
+    const lineColor = viewMode === "balance" ? gradColor : "#ef4444"
+    const areaTopColor = viewMode === "balance"
+      ? (isPositive ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)")
+      : "rgba(239,68,68,0.35)"
+
+    const areaSeries = chart.addSeries(AreaSeries, {
+      lineColor,
+      lineWidth: 2,
+      topColor: areaTopColor,
+      bottomColor: "transparent",
+      crosshairMarkerVisible: true,
+      crosshairMarkerRadius: 4,
+      crosshairMarkerBorderColor: lineColor,
+      crosshairMarkerBackgroundColor: "#0a0f0c",
+    })
+
+    if (chartData.length > 0) {
+      areaSeries.setData(chartData as { time: string; value: number }[])
+    }
+
+    chart.timeScale().fitContent()
+
+    chartRef.current = chart
+    seriesRef.current = areaSeries as ISeriesApi<"Area">
+
+    const handleResize = () => {
+      if (chartContainerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth })
+      }
+    }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [chartData, viewMode, gradColor, isPositive])
+
+  useEffect(() => {
+    if (!loading && chartData.length > 0) {
+      const cleanup = initChart()
+      return () => {
+        cleanup?.()
+        if (chartRef.current) {
+          chartRef.current.remove()
+          chartRef.current = null
+          seriesRef.current = null
+        }
+      }
+    }
+  }, [loading, initChart, chartData.length])
 
   const statItems = [
     { label: "Initial Balance", value: formatCurrency(initialBalance), color: "var(--color-gray-200)" },
@@ -234,7 +255,6 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
-          {/* Toggle mode */}
           <div style={{ display: "flex", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "10px", padding: "2px", gap: "2px" }}>
             <button
               onClick={() => setViewMode("balance")}
@@ -262,7 +282,6 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
             </button>
           </div>
 
-          {/* Timeframes */}
           <div style={{ display: "flex", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)", borderRadius: "10px", padding: "2px", gap: "2px" }}>
             {TIMEFRAMES.map((tf) => (
               <button
@@ -293,153 +312,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
       </div>
 
       {/* Chart */}
-      <div style={{ height: 300 }}>
-        {viewMode === "balance" ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isPositive ? "var(--color-profit)" : "var(--color-loss)"} stopOpacity={0.3} />
-                  <stop offset="60%" stopColor={isPositive ? "var(--color-profit)" : "var(--color-loss)"} stopOpacity={0.05} />
-                  <stop offset="100%" stopColor={isPositive ? "var(--color-profit)" : "var(--color-loss)"} stopOpacity={0} />
-                </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="2" result="coloredBlur" />
-                  <feMerge>
-                    <feMergeNode in="coloredBlur" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} opacity={0.5} />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: "var(--color-gray-500)", fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(d) => d ? `${new Date(d).getMonth() + 1}/${new Date(d).getDate()}` : ""}
-                interval="preserveStartEnd"
-              />
-              <YAxis
-                domain={[minVal, maxVal]}
-                tick={{ fill: "var(--color-gray-500)", fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                width={55}
-                tickFormatter={(v) => `$${v >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
-              />
-              <Tooltip
-                content={<CustomTooltip initialBalance={initialBalance} />}
-                cursor={{ stroke: "var(--color-gray-700)", strokeWidth: 1, strokeDasharray: "4 2" }}
-              />
-              {initialBalance > 0 && (
-                <ReferenceLine
-                  y={initialBalance}
-                  stroke={gradColor}
-                  strokeDasharray="5 3"
-                  strokeWidth={1}
-                  strokeOpacity={0.4}
-                />
-              )}
-              {showMaxDDLine && maxDDLevel && maxDDLevel > 0 && (
-                <ReferenceLine
-                  y={maxDDLevel}
-                  stroke="var(--color-loss)"
-                  strokeDasharray="4 3"
-                  strokeWidth={1}
-                  strokeOpacity={0.5}
-                  label={{ value: "Max DD", position: "insideTopRight", fill: "var(--color-loss)", fontSize: 9 }}
-                />
-              )}
-              {showTargetLine && profitTarget && profitTarget > 0 && (
-                <ReferenceLine
-                  y={profitTarget}
-                  stroke="var(--color-profit)"
-                  strokeDasharray="4 3"
-                  strokeWidth={1}
-                  strokeOpacity={0.5}
-                  label={{ value: "Target", position: "insideTopRight", fill: "var(--color-profit)", fontSize: 9 }}
-                />
-              )}
-              <Area
-                type="monotone"
-                dataKey="Balance"
-                stroke={gradColor}
-                strokeWidth={2.5}
-                fill="url(#equityGrad)"
-                dot={false}
-                activeDot={{ r: 5, fill: gradColor, strokeWidth: 2, stroke: "var(--color-gray-900)" }}
-                filter="url(#glow)"
-              />
-            </ComposedChart>
-          </ResponsiveContainer>
-        ) : (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="ddGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--color-loss)" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="var(--color-loss)" stopOpacity={0.02} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--color-gray-800)" vertical={false} opacity={0.5} />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: "var(--color-gray-500)", fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(d) => d ? `${new Date(d).getMonth() + 1}/${new Date(d).getDate()}` : ""}
-                interval="preserveStartEnd"
-              />
-              <YAxis
-                reversed
-                tick={{ fill: "var(--color-gray-500)", fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                width={45}
-                tickFormatter={(v) => `-${v.toFixed(1)}%`}
-              />
-              <Tooltip
-                content={({ active, payload, label }) => {
-                  if (!active || !payload?.length) return null
-                  const dd = payload[0]?.value ?? 0
-                  return (
-                    <div style={{
-                      background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)",
-                      borderRadius: "8px", padding: "0.75rem", boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)", fontSize: "0.75rem",
-                    }}>
-                      <div style={{ color: "var(--color-gray-500)", marginBottom: "0.35rem" }}>
-                        {label ? new Date(label).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : ""}
-                      </div>
-                      <div style={{ fontWeight: 700, fontFamily: "var(--font-mono)", color: "var(--color-warning)" }}>
-                        Drawdown: -{(dd as number).toFixed(2)}%
-                      </div>
-                    </div>
-                  )
-                }}
-                cursor={{ stroke: "var(--color-gray-700)", strokeWidth: 1, strokeDasharray: "4 2" }}
-              />
-              <ReferenceLine y={5} stroke="var(--color-warning)" strokeDasharray="4 2" strokeWidth={1} opacity={0.5}
-                label={{ value: "5%", position: "insideTopRight", fill: "var(--color-warning)", fontSize: 9 }} />
-              <ReferenceLine y={10} stroke="var(--color-loss)" strokeDasharray="4 2" strokeWidth={1} opacity={0.5}
-                label={{ value: "10%", position: "insideTopRight", fill: "var(--color-loss)", fontSize: 9 }} />
-              {maxDrawdownPct && maxDrawdownPct > 0 && (
-                <ReferenceLine y={maxDrawdownPct} stroke="var(--color-loss)" strokeDasharray="2 2" strokeWidth={1.5} opacity={0.7}
-                  label={{ value: `Max ${maxDrawdownPct.toFixed(0)}%`, position: "insideTopRight", fill: "var(--color-loss)", fontSize: 9 }} />
-              )}
-              <Area
-                type="monotone"
-                dataKey="Drawdown"
-                stroke="var(--color-loss)"
-                strokeWidth={2}
-                fill="url(#ddGrad)"
-                dot={false}
-                activeDot={{ r: 4, fill: "var(--color-loss)", strokeWidth: 2, stroke: "var(--color-gray-900)" }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+      <div ref={chartContainerRef} style={{ height: 300, borderRadius: 8, overflow: "hidden" }} />
 
       {/* Footer legend */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid var(--color-gray-800)", fontSize: "0.7rem" }}>
@@ -454,12 +327,6 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
               <span style={{ color: "var(--color-gray-500)" }}>Initial</span>
             </div>
           )}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", color: "var(--color-gray-500)" }}>
-          <span style={{ display: "flex", alignItems: "center", gap: "0.25rem" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--color-loss)", display: "inline-block" }} />
-            {chartData.filter(d => d.Balance < 0).length} L
-          </span>
         </div>
       </div>
     </div>

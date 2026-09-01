@@ -1,6 +1,7 @@
 "use client"
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts"
+import { useEffect, useRef, useCallback } from "react"
+import { createChart, ColorType, CrosshairMode, HistogramSeries, type IChartApi } from "lightweight-charts"
 import { dayKey } from "@/lib/dates"
 
 interface Trade {
@@ -15,7 +16,9 @@ interface DailyPnlChartProps {
 }
 
 export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: DailyPnlChartProps) {
-  // Group trades by date (YYYY-MM-DD in the user's timezone)
+  const chartContainerRef = useRef<HTMLDivElement>(null)
+  const chartRef = useRef<IChartApi | null>(null)
+
   const dailyPnlMap = trades.reduce((acc, trade) => {
     if (!trade.exitAt) return acc
     const dateStr = dayKey(new Date(trade.exitAt), timezone)
@@ -23,65 +26,79 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
     return acc
   }, {} as Record<string, number>)
 
-  // Convert to array and sort by date
   const data = Object.entries(dailyPnlMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, pnl]) => ({
-      date,
-      // Format label for display e.g. "Aug 12"
-      displayDate: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      pnl
+    .map(([date, pnl]) => ({ time: date, value: pnl }))
+
+  const initChart = useCallback(() => {
+    if (!chartContainerRef.current || data.length === 0) return
+
+    if (chartRef.current) {
+      chartRef.current.remove()
+      chartRef.current = null
+    }
+
+    const chart = createChart(chartContainerRef.current, {
+      layout: {
+        background: { type: ColorType.Solid, color: "transparent" },
+        textColor: "#6b7280",
+        fontSize: 11,
+      },
+      grid: {
+        vertLines: { color: "rgba(42, 42, 51, 0.3)" },
+        horzLines: { color: "rgba(42, 42, 51, 0.3)" },
+      },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { color: "rgba(255,255,255,0.15)", labelBackgroundColor: "#1a1a20" },
+        horzLine: { color: "rgba(255,255,255,0.15)", labelBackgroundColor: "#1a1a20" },
+      },
+      rightPriceScale: { borderColor: "rgba(42, 42, 51, 0.4)" },
+      timeScale: { borderColor: "rgba(42, 42, 51, 0.4)", timeVisible: false },
+      handleScroll: { vertTouchDrag: false },
+    })
+
+    const histogramSeries = chart.addSeries(HistogramSeries, {
+      priceFormat: { type: "price", precision: 2, minMove: 0.01 },
+    })
+
+    const coloredData = data.map(d => ({
+      ...d,
+      color: d.value >= 0 ? "rgba(34,197,94,0.7)" : "rgba(239,68,68,0.7)",
     }))
+
+    histogramSeries.setData(coloredData)
+    chart.timeScale().fitContent()
+
+    chartRef.current = chart
+
+    const handleResize = () => {
+      if (chartContainerRef.current && chartRef.current) {
+        chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth })
+      }
+    }
+    window.addEventListener("resize", handleResize)
+    return () => window.removeEventListener("resize", handleResize)
+  }, [data, currency])
+
+  useEffect(() => {
+    const cleanup = initChart()
+    return () => {
+      cleanup?.()
+      if (chartRef.current) {
+        chartRef.current.remove()
+        chartRef.current = null
+      }
+    }
+  }, [initChart])
 
   if (data.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center text-[var(--color-gray-500)]">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--color-gray-500)" }}>
         No data yet
       </div>
     )
   }
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("en-US", { style: "currency", currency, minimumFractionDigits: 0 }).format(val)
-  }
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-        <XAxis 
-          dataKey="displayDate" 
-          tick={{ fontSize: 11, fill: "var(--color-gray-500)" }}
-          axisLine={false}
-          tickLine={false}
-          dy={10}
-        />
-        <YAxis 
-          tickFormatter={(val) => val >= 1000 || val <= -1000 ? `${(val / 1000).toFixed(1)}k` : val}
-          tick={{ fontSize: 11, fill: "var(--color-gray-500)" }}
-          axisLine={false}
-          tickLine={false}
-          dx={-10}
-        />
-        <Tooltip 
-          cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
-          contentStyle={{ 
-            backgroundColor: "var(--color-gray-900)", 
-            border: "1px solid var(--color-gray-800)",
-            borderRadius: "8px",
-            color: "var(--color-gray-100)",
-            boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
-          }}
-          itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
-          formatter={(value: unknown) => [formatCurrency(Number(value)), "P&L"]}
-          labelStyle={{ color: "var(--color-gray-400)", marginBottom: "0.5rem", fontWeight: 500, fontSize: "0.8rem" }}
-        />
-        <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-          {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  )
+  return <div ref={chartContainerRef} style={{ height: "100%", borderRadius: 8, overflow: "hidden" }} />
 }
-
