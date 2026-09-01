@@ -28,7 +28,7 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
 
   const data = Object.entries(dailyPnlMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, pnl]) => ({ time: date, value: pnl }))
+    .map(([date, pnl]) => ({ time: date.split("T")[0], value: pnl }))
 
   const initChart = useCallback(() => {
     if (!chartContainerRef.current || data.length === 0) return
@@ -45,8 +45,8 @@ export function DailyPnlChart({ trades, currency = "USD", timezone = "UTC" }: Da
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: "rgba(42, 42, 51, 0.3)" },
-        horzLines: { color: "rgba(42, 42, 51, 0.3)" },
+        vertLines: { visible: false },
+        horzLines: { visible: false },
       },
       crosshair: {
         mode: CrosshairMode.Normal,

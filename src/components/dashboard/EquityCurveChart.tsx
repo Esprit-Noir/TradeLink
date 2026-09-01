@@ -76,7 +76,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
       const points: EquityPoint[] = snapshots.map(s => {
         const anchor = maxDDLevel ?? (propInitial ?? s.endBalance)
         const dd = anchor > 0 ? ((anchor - s.lowestEquity) / anchor) * 100 : 0
-        return { date: s.date, equity: s.endBalance, drawdown: Math.max(0, dd) }
+        return { date: s.date.split("T")[0], equity: s.endBalance, drawdown: Math.max(0, dd) }
       })
       const initial = propInitial ?? points[0]?.equity ?? 0
       const current = propCurrent ?? points[points.length - 1]?.equity ?? 0
@@ -101,7 +101,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
 
   const chartData = useMemo(() =>
     filteredData.map((p) => ({
-      time: p.date as string,
+      time: (p.date as string).split("T")[0],
       value: viewMode === "balance" ? p.equity : (p.drawdown ?? 0),
     })),
     [filteredData, viewMode]
@@ -138,8 +138,8 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
         fontSize: 11,
       },
       grid: {
-        vertLines: { color: "rgba(42, 42, 51, 0.4)" },
-        horzLines: { color: "rgba(42, 42, 51, 0.4)" },
+        vertLines: { visible: false },
+        horzLines: { visible: false },
       },
       crosshair: {
         mode: CrosshairMode.Normal,

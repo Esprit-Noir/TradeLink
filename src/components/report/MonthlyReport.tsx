@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
-  ReferenceLine, ComposedChart, PieChart, Pie, Area, type PieLabelRenderProps
+  ReferenceLine, PieChart, Pie, type PieLabelRenderProps
 } from "recharts"
 import { toast } from "sonner"
 import { jsPDF } from "jspdf"
@@ -11,6 +11,7 @@ import { autoTable } from "jspdf-autotable"
 import { Download, FileText } from "lucide-react"
 import { motion, Variants } from "framer-motion"
 import Image from "next/image"
+import { DailyPnlCumulativeChart } from "./DailyPnlCumulativeChart"
 
 const COLORS = ['#C29B3F', '#359B8B', '#4B83E0', '#D4638D', '#9B72E5', '#E57272', '#72E5A1']
 
@@ -625,70 +626,7 @@ export function MonthlyReport() {
           {/* Daily chart */}
           <motion.div variants={itemVariants} className="chart-card">
             <div className="chart-title" style={{ marginBottom: "1rem" }}>Daily P&L and cumulative</div>
-            <ResponsiveContainer width="100%" height={380}>
-              <ComposedChart data={dayShort} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
-                <CartesianGrid stroke="var(--color-gray-800)" strokeOpacity={0.5} vertical={false} />
-                <XAxis 
-                  dataKey="label" 
-                  tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} 
-                  axisLine={false}
-                  tickLine={false}
-                  interval="preserveStartEnd" 
-                  minTickGap={24} 
-                  dy={10}
-                />
-                <YAxis 
-                  yAxisId="pnl" 
-                  tick={{ fontSize: 10, fill: "var(--color-gray-500)" }} 
-                  axisLine={false}
-                  tickLine={false}
-                  width={60} 
-                  tickFormatter={(val) => `$${val}`}
-                />
-                <YAxis 
-                  yAxisId="cum" 
-                  orientation="right" 
-                  tick={{ fontSize: 10, fill: "var(--color-brand-500)" }} 
-                  axisLine={false}
-                  tickLine={false}
-                  width={60} 
-                  tickFormatter={(val) => `$${val}`}
-                />
-                <Tooltip
-                  cursor={{ fill: "var(--color-gray-800)", opacity: 0.2 }}
-                  contentStyle={{ 
-                    background: "var(--color-gray-900)", 
-                    border: "1px solid var(--color-gray-800)", 
-                    borderRadius: "8px", 
-                    fontSize: "0.85rem",
-                    boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)"
-                  }}
-                  labelStyle={{ color: "var(--color-gray-300)", marginBottom: "4px" }}
-                  formatter={(value, name) => [
-                    <span key={name} style={{ fontWeight: 600, color: name === "cumPnl" ? "var(--color-brand-500)" : (Number(value) >= 0 ? "var(--color-profit)" : "var(--color-loss)") }}>
-                      {fmtMoney(Number(value), true)}
-                    </span>,
-                    <span key={name + "-label"} style={{ color: "var(--color-gray-400)" }}>{name === "cumPnl" ? "Cumulative" : "Daily P&L"}</span>,
-                  ]}
-                />
-                <ReferenceLine yAxisId="pnl" y={0} stroke="var(--color-gray-700)" strokeWidth={1} />
-                <Area 
-                  yAxisId="cum" 
-                  type="monotone" 
-                  dataKey="cumPnl" 
-                  stroke="var(--color-brand-500)" 
-                  strokeWidth={3} 
-                  fill="var(--color-brand-500)" 
-                  fillOpacity={0.1}
-                  isAnimationActive={false}
-                />
-                <Bar yAxisId="pnl" dataKey="pnl" maxBarSize={16} radius={[4, 4, 4, 4]} isAnimationActive={false}>
-                  {dayShort.map((d, i) => (
-                    <Cell key={i} fill={d.pnl >= 0 ? "var(--color-profit)" : "var(--color-loss)"} />
-                  ))}
-                </Bar>
-              </ComposedChart>
-            </ResponsiveContainer>
+            <DailyPnlCumulativeChart data={dayShort} height={380} />
           </motion.div>
 
           {/* Setups + Symbols */}
