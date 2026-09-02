@@ -612,7 +612,7 @@ function KpiStat({ icon, label, value, color, sub }: { icon: React.ReactNode; la
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--color-gray-500)", fontSize: "0.7rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
         {icon} {label}
       </div>
-      <div style={{ fontSize: "1.75rem", fontWeight: 800, fontFamily: "var(--font-mono)", color, letterSpacing: "-0.02em" }}>{value}</div>
+      <div style={{ fontSize: "1.5rem", fontWeight: 800, fontFamily: "var(--font-mono)", color, letterSpacing: "-0.02em" }}>{value}</div>
       {sub && <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>{sub}</div>}
     </div>
   )

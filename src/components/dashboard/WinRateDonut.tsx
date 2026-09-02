@@ -99,7 +99,7 @@ export function WinRateDonut({ wins, losses }: WinRateDonutProps) {
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-          <div className="text-3xl font-bold text-[var(--color-gray-100)] leading-none">
+          <div className="text-2xl font-bold text-[var(--color-gray-100)] leading-none">
             {winRate.toFixed(0)}%
           </div>
         </div>

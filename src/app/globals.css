@@ -111,7 +111,6 @@
 }
 
 .force-dark {
-  /* Force dark colors explicitly for Tailwind v4 variables */
   --gray-950: #030304;
   --gray-900: #0a0f0c;
   --gray-800: #101014;
@@ -125,20 +124,6 @@
   --gray-100: #ededf0;
   --gray-650: #222229;
   --gray-850: #0c0c0f;
-
-  --color-gray-950: #030304;
-  --color-gray-900: #0a0f0c;
-  --color-gray-800: #101014;
-  --color-gray-700: #1a1a20;
-  --color-gray-600: #2a2a33;
-  --color-gray-500: #4c4c58;
-  --color-gray-400: #85858f;
-  --color-gray-300: #bdbdc6;
-  --color-gray-250: #cbccd3;
-  --color-gray-200: #d9d9df;
-  --color-gray-100: #ededf0;
-  --color-gray-650: #222229;
-  --color-gray-850: #0c0c0f;
 
   --profit-muted: #064e3b;
   --loss-muted: #450a0a;
@@ -175,23 +160,6 @@
 }
 
 /* ── Scrollbar ──────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-gray-900);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-gray-700);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-gray-600);
-}
 
 /* ── Glassmorphism utility ──────────────────────────────── */
 .glass {
@@ -1611,18 +1579,6 @@
   animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .kpi-card::after {
   content: '';
   position: absolute;
@@ -1651,7 +1607,7 @@
 }
 
 .kpi-label {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1660,7 +1616,7 @@
 }
 
 .kpi-value {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -1700,7 +1656,7 @@
 }
 
 .chart-title {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--color-gray-400);
   margin-bottom: 1rem;
@@ -1719,7 +1675,7 @@
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -4600,7 +4556,7 @@
   }
 
   .chart-title {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
   }
 
   /* Stats page grids */
@@ -4658,7 +4614,7 @@
   }
 
   table.data-table {
-    font-size: 0.78rem;
+    font-size: 0.75rem;
   }
 
   table.data-table th,
@@ -4765,12 +4721,12 @@
   }
 
   .kpi-value {
-    font-size: 1.5rem;
+    font-size: 1.3rem;
   }
 
   .card-hover [style*="font-size: 1.75rem"],
   .chart-card [style*="font-size: 1.75rem"] {
-    font-size: 1.45rem !important;
+    font-size: 1.3rem !important;
   }
 }
 

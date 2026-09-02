@@ -195,7 +195,7 @@ export function OverviewClient({ username }: { username?: string }) {
             {loading ? (
               <div className="skeleton" style={{ width: 64, height: 28 }} />
             ) : (
-              <p style={{ fontSize: "1.75rem", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: s.color }}>{s.value}</p>
+              <p style={{ fontSize: "1.5rem", fontWeight: 700, fontVariantNumeric: "tabular-nums", color: s.color }}>{s.value}</p>
             )}
           </div>
         )
