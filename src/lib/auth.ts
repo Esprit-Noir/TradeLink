@@ -142,28 +142,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
 
-      // À chaque requête, on vérifie que le token n'a pas été invalidé (ban/suspend)
+      // Throttle DB check — only every 60s to avoid a query per request
       if (token.id && token.tokenVersion !== undefined) {
-        const dbUser = await authPrisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true, status: true, tokenVersion: true },
-        })
-        if (!dbUser) {
-          // Utilisateur supprimé — invalider le token
-          delete token.id
-          delete token.role
-          delete token.status
-          return token
-        }
-        // Si le tokenVersion a changé (ban/suspend), on force la déconnexion
-        if (dbUser.tokenVersion !== token.tokenVersion) {
-          token.role = dbUser.role as string
-          token.status = dbUser.status as string
-          token.tokenVersion = dbUser.tokenVersion
-        } else {
-          // Même version — on met à jour role/status au cas où
-          token.role = dbUser.role as string
-          token.status = dbUser.status as string
+        const now = Date.now()
+        const lastCheck = (token as Record<string, unknown>).lastDbCheck as number | undefined
+        if (!lastCheck || now - lastCheck > 60_000) {
+          const dbUser = await authPrisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true, status: true, tokenVersion: true },
+          })
+          ;(token as Record<string, unknown>).lastDbCheck = now
+
+          if (!dbUser) {
+            delete token.id
+            delete token.role
+            delete token.status
+            return token
+          }
+
+          if (dbUser.tokenVersion !== token.tokenVersion) {
+            token.role = dbUser.role as string
+            token.status = dbUser.status as string
+            token.tokenVersion = dbUser.tokenVersion
+          } else {
+            token.role = dbUser.role as string
+            token.status = dbUser.status as string
+          }
         }
       }
 

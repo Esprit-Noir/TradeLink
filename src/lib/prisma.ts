@@ -13,7 +13,7 @@ const prismaClientSingleton = () => {
     connectionString,
     connectionTimeoutMillis: 30000,
     idleTimeoutMillis: 60000,
-    max: 10, // augmenté car on partage une seule instance
+    max: 20,
   })
   const adapter = new PrismaPg(pool)
   return new PrismaClient({
