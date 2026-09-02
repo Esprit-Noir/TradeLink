@@ -136,11 +136,6 @@
 }
 
 /* ── Base ───────────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
 
 /* Guarantee a visible focus indicator for keyboard navigation on all
    interactive elements, even those without an explicit :focus style. */
@@ -1261,9 +1256,6 @@
 }
 
 /* ── Language Switcher ──────────────────────────────────── */
-.lang-wrapper {
-  position: relative;
-}
 
 .lang-btn {
   height: 36px;
@@ -1616,7 +1608,7 @@
 }
 
 .kpi-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1;
@@ -1632,7 +1624,7 @@
 }
 
 .kpi-sub {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--color-gray-500);
   margin-top: 0.35rem;
 }
@@ -1884,23 +1876,6 @@
 }
 
 /* ── Utility ────────────────────────────────────────────── */
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
 
 /* ── Responsive ─────────────────────────────────────────── */
 
@@ -4721,7 +4696,7 @@
   }
 
   .kpi-value {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
   }
 
   .card-hover [style*="font-size: 1.75rem"],

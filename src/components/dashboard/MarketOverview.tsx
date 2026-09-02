@@ -196,7 +196,7 @@ export function MarketOverview() {
       setAllData(updatedData)
     } catch (err) {
       if ((err as Error)?.name === "AbortError") return
-      console.error(err)
+      // Market data unavailable – keep hardcoded fallback, no console noise
     } finally {
       setLoading(false)
     }

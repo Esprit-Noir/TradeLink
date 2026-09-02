@@ -48,7 +48,7 @@ export function LanguageSwitcher() {
   const activeLang = LANGUAGES.find(l => l.code === currentLocale) || LANGUAGES[0]
 
   return (
-    <div className="lang-wrapper" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
         className="lang-btn"

@@ -194,38 +194,38 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
       {/* KPIs Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem" }}>
         <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-            <Wallet size={16} /> Total Equity
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+            <Wallet size={14} /> Total Equity
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--color-text)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--color-text)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {formatCurrency(kpis.totalEquity, "USD", false, 2)}
           </div>
         </div>
 
         <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-            <TrendingUp size={16} /> Total Net P&L
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+            <TrendingUp size={14} /> Total Net P&L
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 800, color: kpis.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: kpis.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {formatCurrency(kpis.totalPnlUsd, "USD", true, 2)}
           </div>
-          <div style={{ fontSize: "0.75rem", fontWeight: 600, color: "var(--color-gray-500)" }}>in USD equivalent</div>
+          <div style={{ fontSize: "0.7rem", fontWeight: 600, color: "var(--color-gray-500)" }}>in USD equivalent</div>
         </div>
 
         <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-            <Target size={16} /> Funded Capital (Prop)
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+            <Target size={14} /> Funded Capital (Prop)
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--color-brand-400)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--color-brand-400)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {formatCurrency(kpis.fundedCapital, "USD", false, 2)}
           </div>
         </div>
 
         <div className="card-hover" style={{ display: "flex", flexDirection: "column", gap: "0.75rem", padding: "1.5rem", borderRadius: "12px", background: "var(--color-gray-900)", border: "1px solid var(--color-gray-800)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.75rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
-            <Activity size={16} /> Active Accounts
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", color: "var(--color-gray-500)", fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em" }}>
+            <Activity size={14} /> Active Accounts
           </div>
-          <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--color-text)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--color-text)", letterSpacing: "-0.02em", fontFamily: "var(--font-mono)" }}>
             {kpis.activeCount}
           </div>
         </div>
@@ -238,9 +238,9 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
             key={type}
             onClick={() => setFilterType(type)}
             style={{
-              padding: "0.5rem 1rem",
+              padding: "0.4rem 0.8rem",
               borderRadius: "8px",
-              fontSize: "0.9rem",
+              fontSize: "0.8rem",
               fontWeight: 500,
               cursor: "pointer",
               transition: "all 0.2s ease",
@@ -257,8 +257,8 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
       {/* Empty state */}
       {filteredAccounts.length === 0 && (
         <div className="chart-card" style={{ padding: "3rem", textAlign: "center" }}>
-          <div style={{ fontSize: "2rem", marginBottom: "0.75rem" }}>🏦</div>
-          <div style={{ fontWeight: 700, fontSize: "1rem", color: "var(--color-gray-200)" }}>
+          <div style={{ fontSize: "1.5rem", marginBottom: "0.75rem" }}>🏦</div>
+          <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--color-gray-200)" }}>
             {accounts.length === 0 ? "No accounts yet" : "No accounts of this type"}
           </div>
           <div style={{ fontSize: "0.85rem", color: "var(--color-gray-500)", marginTop: "0.4rem", marginBottom: "1.25rem" }}>
@@ -303,7 +303,7 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: typeColor, boxShadow: `0 0 10px ${typeColor}` }} />
-                    <span style={{ fontSize: "1.1rem", fontWeight: 700, color: "var(--color-text)", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{acc.name}</span>
+                    <span style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-text)", letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{acc.name}</span>
                     {acc.isDefault && (
                       <span style={{ fontSize: "0.7rem", textTransform: "uppercase", fontWeight: 700, background: "var(--color-gray-800)", color: "var(--color-text)", padding: "0.15rem 0.4rem", borderRadius: "4px", flexShrink: 0 }}>Default</span>
                     )}
@@ -370,31 +370,31 @@ export function AccountsManager({ accounts }: { accounts: AccountListItem[] }) {
               </div>
 
               {/* Stats Grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", background: "var(--color-bg)", padding: "1rem", borderRadius: "12px", border: "1px solid var(--color-border)", marginTop: "auto" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem", background: "var(--color-bg)", padding: "0.8rem", borderRadius: "12px", border: "1px solid var(--color-border)", marginTop: "auto" }}>
                 <div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Current Equity</div>
-                  <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--color-text)" }}>{formatCurrency(currentEquity, acc.baseCurrency, false, 2)}</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.2rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Current Equity</div>
+                  <div style={{ fontSize: "1rem", fontWeight: 700, color: "var(--color-text)" }}>{formatCurrency(currentEquity, acc.baseCurrency, false, 2)}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Net Return</div>
-                  <div style={{ fontSize: "1.2rem", fontWeight: 600, color: returnPct >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.2rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Net Return</div>
+                  <div style={{ fontSize: "1rem", fontWeight: 600, color: returnPct >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                     {returnPct >= 0 ? "+" : ""}{returnPct.toFixed(2)}%
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total P&L</div>
-                  <div style={{ fontSize: "1rem", fontWeight: 500, color: acc.stats.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.2rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Total P&L</div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 500, color: acc.stats.totalPnl >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                     {formatCurrency(acc.stats.totalPnl, acc.baseCurrency, true, 2)}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Trades Executed</div>
-                  <div style={{ fontSize: "1rem", fontWeight: 500, color: "var(--color-text)" }}>{acc.stats.tradesCount}</div>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.2rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>Trades Executed</div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--color-text)" }}>{acc.stats.tradesCount}</div>
                 </div>
                 {acc.fxRateToUsd && Number(acc.fxRateToUsd) !== 1 && (
                   <div>
-                    <div style={{ fontSize: "0.75rem", color: "var(--color-gray-500)", marginBottom: "0.25rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>P&L (USD)</div>
-                    <div style={{ fontSize: "1rem", fontWeight: 500, color: (acc.stats.totalPnlUsd || 0) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
+                  <div style={{ fontSize: "0.7rem", color: "var(--color-gray-500)", marginBottom: "0.2rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>P&L (USD)</div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 500, color: (acc.stats.totalPnlUsd || 0) >= 0 ? "var(--color-profit)" : "var(--color-loss)" }}>
                       {formatCurrency(acc.stats.totalPnlUsd || 0, "USD", true, 2)}
                     </div>
                     <div style={{ fontSize: "0.7rem", color: "var(--color-gray-600)" }}>fx {Number(acc.fxRateToUsd).toFixed(4)}</div>
