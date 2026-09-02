@@ -19,7 +19,7 @@ const tradeSchema = z.object({
   setupTags: z.string().optional(),
   emotionTags: z.string().optional(),
   notesPost: z.string().optional(),
-  screenshotUrl: z.string().url().optional(),
+  screenshotUrl: z.string().optional(),
 })
 
 export async function POST(request: Request) {
