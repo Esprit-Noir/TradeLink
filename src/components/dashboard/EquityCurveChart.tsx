@@ -1,9 +1,9 @@
 "use client"
 
-import React, { useEffect, useState, useMemo, useRef, useCallback } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import { Activity, BarChart2 } from "lucide-react"
 import { useSearchParams } from "next/navigation"
-import { createChart, ColorType, CrosshairMode, AreaSeries, type IChartApi, type ISeriesApi } from "lightweight-charts"
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts"
 import type { EquityPoint } from "@/lib/metrics"
 
 type ViewMode = "balance" | "drawdown"
@@ -57,9 +57,6 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
   const [loading, setLoading] = useState(true)
   const [timeframe, setTimeframe] = useState("ALL")
   const [viewMode, setViewMode] = useState<ViewMode>("balance")
-  const chartContainerRef = useRef<HTMLDivElement>(null)
-  const chartRef = useRef<IChartApi | null>(null)
-  const seriesRef = useRef<ISeriesApi<"Area"> | null>(null)
 
   useEffect(() => {
     if (equityData && equityData.length > 0) {
@@ -101,7 +98,7 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
 
   const chartData = useMemo(() =>
     filteredData.map((p) => ({
-      time: (p.date as string).split("T")[0],
+      date: (p.date as string).split("T")[0],
       value: viewMode === "balance" ? p.equity : (p.drawdown ?? 0),
     })),
     [filteredData, viewMode]
@@ -121,83 +118,6 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
   const firstBalance = chartData.length > 0 ? (viewMode === "balance" ? chartData[0].value : initialBalance) : initialBalance
   const periodChange = lastBalance - firstBalance
   const periodChangePct = firstBalance !== 0 ? ((periodChange / Math.abs(firstBalance)) * 100) : 0
-
-  const initChart = useCallback(() => {
-    if (!chartContainerRef.current) return
-
-    if (chartRef.current) {
-      chartRef.current.remove()
-      chartRef.current = null
-      seriesRef.current = null
-    }
-
-    const chart = createChart(chartContainerRef.current, {
-      layout: {
-        background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#6b7280",
-        fontSize: 11,
-      },
-      grid: {
-        vertLines: { visible: false },
-        horzLines: { visible: false },
-      },
-      crosshair: {
-        mode: CrosshairMode.Normal,
-        vertLine: { color: "rgba(255,255,255,0.15)", labelBackgroundColor: "#1a1a20" },
-        horzLine: { color: "rgba(255,255,255,0.15)", labelBackgroundColor: "#1a1a20" },
-      },
-      rightPriceScale: { borderColor: "rgba(42, 42, 51, 0.4)" },
-      timeScale: { borderColor: "rgba(42, 42, 51, 0.4)", timeVisible: false },
-      handleScroll: { vertTouchDrag: false },
-    })
-
-    const lineColor = viewMode === "balance" ? gradColor : "#ef4444"
-    const areaTopColor = viewMode === "balance"
-      ? (isPositive ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)")
-      : "rgba(239,68,68,0.35)"
-
-    const areaSeries = chart.addSeries(AreaSeries, {
-      lineColor,
-      lineWidth: 2,
-      topColor: areaTopColor,
-      bottomColor: "transparent",
-      crosshairMarkerVisible: true,
-      crosshairMarkerRadius: 4,
-      crosshairMarkerBorderColor: lineColor,
-      crosshairMarkerBackgroundColor: "#0a0f0c",
-    })
-
-    if (chartData.length > 0) {
-      areaSeries.setData(chartData as { time: string; value: number }[])
-    }
-
-    chart.timeScale().fitContent()
-
-    chartRef.current = chart
-    seriesRef.current = areaSeries as ISeriesApi<"Area">
-
-    const handleResize = () => {
-      if (chartContainerRef.current && chartRef.current) {
-        chartRef.current.applyOptions({ width: chartContainerRef.current.clientWidth })
-      }
-    }
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [chartData, viewMode, gradColor, isPositive])
-
-  useEffect(() => {
-    if (!loading && chartData.length > 0) {
-      const cleanup = initChart()
-      return () => {
-        cleanup?.()
-        if (chartRef.current) {
-          chartRef.current.remove()
-          chartRef.current = null
-          seriesRef.current = null
-        }
-      }
-    }
-  }, [loading, initChart, chartData.length])
 
   const statItems = [
     { label: "Initial Balance", value: formatCurrency(initialBalance), color: "var(--color-gray-200)" },
@@ -312,7 +232,81 @@ export const EquityCurveChart = React.memo(function EquityCurveChart({
       </div>
 
       {/* Chart */}
-      <div ref={chartContainerRef} style={{ height: 300, borderRadius: 8, overflow: "hidden" }} />
+      <div style={{ height: 300, borderRadius: 8, overflow: "hidden" }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 5, bottom: 5, left: 0, right: 10 }}>
+            <defs>
+              <linearGradient id="equityGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={gradColor} stopOpacity={0.25} />
+                <stop offset="100%" stopColor={gradColor} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="drawdownGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#ef4444" stopOpacity={0.35} />
+                <stop offset="100%" stopColor="#ef4444" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <XAxis
+              dataKey="date"
+              tick={{ fontSize: 11, fill: "#6b7280" }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(val) => {
+                const d = new Date(val)
+                return `${d.getMonth() + 1}/${d.getDate()}`
+              }}
+            />
+            <YAxis
+              tick={{ fontSize: 11, fill: "#6b7280" }}
+              tickLine={false}
+              axisLine={false}
+              tickFormatter={(val) => viewMode === "balance" ? `$${val}` : `${val}%`}
+              width={viewMode === "balance" ? 65 : 50}
+            />
+            <Tooltip
+              cursor={{ stroke: "var(--color-gray-600)", strokeWidth: 1 }}
+              contentStyle={{
+                background: "var(--color-gray-900)",
+                border: "1px solid var(--color-gray-800)",
+                borderRadius: 8,
+                fontSize: 12,
+                color: "var(--color-gray-200)",
+                boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+              }}
+              itemStyle={{ color: "var(--color-gray-100)", fontWeight: 600 }}
+              labelFormatter={(label) => {
+                const d = new Date(label as string)
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+              }}
+              formatter={(value) => [
+                viewMode === "balance" ? formatCurrency(Number(value)) : `${Number(value).toFixed(2)}%`,
+                viewMode === "balance" ? "Balance" : "Drawdown",
+              ]}
+            />
+            {viewMode === "balance" && initialBalance > 0 && (
+              <ReferenceLine
+                y={initialBalance}
+                stroke={gradColor}
+                strokeDasharray="6 4"
+                strokeOpacity={0.4}
+                label={{ value: "Initial", fill: "var(--color-gray-500)", fontSize: 10, position: "right" }}
+              />
+            )}
+            {viewMode === "drawdown" && (
+              <ReferenceLine y={0} stroke="var(--color-gray-700)" strokeDasharray="3 3" />
+            )}
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={viewMode === "balance" ? gradColor : "#ef4444"}
+              strokeWidth={2}
+              fill={viewMode === "balance" ? "url(#equityGradient)" : "url(#drawdownGradient)"}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 2, stroke: viewMode === "balance" ? gradColor : "#ef4444", fill: "#0a0f0c" }}
+              isAnimationActive={false}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Footer legend */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid var(--color-gray-800)", fontSize: "0.7rem" }}>
