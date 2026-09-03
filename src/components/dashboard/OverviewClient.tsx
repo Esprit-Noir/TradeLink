@@ -90,7 +90,15 @@ export function OverviewClient({ username }: { username?: string }) {
   const [widgets, setWidgets] = useState<WidgetConfig[]>(DEFAULT_WIDGETS)
   const [mounted, setMounted] = useState(false)
 
-  const [quote] = useState(() => QUOTES[Math.floor(Math.random() * QUOTES.length)])
+  const [quote, setQuote] = useState(() => {
+    const today = new Date()
+    const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate()
+    return QUOTES[seed % QUOTES.length]
+  })
+
+  useEffect(() => {
+    setQuote(QUOTES[Math.floor(Math.random() * QUOTES.length)])
+  }, [])
 
   useEffect(() => {
     setWidgets(loadWidgets())
@@ -202,13 +210,13 @@ export function OverviewClient({ username }: { username?: string }) {
   )
 
   const sessionsWidget = (
-    <motion.div variants={itemVariants} className="chart-card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+    <motion.div variants={itemVariants} className="chart-card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", height: "100%" }}>
       <WorldSessionsMap />
     </motion.div>
   )
 
   const actionsWidget = (
-    <motion.div variants={itemVariants} className="glass-card" style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+    <motion.div variants={itemVariants} className="glass-card" style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ padding: "1.25rem 1.25rem 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
           <div style={{ width: 28, height: 28, borderRadius: 7, background: "rgba(245,158,11,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
