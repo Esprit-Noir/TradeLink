@@ -200,7 +200,7 @@ export function WorldSessionsMap() {
           ? "var(--color-gray-950)" 
           : "var(--color-gray-50)", 
         borderRadius: 12, 
-        border: `1px solid ${isDark ? "var(--color-gray-800)" : "var(--color-gray-200)"}`, 
+        border: isDark ? "1px solid var(--color-gray-800)" : "none",
         overflow: "hidden", 
         marginBottom: 16 
       }}>
@@ -235,7 +235,7 @@ export function WorldSessionsMap() {
           return (
             <div key={session.id} className="chart-card" style={{
               padding: "0.85rem",
-              borderColor: open ? `${session.color}40` : (isDark ? "var(--color-gray-800)" : "var(--color-gray-200)"),
+              borderColor: open ? `${session.color}40` : (isDark ? "var(--color-gray-800)" : "transparent"),
               background: open ? (isDark ? "var(--color-gray-900)" : "var(--color-brand-50)") : "transparent",
               position: "relative", overflow: "hidden"
             }}>
